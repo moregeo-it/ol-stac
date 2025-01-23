@@ -4,7 +4,7 @@
 
 import VectorLayer from 'ol/layer/Vector.js';
 import {
-  fromEPSGCode,
+  fromProjectionCode,
   isRegistered as isProj4Registered,
 } from 'ol/proj/proj4.js';
 import Circle from 'ol/style/Circle.js';
@@ -230,10 +230,7 @@ export async function getProjection(reference, defaultProjection = undefined) {
     const code = reference.getMetadata('proj:code');
     if (code) {
       try {
-        if (code.startsWith('EPSG:')) {
-          const id = parseInt(code.replace('EPSG:', ''), 10);
-          projection = await fromEPSGCode(id);
-        }
+        projection = await fromProjectionCode(id);
       } catch (_) {
         // pass
       }
