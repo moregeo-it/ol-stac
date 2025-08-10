@@ -407,9 +407,17 @@ class STACLayer extends LayerGroup {
     this.getLayers().on('remove', updateBoundsStyle);
 
     const errorHandler = (error) => this.handleError_(error);
-    const wait1 = this.setChildren(children).catch(errorHandler);
-    const wait2 = this.setAssets(assets).catch(errorHandler);
-    Promise.all([wait1, wait2]).then(() => {
+    const promises = [];
+    if (children) {
+      promises.push(this.setChildren(children).catch(errorHandler));
+    }
+    if (assets) {
+      promises.push(this.setAssets(assets).catch(errorHandler));
+    }
+    if (promises.length === 0) {
+      promises.push(this.updateLayers_().catch(errorHandler));
+    }
+    Promise.all(promises).then(() => {
       /**
        * Invoked once all layers are shown on the map.
        *
@@ -1064,6 +1072,9 @@ class STACLayer extends LayerGroup {
    * @api
    */
   async setAssets(assets) {
+    if (assets === this.assets_) {
+      return;
+    }
     if (Array.isArray(assets)) {
       const data = this.getData();
       this.assets_ = assets.map((asset) => {
