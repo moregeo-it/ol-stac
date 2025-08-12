@@ -559,9 +559,13 @@ class STACLayer extends LayerGroup {
                 if (!wmtsCapabilities) {
                     return;
                 }
-                const layers = Array.isArray(link['wmts:layer'])
-                    ? link['wmts:layer']
-                    : [link['wmts:layer']];
+                let layers = [];
+                if (Array.isArray(link['wmts:layer'])) {
+                    layers = link['wmts:layer'];
+                }
+                else if (typeof link['wmts:layer'] === 'string') {
+                    layers = [link['wmts:layer']];
+                }
                 for (const layer of layers) {
                     let wmtsOptions = Object.assign({}, options, { layer });
                     if (typeof link['type'] === 'string' &&
@@ -569,7 +573,10 @@ class STACLayer extends LayerGroup {
                         wmtsOptions.format = link['type'];
                     }
                     wmtsOptions = await updateOptions(SourceType.WMTS, wmtsOptions);
-                    sources.push(new WMTS(optionsFromCapabilities(wmtsCapabilities, wmtsOptions)));
+                    const opts = optionsFromCapabilities(wmtsCapabilities, wmtsOptions);
+                    if (opts !== null) {
+                        sources.push(new WMTS(opts));
+                    }
                 }
                 break;
             case 'xyz':
