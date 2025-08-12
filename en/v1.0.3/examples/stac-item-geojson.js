@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[188],{4711:function(e,t,a){var n=a(5654),s=a(3370),c=a(8754),o=a(1662),r=a(2459),i=a(3454);(0,a(9160).kz)(i.A);const l=new c.A({url:"https://transfer.data.aad.gov.au/aadc-aerial-photography/casc8916/collection.json",assets:["flightline-1","flightline-2"]}),u=new o.A({source:new s.A}),w=new n.A({target:"map",layers:[u,l],view:new r.Ay({center:[0,0],zoom:0})});l.on("sourceready",()=>{w.getView().fit(l.getExtent())})}},function(e){var t;t=4711,e(e.s=t)}]);
+//# sourceMappingURL=stac-item-geojson.js.map
