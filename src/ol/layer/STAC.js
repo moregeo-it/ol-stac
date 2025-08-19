@@ -129,6 +129,7 @@ import {transformExtent} from 'ol/proj.js';
  * @property {function(string,string):(*)} [httpRequestFn=null] Sets a custom function to make HTTP requests with.
  * The first parameter is the URL to request and the output is a promise that resolves with the response body.
  * The second parameter is the return type, either `json` (default) or `text`.
+ * @property {function(Object,boolean):(STAC|APICollection)} [createStacFn=null] Sets a custom function to create stac-js objects.
  */
 
 /**
@@ -275,6 +276,12 @@ class STACLayer extends LayerGroup {
      */
     this.eventQueue_ = [];
 
+    /**
+     * @type {function(Object,boolean):(STAC|APICollection)}
+     * @private
+     */
+    this.createStacFn_ = options.createStacFn || create;
+
     if (options.httpRequestFn) {
       this.fetch_ = options.httpRequestFn;
     }
@@ -389,7 +396,7 @@ class STACLayer extends LayerGroup {
     if (data instanceof Asset || data instanceof STAC) {
       stac = data;
     } else {
-      stac = create(data, !this.disableMigration_);
+      stac = this.createStacFn_(data, !this.disableMigration_);
       if (url && url.includes('://')) {
         stac.setAbsoluteUrl(url);
       }
@@ -901,7 +908,7 @@ class STACLayer extends LayerGroup {
       const promises = sourceLinks.map(async (link) => {
         try {
           const response = await this.fetch_(link.getAbsoluteUrl());
-          const stac = create(response);
+          const stac = this.createStacFn_(response, false);
           return stac;
         } catch (error) {
           this.handleError_(error);
@@ -1110,13 +1117,16 @@ class STACLayer extends LayerGroup {
     if (childs instanceof ItemCollection) {
       this.children_ = childs.getAll();
     } else if (isObject(childs) && childs.type === 'FeatureCollection') {
-      this.children_ = create(childs, !this.disableMigration_).getAll();
+      this.children_ = this.createStacFn_(
+        childs,
+        !this.disableMigration_
+      ).getAll();
     } else if (Array.isArray(childs)) {
       this.children_ = childs.map((child) => {
         if (child instanceof STAC) {
           return child;
         }
-        return create(child, !this.disableMigration_);
+        return this.createStacFn_(child, !this.disableMigration_);
       });
     } else {
       this.children_ = null; // Invalid input
