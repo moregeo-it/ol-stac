@@ -15,7 +15,7 @@ Explore the examples to get started with some more code:
 Dig into the API documentation for all details:
 <https://ol-stac.moregeo.it/en/latest/apidoc/>
 
-**ol-stac requires OpenLayers version >=7.5.2**
+**ol-stac requires OpenLayers version >=10.4.0**
 
 ## Sponsors
 
