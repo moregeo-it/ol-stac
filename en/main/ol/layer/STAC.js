@@ -351,22 +351,12 @@ class STACLayer extends LayerGroup {
         const errorHandler = (error) => this.handleError_(error);
         const promises = [];
         if (children) {
-            promises.push(this.setChildren(children).catch(errorHandler));
+            promises.push(this.setChildren(children, null, false).catch(errorHandler));
         }
         if (assets) {
-            promises.push(this.setAssets(assets).catch(errorHandler));
+            promises.push(this.setAssets(assets, false).catch(errorHandler));
         }
-        if (promises.length === 0) {
-            promises.push(this.updateLayers_().catch(errorHandler));
-        }
-        Promise.all(promises).then(() => {
-            /**
-             * Invoked once all layers are shown on the map.
-             *
-             * @event layersready
-             */
-            return this.dispatch_('layersready');
-        });
+        Promise.all(promises).then(() => this.updateLayers().catch(errorHandler));
         /**
          * Invoked once the STAC entity is loaded and available.
          *
@@ -811,9 +801,13 @@ class STACLayer extends LayerGroup {
         }
     }
     /**
-     * @private
+     * Update the layers shown manually based on the current configuration.
+     * Usually this doesn't need to be called manually.
+     * @param {boolean} [emit=true] Whether to emit the `layersready` event once the layers are updated.
+     * @return {Promise} Resolves once the layers are updated.
+     * @api
      */
-    async updateLayers_() {
+    async updateLayers(emit = true) {
         // Remove old layers
         const oldLayers = this.getLayers();
         for (let i = oldLayers.getLength() - 1; i >= 0; i--) {
@@ -865,6 +859,9 @@ class STACLayer extends LayerGroup {
                     data.supportsExtension(LABEL_EXTENSION) &&
                     data.getMetadata('label:type') === 'vector') {
                     await this.addLabelExtension_();
+                    if (emit) {
+                        this.dispatch_('layersready');
+                    }
                     return;
                 }
                 // Show web map links
@@ -891,6 +888,9 @@ class STACLayer extends LayerGroup {
                     }
                 }
             }
+        }
+        if (emit) {
+            this.dispatch_('layersready');
         }
     }
     /**
@@ -944,10 +944,11 @@ class STACLayer extends LayerGroup {
     /**
      * Update the assets to be rendered.
      * @param {Array<string|Asset>|null} assets The assets to show.
+     * @param {boolean} [updateLayers=true] Whether to update the layers right away.
      * @return {Promise} Resolves when all assets are rendered.
      * @api
      */
-    async setAssets(assets) {
+    async setAssets(assets, updateLayers = true) {
         if (assets === this.assets_) {
             return;
         }
@@ -966,7 +967,9 @@ class STACLayer extends LayerGroup {
         else {
             this.assets_ = null;
         }
-        await this.updateLayers_();
+        if (updateLayers) {
+            await this.updateLayers();
+        }
     }
     /**
      * Updates the children STAC entities to be rendered.
@@ -975,10 +978,11 @@ class STACLayer extends LayerGroup {
      *
      * @param {ItemCollection|Object|Array<STAC|Object>|null} childs The children to show.
      * @param {Options|null} [options=null] Optionally, new STACLayer options for the children. Only applies if `children` are given.
+     * @param {boolean} [updateLayers=true] Whether to update the layers right away.
      * @return {Promise} Resolves when all items are rendered.
      * @api
      */
-    async setChildren(childs, options = null) {
+    async setChildren(childs, options = null, updateLayers = true) {
         if (childs instanceof ItemCollection) {
             this.children_ = childs.getAll();
         }
@@ -1002,7 +1006,9 @@ class STACLayer extends LayerGroup {
         if (this.children_ && isObject(options)) {
             this.childrenOptions_ = options;
         }
-        await this.updateLayers_();
+        if (updateLayers) {
+            await this.updateLayers();
+        }
     }
     /**
      * Get the STAC object.

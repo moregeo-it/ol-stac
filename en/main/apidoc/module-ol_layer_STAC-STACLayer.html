@@ -80,6 +80,7 @@
             <li data-name="isempty"><a href="module-ol_layer_STAC-STACLayer.html#isEmpty">isEmpty</a>
             <li data-name="setassets"><a href="module-ol_layer_STAC-STACLayer.html#setAssets">setAssets</a>
             <li data-name="setchildren"><a href="module-ol_layer_STAC-STACLayer.html#setChildren">setChildren</a>
+            <li data-name="updatelayers"><a href="module-ol_layer_STAC-STACLayer.html#updateLayers">updateLayers</a>
         </ul>
     </div>
     <div class="member-list" data-type="fires">
@@ -1084,7 +1085,7 @@ The second parameter is the return type, either <code>json</code> (default) or <
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js#L558">line 558</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js#L550">line 550</a>
         </div>
         
     </div>
@@ -1227,7 +1228,7 @@ Resolves with a list of layers or undefined when complete.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js#L1159">line 1159</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js#L1167">line 1167</a>
         </div>
         
     </div>
@@ -1317,7 +1318,7 @@ The STAC assets.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js#L1221">line 1221</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js#L1229">line 1229</a>
         </div>
         
     </div>
@@ -1497,7 +1498,7 @@ The vector layer for the bounds
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js#L1149">line 1149</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js#L1157">line 1157</a>
         </div>
         
     </div>
@@ -1587,7 +1588,7 @@ The STAC child entities.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js#L1139">line 1139</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js#L1147">line 1147</a>
         </div>
         
     </div>
@@ -1677,7 +1678,7 @@ The STAC object.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js#L1172">line 1172</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js#L1180">line 1180</a>
         </div>
         
     </div>
@@ -1770,7 +1771,7 @@ The layer extent.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js#L1037">line 1037</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js#L1039">line 1039</a>
         </div>
         
     </div>
@@ -1860,7 +1861,7 @@ An array of links.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js#L1024">line 1024</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js#L1026">line 1026</a>
         </div>
         
     </div>
@@ -2033,7 +2034,7 @@ Is the layer empty?
         <div class="anchor" id="setAssets">
         </div>
         <h4 class="name">
-            setAssets<span class="signature">(assets)</span><span class="fa fa-arrow-circle-right"></span><span class="type-signature returnType">{Promise}</span>
+            setAssets<span class="signature">(assets, <span class="optional">updateLayers</span>)</span><span class="fa fa-arrow-circle-right"></span><span class="type-signature returnType">{Promise}</span>
             
             
 
@@ -2041,7 +2042,7 @@ Is the layer empty?
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js#L1078">line 1078</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js#L1081">line 1081</a>
         </div>
         
     </div>
@@ -2109,6 +2110,33 @@ Is the layer empty?
         </tr>
 
 	
+
+        <tr class="">
+            
+                <td class="name"><code>updateLayers</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+                
+                    (defaults to true)
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>Whether to update the layers right away.</p></td>
+        </tr>
+
+	
 	</tbody>
 </table>
     
@@ -2171,7 +2199,7 @@ Resolves when all assets are rendered.
         <div class="anchor" id="setChildren">
         </div>
         <h4 class="name">
-            setChildren<span class="signature">(childs, <span class="optional">options</span>)</span><span class="fa fa-arrow-circle-right"></span><span class="type-signature returnType">{Promise}</span>
+            setChildren<span class="signature">(childs, <span class="optional">options</span>, <span class="optional">updateLayers</span>)</span><span class="fa fa-arrow-circle-right"></span><span class="type-signature returnType">{Promise}</span>
             
             
 
@@ -2179,7 +2207,7 @@ Resolves when all assets are rendered.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js#L1109">line 1109</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js#L1115">line 1115</a>
         </div>
         
     </div>
@@ -2261,31 +2289,60 @@ Resolves when all assets are rendered.
             
 
             
-
-            <td colspan=2 class="description last">
+            <td class="type">
+            
                 
-                <p>Optionally, new STACLayer options for the children. Only applies if <code>children</code> are given.</p>
+<span class="param-type"><a href="module-ol_layer_STAC.html#~Options">Options</a></span>
+|
+
+<span class="param-type">null</span>
+
+
                 
+                    (defaults to null)
+                
+            
+            </td>
 
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
+            
 
-		<th>Type</th>
+            <td  class="description last">
+                
+                <p>Optionally, new STACLayer options for the children. Only applies if <code>children</code> are given.</p></td>
+        </tr>
 
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
 	
 
         <tr class="">
             
-                <td class="name"><code>url</code></td>
+                <td class="name"><code>updateLayers</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+                
+                    (defaults to true)
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>Whether to update the layers right away.</p></td>
+        </tr>
+
+	
+
+        <tr class="">
+            
+                <td class="name"><code>options.url</code></td>
             
 
             
@@ -2313,7 +2370,7 @@ Don't use this is you pass in a stac-js object as <code>data</code>, set the url
 
         <tr class="">
             
-                <td class="name"><code>data</code></td>
+                <td class="name"><code>options.data</code></td>
             
 
             
@@ -2345,7 +2402,7 @@ Don't use this is you pass in a stac-js object as <code>data</code>, set the url
 
         <tr class="">
             
-                <td class="name"><code>children</code></td>
+                <td class="name"><code>options.children</code></td>
             
 
             
@@ -2382,7 +2439,7 @@ to show. Can be STAC ItemCollections (as ItemCollection or GeoJSON FeatureCollec
 
         <tr class="">
             
-                <td class="name"><code>childrenOptions</code></td>
+                <td class="name"><code>options.childrenOptions</code></td>
             
 
             
@@ -2409,7 +2466,7 @@ to show. Can be STAC ItemCollections (as ItemCollection or GeoJSON FeatureCollec
 
         <tr class="">
             
-                <td class="name"><code>assets</code></td>
+                <td class="name"><code>options.assets</code></td>
             
 
             
@@ -2442,7 +2499,7 @@ null shows the default asset, an empty array shows no asset.</p></td>
 
         <tr class="">
             
-                <td class="name"><code>bands</code></td>
+                <td class="name"><code>options.bands</code></td>
             
 
             
@@ -2467,7 +2524,7 @@ null shows the default asset, an empty array shows no asset.</p></td>
 
         <tr class="">
             
-                <td class="name"><code>getSourceOptions</code></td>
+                <td class="name"><code>options.getSourceOptions</code></td>
             
 
             
@@ -2496,7 +2553,7 @@ Please be aware that sending HTTP headers may not be supported by all sources.</
 
         <tr class="">
             
-                <td class="name"><code>displayFootprint</code></td>
+                <td class="name"><code>options.displayFootprint</code></td>
             
 
             
@@ -2524,7 +2581,7 @@ by default.</p></td>
 
         <tr class="">
             
-                <td class="name"><code>displayGeoTiffByDefault</code></td>
+                <td class="name"><code>options.displayGeoTiffByDefault</code></td>
             
 
             
@@ -2552,7 +2609,7 @@ which might not work well for larger files or larger amounts of files.</p></td>
 
         <tr class="">
             
-                <td class="name"><code>displayPreview</code></td>
+                <td class="name"><code>options.displayPreview</code></td>
             
 
             
@@ -2582,7 +2639,7 @@ For performance reasons, it is recommended to enable this option if you pass in 
 
         <tr class="">
             
-                <td class="name"><code>displayOverview</code></td>
+                <td class="name"><code>options.displayOverview</code></td>
             
 
             
@@ -2610,7 +2667,7 @@ usually an asset with role <code>overview</code> or <code>visual</code>.</p></td
 
         <tr class="">
             
-                <td class="name"><code>displayWebMapLink</code></td>
+                <td class="name"><code>options.displayWebMapLink</code></td>
             
 
             
@@ -2648,7 +2705,7 @@ To disable the functionality set this to <code>false</code>.</p></td>
 
         <tr class="">
             
-                <td class="name"><code>boundsStyle</code></td>
+                <td class="name"><code>options.boundsStyle</code></td>
             
 
             
@@ -2673,7 +2730,7 @@ To disable the functionality set this to <code>false</code>.</p></td>
 
         <tr class="">
             
-                <td class="name"><code>collectionStyle</code></td>
+                <td class="name"><code>options.collectionStyle</code></td>
             
 
             
@@ -2698,7 +2755,7 @@ To disable the functionality set this to <code>false</code>.</p></td>
 
         <tr class="">
             
-                <td class="name"><code>crossOrigin</code></td>
+                <td class="name"><code>options.crossOrigin</code></td>
             
 
             
@@ -2727,7 +2784,7 @@ See <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_imag
 
         <tr class="">
             
-                <td class="name"><code>buildTileUrlTemplate</code></td>
+                <td class="name"><code>options.buildTileUrlTemplate</code></td>
             
 
             
@@ -2756,7 +2813,7 @@ The function provided can return a promise (i.e. be async) or a string.</p></td>
 
         <tr class="">
             
-                <td class="name"><code>useTileLayerAsFallback</code></td>
+                <td class="name"><code>options.useTileLayerAsFallback</code></td>
             
 
             
@@ -2783,7 +2840,7 @@ The function provided can return a promise (i.e. be async) or a string.</p></td>
 
         <tr class="">
             
-                <td class="name"><code>opacity</code></td>
+                <td class="name"><code>options.opacity</code></td>
             
 
             
@@ -2810,7 +2867,7 @@ The function provided can return a promise (i.e. be async) or a string.</p></td>
 
         <tr class="">
             
-                <td class="name"><code>visible</code></td>
+                <td class="name"><code>options.visible</code></td>
             
 
             
@@ -2837,7 +2894,7 @@ The function provided can return a promise (i.e. be async) or a string.</p></td>
 
         <tr class="">
             
-                <td class="name"><code>extent</code></td>
+                <td class="name"><code>options.extent</code></td>
             
 
             
@@ -2863,7 +2920,7 @@ rendered outside of this extent.</p></td>
 
         <tr class="">
             
-                <td class="name"><code>zIndex</code></td>
+                <td class="name"><code>options.zIndex</code></td>
             
 
             
@@ -2891,7 +2948,7 @@ method was used.</p></td>
 
         <tr class="">
             
-                <td class="name"><code>minResolution</code></td>
+                <td class="name"><code>options.minResolution</code></td>
             
 
             
@@ -2917,7 +2974,7 @@ visible.</p></td>
 
         <tr class="">
             
-                <td class="name"><code>maxResolution</code></td>
+                <td class="name"><code>options.maxResolution</code></td>
             
 
             
@@ -2943,7 +3000,7 @@ be visible.</p></td>
 
         <tr class="">
             
-                <td class="name"><code>minZoom</code></td>
+                <td class="name"><code>options.minZoom</code></td>
             
 
             
@@ -2969,7 +3026,7 @@ visible.</p></td>
 
         <tr class="">
             
-                <td class="name"><code>maxZoom</code></td>
+                <td class="name"><code>options.maxZoom</code></td>
             
 
             
@@ -2995,7 +3052,7 @@ be visible.</p></td>
 
         <tr class="">
             
-                <td class="name"><code>properties</code></td>
+                <td class="name"><code>options.properties</code></td>
             
 
             
@@ -3020,7 +3077,7 @@ be visible.</p></td>
 
         <tr class="">
             
-                <td class="name"><code>disableMigration</code></td>
+                <td class="name"><code>options.disableMigration</code></td>
             
 
             
@@ -3048,7 +3105,7 @@ Only enable this if you are sure that the STAC object is already in the latest v
 
         <tr class="">
             
-                <td class="name"><code>httpRequestFn</code></td>
+                <td class="name"><code>options.httpRequestFn</code></td>
             
 
             
@@ -3071,12 +3128,6 @@ Only enable this if you are sure that the STAC object is already in the latest v
                 <p>Sets a custom function to make HTTP requests with.
 The first parameter is the URL to request and the output is a promise that resolves with the response body.
 The second parameter is the return type, either <code>json</code> (default) or <code>text</code>.</p></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-            </td>
         </tr>
 
 	
@@ -3126,6 +3177,144 @@ The second parameter is the return type, either <code>json</code> (default) or <
 
 <h5>Returns:</h5>
 Resolves when all items are rendered.
+<br />
+
+    
+
+    
+</dd>
+
+        
+            
+            
+<dt class="">
+    
+    <div class="nameContainer">
+        <div class="anchor" id="updateLayers">
+        </div>
+        <h4 class="name">
+            updateLayers<span class="signature">(<span class="optional">emit</span>)</span><span class="fa fa-arrow-circle-right"></span><span class="type-signature returnType">{Promise}</span>
+            
+            
+
+        </h4>
+        
+        <div class="tag-source">
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.0.3/src/ol/layer/STAC.js#L924">line 924</a>
+        </div>
+        
+    </div>
+    
+    
+</dt>
+<dd class="">
+
+
+
+    
+    <div class="description">
+        <p>Update the layers shown manually based on the current configuration.
+Usually this doesn't need to be called manually.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr class="">
+            
+                <td class="name"><code>emit</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+                
+                    (defaults to true)
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>Whether to emit the <code>layersready</code> event once the layers are updated.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+    
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+    
+
+
+<h5>Returns:</h5>
+Resolves once the layers are updated.
 <br />
 
     

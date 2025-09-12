@@ -486,9 +486,13 @@ declare class STACLayer extends LayerGroup {
      */
     private addLabelExtension_;
     /**
-     * @private
+     * Update the layers shown manually based on the current configuration.
+     * Usually this doesn't need to be called manually.
+     * @param {boolean} [emit=true] Whether to emit the `layersready` event once the layers are updated.
+     * @return {Promise} Resolves once the layers are updated.
+     * @api
      */
-    private updateLayers_;
+    updateLayers(emit?: boolean | undefined): Promise<any>;
     /**
      * Indicates whether the LayerGroup shows only the bounds layer (i.e. no imagery/tile layers).
      * @return {boolean} `true` if only the bounds layer is shown, `false` otherwise.
@@ -504,10 +508,11 @@ declare class STACLayer extends LayerGroup {
     /**
      * Update the assets to be rendered.
      * @param {Array<string|Asset>|null} assets The assets to show.
+     * @param {boolean} [updateLayers=true] Whether to update the layers right away.
      * @return {Promise} Resolves when all assets are rendered.
      * @api
      */
-    setAssets(assets: Array<string | Asset> | null): Promise<any>;
+    setAssets(assets: Array<string | Asset> | null, updateLayers?: boolean | undefined): Promise<any>;
     /**
      * Updates the children STAC entities to be rendered.
      *
@@ -515,10 +520,11 @@ declare class STACLayer extends LayerGroup {
      *
      * @param {ItemCollection|Object|Array<STAC|Object>|null} childs The children to show.
      * @param {Options|null} [options=null] Optionally, new STACLayer options for the children. Only applies if `children` are given.
+     * @param {boolean} [updateLayers=true] Whether to update the layers right away.
      * @return {Promise} Resolves when all items are rendered.
      * @api
      */
-    setChildren(childs: ItemCollection | any | Array<STAC | any> | null, options?: Options | null | undefined): Promise<any>;
+    setChildren(childs: ItemCollection | any | Array<STAC | any> | null, options?: Options | null | undefined, updateLayers?: boolean | undefined): Promise<any>;
     /**
      * Get the STAC object.
      *
