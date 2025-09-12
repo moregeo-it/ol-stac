@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.4] - 2025-09-12
+
+- Avoid duplicate updating of layers
+- Allow manual update of layers
+- Flag to omit events
+
 ## [1.0.3] - 2025-08-12
 
 - Avoid duplicate layers on first load
