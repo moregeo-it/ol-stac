@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[454],{6353:function(e,t,n){var s=n(5654),a=n(3370),o=n(8754),r=n(1662),c=n(2459),u=n(3454);(0,n(9160).kz)(u.A);const i=new o.A({url:"http://127.0.0.1:8081/examples/spacenet-roads/roads_item.json",displayGeoTiffByDefault:!1}),w=new r.A({source:new a.A}),f=new s.A({target:"map",layers:[w,i],view:new c.Ay({center:[0,0],zoom:0})});i.on("sourceready",()=>{f.getView().fit(i.getExtent())})}},function(e){var t;t=6353,e(e.s=t)}]);
+//# sourceMappingURL=stac-item-labels.js.map
