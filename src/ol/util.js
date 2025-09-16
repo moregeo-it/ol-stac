@@ -131,18 +131,20 @@ export async function getStacObjectsForEvent(
 /**
  * Get the source info for the GeoTiff from the asset.
  * @param {import('stac-js').Asset} asset The asset to read the information from.
- * @param {Array<number>} bands The (one-based) bands to show.
+ * @param {Array<number>} selectedBands The (one-based) bands to show.
  * @return {import('ol/source/GeoTIFF.js').SourceInfo} The source info for the GeoTiff asset
  */
-export function getGeoTiffSourceInfoFromAsset(asset, bands) {
+export function getGeoTiffSourceInfoFromAsset(asset, selectedBands) {
   const sourceInfo = {
     url: asset.getAbsoluteUrl(),
   };
 
   let source = asset;
+  let bands = asset.getBands();
   // If there's just one band, we can also read the information from there.
-  if (asset.getBands().length === 1) {
-    source = asset.getBand(0);
+  if (bands.length === 1) {
+    source = bands[0];
+    bands = [];
   }
 
   // TODO: It would be useful if OL would allow min/max values per band
@@ -153,15 +155,63 @@ export function getGeoTiffSourceInfoFromAsset(asset, bands) {
   if (typeof maximum === 'number') {
     sourceInfo.max = maximum;
   }
+  if (
+    typeof sourceInfo.min !== 'number' &&
+    typeof sourceInfo.max !== 'number' &&
+    bands.length > 1
+  ) {
+    // Read from bands as fallback and if available
+    for (const band of bands) {
+      const {minimum, maximum} = band.getMinMaxValues();
+      if (
+        typeof minimum === 'number' &&
+        (typeof sourceInfo.min === 'undefined' || minimum < sourceInfo.min)
+      ) {
+        sourceInfo.min = minimum;
+      }
+      if (
+        typeof maximum === 'number' &&
+        (typeof sourceInfo.max === 'undefined' || maximum > sourceInfo.max)
+      ) {
+        sourceInfo.max = maximum;
+      }
+    }
+  }
 
   // TODO: It would be useful if OL would allow multiple no-data values
   const nodata = source.getNoDataValues();
   if (nodata.length > 0) {
     sourceInfo.nodata = nodata[0];
+  } else if (bands.length > 1) {
+    // Read from bands as fallback and if available
+    let nodata = undefined;
+    for (const band of bands) {
+      const bandNoData = band.getNoDataValues();
+      if (bandNoData.length > 0) {
+        if (typeof nodata === 'undefined') {
+          nodata = bandNoData[0];
+        } else if (nodata !== bandNoData[0]) {
+          nodata = undefined;
+          break;
+        }
+      }
+    }
+    if (typeof nodata !== 'undefined') {
+      sourceInfo.nodata = nodata;
+    }
   }
 
-  if (bands.length > 0) {
-    sourceInfo.bands = bands;
+  if (selectedBands.length > 0) {
+    sourceInfo.bands = selectedBands;
+  } else {
+    const visualBands = asset.findVisualBands();
+    if (visualBands) {
+      sourceInfo.bands = [
+        visualBands.red.getIndex() + 1,
+        visualBands.green.getIndex() + 1,
+        visualBands.blue.getIndex() + 1,
+      ];
+    }
   }
 
   return sourceInfo;
