@@ -1,11 +1,11 @@
 import Map from 'ol/Map.js';
-import OSM from 'ol/source/OSM.js';
-import STAC from '../src/ol/layer/STAC.js';
-import TileLayer from 'ol/layer/WebGLTile.js';
 import View from 'ol/View.js';
-import proj4 from 'proj4';
-import {getStacObjectsForEvent} from '../src/ol/util.js';
+import TileLayer from 'ol/layer/WebGLTile.js';
 import {register} from 'ol/proj/proj4.js';
+import OSM from 'ol/source/OSM.js';
+import proj4 from 'proj4';
+import STAC from '../src/ol/layer/STAC.js';
+import {getStacObjectsForEvent} from '../src/ol/util.js';
 
 register(proj4); // required to support source reprojection
 
@@ -40,7 +40,7 @@ layer.on('sourceready', () => {
 });
 
 fetch(
-  'https://planetarycomputer.microsoft.com/api/stac/v1/collections/esa-cci-lc/items?datetime=2020-01-01T00%3A00%3A00.000Z%2F2020-12-31T00%3A00%3A00.000Z&limit=32'
+  'https://planetarycomputer.microsoft.com/api/stac/v1/collections/esa-cci-lc/items?datetime=2020-01-01T00%3A00%3A00.000Z%2F2020-12-31T00%3A00%3A00.000Z&limit=32',
 )
   .then((response) => response.json())
   .then((items) => {

@@ -1,11 +1,11 @@
 import Map from 'ol/Map.js';
+import View from 'ol/View.js';
+import TileLayer from 'ol/layer/WebGLTile.js';
+import {register} from 'ol/proj/proj4.js';
 import OSM from 'ol/source/OSM.js';
+import proj4 from 'proj4';
 import STAC from '../src/ol/layer/STAC.js';
 import SourceType from '../src/ol/source/type.js';
-import TileLayer from 'ol/layer/WebGLTile.js';
-import View from 'ol/View.js';
-import proj4 from 'proj4';
-import {register} from 'ol/proj/proj4.js';
 
 register(proj4); // required to support source reprojection
 
@@ -18,7 +18,7 @@ register(proj4); // required to support source reprojection
 async function sign(href) {
   const params = new URLSearchParams({href});
   const response = await fetch(
-    `https://planetarycomputer.microsoft.com/api/sas/v1/sign?${params}`
+    `https://planetarycomputer.microsoft.com/api/sas/v1/sign?${params}`,
   );
   const body = await response.json();
   return body.href;

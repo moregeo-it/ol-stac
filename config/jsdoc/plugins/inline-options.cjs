@@ -1,5 +1,3 @@
-/* eslint-disable import/no-commonjs */
-
 /**
  * @fileoverview
  * Inlines option params from typedefs
@@ -91,7 +89,7 @@ exports.handlers = {
                       templateInfo[property.type.names[0]];
                   }
                   return property;
-                })
+                }),
               );
             }
           }

@@ -1,5 +1,3 @@
-/* eslint-disable import/no-commonjs */
-
 /**
  * Define an @api tag
  * @param {Object} dictionary The tag dictionary.
@@ -9,7 +7,7 @@ exports.defineTags = function (dictionary) {
     mustNotHaveValue: true,
     canHaveType: false,
     canHaveName: false,
-    onTagged: function (doclet, tag) {
+    onTagged: function (doclet) {
       includeTypes(doclet);
       doclet.stability = 'stable';
     },

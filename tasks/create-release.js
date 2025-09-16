@@ -1,9 +1,9 @@
+import {readFile, stat} from 'node:fs/promises';
+import {basename} from 'node:path';
+import {Octokit} from '@octokit/rest';
 import esMain from 'es-main';
 import yargs from 'yargs';
-import {Octokit} from '@octokit/rest';
-import {basename} from 'node:path';
 import {hideBin} from 'yargs/helpers';
-import {readFile, stat} from 'node:fs/promises';
 
 /**
  * @typedef {Object} Options
@@ -39,14 +39,14 @@ async function createRelease(options) {
     client,
     response.data,
     options.site,
-    'Examples and docs (zip)'
+    'Examples and docs (zip)',
   );
 
   await uploadAsset(
     client,
     response.data,
     options.package,
-    'Package archive (zip)'
+    'Package archive (zip)',
   );
 }
 

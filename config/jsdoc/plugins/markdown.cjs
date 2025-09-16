@@ -1,5 +1,3 @@
-/* eslint-disable import/no-commonjs */
-
 /**
  * Modified from JSDoc's plugins/markdown and lib/jsdoc/util/markdown modules
  * (see https://github.com/jsdoc3/jsdoc/), which are licensed under the Apache 2
@@ -9,8 +7,8 @@
  * works around an issue with `~` characters in module paths by escaping them.
  */
 
-const {marked} = require('marked');
 const format = require('util').format;
+const {marked} = require('marked');
 
 const tags = [
   'author',
@@ -35,7 +33,7 @@ markedRenderer.code = function (code, language) {
   return format(
     '<pre class="prettyprint source%s"><code>%s</code></pre>',
     langClass,
-    escapeCode(code)
+    escapeCode(code),
   );
 };
 

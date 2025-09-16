@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "ol-pmtiles": "^2.0.0",
+    "proj4": "^2.15.0",
     "stac-js": "~0.1.8"
   },
   "peerDependencies": {
@@ -45,13 +46,15 @@
     "@metalsmith/markdown": "^1.6.0",
     "@octokit/rest": "^20.0.1",
     "@openlayers/eslint-plugin": "^4.0.0",
+    "@typescript-eslint/parser": "^8.17.0",
     "copy-webpack-plugin": "^11.0.0",
     "es-main": "^1.0.2",
-    "eslint": "^8.0.1",
-    "eslint-config-openlayers": "^18.0.0",
+    "eslint": "^9.16.0",
+    "eslint-config-openlayers": "^20.0.0",
     "expect.js": "0.3.1",
     "front-matter": "^4.0.0",
     "fs-extra": "^11.1.0",
+    "globals": "^16.4.0",
     "handlebars": "4.7.8",
     "jsdoc": "4.0.2",
     "jsdoc-plugin-intersection": "^1.0.4",
@@ -69,11 +72,10 @@
     "mocha": "10.8.2",
     "pixelmatch": "^5.1.0",
     "pngjs": "^7.0.0",
-    "proj4": "2.9.0",
-    "puppeteer": "23.5.3",
+    "puppeteer": "^24.10.2",
     "semver": "^7.3.7",
     "shx": "^0.3.2",
-    "sinon": "^15.0.0",
+    "sinon": "^17.0.0",
     "source-map-loader": "^4.0.0",
     "typescript": "5.1.6",
     "walk": "^2.3.9",
@@ -83,22 +85,6 @@
     "webpack-dev-server": "^5.0.0",
     "webpack-sources": "^3.2.0",
     "yargs": "^17.0.0"
-  },
-  "eslintConfig": {
-    "extends": "openlayers",
-    "plugins": [
-      "@openlayers"
-    ],
-    "rules": {
-      "jsdoc/no-bad-blocks": "off",
-      "import/no-commonjs": "error",
-      "@openlayers/no-exclusive-tests": [
-        "error",
-        {
-          "include": "test/**/*.test.js"
-        }
-      ]
-    }
   },
   "browserslist": [
     "> 1%",

@@ -1,5 +1,3 @@
-/* eslint-disable import/no-commonjs */
-
 /**
  * @fileoverview Generates JSON output based on exportable symbols.
  */
@@ -9,10 +7,9 @@ const path = require('path');
 /**
  * Publish hook for the JSDoc template.  Writes to JSON stdout.
  * @param {Function} data The root of the Taffy DB containing doclet records.
- * @param {Object} opts Options.
  * @return {Promise} A promise that resolves when writing is complete.
  */
-exports.publish = function (data, opts) {
+exports.publish = function (data) {
   function getTypes(data) {
     return data.map((name) => name.replace(/^function$/, 'Function'));
   }
@@ -53,7 +50,7 @@ exports.publish = function (data, opts) {
         assert.strictEqual(
           doc.inherited,
           true,
-          'Unexpected export on private class: ' + doc.longname
+          'Unexpected export on private class: ' + doc.longname,
         );
         include = false;
       }
@@ -157,7 +154,7 @@ exports.publish = function (data, opts) {
     return symbol.name in augments || symbol.virtual;
   });
 
-  return new Promise(function (resolve, reject) {
+  return new Promise(function () {
     process.stdout.write(
       JSON.stringify(
         {
@@ -168,8 +165,8 @@ exports.publish = function (data, opts) {
           base: base,
         },
         null,
-        2
-      )
+        2,
+      ),
     );
   });
 };
