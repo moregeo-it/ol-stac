@@ -22,10 +22,10 @@ export function getStacObjectsForEvent(event: import('ol/MapBrowserEvent.js').de
 /**
  * Get the source info for the GeoTiff from the asset.
  * @param {import('stac-js').Asset} asset The asset to read the information from.
- * @param {Array<number>} bands The (one-based) bands to show.
+ * @param {Array<number>} selectedBands The (one-based) bands to show.
  * @return {import('ol/source/GeoTIFF.js').SourceInfo} The source info for the GeoTiff asset
  */
-export function getGeoTiffSourceInfoFromAsset(asset: any, bands: Array<number>): import('ol/source/GeoTIFF.js').SourceInfo;
+export function getGeoTiffSourceInfoFromAsset(asset: any, selectedBands: Array<number>): import('ol/source/GeoTIFF.js').SourceInfo;
 /**
  * Gets the projection from the asset or link.
  * @param {import('stac-js').STACReference} reference The asset or link to read the information from.
