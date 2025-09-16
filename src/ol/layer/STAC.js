@@ -41,6 +41,7 @@ import {
   getGeoTiffSourceInfoFromAsset,
   getProjection,
   getSpecificWebMapUrl,
+  isScalar,
 } from '../util.js';
 /**
  * @typedef {import("ol/extent.js").Extent} Extent
@@ -549,7 +550,7 @@ class STACLayer extends LayerGroup {
    */
   async addLayerForLink(link) {
     // Replace any occurances of {s} if possible, otherwise return
-    const url = getSpecificWebMapUrl(link);
+    let url = getSpecificWebMapUrl(link);
     if (!url) {
       return;
     }
@@ -636,28 +637,55 @@ class STACLayer extends LayerGroup {
         }
         break;
       case 'wmts':
-        const wmtsCapabilities = await this.getWmtsCapabilities_(url);
-        if (!wmtsCapabilities) {
-          return;
-        }
-        let layers = [];
-        if (Array.isArray(link['wmts:layer'])) {
-          layers = link['wmts:layer'];
-        } else if (typeof link['wmts:layer'] === 'string') {
-          layers = [link['wmts:layer']];
-        }
-        for (const layer of layers) {
-          let wmtsOptions = Object.assign({}, options, {layer});
-          if (
-            typeof link['type'] === 'string' &&
-            link['type'].startsWith('image/')
-          ) {
-            wmtsOptions.format = link['type'];
+        if (link['wmts:encoding'] === 'rest') {
+          // REST request encoding
+          const vars = isObject(link['variables']) ? link['variables'] : {};
+          for (const key in vars) {
+            const schema = vars[key];
+            let value;
+            if (isScalar(schema.const)) {
+              value = schema.const;
+            } else if (isScalar(schema.default)) {
+              value = schema.default;
+            } else if (Array.isArray(schema.enum) && schema.enum.length > 0) {
+              value = schema.enum[0];
+            }
+            if (typeof value !== 'undefined') {
+              url = url.replaceAll(`{${key}}`, String(value));
+            } else {
+              return; // We don't know which value to use, so we can't visualize the layer
+            }
           }
-          wmtsOptions = await updateOptions(SourceType.WMTS, wmtsOptions);
-          const opts = optionsFromCapabilities(wmtsCapabilities, wmtsOptions);
-          if (opts !== null) {
-            sources.push(new WMTS(opts));
+          const wmtsOptions = Object.assign({}, options, {
+            requestEncoding: 'REST',
+          });
+          const opts = await updateOptions(SourceType.WMTS, wmtsOptions);
+          sources.push(new WMTS(opts));
+        } else {
+          // KVP request encoding
+          const wmtsCapabilities = await this.getWmtsCapabilities_(url);
+          if (!wmtsCapabilities) {
+            return;
+          }
+          let layers = [];
+          if (Array.isArray(link['wmts:layer'])) {
+            layers = link['wmts:layer'];
+          } else if (typeof link['wmts:layer'] === 'string') {
+            layers = [link['wmts:layer']];
+          }
+          for (const layer of layers) {
+            let wmtsOptions = Object.assign({}, options, {layer});
+            if (
+              typeof link['type'] === 'string' &&
+              link['type'].startsWith('image/')
+            ) {
+              wmtsOptions.format = link['type'];
+            }
+            wmtsOptions = await updateOptions(SourceType.WMTS, wmtsOptions);
+            const opts = optionsFromCapabilities(wmtsCapabilities, wmtsOptions);
+            if (opts !== null) {
+              sources.push(new WMTS(opts));
+            }
           }
         }
         break;
