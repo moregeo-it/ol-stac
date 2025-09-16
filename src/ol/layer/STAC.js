@@ -550,7 +550,7 @@ class STACLayer extends LayerGroup {
    */
   async addLayerForLink(link) {
     // Replace any occurances of {s} if possible, otherwise return
-    let url = getSpecificWebMapUrl(link);
+    const url = getSpecificWebMapUrl(link);
     if (!url) {
       return;
     }
@@ -623,11 +623,8 @@ class STACLayer extends LayerGroup {
           if (typeof link['wms:transparent'] === 'boolean') {
             params.TRANSPARENT = String(link['wms:transparent']);
           }
-          if (
-            typeof link['type'] === 'string' &&
-            link['type'].startsWith('image/')
-          ) {
-            params.FORMAT = link['type'];
+          if (typeof link.type === 'string' && link.type.startsWith('image/')) {
+            params.FORMAT = link.type;
           }
           const wmsOptions = await updateOptions(
             SourceType.TileWMS,
@@ -637,56 +634,57 @@ class STACLayer extends LayerGroup {
         }
         break;
       case 'wmts':
-        if (link['wmts:encoding'] === 'rest') {
-          // REST request encoding
-          const vars = isObject(link['variables']) ? link['variables'] : {};
-          for (const key in vars) {
-            const schema = vars[key];
-            let value;
-            if (isScalar(schema.const)) {
-              value = schema.const;
-            } else if (isScalar(schema.default)) {
-              value = schema.default;
-            } else if (Array.isArray(schema.enum) && schema.enum.length > 0) {
-              value = schema.enum[0];
-            }
-            if (typeof value !== 'undefined') {
-              url = url.replaceAll(`{${key}}`, String(value));
-            } else {
-              return; // We don't know which value to use, so we can't visualize the layer
-            }
-          }
-          const wmtsOptions = Object.assign({}, options, {
-            requestEncoding: 'REST',
+        const wmtsCapabilities = await this.getWmtsCapabilities_(
+          url,
+          link['wmts:encoding'],
+        );
+        if (!wmtsCapabilities) {
+          return;
+        }
+        let layers = [];
+        if (Array.isArray(link['wmts:layer'])) {
+          layers = link['wmts:layer'];
+        } else if (typeof link['wmts:layer'] === 'string') {
+          layers = [link['wmts:layer']];
+        }
+        for (const layer of layers) {
+          let wmtsOptions = Object.assign({}, options, {
+            layer,
+            requestEncoding: link['wmts:encoding'] === 'rest' ? 'REST' : 'KVP',
           });
-          const opts = await updateOptions(SourceType.WMTS, wmtsOptions);
+          if (typeof link.type === 'string' && link.type.startsWith('image/')) {
+            wmtsOptions.format = link.type;
+          }
+          wmtsOptions = await updateOptions(SourceType.WMTS, wmtsOptions);
+          const opts = optionsFromCapabilities(wmtsCapabilities, wmtsOptions);
+          if (opts === null) {
+            continue;
+          }
+
+          if (typeof link.uriTemplate === 'string') {
+            let uriTemplate = link.uriTemplate;
+            const vars = isObject(link.variables) ? link.variables : {};
+            for (const key in vars) {
+              const schema = vars[key];
+              let value;
+              if (isScalar(schema.const)) {
+                value = schema.const;
+              } else if (isScalar(schema.default)) {
+                value = schema.default;
+              } else if (Array.isArray(schema.enum) && schema.enum.length > 0) {
+                value = schema.enum[0];
+              }
+              if (typeof value !== 'undefined') {
+                uriTemplate = uriTemplate.replaceAll(`{${key}}`, String(value));
+              } else {
+                continue; // We don't know which value to use, so we can't visualize the layer
+              }
+            }
+            delete opts.urls;
+            opts.url = uriTemplate;
+          }
+
           sources.push(new WMTS(opts));
-        } else {
-          // KVP request encoding
-          const wmtsCapabilities = await this.getWmtsCapabilities_(url);
-          if (!wmtsCapabilities) {
-            return;
-          }
-          let layers = [];
-          if (Array.isArray(link['wmts:layer'])) {
-            layers = link['wmts:layer'];
-          } else if (typeof link['wmts:layer'] === 'string') {
-            layers = [link['wmts:layer']];
-          }
-          for (const layer of layers) {
-            let wmtsOptions = Object.assign({}, options, {layer});
-            if (
-              typeof link['type'] === 'string' &&
-              link['type'].startsWith('image/')
-            ) {
-              wmtsOptions.format = link['type'];
-            }
-            wmtsOptions = await updateOptions(SourceType.WMTS, wmtsOptions);
-            const opts = optionsFromCapabilities(wmtsCapabilities, wmtsOptions);
-            if (opts !== null) {
-              sources.push(new WMTS(opts));
-            }
-          }
         }
         break;
       case 'xyz':
@@ -1277,14 +1275,17 @@ class STACLayer extends LayerGroup {
   /**
    * Gets the WMTS capabilities from the given web-map-links URL.
    * @param {string} url Base URL for the WMTS
+   * @param {string} [encoding] The request encoding, either `kvp` (default) or `rest`.
    * @return {Promise<Object|null>} Resolves with the WMTS Capabilities object
    * @private
    */
-  async getWmtsCapabilities_(url) {
+  async getWmtsCapabilities_(url, encoding = 'kvp') {
     try {
       const urlObj = new URL(url);
-      urlObj.searchParams.set('service', 'wmts');
-      urlObj.searchParams.set('request', 'GetCapabilities');
+      if (encoding !== 'rest') {
+        urlObj.searchParams.set('service', 'wmts');
+        urlObj.searchParams.set('request', 'GetCapabilities');
+      }
       const response = await this.fetch_(urlObj.toString(), 'text');
       return new WMTSCapabilities().read(response);
     } catch (_) {
