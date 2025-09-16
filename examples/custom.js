@@ -60,6 +60,9 @@ function showUrl() {
         alert('No spatial information available in the data source');
       }
     });
+    layer.on('error', (event) => {
+      alert(`Error loading STAC data: ${event.error}`);
+    });
     map.addLayer(layer);
   } catch (error) {
     alert(error.message);
