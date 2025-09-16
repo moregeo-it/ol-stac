@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.5] - 2025-09-16
+
+- Improve default visualization of COGs with multiple bands and min/max/nodata values per band
+
 ## [1.0.4] - 2025-09-12
 
 - Avoid duplicate updating of layers
@@ -164,6 +168,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - First release
 
 [Unreleased]: <https://github.com/stac-extensions/contacts/compare/v1.0.4...HEAD>
+[1.0.5]: <https://github.com/stac-extensions/contacts/compare/v1.0.4...v1.0.5>
 [1.0.4]: <https://github.com/stac-extensions/contacts/compare/v1.0.3...v1.0.4>
 [1.0.3]: <https://github.com/stac-extensions/contacts/compare/v1.0.2...v1.0.3>
 [1.0.2]: <https://github.com/stac-extensions/contacts/compare/v1.0.1...v1.0.2>
