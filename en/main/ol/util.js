@@ -1,13 +1,13 @@
 /**
  * @module ol/util
  */
+import VectorLayer from 'ol/layer/Vector.js';
+import { fromEPSGCode, isRegistered as isProj4Registered, } from 'ol/proj/proj4.js';
 import Circle from 'ol/style/Circle.js';
 import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
 import Style from 'ol/style/Style.js';
-import VectorLayer from 'ol/layer/Vector.js';
 import { STAC } from 'stac-js';
-import { fromEPSGCode, isRegistered as isProj4Registered, } from 'ol/proj/proj4.js';
 /**
  * @typedef {import('ol/colorlike.js').ColorLike} ColorLike
  */
@@ -70,9 +70,9 @@ export const defaultCollectionStyle = getStyle('#ff9933', 2, null);
 /**
  * Get the STAC objects associated with this event, if any. Excludes API Collections.
  * @param {import('ol/MapBrowserEvent.js').default} event The asset to read the information from.
- * @param {STAC} [exclude=null] Excludes the given STAC entity from the list.
- * @param {Collection<Feature>} [selectedFeatures=null] A collection to add the selected features to.
- * @param {number} [hitTolerance=0] The hit tolerance in pixels.
+ * @param {STAC} [exclude] Excludes the given STAC entity from the list.
+ * @param {Collection<Feature>} [selectedFeatures] A collection to add the selected features to.
+ * @param {number} [hitTolerance] The hit tolerance in pixels.
  * @return {Promise<Array<STAC>>} A list of STAC objects
  * @api
  */

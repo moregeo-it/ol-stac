@@ -12,9 +12,9 @@ export function getStyle(strokeColor: ColorLike, strokeWidth: number, fillColor?
 /**
  * Get the STAC objects associated with this event, if any. Excludes API Collections.
  * @param {import('ol/MapBrowserEvent.js').default} event The asset to read the information from.
- * @param {STAC} [exclude=null] Excludes the given STAC entity from the list.
- * @param {Collection<Feature>} [selectedFeatures=null] A collection to add the selected features to.
- * @param {number} [hitTolerance=0] The hit tolerance in pixels.
+ * @param {STAC} [exclude] Excludes the given STAC entity from the list.
+ * @param {Collection<Feature>} [selectedFeatures] A collection to add the selected features to.
+ * @param {number} [hitTolerance] The hit tolerance in pixels.
  * @return {Promise<Array<STAC>>} A list of STAC objects
  * @api
  */

@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "ol-pmtiles": "^2.0.0",
+    "proj4": "^2.15.0",
     "stac-js": "~0.1.8"
   },
   "peerDependencies": {

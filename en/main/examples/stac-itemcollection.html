@@ -147,13 +147,13 @@
       <div class="row-fluid">
         <h5 class="source-heading">main.js</h5>
         <pre><code id="example-js-source" class="language-js">import Map from &#x27;ol/Map.js&#x27;;
-import OSM from &#x27;ol/source/OSM.js&#x27;;
-import STAC from &#x27;ol-stac&#x27;;
-import TileLayer from &#x27;ol/layer/WebGLTile.js&#x27;;
 import View from &#x27;ol/View.js&#x27;;
-import proj4 from &#x27;proj4&#x27;;
-import {getStacObjectsForEvent} from &#x27;ol-stac/util.js&#x27;;
+import TileLayer from &#x27;ol/layer/WebGLTile.js&#x27;;
 import {register} from &#x27;ol/proj/proj4.js&#x27;;
+import OSM from &#x27;ol/source/OSM.js&#x27;;
+import proj4 from &#x27;proj4&#x27;;
+import STAC from &#x27;ol-stac&#x27;;
+import {getStacObjectsForEvent} from &#x27;ol-stac/util.js&#x27;;
 
 register(proj4); // required to support source reprojection
 
@@ -218,7 +218,7 @@ layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
   &quot;name&quot;: &quot;stac-itemcollection&quot;,
   &quot;dependencies&quot;: {
     &quot;ol-stac&quot;: &quot;1.0.5&quot;,
-    &quot;proj4&quot;: &quot;2.9.0&quot;
+    &quot;proj4&quot;: &quot;^2.15.0&quot;
   },
   &quot;devDependencies&quot;: {
     &quot;vite&quot;: &quot;^3.2.3&quot;

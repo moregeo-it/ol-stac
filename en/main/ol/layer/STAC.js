@@ -1,33 +1,33 @@
 /**
  * @module ol/layer/STAC
  */
-import * as pmtiles from 'pmtiles';
-import ErrorEvent from '../events/ErrorEvent.js';
+import { isEmpty } from 'ol/extent.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
-import GeoTIFF from 'ol/source/GeoTIFF.js';
-import ImageLayer from 'ol/layer/Image.js';
+import WMTSCapabilities from 'ol/format/WMTSCapabilities.js';
 import LayerGroup from 'ol/layer/Group.js';
-import SourceType from '../source/type.js';
-import StaticImage from 'ol/source/ImageStatic.js';
-import TileJSON from 'ol/source/TileJSON.js';
+import ImageLayer from 'ol/layer/Image.js';
 import TileLayer from 'ol/layer/Tile.js';
 import VectorLayer from 'ol/layer/Vector.js';
-import VectorSource from 'ol/source/Vector.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
-import VectorTileSource from 'ol/source/VectorTile.js';
-import WMS from 'ol/source/TileWMS.js';
-import WMTS, { optionsFromCapabilities } from 'ol/source/WMTS.js';
-import WMTSCapabilities from 'ol/format/WMTSCapabilities.js';
 import WebGLTileLayer from 'ol/layer/WebGLTile.js';
+import { transformExtent } from 'ol/proj.js';
+import GeoTIFF from 'ol/source/GeoTIFF.js';
+import StaticImage from 'ol/source/ImageStatic.js';
+import TileJSON from 'ol/source/TileJSON.js';
+import WMS from 'ol/source/TileWMS.js';
+import VectorSource from 'ol/source/Vector.js';
+import VectorTileSource from 'ol/source/VectorTile.js';
+import WMTS, { optionsFromCapabilities } from 'ol/source/WMTS.js';
 import XYZ from 'ol/source/XYZ.js';
-import create, { APICollection, Asset, Item, ItemCollection, STAC, } from 'stac-js';
-import { LABEL_EXTENSION, defaultBoundsStyle, defaultCollectionStyle, getBoundsStyle, getGeoTiffSourceInfoFromAsset, getProjection, getSpecificWebMapUrl, } from '../util.js';
 import { PMTilesRasterSource, PMTilesVectorSource } from 'ol-pmtiles';
+import * as pmtiles from 'pmtiles';
+import create, { APICollection, Asset, Item, ItemCollection, STAC, } from 'stac-js';
 import { fixGeoJson, toGeoJSON, unionBoundingBox } from 'stac-js/src/geo.js';
 import { geojsonMediaType } from 'stac-js/src/mediatypes.js';
-import { isEmpty } from 'ol/extent.js';
 import { isObject } from 'stac-js/src/utils.js';
-import { transformExtent } from 'ol/proj.js';
+import ErrorEvent from '../events/ErrorEvent.js';
+import SourceType from '../source/type.js';
+import { LABEL_EXTENSION, defaultBoundsStyle, defaultCollectionStyle, getBoundsStyle, getGeoTiffSourceInfoFromAsset, getProjection, getSpecificWebMapUrl, } from '../util.js';
 /**
  * @typedef {import("ol/extent.js").Extent} Extent
  */
@@ -673,7 +673,7 @@ class STACLayer extends LayerGroup {
     /**
      * @param {Layer|LayerGroup} [layer] A Layer to add to the LayerGroup
      * @param {import("stac-js").STACObject} [data] The STAC object, can be any class exposed by stac-js
-     * @param {number} [zIndex=0] The z-index for the layer
+     * @param {number} [zIndex] The z-index for the layer
      * @private
      */
     addLayer_(layer, data = null, zIndex = 0) {
@@ -803,7 +803,7 @@ class STACLayer extends LayerGroup {
     /**
      * Update the layers shown manually based on the current configuration.
      * Usually this doesn't need to be called manually.
-     * @param {boolean} [emit=true] Whether to emit the `layersready` event once the layers are updated.
+     * @param {boolean} [emit] Whether to emit the `layersready` event once the layers are updated.
      * @return {Promise} Resolves once the layers are updated.
      * @api
      */
@@ -944,7 +944,7 @@ class STACLayer extends LayerGroup {
     /**
      * Update the assets to be rendered.
      * @param {Array<string|Asset>|null} assets The assets to show.
-     * @param {boolean} [updateLayers=true] Whether to update the layers right away.
+     * @param {boolean} [updateLayers] Whether to update the layers right away.
      * @return {Promise} Resolves when all assets are rendered.
      * @api
      */
@@ -977,8 +977,8 @@ class STACLayer extends LayerGroup {
      * If an object is passed, it must be a GeoJSON FeatureCollection.
      *
      * @param {ItemCollection|Object|Array<STAC|Object>|null} childs The children to show.
-     * @param {Options|null} [options=null] Optionally, new STACLayer options for the children. Only applies if `children` are given.
-     * @param {boolean} [updateLayers=true] Whether to update the layers right away.
+     * @param {Options|null} [options] Optionally, new STACLayer options for the children. Only applies if `children` are given.
+     * @param {boolean} [updateLayers] Whether to update the layers right away.
      * @return {Promise} Resolves when all items are rendered.
      * @api
      */
@@ -1120,7 +1120,7 @@ class STACLayer extends LayerGroup {
             const response = await this.fetch_(urlObj.toString(), 'text');
             return new WMTSCapabilities().read(response);
         }
-        catch (error) {
+        catch (_) {
             return null;
         }
     }

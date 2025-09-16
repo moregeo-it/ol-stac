@@ -453,7 +453,7 @@ declare class STACLayer extends LayerGroup {
     /**
      * @param {Layer|LayerGroup} [layer] A Layer to add to the LayerGroup
      * @param {import("stac-js").STACObject} [data] The STAC object, can be any class exposed by stac-js
-     * @param {number} [zIndex=0] The z-index for the layer
+     * @param {number} [zIndex] The z-index for the layer
      * @private
      */
     private addLayer_;
@@ -488,7 +488,7 @@ declare class STACLayer extends LayerGroup {
     /**
      * Update the layers shown manually based on the current configuration.
      * Usually this doesn't need to be called manually.
-     * @param {boolean} [emit=true] Whether to emit the `layersready` event once the layers are updated.
+     * @param {boolean} [emit] Whether to emit the `layersready` event once the layers are updated.
      * @return {Promise} Resolves once the layers are updated.
      * @api
      */
@@ -508,7 +508,7 @@ declare class STACLayer extends LayerGroup {
     /**
      * Update the assets to be rendered.
      * @param {Array<string|Asset>|null} assets The assets to show.
-     * @param {boolean} [updateLayers=true] Whether to update the layers right away.
+     * @param {boolean} [updateLayers] Whether to update the layers right away.
      * @return {Promise} Resolves when all assets are rendered.
      * @api
      */
@@ -519,8 +519,8 @@ declare class STACLayer extends LayerGroup {
      * If an object is passed, it must be a GeoJSON FeatureCollection.
      *
      * @param {ItemCollection|Object|Array<STAC|Object>|null} childs The children to show.
-     * @param {Options|null} [options=null] Optionally, new STACLayer options for the children. Only applies if `children` are given.
-     * @param {boolean} [updateLayers=true] Whether to update the layers right away.
+     * @param {Options|null} [options] Optionally, new STACLayer options for the children. Only applies if `children` are given.
+     * @param {boolean} [updateLayers] Whether to update the layers right away.
      * @return {Promise} Resolves when all items are rendered.
      * @api
      */
