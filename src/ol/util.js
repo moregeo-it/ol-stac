@@ -280,3 +280,16 @@ export function getSpecificWebMapUrl(link) {
   }
   return url;
 }
+
+/**
+ * Checks whether the given value is a scalar (string, number, boolean).
+ * @param {*} value The value to check
+ * @return {boolean} `true` is the value is a scalar, `false` otherwise
+ */
+export function isScalar(value) {
+  return (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  );
+}
