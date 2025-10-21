@@ -33,6 +33,7 @@
     "apidoc": "shx rm -rf build/apidoc && jsdoc --readme config/jsdoc/api/index.md --configure config/jsdoc/api/conf.json --package package.json --destination build/apidoc"
   },
   "dependencies": {
+    "flatgeobuf": "^4.3.1",
     "ol-pmtiles": "^2.0.0",
     "proj4": "^2.15.0",
     "stac-js": "~0.1.8"

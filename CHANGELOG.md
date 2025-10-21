@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Implement support for FlatGeobuf visualization
+
 ## [1.0.5] - 2025-09-16
 
 - Improve default visualization of COGs with multiple bands and min/max/nodata values per band
