@@ -1,6 +1,7 @@
 /**
  * @module ol/layer/STAC
  */
+import {createLoader} from 'flatgeobuf/lib/mjs/ol.js';
 import {isEmpty} from 'ol/extent.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import WMTSCapabilities from 'ol/format/WMTSCapabilities.js';
@@ -10,6 +11,7 @@ import TileLayer from 'ol/layer/Tile.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
 import WebGLTileLayer from 'ol/layer/WebGLTile.js';
+import {bbox as bboxStrategy} from 'ol/loadingstrategy.js';
 import {transformExtent} from 'ol/proj.js';
 import GeoTIFF from 'ol/source/GeoTIFF.js';
 import StaticImage from 'ol/source/ImageStatic.js';
@@ -29,7 +31,7 @@ import create, {
   STAC,
 } from 'stac-js';
 import {fixGeoJson, toGeoJSON, unionBoundingBox} from 'stac-js/src/geo.js';
-import {geojsonMediaType} from 'stac-js/src/mediatypes.js';
+import {flatGeobufMediaType, geojsonMediaType} from 'stac-js/src/mediatypes.js';
 import {isObject} from 'stac-js/src/utils.js';
 import ErrorEvent from '../events/ErrorEvent.js';
 import SourceType from '../source/type.js';
@@ -830,6 +832,32 @@ class STACLayer extends LayerGroup {
   }
 
   /**
+   * @param {Asset} [asset] A STAC Asset
+   * @return {Promise<Layer|undefined>} Resolves with a Layer or undefined when complete.
+   * @private
+   */
+  async addFlatGeobuf_(asset) {
+    try {
+      const source = new VectorSource();
+      const loader = createLoader(
+        null,
+        source,
+        asset.getAbsoluteUrl(),
+        bboxStrategy,
+      );
+      source.setLoader(loader);
+      const layer = new VectorLayer({
+        source,
+        style: defaultCollectionStyle,
+      });
+      this.addLayer_(layer, asset);
+      return layer;
+    } catch (error) {
+      this.handleError_(error);
+    }
+  }
+
+  /**
    * Creates a GeoJSON vector layer from the given GeoJSON object.
    *
    * @param {GeoJSON} [geojson] The GeoJSON object.
@@ -954,8 +982,11 @@ class STACLayer extends LayerGroup {
         if (!ref) {
           return;
         }
-        if (ref.type === geojsonMediaType) {
+        if (ref.isType(geojsonMediaType)) {
           return await this.addGeoJson_(ref);
+        }
+        if (ref.isType(flatGeobufMediaType)) {
+          return await this.addFlatGeobuf_(ref);
         }
         if (ref.isGeoTIFF()) {
           return await this.addGeoTiff_(ref);
@@ -1000,6 +1031,15 @@ class STACLayer extends LayerGroup {
           // Try to visualize the default GeoTIFF first
           if (geotiff && this.displayOverview_) {
             layer = await this.addGeoTiff_(geotiff);
+          }
+          // Try to visualize the first FlatGeoBuf
+          if (!layer) {
+            const fgb = data
+              .getAssets()
+              .find((asset) => asset.isType(flatGeobufMediaType));
+            if (fgb) {
+              layer = await this.addFlatGeobuf_(fgb);
+            }
           }
           // If no GeoTIFF is available or it can't be shown (e.g. error),
           // try to visualize the default thumbnail
