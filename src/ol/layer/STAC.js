@@ -11,7 +11,7 @@ import VectorLayer from 'ol/layer/Vector.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
 import WebGLTileLayer from 'ol/layer/WebGLTile.js';
 import {transformExtent} from 'ol/proj.js';
-import GeoTIFF from 'ol/source/GeoTIFF.js';
+// import GeoTIFF from 'ol/source/GeoTIFF.js';
 import StaticImage from 'ol/source/ImageStatic.js';
 import TileJSON from 'ol/source/TileJSON.js';
 import WMS from 'ol/source/TileWMS.js';
@@ -32,6 +32,8 @@ import {fixGeoJson, toGeoJSON, unionBoundingBox} from 'stac-js/src/geo.js';
 import {geojsonMediaType} from 'stac-js/src/mediatypes.js';
 import {isObject} from 'stac-js/src/utils.js';
 import ErrorEvent from '../events/ErrorEvent.js';
+// todo: temporary fix for https://github.com/openlayers/openlayers/issues/17153
+import GeoTIFF from '../source/GeoTIFF.js';
 import SourceType from '../source/type.js';
 import {
   LABEL_EXTENSION,
@@ -698,11 +700,13 @@ class STACLayer extends LayerGroup {
     const sourceInfo = getGeoTiffSourceInfoFromAsset(asset, this.bands_);
 
     /**
-     * @type {import("ol/source/GeoTIFF.js").Options}
+     * todo: temporary fix for https://github.com/openlayers/openlayers/issues/17153
+     * @type {import("../source/GeoTIFF.js").Options}
      */
     let options = {
       sources: [sourceInfo],
       convertToRGB: 'auto',
+      loadMissingProjection: true,
     };
 
     const projection = await getProjection(asset);
