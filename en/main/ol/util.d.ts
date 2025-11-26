@@ -27,12 +27,19 @@ export function getStacObjectsForEvent(event: import('ol/MapBrowserEvent.js').de
  */
 export function getGeoTiffSourceInfoFromAsset(asset: any, selectedBands: Array<number>): import('ol/source/GeoTIFF.js').SourceInfo;
 /**
+ * Load the projection for the given projection code from the internet.
+ *
+ * @param {string} code Projection code, e.g. 'EPSG:1234'
+ * @return {Promise<Projection|null>} The loaded projection
+ */
+export function loadProjection(code: string): Promise<Projection | null>;
+/**
  * Gets the projection from the asset or link.
  * @param {import('stac-js').STACReference} reference The asset or link to read the information from.
- * @param {import('ol/proj.js').ProjectionLike} defaultProjection A default projection to use.
- * @return {Promise<import('ol/proj.js').ProjectionLike>} The projection, if any.
+ * @param {ProjectionLike} defaultProjection A default projection to use.
+ * @return {Promise<ProjectionLike>} The projection, if any.
  */
-export function getProjection(reference: any, defaultProjection?: import('ol/proj.js').ProjectionLike): Promise<import('ol/proj.js').ProjectionLike>;
+export function getProjection(reference: any, defaultProjection?: ProjectionLike): Promise<ProjectionLike>;
 /**
  * Returns the style for the footprint.
  * Removes the fill if anything is meant to be shown in the bounds.
@@ -67,6 +74,12 @@ export function isScalar(value: any): boolean;
  * @typedef {import('ol/Feature.js').default} Feature
  */
 /**
+ * @typedef {import('ol/proj.js').Projection} Projection
+ */
+/**
+ * @typedef {import('ol/proj.js').ProjectionLike} ProjectionLike
+ */
+/**
  * The pattern for the supported versions of the label extension.
  * @type {string}
  */
@@ -86,5 +99,7 @@ export const defaultCollectionStyle: Style;
 export type ColorLike = import('ol/colorlike.js').ColorLike;
 export type Collection<T> = import("ol/Collection.js").default<any>;
 export type Feature = import('ol/Feature.js').default;
+export type Projection = import('ol/proj.js').Projection;
+export type ProjectionLike = import('ol/proj.js').ProjectionLike;
 import Style from 'ol/style/Style.js';
 //# sourceMappingURL=util.d.ts.map

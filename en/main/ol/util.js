@@ -2,7 +2,7 @@
  * @module ol/util
  */
 import VectorLayer from 'ol/layer/Vector.js';
-import { fromEPSGCode, isRegistered as isProj4Registered, } from 'ol/proj/proj4.js';
+import { isRegistered as isProj4Registered } from 'ol/proj/proj4.js';
 import Circle from 'ol/style/Circle.js';
 import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
@@ -17,6 +17,12 @@ import { STAC } from 'stac-js';
  */
 /**
  * @typedef {import('ol/Feature.js').default} Feature
+ */
+/**
+ * @typedef {import('ol/proj.js').Projection} Projection
+ */
+/**
+ * @typedef {import('ol/proj.js').ProjectionLike} ProjectionLike
  */
 /**
  * The pattern for the supported versions of the label extension.
@@ -183,29 +189,42 @@ export function getGeoTiffSourceInfoFromAsset(asset, selectedBands) {
     return sourceInfo;
 }
 /**
+ * Load the projection for the given projection code from the internet.
+ *
+ * @param {string} code Projection code, e.g. 'EPSG:1234'
+ * @return {Promise<Projection|null>} The loaded projection
+ */
+export async function loadProjection(code) {
+    try {
+        // @ts-ignore - Support both old and new OpenLayers versions
+        const { fromProjectionCode, fromEPSGCode } = await import('ol/proj/proj4.js');
+        if (typeof fromProjectionCode === 'function') {
+            // Supported since ol v10.8.0
+            return await fromProjectionCode(code);
+        }
+        // Supported until ol v11.0.0
+        return await fromEPSGCode(code);
+    }
+    catch (_) {
+        return null;
+    }
+}
+/**
  * Gets the projection from the asset or link.
  * @param {import('stac-js').STACReference} reference The asset or link to read the information from.
- * @param {import('ol/proj.js').ProjectionLike} defaultProjection A default projection to use.
- * @return {Promise<import('ol/proj.js').ProjectionLike>} The projection, if any.
+ * @param {ProjectionLike} defaultProjection A default projection to use.
+ * @return {Promise<ProjectionLike>} The projection, if any.
  */
 export async function getProjection(reference, defaultProjection = undefined) {
-    let projection = defaultProjection;
+    let projection;
     if (isProj4Registered()) {
         // TODO: It would be great to handle WKT2 and PROJJSON, but is not supported yet by proj4js.
         const code = reference.getMetadata('proj:code');
         if (code) {
-            try {
-                if (code.startsWith('EPSG:')) {
-                    const id = parseInt(code.replace('EPSG:', ''), 10);
-                    projection = await fromEPSGCode(id);
-                }
-            }
-            catch (_) {
-                // pass
-            }
+            projection = await loadProjection(code);
         }
     }
-    return projection;
+    return projection || defaultProjection;
 }
 /**
  * Returns the style for the footprint.
