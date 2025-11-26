@@ -12,7 +12,6 @@ import {error as logError} from 'ol/console.js';
 import {applyTransform, getCenter, getIntersection} from 'ol/extent.js';
 import {clamp} from 'ol/math.js';
 import {fromCode as unitsFromCode} from 'ol/proj/Units.js';
-import {fromEPSGCode} from 'ol/proj/proj4.js';
 import {
   Projection,
   createTransformFromCoordinateTransform,
@@ -28,6 +27,7 @@ import {
   makeInverse,
   multiply as multiplyTransform,
 } from 'ol/transform.js';
+import {loadProjection} from '../util.js';
 
 /**
  * Determine if an image type is a mask.
@@ -196,11 +196,7 @@ async function getProjectionFromKeys(
     const code = 'EPSG:' + value;
     let projection = getCachedProjection(code);
     if (!projection && loadMissingProjection) {
-      try {
-        projection = await fromEPSGCode(value);
-      } catch {
-        // pass
-      }
+      projection = await loadProjection(code);
     }
     if (!projection) {
       const units = unitsFromCode(geoKeys[unitKey]);
