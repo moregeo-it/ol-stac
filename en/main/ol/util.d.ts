@@ -51,6 +51,12 @@ export function getBoundsStyle(originalStyle?: Style | undefined, layerGroup?: i
  */
 export function getSpecificWebMapUrl(link: any): string | null;
 /**
+ * Checks whether the given value is a scalar (string, number, boolean).
+ * @param {*} value The value to check
+ * @return {boolean} `true` is the value is a scalar, `false` otherwise
+ */
+export function isScalar(value: any): boolean;
+/**
  * @typedef {import('ol/colorlike.js').ColorLike} ColorLike
  */
 /**

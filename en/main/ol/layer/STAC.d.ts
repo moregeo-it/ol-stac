@@ -562,6 +562,7 @@ declare class STACLayer extends LayerGroup {
     /**
      * Gets the WMTS capabilities from the given web-map-links URL.
      * @param {string} url Base URL for the WMTS
+     * @param {string} [encoding] The request encoding, either `kvp` (default) or `rest`.
      * @return {Promise<Object|null>} Resolves with the WMTS Capabilities object
      * @private
      */
