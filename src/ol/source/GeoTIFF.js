@@ -1067,7 +1067,7 @@ class GeoTIFFSource extends DataTile {
  *     });
  *
  * @function
- * @return {Promise<import("../View.js").ViewOptions>} A promise for view-related properties.
+ * @return {Promise<import("ol/View.js").ViewOptions>} A promise for view-related properties.
  * @api
  *
  */
