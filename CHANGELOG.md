@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-11-28
+
 - Implement WMTS REST request encoding
+- Fix issues with loading missing projections (adds the `GeoTIFF.js` source from ol temporarily)
+- Use `fromProjectionCode` for loading projections (and fall back to `fromEPSGCode`)
 
 ## [1.0.5] - 2025-09-16
 
@@ -140,11 +144,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - OpenLayers is now a peer dependency
 - Add support for PMTiles (via Web Map Links extension)
 - New general purpose option `getSourceOptions(type, options, ref)` to customize source options.
-   It also applies to all web-map-link source options now.
-   It replaces:
-   - `getGeoTIFFSourceOptions(options, ref)`
-   - `getImageStaticSourceOptions(options, ref)`
-   - `getXYZSourceOptions(options, ref)`
+  It also applies to all web-map-link source options now.
+  It replaces:
+  - `getGeoTIFFSourceOptions(options, ref)`
+  - `getImageStaticSourceOptions(options, ref)`
+  - `getXYZSourceOptions(options, ref)`
+
 - Added `SourceType` enum for `getSourceOptions`
 
 ## [1.0.0-beta.5] - 2023-08-23
@@ -169,7 +174,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release
 
-[Unreleased]: <https://github.com/stac-extensions/contacts/compare/v1.0.4...HEAD>
+[Unreleased]: <https://github.com/stac-extensions/contacts/compare/v1.1.0...HEAD>
+[1.1.0]: <https://github.com/stac-extensions/contacts/compare/v1.0.5...v1.1.0>
 [1.0.5]: <https://github.com/stac-extensions/contacts/compare/v1.0.4...v1.0.5>
 [1.0.4]: <https://github.com/stac-extensions/contacts/compare/v1.0.3...v1.0.4>
 [1.0.3]: <https://github.com/stac-extensions/contacts/compare/v1.0.2...v1.0.3>
