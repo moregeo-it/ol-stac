@@ -21,7 +21,7 @@ import WMTS, { optionsFromCapabilities } from 'ol/source/WMTS.js';
 import XYZ from 'ol/source/XYZ.js';
 import { PMTilesRasterSource, PMTilesVectorSource } from 'ol-pmtiles';
 import * as pmtiles from 'pmtiles';
-import create, { APICollection, Asset, Item, ItemCollection, STAC, } from 'stac-js';
+import create, { APICollection, Asset, CollectionCollection, Item, ItemCollection, STAC, } from 'stac-js';
 import { fixGeoJson, toGeoJSON, unionBoundingBox } from 'stac-js/src/geo.js';
 import { geojsonMediaType } from 'stac-js/src/mediatypes.js';
 import { isObject } from 'stac-js/src/utils.js';
@@ -56,7 +56,7 @@ import { LABEL_EXTENSION, defaultBoundsStyle, defaultCollectionStyle, getBoundsS
  * `setAbsoluteUrl` on the stac-js object before passing it in.
  * @property {STAC|Asset|Object} [data] The STAC metadata. Any of `url` and `data` must be provided.
  * `data` take precedence over `url`.
- * @property {ItemCollection|Object|Array<STAC|Object>|null} [children=null] For STAC Catalogs and Collections, any child entites
+ * @property {APICollection|Object|Array<STAC|Object>|null} [children=null] For STAC Catalogs and Collections, any child entites
  * to show. Can be STAC ItemCollections (as ItemCollection or GeoJSON FeatureCollection) or a list of STAC entities.
  * @property {Options} [childrenOptions={}] The the given children, apply the given options.
  * @property {Array<string|Asset>|null} [assets=null] The selector for the assets to be rendered,
@@ -324,7 +324,7 @@ class STACLayer extends LayerGroup {
     /**
      * @param {STAC|Asset|Object} data The STAC data.
      * @param {string} url The url to the data.
-     * @param {ItemCollection|Object|Array<STAC>|string|null} children The child STAC entities to show.
+     * @param {APICollection|Object|Array<STAC>|string|null} children The child STAC entities to show.
      * @param {Array<Asset|string>|null} assets The assets to show.
      * @param {Array<number>} bands The (one-based) bands to show.
      * @private
@@ -1007,7 +1007,7 @@ class STACLayer extends LayerGroup {
      *
      * If an object is passed, it must be a GeoJSON FeatureCollection.
      *
-     * @param {ItemCollection|Object|Array<STAC|Object>|null} childs The children to show.
+     * @param {APICollection|Object|Array<STAC|Object>|null} childs The children to show.
      * @param {Options|null} [options] Optionally, new STACLayer options for the children. Only applies if `children` are given.
      * @param {boolean} [updateLayers] Whether to update the layers right away.
      * @return {Promise} Resolves when all items are rendered.
@@ -1015,6 +1015,9 @@ class STACLayer extends LayerGroup {
      */
     async setChildren(childs, options = null, updateLayers = true) {
         if (childs instanceof ItemCollection) {
+            this.children_ = childs.getAll();
+        }
+        else if (childs instanceof CollectionCollection) {
             this.children_ = childs.getAll();
         }
         else if (isObject(childs) && childs.type === 'FeatureCollection') {

@@ -22,7 +22,7 @@ export type Options = {
      * For STAC Catalogs and Collections, any child entites
      * to show. Can be STAC ItemCollections (as ItemCollection or GeoJSON FeatureCollection) or a list of STAC entities.
      */
-    children?: ItemCollection | any | Array<STAC | any> | null;
+    children?: APICollection | any | Array<STAC | any> | null;
     /**
      * The the given children, apply the given options.
      */
@@ -184,7 +184,7 @@ export type Options = {
  * `setAbsoluteUrl` on the stac-js object before passing it in.
  * @property {STAC|Asset|Object} [data] The STAC metadata. Any of `url` and `data` must be provided.
  * `data` take precedence over `url`.
- * @property {ItemCollection|Object|Array<STAC|Object>|null} [children=null] For STAC Catalogs and Collections, any child entites
+ * @property {APICollection|Object|Array<STAC|Object>|null} [children=null] For STAC Catalogs and Collections, any child entites
  * to show. Can be STAC ItemCollections (as ItemCollection or GeoJSON FeatureCollection) or a list of STAC entities.
  * @property {Options} [childrenOptions={}] The the given children, apply the given options.
  * @property {Array<string|Asset>|null} [assets=null] The selector for the assets to be rendered,
@@ -387,7 +387,7 @@ declare class STACLayer extends LayerGroup {
     /**
      * @param {STAC|Asset|Object} data The STAC data.
      * @param {string} url The url to the data.
-     * @param {ItemCollection|Object|Array<STAC>|string|null} children The child STAC entities to show.
+     * @param {APICollection|Object|Array<STAC>|string|null} children The child STAC entities to show.
      * @param {Array<Asset|string>|null} assets The assets to show.
      * @param {Array<number>} bands The (one-based) bands to show.
      * @private
@@ -518,13 +518,13 @@ declare class STACLayer extends LayerGroup {
      *
      * If an object is passed, it must be a GeoJSON FeatureCollection.
      *
-     * @param {ItemCollection|Object|Array<STAC|Object>|null} childs The children to show.
+     * @param {APICollection|Object|Array<STAC|Object>|null} childs The children to show.
      * @param {Options|null} [options] Optionally, new STACLayer options for the children. Only applies if `children` are given.
      * @param {boolean} [updateLayers] Whether to update the layers right away.
      * @return {Promise} Resolves when all items are rendered.
      * @api
      */
-    setChildren(childs: ItemCollection | any | Array<STAC | any> | null, options?: Options | null | undefined, updateLayers?: boolean | undefined): Promise<any>;
+    setChildren(childs: APICollection | any | Array<STAC | any> | null, options?: Options | null | undefined, updateLayers?: boolean | undefined): Promise<any>;
     /**
      * Get the STAC object.
      *
