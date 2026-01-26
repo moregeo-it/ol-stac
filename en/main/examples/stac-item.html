@@ -207,8 +207,10 @@ layer.on(&#x27;layersready&#x27;, () &#x3D;&gt; {
   for (const sublayer of layer.getLayersArray()) {
     const stac &#x3D; sublayer.get(&#x27;stac&#x27;);
     let title;
-    if (stac.isAsset() || stac.isLink()) {
+    if (stac.isAsset()) {
       title &#x3D; stac.getMetadata(&#x27;title&#x27;) || stac.getKey();
+    } else if (stac.isLink()) {
+      title &#x3D; stac.getMetadata(&#x27;title&#x27;) || stac.rel || &#x27;Unnamed&#x27;;
     } else {
       title &#x3D; &#x27;Footprint&#x27;;
     }
