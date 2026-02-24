@@ -9,6 +9,7 @@ import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
 import Style from 'ol/style/Style.js';
 import {STAC} from 'stac-js';
+import {URI, isObject} from 'stac-js/src/utils.js';
 
 /**
  * @typedef {import('ol/colorlike.js').ColorLike} ColorLike
@@ -25,6 +26,9 @@ import {STAC} from 'stac-js';
  */
 /**
  * @typedef {import('ol/proj.js').ProjectionLike} ProjectionLike
+ */
+/**
+ * @typedef {import('stac-js').Asset} Asset
  */
 
 /**
@@ -134,7 +138,7 @@ export async function getStacObjectsForEvent(
 /**
  * Get the source info for the GeoTiff from the asset.
  * @param {import('stac-js').Asset} asset The asset to read the information from.
- * @param {Array<number>} selectedBands The (one-based) bands to show.
+ * @param {Array<number|string>} selectedBands The bands to show. One-based index of the band, or the name of the band.
  * @return {import('ol/source/GeoTIFF.js').SourceInfo} The source info for the GeoTiff asset
  */
 export function getGeoTiffSourceInfoFromAsset(asset, selectedBands) {
@@ -205,7 +209,20 @@ export function getGeoTiffSourceInfoFromAsset(asset, selectedBands) {
   }
 
   if (selectedBands.length > 0) {
-    sourceInfo.bands = selectedBands;
+    sourceInfo.bands = selectedBands.map((band) => {
+      if (typeof band === 'number') {
+        return band;
+      }
+      const b = bands.findIndex((b) => b.name === band);
+      if (b >= 0) {
+        return b + 1;
+      }
+      // eslint-disable-next-line no-console
+      console.error(
+        `Band with name ${band} not found in asset ${asset.getKey()}`,
+      );
+      return null;
+    });
   } else {
     const visualBands = asset.findVisualBands();
     if (visualBands) {
@@ -274,6 +291,65 @@ export function getBoundsStyle(originalStyle, layerGroup) {
     style.setFill(transparentFill);
   }
   return style;
+}
+
+/**
+ * Parse the GeoZarr source options from an asset.
+ *
+ * @param {Asset} asset The asset to read the information from.
+ * @param {Array<number|string>} selectedBands The bands to show. One-based index of the band, or the name of the band.
+ * @return {Object} The GeoZarr source options
+ * @api
+ */
+export function getGeoZarrSourceOptionsFromAsset(asset, selectedBands) {
+  const uri = URI(asset.getAbsoluteUrl());
+  // Get all segments of the path
+  const segments = uri.segment();
+  // Find the index of the segment that ends with '.zarr' (i.e. the filename)
+  const zarrIndex = segments.findIndex((s) => s.endsWith('.zarr'));
+  let group;
+  if (zarrIndex > -1) {
+    // Group is the segments after the file name
+    group = segments.slice(zarrIndex + 1).join('/');
+    // Only keep the segments up to and including the file name for the URL as path
+    const path = segments.slice(0, zarrIndex + 1);
+    uri.segment(path);
+  }
+  const options = {
+    url: uri.toString(),
+    group,
+  };
+
+  if (selectedBands.length > 0) {
+    options.bands = selectedBands
+      .map((band) => {
+        if (typeof band === 'string') {
+          return band;
+        }
+        const bands = asset.getBands();
+        const bandObj = bands[band - 1];
+        if (isObject(bandObj) && typeof bandObj.name === 'string') {
+          return bandObj.name;
+        }
+        // eslint-disable-next-line no-console
+        console.error(
+          `Band with index ${band} not found in asset ${asset.getKey()}`,
+        );
+        return null;
+      })
+      .filter(Boolean);
+  } else {
+    const bands = asset.findVisualBands();
+    if (bands) {
+      options.bands = [
+        bands.red.name,
+        bands.green.name,
+        bands.blue.name,
+      ].filter(Boolean);
+    }
+  }
+
+  return options;
 }
 
 /**

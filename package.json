@@ -19,6 +19,7 @@
   },
   "scripts": {
     "lint": "eslint tasks test src/ol examples config",
+    "fix": "eslint tasks test src/ol examples config --fix",
     "pretest": "npm run lint && npm run typecheck",
     "test-browser": "npm run karma -- --single-run --log-level error",
     "test": "npm run test-browser -- --force",
@@ -38,7 +39,7 @@
     "stac-js": "~0.2.1"
   },
   "peerDependencies": {
-    "ol": ">=10.8.0"
+    "ol": "^10.8.0"
   },
   "devDependencies": {
     "@metalsmith/in-place": "^5.0.0",
