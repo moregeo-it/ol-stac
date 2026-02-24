@@ -124,6 +124,10 @@ export type GeoTIFFSourceOptions = {
 };
 export type Options = {
     /**
+     * Attributions.
+     */
+    attributions?: import("ol/source/Source.js").AttributionLike | undefined;
+    /**
      * List of information about GeoTIFF sources.
      * Multiple sources can be combined when their resolution sets are equal after applying a scale.
      * The list of sources defines a mapping between input bands as they are read from each GeoTIFF and
@@ -192,6 +196,7 @@ export type Options = {
  */
 /**
  * @typedef {Object} Options
+ * @property {import("ol/source/Source.js").AttributionLike} [attributions] Attributions.
  * @property {Array<SourceInfo>} sources List of information about GeoTIFF sources.
  * Multiple sources can be combined when their resolution sets are equal after applying a scale.
  * The list of sources defines a mapping between input bands as they are read from each GeoTIFF and
@@ -268,7 +273,7 @@ declare class GeoTIFFSource extends DataTile<import("ol/DataTile.js").default> {
      */
     private nodataValues_;
     /**
-     * @type {Array<Array<GDALMetadata>>}
+     * @type {Array<Array<Promise<GDALMetadata>>>}
      * @private
      */
     private metadata_;
@@ -349,7 +354,7 @@ declare class GeoTIFFSource extends DataTile<import("ol/DataTile.js").default> {
     /**
      * @param {import("ol/size.js").Size} sourceTileSize The source tile size.
      * @param {Array} sourceSamples The source samples.
-     * @return {import("ol/DataTile.js").Data} The composed tile data.
+     * @return {Promise<import("ol/DataTile.js").Data>} The composed tile data.
      * @private
      */
     private composeTile_;

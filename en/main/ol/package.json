@@ -19,11 +19,11 @@
   },
   "dependencies": {
     "ol-pmtiles": "^2.0.0",
-    "proj4": "^2.15.0",
-    "stac-js": "~0.1.8"
+    "proj4": "^2.16.1",
+    "stac-js": "~0.2.1"
   },
   "peerDependencies": {
-    "ol": "*"
+    "ol": ">=10.8.0"
   },
   "browserslist": [
     "> 1%",
