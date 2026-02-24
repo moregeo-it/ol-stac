@@ -321,7 +321,6 @@ declare class GeoTIFFSource extends DataTile<import("ol/DataTile.js").default> {
      * of each image in turn.
      * You can override this method in a subclass to support more projections.
      *
-     * @async
      * @param {Array<Array<GeoTIFFImage>>} sources Each source is a list of images
      * from a single GeoTIFF.
      */
@@ -339,7 +338,6 @@ declare class GeoTIFFSource extends DataTile<import("ol/DataTile.js").default> {
      * @param {Array<Array<GeoTIFFImage>>} sources Each source is a list of images
      * from a single GeoTIFF.
      * @private
-     * @async
      */
     private configure_;
     /**

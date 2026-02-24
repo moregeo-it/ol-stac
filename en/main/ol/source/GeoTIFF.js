@@ -146,7 +146,6 @@ function getResolutions(image, referenceImage) {
     }
 }
 /**
- * @async
  * @param {Object<string, any>} geoKeys Geo keys object.
  * @param {string} geoKey The geo key to lookup.
  * @param {string} unitKey The unit key to lookup.
@@ -174,7 +173,6 @@ async function getProjectionFromKeys(geoKeys, geoKey, unitKey, loadMissingProjec
     }
 }
 /**
- * @async
  * @param {GeoTIFFImage} image A GeoTIFF.
  * @param {boolean} loadMissingProjection Whether to load missing projections.
  * @return {Promise<Projection|null>} The image projection.
@@ -462,7 +460,6 @@ class GeoTIFFSource extends DataTile {
      * of each image in turn.
      * You can override this method in a subclass to support more projections.
      *
-     * @async
      * @param {Array<Array<GeoTIFFImage>>} sources Each source is a list of images
      * from a single GeoTIFF.
      */
@@ -511,7 +508,6 @@ class GeoTIFFSource extends DataTile {
      * @param {Array<Array<GeoTIFFImage>>} sources Each source is a list of images
      * from a single GeoTIFF.
      * @private
-     * @async
      */
     async configure_(sources) {
         let extent;
