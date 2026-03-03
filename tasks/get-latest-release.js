@@ -3,7 +3,7 @@ import esMain from 'es-main';
 import semver from 'semver';
 
 export async function getLatestRelease() {
-  const client = new Octokit();
+  const client = new Octokit({auth: process.env.GITHUB_TOKEN});
 
   let latest = '0.0.1';
   await client.paginate(
