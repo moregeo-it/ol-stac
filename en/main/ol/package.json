@@ -20,7 +20,7 @@
   "dependencies": {
     "ol-pmtiles": "^2.0.0",
     "proj4": "^2.16.1",
-    "stac-js": "~0.2.1"
+    "stac-js": "~0.1.9"
   },
   "peerDependencies": {
     "ol": ">=10.8.0"
