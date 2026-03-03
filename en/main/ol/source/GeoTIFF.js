@@ -432,7 +432,9 @@ class GeoTIFFSource extends DataTile {
             requests[i] = getImagesForSource(this.sourceInfo_[i], this.sourceOptions_);
         }
         Promise.all(requests)
-            .then(self.configure_)
+            .then(function (sources) {
+            self.configure_(sources);
+        })
             .catch(function (error) {
             logError(error);
             self.error_ = error;
