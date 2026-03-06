@@ -124,10 +124,6 @@ export type GeoTIFFSourceOptions = {
 };
 export type Options = {
     /**
-     * Attributions.
-     */
-    attributions?: import("ol/source/Source.js").AttributionLike | undefined;
-    /**
      * List of information about GeoTIFF sources.
      * Multiple sources can be combined when their resolution sets are equal after applying a scale.
      * The list of sources defines a mapping between input bands as they are read from each GeoTIFF and
@@ -196,7 +192,6 @@ export type Options = {
  */
 /**
  * @typedef {Object} Options
- * @property {import("ol/source/Source.js").AttributionLike} [attributions] Attributions.
  * @property {Array<SourceInfo>} sources List of information about GeoTIFF sources.
  * Multiple sources can be combined when their resolution sets are equal after applying a scale.
  * The list of sources defines a mapping between input bands as they are read from each GeoTIFF and
@@ -273,7 +268,7 @@ declare class GeoTIFFSource extends DataTile<import("ol/DataTile.js").default> {
      */
     private nodataValues_;
     /**
-     * @type {Array<Array<Promise<GDALMetadata>>>}
+     * @type {Array<Array<GDALMetadata>>}
      * @private
      */
     private metadata_;
@@ -321,6 +316,7 @@ declare class GeoTIFFSource extends DataTile<import("ol/DataTile.js").default> {
      * of each image in turn.
      * You can override this method in a subclass to support more projections.
      *
+     * @async
      * @param {Array<Array<GeoTIFFImage>>} sources Each source is a list of images
      * from a single GeoTIFF.
      */
@@ -338,6 +334,7 @@ declare class GeoTIFFSource extends DataTile<import("ol/DataTile.js").default> {
      * @param {Array<Array<GeoTIFFImage>>} sources Each source is a list of images
      * from a single GeoTIFF.
      * @private
+     * @async
      */
     private configure_;
     /**
@@ -352,7 +349,7 @@ declare class GeoTIFFSource extends DataTile<import("ol/DataTile.js").default> {
     /**
      * @param {import("ol/size.js").Size} sourceTileSize The source tile size.
      * @param {Array} sourceSamples The source samples.
-     * @return {Promise<import("ol/DataTile.js").Data>} The composed tile data.
+     * @return {import("ol/DataTile.js").Data} The composed tile data.
      * @private
      */
     private composeTile_;

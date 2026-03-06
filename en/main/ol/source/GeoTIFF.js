@@ -18,7 +18,8 @@ import { loadProjection } from '../util.js';
  * @return {boolean} The image is a mask.
  */
 function isMask(image) {
-    const type = image.fileDirectory.getValue('NewSubfileType') || 0;
+    const fileDirectory = image.fileDirectory;
+    const type = fileDirectory.NewSubfileType || 0;
     return (type & 4) === 4;
 }
 /**
@@ -36,7 +37,7 @@ function readRGB(preference, image) {
     if (image.getSamplesPerPixel() !== 3) {
         return false;
     }
-    const interpretation = image.fileDirectory.getValue('PhotometricInterpretation');
+    const interpretation = image.fileDirectory.PhotometricInterpretation;
     const interpretations = geotiffGlobals.photometricInterpretations;
     return (interpretation === interpretations.CMYK ||
         interpretation === interpretations.YCbCr ||
@@ -146,6 +147,7 @@ function getResolutions(image, referenceImage) {
     }
 }
 /**
+ * @async
  * @param {Object<string, any>} geoKeys Geo keys object.
  * @param {string} geoKey The geo key to lookup.
  * @param {string} unitKey The unit key to lookup.
@@ -173,12 +175,13 @@ async function getProjectionFromKeys(geoKeys, geoKey, unitKey, loadMissingProjec
     }
 }
 /**
+ * @async
  * @param {GeoTIFFImage} image A GeoTIFF.
  * @param {boolean} loadMissingProjection Whether to load missing projections.
  * @return {Promise<Projection|null>} The image projection.
  */
 async function getProjection(image, loadMissingProjection) {
-    const geoKeys = image.getGeoKeys();
+    const geoKeys = image.geoKeys;
     if (!geoKeys) {
         return null;
     }
@@ -203,7 +206,7 @@ function getImagesForTIFF(tiff) {
 }
 /**
  * @param {SourceInfo} source The GeoTIFF source.
- * @param {import('geotiff').RemoteSourceOptions} options Options for the GeoTIFF source.
+ * @param {Object} options Options for the GeoTIFF source.
  * @return {Promise<Array<GeoTIFFImage>>} Resolves to a list of images.
  */
 function getImagesForSource(source, options) {
@@ -309,7 +312,6 @@ function getMaxForDataType(array) {
  */
 /**
  * @typedef {Object} Options
- * @property {import("ol/source/Source.js").AttributionLike} [attributions] Attributions.
  * @property {Array<SourceInfo>} sources List of information about GeoTIFF sources.
  * Multiple sources can be combined when their resolution sets are equal after applying a scale.
  * The list of sources defines a mapping between input bands as they are read from each GeoTIFF and
@@ -351,7 +353,6 @@ class GeoTIFFSource extends DataTile {
      */
     constructor(options) {
         super({
-            attributions: options.attributions,
             state: 'loading',
             tileGrid: null,
             projection: options.projection || null,
@@ -396,7 +397,7 @@ class GeoTIFFSource extends DataTile {
          */
         this.nodataValues_;
         /**
-         * @type {Array<Array<Promise<GDALMetadata>>>}
+         * @type {Array<Array<GDALMetadata>>}
          * @private
          */
         this.metadata_;
@@ -433,7 +434,7 @@ class GeoTIFFSource extends DataTile {
         }
         Promise.all(requests)
             .then(function (sources) {
-            self.configure_(sources);
+            return self.configure_(sources);
         })
             .catch(function (error) {
             logError(error);
@@ -462,6 +463,7 @@ class GeoTIFFSource extends DataTile {
      * of each image in turn.
      * You can override this method in a subclass to support more projections.
      *
+     * @async
      * @param {Array<Array<GeoTIFFImage>>} sources Each source is a list of images
      * from a single GeoTIFF.
      */
@@ -486,7 +488,7 @@ class GeoTIFFSource extends DataTile {
         const firstSource = sources[0];
         for (let i = firstSource.length - 1; i >= 0; --i) {
             const image = firstSource[i];
-            const modelTransformation = image.fileDirectory.getValue('ModelTransformation');
+            const modelTransformation = image.fileDirectory.ModelTransformation;
             if (modelTransformation) {
                 // eslint-disable-next-line no-unused-vars
                 const [a, b, c, d, e, f, g, h] = modelTransformation;
@@ -510,6 +512,7 @@ class GeoTIFFSource extends DataTile {
      * @param {Array<Array<GeoTIFFImage>>} sources Each source is a list of images
      * from a single GeoTIFF.
      * @private
+     * @async
      */
     async configure_(sources) {
         let extent;
@@ -789,10 +792,10 @@ class GeoTIFFSource extends DataTile {
     /**
      * @param {import("ol/size.js").Size} sourceTileSize The source tile size.
      * @param {Array} sourceSamples The source samples.
-     * @return {Promise<import("ol/DataTile.js").Data>} The composed tile data.
+     * @return {import("ol/DataTile.js").Data} The composed tile data.
      * @private
      */
-    async composeTile_(sourceTileSize, sourceSamples) {
+    composeTile_(sourceTileSize, sourceSamples) {
         const metadata = this.metadata_;
         const sourceInfo = this.sourceInfo_;
         const sourceCount = this.sourceImagery_.length;
@@ -820,7 +823,7 @@ class GeoTIFFSource extends DataTile {
                 let max = source.max;
                 let gain, bias;
                 if (normalize) {
-                    const stats = await metadata[sourceIndex][0];
+                    const stats = metadata[sourceIndex][0];
                     if (min === undefined) {
                         if (stats && STATISTICS_MINIMUM in stats) {
                             min = parseFloat(stats[STATISTICS_MINIMUM]);
