@@ -43,6 +43,12 @@ class SourceType {
    */
   static GeoTIFF = new SourceType('GeoTIFF');
   /**
+   * GeoZarr
+   * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_source_GeoZarr.html}
+   * @api
+   */
+  static GeoZarr = new SourceType('GeoZarr');
+  /**
    * Static Image (`ImageStatic`)
    * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_source_ImageStatic.html}
    * @api
@@ -55,7 +61,7 @@ class SourceType {
    */
   static PMTilesRaster = new SourceType('PMTilesRaster');
   /**
-   * GeoTiff
+   * PMTilesVector
    * @see {@link https://protomaps.com/docs/pmtiles/}
    * @api
    */
