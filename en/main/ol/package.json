@@ -23,7 +23,7 @@
     "stac-js": ">=0.1.9"
   },
   "peerDependencies": {
-    "ol": ">=7.5.2"
+    "ol": ">=7.5.2, <10.8.0"
   },
   "browserslist": [
     "> 1%",
