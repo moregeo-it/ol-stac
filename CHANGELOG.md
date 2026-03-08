@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Removed GeoTIFF source, recommend usage of ol >= 10.9.0
+
 ## [1.1.1] - 2026-03-06
 
 - Updated dependencies
