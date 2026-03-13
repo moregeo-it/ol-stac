@@ -823,7 +823,7 @@ class STACLayer extends LayerGroup {
   addFootprint_() {
     let geojson = null;
     const data = this.getData();
-    if (data.isItemCollection() || data.isCollectionCollection()) {
+    if (data.isItemCollection || data.isCollectionCollection) {
       geojson = toGeoJSON(data.getBoundingBox());
     } else {
       geojson = data.toGeoJSON();
@@ -988,7 +988,7 @@ class STACLayer extends LayerGroup {
         if (ref.type === geojsonMediaType) {
           return await this.addGeoJson_(ref);
         }
-        if (ref.isGeoTIFF()) {
+        if (ref.isGeoTIFF) {
           return await this.addGeoTiff_(ref);
         }
         if (ref.canBrowserDisplayImage()) {
@@ -1007,7 +1007,7 @@ class STACLayer extends LayerGroup {
       } else if (data instanceof STAC) {
         // Show label extension
         if (
-          data.isItem() &&
+          data.isItem &&
           data.supportsExtension(LABEL_EXTENSION) &&
           data.getMetadata('label:type') === 'vector'
         ) {
