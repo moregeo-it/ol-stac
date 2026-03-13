@@ -64,6 +64,28 @@ export function getSpecificWebMapUrl(link: any): string | null;
  */
 export function isScalar(value: any): boolean;
 /**
+ * Returns the `classification:classes` array from a STAC Asset,
+ * checking band-level and asset-level metadata.
+ *
+ * @param {import('stac-js').Asset} asset The STAC asset
+ * @param {Array<number>} [bands] The selected bands (one-based)
+ * @return {Array<Object>|null} The classification classes, or null
+ * @api
+ */
+export function getClassificationClasses(asset: any, bands?: number[] | undefined): Array<any> | null;
+/**
+ * Builds a WebGL tile layer style for classified raster data based on
+ * `classification:classes` from a STAC Asset.
+ *
+ * Returns `null` if the asset has no classification classes with color hints.
+ *
+ * @param {import('stac-js').Asset} asset The STAC asset
+ * @param {Array<number>} [bands] The selected bands (one-based)
+ * @return {Object|null} A WebGL tile layer style object, or null
+ * @api
+ */
+export function getClassificationStyle(asset: any, bands?: number[] | undefined): any | null;
+/**
  * @typedef {import('ol/colorlike.js').ColorLike} ColorLike
  */
 /**

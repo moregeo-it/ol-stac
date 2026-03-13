@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
-    <title>STAC Item with GeoJSON assets</title>
+    <title>STAC Item with Classification</title>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/fontawesome.min.css" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/solid.css" crossorigin="anonymous">
@@ -56,7 +56,7 @@
           <i class="fab fa-codepen fa-lg"></i> Edit
         </a>
         <div class="span12">
-          <h4 id="title">STAC Item with GeoJSON assets</h4>
+          <h4 id="title">STAC Item with Classification</h4>
           <p class="tags">
             <span class="badge-group">
               <a
@@ -76,9 +76,9 @@
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item.html&quot;&gt;STAC Item&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-itemcollection.html&quot;&gt;STAC Item Collection&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-from-object.html&quot;&gt;STAC Item from an object&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-classification.html&quot;&gt;STAC Item with Classification&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-classification.html&quot;&gt;STAC Item with Classification&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-tileserver.html&quot;&gt;STAC Item with COG rendered by a tile server&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-geojson.html&quot;&gt;STAC Item with GeoJSON assets&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-geojson.html&quot;&gt;STAC Item with GeoJSON assets&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-labels.html&quot;&gt;STAC Item with Label Extension&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
@@ -96,9 +96,9 @@
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item.html&quot;&gt;STAC Item&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-from-object.html&quot;&gt;STAC Item from an object&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-classification.html&quot;&gt;STAC Item with Classification&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-classification.html&quot;&gt;STAC Item with Classification&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-tileserver.html&quot;&gt;STAC Item with COG rendered by a tile server&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-geojson.html&quot;&gt;STAC Item with GeoJSON assets&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-geojson.html&quot;&gt;STAC Item with GeoJSON assets&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-labels.html&quot;&gt;STAC Item with Label Extension&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
@@ -106,28 +106,66 @@
             </span>
             <span class="badge-group">
               <a
-                href="./index.html?q=geojson" class="badge badge-info">geojson</a
+                href="./index.html?q=geotiff" class="badge badge-info">geotiff</a
               ><a
                 class="badge badge-info tag-modal-toggle"
                 data-bs-toggle="modal"
                 data-bs-target="#tag-example-list"
-                data-title="geojson"
+                data-title="geotiff"
                 data-content="&lt;ul class=&quot;list-group&quot;&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-geojson.html&quot;&gt;STAC Item with GeoJSON assets&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item.html&quot;&gt;STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-from-object.html&quot;&gt;STAC Item from an object&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-classification.html&quot;&gt;STAC Item with Classification&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-tileserver.html&quot;&gt;STAC Item with COG rendered by a tile server&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-labels.html&quot;&gt;STAC Item with Label Extension&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >6</a>
+            </span>
+            <span class="badge-group">
+              <a
+                href="./index.html?q=cog" class="badge badge-info">cog</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="cog"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item.html&quot;&gt;STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-from-object.html&quot;&gt;STAC Item from an object&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-classification.html&quot;&gt;STAC Item with Classification&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-tileserver.html&quot;&gt;STAC Item with COG rendered by a tile server&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-labels.html&quot;&gt;STAC Item with Label Extension&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >6</a>
+            </span>
+            <span class="badge-group">
+              <a
+                href="./index.html?q=classification" class="badge badge-info">classification</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="classification"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-classification.html&quot;&gt;STAC Item with Classification&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
                 >1</a>
             </span>
             <span class="badge-group">
               <a
-                href="./index.html?q=assets" class="badge badge-info">assets</a
+                href="./index.html?q=scl" class="badge badge-info">scl</a
               ><a
                 class="badge badge-info tag-modal-toggle"
                 data-bs-toggle="modal"
                 data-bs-target="#tag-example-list"
-                data-title="assets"
+                data-title="scl"
                 data-content="&lt;ul class=&quot;list-group&quot;&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-geojson.html&quot;&gt;STAC Item with GeoJSON assets&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-classification.html&quot;&gt;STAC Item with Classification&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
                 >1</a>
@@ -147,6 +185,8 @@
             </div>
           </div>
           <div id="map" class="map"></div>
+<h4>Legend</h4>
+<div id="legend"></div>
 
         </div>
         <form method="POST" id="codepen-form" target="_blank" action="https://codesandbox.io/api/v1/sandboxes/define">
@@ -156,8 +196,8 @@
 
       <div class="row-fluid">
         <div class="span12">
-          <p id="shortdesc">Rendering a STAC Item with two GeoJSON assets</p>
-          <div id="docs"><p>Geometry and GeoJSON Assets from SpatioTemporal Asset Catalog (STAC) Items can be rendered as layer group.</p>
+          <p id="shortdesc">Rendering a STAC Item with a Scene Classification Layer with corresponding coloring.</p>
+          <div id="docs"><p>Geometry and Assets from SpatioTemporal Asset Catalog (STAC) Items with classification can be rendered as layer group.</p>
 </div>
         </div>
       </div>
@@ -165,36 +205,170 @@
       <div class="row-fluid">
         <h5 class="source-heading">main.js</h5>
         <pre><code id="example-js-source" class="language-js">import Map from &#x27;ol/Map.js&#x27;;
-import View from &#x27;ol/View.js&#x27;;
-import TileLayer from &#x27;ol/layer/WebGLTile.js&#x27;;
 import {register} from &#x27;ol/proj/proj4.js&#x27;;
-import OSM from &#x27;ol/source/OSM.js&#x27;;
 import proj4 from &#x27;proj4&#x27;;
 import STAC from &#x27;ol-stac&#x27;;
+import {getClassificationClasses} from &#x27;ol-stac/util.js&#x27;;
 
 register(proj4); // required to support source reprojection
 
 const layer &#x3D; new STAC({
-  url: &#x27;https://transfer.data.aad.gov.au/aadc-aerial-photography/casc8916/collection.json&#x27;,
-  assets: [&#x27;flightline-1&#x27;, &#x27;flightline-2&#x27;],
-});
-
-const background &#x3D; new TileLayer({
-  source: new OSM(),
+  url: &#x27;https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items/S2A_31SBD_20260312_1_L2A&#x27;,
+  data: {
+    type: &#x27;Feature&#x27;,
+    stac_version: &#x27;1.0.0&#x27;,
+    stac_extensions: [
+      &#x27;https://stac-extensions.github.io/eo/v1.1.0/schema.json&#x27;,
+      &#x27;https://stac-extensions.github.io/projection/v1.1.0/schema.json&#x27;,
+      &#x27;https://stac-extensions.github.io/classification/v2.0.0/schema.json&#x27;,
+    ],
+    id: &#x27;S2A_31SBD_20260312_1_L2A&#x27;,
+    geometry: {
+      type: &#x27;Polygon&#x27;,
+      coordinates: [
+        [
+          [-0.49896480277672595, 39.69750082538408],
+          [-0.45024906258962005, 38.70992952974502],
+          [0.8113363003621146, 38.740378746353734],
+          [0.7803878365963612, 39.72903403736024],
+          [-0.49896480277672595, 39.69750082538408],
+        ],
+      ],
+    },
+    bbox: [-0.498965, 38.70993, 0.811336, 39.729034],
+    properties: {
+      platform: &#x27;sentinel-2a&#x27;,
+      constellation: &#x27;sentinel-2&#x27;,
+      instruments: [&#x27;msi&#x27;],
+      &#x27;eo:cloud_cover&#x27;: 58.614683,
+      &#x27;proj:epsg&#x27;: 32631,
+      datetime: &#x27;2026-03-12T11:00:34.768000Z&#x27;,
+    },
+    links: [
+      {
+        rel: &#x27;self&#x27;,
+        type: &#x27;application/geo+json&#x27;,
+        href: &#x27;https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items/S2A_31SBD_20260312_1_L2A&#x27;,
+      },
+      {
+        rel: &#x27;license&#x27;,
+        href: &#x27;https://sentinel.esa.int/documents/247904/690755/Sentinel_Data_Legal_Notice&#x27;,
+      },
+    ],
+    assets: {
+      scl: {
+        href: &#x27;https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/31/S/BD/2026/3/S2A_31SBD_20260312_1_L2A/SCL.tif&#x27;,
+        type: &#x27;image/tiff; application&#x3D;geotiff; profile&#x3D;cloud-optimized&#x27;,
+        title: &#x27;Scene classification map (SCL)&#x27;,
+        gsd: 20,
+        &#x27;proj:shape&#x27;: [5490, 5490],
+        &#x27;proj:transform&#x27;: [20, 0, 199980, 0, -20, 4400040],
+        data_type: &#x27;uint8&#x27;,
+        roles: [&#x27;data&#x27;],
+        &#x27;classification:classes&#x27;: [
+          {
+            value: 0,
+            name: &#x27;no_data&#x27;,
+            description: &#x27;No Data (Missing data)&#x27;,
+            nodata: true,
+          },
+          {
+            value: 1,
+            name: &#x27;saturated_or_defective&#x27;,
+            description: &#x27;Saturated or defective pixel&#x27;,
+            color_hint: &#x27;FF0000&#x27;,
+          },
+          {
+            value: 2,
+            name: &#x27;dark_area_pixels&#x27;,
+            description:
+              &#x27;Topographic casted shadows (formerly &quot;Dark features/Shadows&quot;)&#x27;,
+            color_hint: &#x27;2F2F2F&#x27;,
+          },
+          {
+            value: 3,
+            name: &#x27;cloud_shadows&#x27;,
+            description: &#x27;Cloud shadows&#x27;,
+            color_hint: &#x27;643200&#x27;,
+          },
+          {
+            value: 4,
+            name: &#x27;vegetation&#x27;,
+            description: &#x27;Vegitation&#x27;,
+            color_hint: &#x27;00A000&#x27;,
+          },
+          {
+            value: 5,
+            name: &#x27;not_vegetated&#x27;,
+            description: &#x27;Not-vegetated&#x27;,
+            color_hint: &#x27;FFE65A&#x27;,
+          },
+          {
+            value: 6,
+            name: &#x27;water&#x27;,
+            description: &#x27;Water&#x27;,
+            color_hint: &#x27;0000FF&#x27;,
+          },
+          {
+            value: 7,
+            name: &#x27;unclassified&#x27;,
+            description: &#x27;Unclassified&#x27;,
+            color_hint: &#x27;808080&#x27;,
+          },
+          {
+            value: 8,
+            name: &#x27;cloud_medium_probability&#x27;,
+            description: &#x27;Cloud - medium probability&#x27;,
+            color_hint: &#x27;BBBBBB&#x27;,
+          },
+          {
+            value: 9,
+            name: &#x27;cloud_high_probability&#x27;,
+            description: &#x27;Cloud - high probability&#x27;,
+            color_hint: &#x27;DDDDDD&#x27;,
+          },
+          {
+            value: 10,
+            name: &#x27;thin_cirrus&#x27;,
+            description: &#x27;Thin cirrus&#x27;,
+            color_hint: &#x27;64C8FF&#x27;,
+          },
+          {
+            value: 11,
+            name: &#x27;snow&#x27;,
+            description: &#x27;Snow or ice&#x27;,
+            color_hint: &#x27;FF96FF&#x27;,
+          },
+        ],
+      },
+    },
+  },
 });
 
 const map &#x3D; new Map({
   target: &#x27;map&#x27;,
-  layers: [background, layer],
-  view: new View({
-    center: [0, 0],
-    zoom: 0,
-  }),
+  layers: [layer],
 });
-
 layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
   const view &#x3D; map.getView();
   view.fit(layer.getExtent());
+
+  // Build a legend from the classification classes
+  const stac &#x3D; layer.getData();
+  const asset &#x3D; stac.getAsset(&#x27;scl&#x27;);
+  const classes &#x3D; getClassificationClasses(asset);
+  const legend &#x3D; document.getElementById(&#x27;legend&#x27;);
+  for (const cls of classes) {
+    const row &#x3D; document.createElement(&#x27;div&#x27;);
+    const swatch &#x3D; document.createElement(&#x27;span&#x27;);
+    const color &#x3D; cls.color_hint ? &#x60;#${cls.color_hint}&#x60; : &#x27;transparent&#x27;;
+    swatch.style.cssText &#x3D; &#x60;display:inline-block;width:16px;height:16px;margin-right:6px;vertical-align:middle;background:${color};border: 1px solid black;&#x60;;
+    row.appendChild(swatch);
+    row.appendChild(
+      document.createTextNode(cls.description || cls.title || cls.name),
+    );
+    legend.appendChild(row);
+  }
 });
 </code></pre>
       </div>
@@ -205,7 +379,7 @@ layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
 &lt;html lang="en"&gt;
   &lt;head&gt;
     &lt;meta charset="UTF-8"&gt;
-    &lt;title&gt;STAC Item with GeoJSON assets&lt;/title&gt;
+    &lt;title&gt;STAC Item with Classification&lt;/title&gt;
     &lt;link rel="stylesheet" href="node_modules/ol/ol.css"&gt;
     &lt;style&gt;
       .map {
@@ -216,6 +390,8 @@ layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
   &lt;/head&gt;
   &lt;body&gt;
     &lt;div id&#x3D;&quot;map&quot; class&#x3D;&quot;map&quot;&gt;&lt;/div&gt;
+    &lt;h4&gt;Legend&lt;/h4&gt;
+    &lt;div id&#x3D;&quot;legend&quot;&gt;&lt;/div&gt;
 
     &lt;script type="module" src="main.js"&gt;&lt;/script&gt;
   &lt;/body&gt;
@@ -225,7 +401,7 @@ layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
       <div class="row-fluid">
         <h5 class="source-heading">package.json</h5>
         <pre><code id="example-pkg-source" class="language-json">{
-  &quot;name&quot;: &quot;stac-item-geojson&quot;,
+  &quot;name&quot;: &quot;stac-item-classification&quot;,
   &quot;dependencies&quot;: {
     &quot;ol-stac&quot;: &quot;1.1.1&quot;,
     &quot;proj4&quot;: &quot;^2.15.0&quot;
@@ -243,7 +419,7 @@ layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="common.js"></script>
-    <script src="stac-item-geojson.js"></script>
+    <script src="stac-item-classification.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-core.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/autoloader/prism-autoloader.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/toolbar/prism-toolbar.min.js"></script>

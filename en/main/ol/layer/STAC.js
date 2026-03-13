@@ -29,7 +29,7 @@ import ErrorEvent from '../events/ErrorEvent.js';
 // todo: temporary fix for https://github.com/openlayers/openlayers/issues/17153
 import GeoTIFF from '../source/GeoTIFF.js';
 import SourceType from '../source/type.js';
-import { LABEL_EXTENSION, defaultBoundsStyle, defaultCollectionStyle, getBoundsStyle, getGeoTiffSourceInfoFromAsset, getProjection, getSpecificWebMapUrl, isScalar, } from '../util.js';
+import { LABEL_EXTENSION, defaultBoundsStyle, defaultCollectionStyle, getBoundsStyle, getClassificationStyle, getGeoTiffSourceInfoFromAsset, getProjection, getSpecificWebMapUrl, isScalar, } from '../util.js';
 /**
  * @typedef {import("ol/extent.js").Extent} Extent
  */
@@ -645,6 +645,10 @@ class STACLayer extends LayerGroup {
         if (projection) {
             options.projection = projection;
         }
+        const classificationStyle = getClassificationStyle(asset, this.bands_);
+        if (classificationStyle) {
+            options.normalize = false;
+        }
         if (this.getSourceOptions_) {
             // @ts-ignore
             options = await this.getSourceOptions_(SourceType.GeoTIFF, options, asset);
@@ -664,7 +668,11 @@ class STACLayer extends LayerGroup {
         });
         try {
             await status;
-            const layer = new WebGLTileLayer({ source });
+            const layerOptions = { source };
+            if (classificationStyle) {
+                layerOptions.style = classificationStyle;
+            }
+            const layer = new WebGLTileLayer(layerOptions);
             this.addLayer_(layer, asset);
             return layer;
         }
