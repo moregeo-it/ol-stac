@@ -9,8 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1.2] - 2026-03-13
 
-- Update stac-js
+- Support for `classification:classes`
 - Limit upper ol version to (< 10.8.0) until we can remove the GeoTIFF.js
+- Update stac-js
 
 ## [1.1.1] - 2026-03-06
 
