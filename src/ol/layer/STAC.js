@@ -377,6 +377,11 @@ class STACLayer extends LayerGroup {
    * @private
    */
   handleError_(error) {
+    const listeners = this.getListeners('error');
+    if (!Array.isArray(listeners) || listeners.length === 0) {
+      // To avoid swallowing errors when no listener is registered, log them to the console.
+      console.error(error); // eslint-disable-line no-console
+    }
     /**
      * Error event.
      *
@@ -978,17 +983,16 @@ class STACLayer extends LayerGroup {
     }
 
     const source = new GeoZarr(options);
-    const status = new Promise((resolve, reject) => {
-      source.on('change', () => {
-        if (source.getState() === 'error') {
-          reject(source.error_);
-        } else {
-          resolve();
-        }
-      });
-    });
     try {
-      await status;
+      await new Promise((resolve, reject) => {
+        source.on('change', () => {
+          if (source.getState() === 'error') {
+            reject(source.error_);
+          } else {
+            resolve();
+          }
+        });
+      });
       const layer = new WebGLTileLayer({source});
       this.addLayer_(layer, asset);
       return layer;

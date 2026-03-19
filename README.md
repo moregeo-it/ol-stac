@@ -17,7 +17,7 @@ Dig into the API documentation for all details:
 
 ### OpenLayers versions
 
-ol-stac works with OpenLayers version >= 10.8.0
+ol-stac works with OpenLayers version >= 10.9.0
 for GeoZarr support and due to GeoTiff.js v3.
 
 Older versions of ol-stac (<= 1.1.0) support OpenLayers >= 7.5.2.

@@ -9,7 +9,7 @@ import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
 import Style from 'ol/style/Style.js';
 import {STAC} from 'stac-js';
-import {URI, isObject} from 'stac-js/src/utils.js';
+import {isObject} from 'stac-js/src/utils.js';
 
 /**
  * @typedef {import('ol/colorlike.js').ColorLike} ColorLike
@@ -302,22 +302,8 @@ export function getBoundsStyle(originalStyle, layerGroup) {
  * @api
  */
 export function getGeoZarrSourceOptionsFromAsset(asset, selectedBands) {
-  const uri = URI(asset.getAbsoluteUrl());
-  // Get all segments of the path
-  const segments = uri.segment();
-  // Find the index of the segment that ends with '.zarr' (i.e. the filename)
-  const zarrIndex = segments.findIndex((s) => s.endsWith('.zarr'));
-  let group;
-  if (zarrIndex > -1) {
-    // Group is the segments after the file name
-    group = segments.slice(zarrIndex + 1).join('/');
-    // Only keep the segments up to and including the file name for the URL as path
-    const path = segments.slice(0, zarrIndex + 1);
-    uri.segment(path);
-  }
   const options = {
-    url: uri.toString(),
-    group,
+    url: asset.getAbsoluteUrl(),
   };
 
   if (selectedBands.length > 0) {

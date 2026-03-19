@@ -9,7 +9,7 @@ import STAC from '../src/ol/layer/STAC.js';
 register(proj4); // required to support source reprojection
 
 const layer = new STAC({
-  url: 'https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2B_MSIL2A_20260120T125339_N0511_R138_T27VWL_20260120T131151',
+  url: 'https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2A_MSIL2A_20260318T142851_N0512_R139_T26WME_20260318T224412',
   displayWebMapLink: false,
 });
 
@@ -29,4 +29,8 @@ const map = new Map({
 layer.on('sourceready', () => {
   const view = map.getView();
   view.fit(layer.getExtent());
+});
+
+layer.on('error', (event) => {
+  alert('An unexpected error occured: ' + event.error.message);
 });
