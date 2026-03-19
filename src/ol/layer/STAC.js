@@ -46,6 +46,7 @@ import {
   defaultBoundsStyle,
   defaultCollectionStyle,
   getBoundsStyle,
+  getClassificationStyle,
   getGeoTiffSourceInfoFromAsset,
   getGeoZarrSourceOptionsFromAsset,
   getProjection,
@@ -747,6 +748,11 @@ class STACLayer extends LayerGroup {
       options.projection = projection;
     }
 
+    const classificationStyle = getClassificationStyle(asset, this.bands_);
+    if (classificationStyle) {
+      options.normalize = false;
+    }
+
     if (this.getSourceOptions_) {
       // @ts-ignore
       options = await this.getSourceOptions_(
@@ -770,7 +776,11 @@ class STACLayer extends LayerGroup {
     });
     try {
       await status;
-      const layer = new WebGLTileLayer({source});
+      const layerOptions = {source};
+      if (classificationStyle) {
+        layerOptions.style = classificationStyle;
+      }
+      const layer = new WebGLTileLayer(layerOptions);
       this.addLayer_(layer, asset);
       return layer;
     } catch (error) {
@@ -829,7 +839,7 @@ class STACLayer extends LayerGroup {
   addFootprint_() {
     let geojson = null;
     const data = this.getData();
-    if (data.isItemCollection() || data.isCollectionCollection()) {
+    if (data.isItemCollection || data.isCollectionCollection) {
       geojson = toGeoJSON(data.getBoundingBox());
     } else {
       geojson = data.toGeoJSON();
@@ -1055,7 +1065,7 @@ class STACLayer extends LayerGroup {
       } else if (data instanceof STAC) {
         // Show label extension
         if (
-          data.isItem() &&
+          data.isItem &&
           data.supportsExtension(LABEL_EXTENSION) &&
           data.getMetadata('label:type') === 'vector'
         ) {

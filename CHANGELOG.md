@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-03-13
+
+- Support for `classification:classes`
+- Limit upper ol version to (< 10.8.0) until we can remove the GeoTIFF.js
+- Update stac-js
+- Fix examples
+
+## [1.1.1] - 2026-03-06
+
+- Updated dependencies
+- Fixes for CI and examples
+
 ## [1.1.0] - 2025-11-27
 
 - Implement WMTS REST request encoding
@@ -175,7 +187,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release
 
-[Unreleased]: <https://github.com/stac-extensions/contacts/compare/v1.1.0...HEAD>
+[Unreleased]: <https://github.com/stac-extensions/contacts/compare/v1.1.1...HEAD>
+[1.1.1]: <https://github.com/stac-extensions/contacts/compare/v1.1.0...v1.1.1>
 [1.1.0]: <https://github.com/stac-extensions/contacts/compare/v1.0.5...v1.1.0>
 [1.0.5]: <https://github.com/stac-extensions/contacts/compare/v1.0.4...v1.0.5>
 [1.0.4]: <https://github.com/stac-extensions/contacts/compare/v1.0.3...v1.0.4>

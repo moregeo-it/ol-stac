@@ -1,6 +1,6 @@
 {
   "name": "ol-stac",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "An \"automagical\" STAC LayerGroup for OpenLayers",
   "homepage": "https://moregeo.it",
   "license": "Apache-2.0",
@@ -35,8 +35,8 @@
   },
   "dependencies": {
     "ol-pmtiles": "^2.0.0",
-    "proj4": "^2.16.1",
-    "stac-js": "~0.2.1"
+    "proj4": "^2.15.0",
+    "stac-js": ">=0.3.0"
   },
   "peerDependencies": {
     "ol": "^10.8.0"
@@ -48,7 +48,7 @@
     "@octokit/rest": "^20.0.1",
     "@openlayers/eslint-plugin": "^4.0.0",
     "@typescript-eslint/parser": "^8.17.0",
-    "copy-webpack-plugin": "^11.0.0",
+    "copy-webpack-plugin": "^14.0.0",
     "es-main": "^1.0.2",
     "eslint": "^9.16.0",
     "eslint-config-openlayers": "^20.0.0",

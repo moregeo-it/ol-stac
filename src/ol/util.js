@@ -386,3 +386,96 @@ export function isScalar(value) {
     typeof value === 'boolean'
   );
 }
+
+/**
+ * Parses a 6-character hex color string (without leading `#`) into an RGB array.
+ * @param {string} hex A 6-character hex color string (e.g. `"FF5733"`)
+ * @return {Array<number>} An array of [r, g, b] values (0-255)
+ */
+function hexToRgb(hex) {
+  return [
+    parseInt(hex.substring(0, 2), 16),
+    parseInt(hex.substring(2, 4), 16),
+    parseInt(hex.substring(4, 6), 16),
+  ];
+}
+
+/**
+ * Returns the `classification:classes` array from a STAC Asset,
+ * checking band-level and asset-level metadata.
+ *
+ * @param {import('stac-js').Asset} asset The STAC asset
+ * @param {Array<number>} [bands] The selected bands (one-based)
+ * @return {Array<Object>|null} The classification classes, or null
+ * @api
+ */
+export function getClassificationClasses(asset, bands) {
+  let classes = null;
+
+  // If specific bands are selected, look for classification on the selected band
+  const assetBands = asset.getBands();
+  if (bands && bands.length === 1 && assetBands.length > 0) {
+    const bandObj = assetBands[bands[0] - 1];
+    if (bandObj) {
+      classes = bandObj['classification:classes'];
+    }
+  }
+
+  // Fall back to asset-level classification or single band
+  if (!Array.isArray(classes)) {
+    classes = asset.getMetadata('classification:classes');
+  }
+
+  if (!Array.isArray(classes) || classes.length === 0) {
+    return null;
+  }
+
+  return classes;
+}
+
+/**
+ * Builds a WebGL tile layer style for classified raster data based on
+ * `classification:classes` from a STAC Asset.
+ *
+ * Returns `null` if the asset has no classification classes with color hints.
+ *
+ * @param {import('stac-js').Asset} asset The STAC asset
+ * @param {Array<number>} [bands] The selected bands (one-based)
+ * @return {Object|null} A WebGL tile layer style object, or null
+ * @api
+ */
+export function getClassificationStyle(asset, bands) {
+  const classes = getClassificationClasses(asset, bands);
+  if (!classes) {
+    return null;
+  }
+
+  // Only useful if at least one class has a color_hint
+  const classesWithColor = classes.filter(
+    (cls) =>
+      typeof cls.value === 'number' &&
+      typeof cls.color_hint === 'string' &&
+      cls.color_hint.length === 6,
+  );
+  if (classesWithColor.length === 0) {
+    return null;
+  }
+
+  // Build the match expression: ['match', ['band', n], value, color, ..., fallback]
+  let band = 1;
+  if (bands && bands.length === 1) {
+    band = bands[0];
+  }
+  const matchExpr = ['match', ['band', band]];
+
+  for (const cls of classesWithColor) {
+    const [r, g, b] = hexToRgb(cls.color_hint);
+    const alpha = cls.nodata ? 0 : 1;
+    matchExpr.push(cls.value, ['color', r, g, b, alpha]);
+  }
+
+  // Default: transparent for values without a color hint
+  matchExpr.push(['color', 0, 0, 0, 0]);
+
+  return {color: matchExpr};
+}
