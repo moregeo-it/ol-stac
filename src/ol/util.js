@@ -7,6 +7,7 @@ import Circle from 'ol/style/Circle.js';
 import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
 import Style from 'ol/style/Style.js';
+import {VERSION} from 'ol/util.js';
 
 /**
  * @typedef {import('ol/colorlike.js').ColorLike} ColorLike
@@ -37,6 +38,30 @@ export const LABEL_EXTENSION =
   'https://stac-extensions.github.io/label/v1.*/schema.json';
 
 const transparentFill = new Fill({color: 'rgba(0,0,0,0)'});
+
+/**
+ * Check whether the installed OL version is at least the given version.
+ * Returns true for dev builds ('latest').
+ *
+ * @param {string} minVersion The minimum version string (e.g. '10.9.0').
+ * @return {boolean} `true` if the OL version is >= minVersion.
+ */
+function olVersionAtLeast(minVersion) {
+  if (!VERSION || VERSION === 'latest') {
+    return true;
+  }
+  const current = VERSION.split('.').map(Number);
+  const required = minVersion.split('.').map(Number);
+  for (let i = 0; i < required.length; i++) {
+    if ((current[i] || 0) > required[i]) {
+      return true;
+    }
+    if ((current[i] || 0) < required[i]) {
+      return false;
+    }
+  }
+  return true;
+}
 
 /**
  * Creates a style for visualization.
@@ -146,7 +171,7 @@ export function getGeoTiffSourceInfoFromAsset(asset, selectedBands) {
 
   const bands = asset.getBands();
   const sources = bands.length > 0 ? bands : [asset];
-  const perBand = sources.length > 1;
+  const perBand = sources.length > 1 && olVersionAtLeast('10.9.0');
   const assetNodata = asset.getNoDataValues();
   const bandCount = perBand
     ? Math.max(...bands.map((b) => b.getIndex())) + 1
@@ -192,14 +217,26 @@ export function getGeoTiffSourceInfoFromAsset(asset, selectedBands) {
     index++;
   }
 
-  if (minValues.some((v) => v !== undefined)) {
-    sourceInfo.min = perBand ? minValues : minValues[0];
+  const defined = (v) => v !== undefined;
+  if (minValues.some(defined)) {
+    sourceInfo.min = perBand
+      ? minValues
+      : Math.min(...minValues.filter(defined));
   }
-  if (maxValues.some((v) => v !== undefined)) {
-    sourceInfo.max = perBand ? maxValues : maxValues[0];
+  if (maxValues.some(defined)) {
+    sourceInfo.max = perBand
+      ? maxValues
+      : Math.max(...maxValues.filter(defined));
   }
-  if (nodataValues.some((v) => v !== undefined)) {
-    sourceInfo.nodata = perBand ? nodataValues : nodataValues[0];
+  if (nodataValues.some(defined)) {
+    if (perBand) {
+      sourceInfo.nodata = nodataValues;
+    } else {
+      const unique = new Set(nodataValues.filter(defined));
+      if (unique.size === 1) {
+        sourceInfo.nodata = [...unique][0];
+      }
+    }
   }
 
   if (selectedBands.length > 0) {
