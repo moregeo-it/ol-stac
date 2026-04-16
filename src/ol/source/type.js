@@ -1,5 +1,5 @@
 /**
- * @module ol/source/type
+ * @module ol-stac/source/type
  */
 
 /**
