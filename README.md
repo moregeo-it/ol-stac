@@ -19,13 +19,12 @@ Dig into the API documentation for all details:
 
 ol-stac works best with OpenLayers >= 10.9.0.
 
-It should work with older versions >= 7.5.2, but certain features will be unavailable
+It should work with older versions >= 9.0.0, but certain features will be unavailable
 or work less reliably, for example:
 
-- Automatic loading of missing projections for COGs (requires >= 10.9.0)
 - Better per-band visualization of GeoTiff files (requires >= 10.9.0)
+- Automatic loading of missing projections for GeoTiff files (EPSG code retrieval requires >= 10.0.0, other projection codes require >= 10.8.0)
 - GeoZARR support (requires >= 10.8.0)
-- PMTiles support (requires >= 9.0.0)
 
 Generally, we highly recommend to use OpenLayers >= 10.9.0.
 If you use an older version, please ensure it works well for your usecases.
