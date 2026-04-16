@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.2.0] - 2026-03-13
 
-- Support for `classification:classes`
+- Support for classifications (`classification:classes`)
+- Support for WKT2 and PROJJSON (`proj:wkt2` and `proj:projjson`)
 - Removed GeoTIFF source and `loadProjection` helper in favor of ol
 - Recommend usage of ol >= 10.9.0
 - Update stac-js

@@ -1,9 +1,8 @@
 /**
- * @module ol/util
+ * @module ol-stac/util
  */
 
 import VectorLayer from 'ol/layer/Vector.js';
-import {isRegistered as isProj4Registered} from 'ol/proj/proj4.js';
 import Circle from 'ol/style/Circle.js';
 import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
@@ -20,10 +19,11 @@ import Style from 'ol/style/Style.js';
  * @typedef {import('ol/Feature.js').default} Feature
  */
 /**
- * @typedef {import('ol/proj.js').Projection} Projection
+ * @typedef {import('stac-js').Asset} Asset
  */
 /**
- * @typedef {import('ol/proj.js').ProjectionLike} ProjectionLike
+ * @todo use import('stac-js').Band once exported from stac-js
+ * @typedef {import('stac-js/src/band.js').default} Band
  */
 /**
  * @typedef {import('stac-js').STAC} STAC
@@ -144,6 +144,9 @@ export function getGeoTiffSourceInfoFromAsset(asset, selectedBands) {
     url: asset.getAbsoluteUrl(),
   };
 
+  /**
+   * @type {Asset|Band}
+   */
   let source = asset;
   let bands = asset.getBands();
   // If there's just one band, we can also read the information from there.
@@ -220,32 +223,6 @@ export function getGeoTiffSourceInfoFromAsset(asset, selectedBands) {
   }
 
   return sourceInfo;
-}
-
-/**
- * Gets the projection from the asset or link.
- * @param {import('stac-js').STACReference} reference The asset or link to read the information from.
- * @param {ProjectionLike} defaultProjection A default projection to use.
- * @return {Promise<ProjectionLike>} The projection, if any.
- */
-export async function getProjection(reference, defaultProjection = undefined) {
-  let projection;
-  if (isProj4Registered()) {
-    // TODO: It would be great to handle WKT2 and PROJJSON, but is not supported yet by proj4js.
-    const code = reference.getMetadata('proj:code');
-    if (code) {
-      let fn;
-      try {
-        fn = (await import('ol/proj/proj4.js')).fromProjectionCode;
-      } catch {
-        // Not supported by older versions of ol
-      }
-      if (fn) {
-        projection = await fn(code);
-      }
-    }
-  }
-  return projection || defaultProjection;
 }
 
 /**

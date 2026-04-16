@@ -1,5 +1,5 @@
 /**
- * @module ol/events/ErrorEvent
+ * @module ol-stac/events/ErrorEvent
  */
 import BaseEvent from 'ol/events/Event.js';
 import EventType from 'ol/events/EventType.js';

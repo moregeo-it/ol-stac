@@ -1,5 +1,5 @@
 /**
- * @module ol/layer/STAC
+ * @module ol-stac/layer/STAC
  */
 import {isEmpty} from 'ol/extent.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
@@ -26,6 +26,7 @@ import {fixGeoJson, toGeoJSON, unionBoundingBox} from 'stac-js/src/geo.js';
 import {geojsonMediaType, geotiffMediaTypes} from 'stac-js/src/mediatypes.js';
 import {isObject} from 'stac-js/src/utils.js';
 import ErrorEvent from '../events/ErrorEvent.js';
+import {getProjection} from '../proj.js';
 import SourceType from '../source/type.js';
 import {
   LABEL_EXTENSION,
@@ -34,7 +35,6 @@ import {
   getBoundsStyle,
   getClassificationStyle,
   getGeoTiffSourceInfoFromAsset,
-  getProjection,
   getSpecificWebMapUrl,
   isScalar,
 } from '../util.js';
