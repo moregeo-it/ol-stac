@@ -1,14 +1,13 @@
 /**
- * @module ol/util
+ * @module ol-stac/util
  */
 
 import VectorLayer from 'ol/layer/Vector.js';
-import {isRegistered as isProj4Registered} from 'ol/proj/proj4.js';
 import Circle from 'ol/style/Circle.js';
 import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
 import Style from 'ol/style/Style.js';
-import {STAC} from 'stac-js';
+import {VERSION} from 'ol/util.js';
 import {isObject} from 'stac-js/src/utils.js';
 
 /**
@@ -22,13 +21,14 @@ import {isObject} from 'stac-js/src/utils.js';
  * @typedef {import('ol/Feature.js').default} Feature
  */
 /**
- * @typedef {import('ol/proj.js').Projection} Projection
- */
-/**
- * @typedef {import('ol/proj.js').ProjectionLike} ProjectionLike
- */
-/**
  * @typedef {import('stac-js').Asset} Asset
+ */
+/**
+ * @todo use import('stac-js').Band once exported from stac-js
+ * @typedef {import('stac-js/src/band.js').default} Band
+ */
+/**
+ * @typedef {import('stac-js').STAC} STAC
  */
 
 /**
@@ -39,6 +39,30 @@ export const LABEL_EXTENSION =
   'https://stac-extensions.github.io/label/v1.*/schema.json';
 
 const transparentFill = new Fill({color: 'rgba(0,0,0,0)'});
+
+/**
+ * Check whether the installed OL version is at least the given version.
+ * Returns true for dev builds ('latest').
+ *
+ * @param {string} minVersion The minimum version string (e.g. '10.9.0').
+ * @return {boolean} `true` if the OL version is >= minVersion.
+ */
+function olVersionAtLeast(minVersion) {
+  if (!VERSION || VERSION === 'latest') {
+    return true;
+  }
+  const current = VERSION.split('.').map(Number);
+  const required = minVersion.split('.').map(Number);
+  for (let i = 0; i < required.length; i++) {
+    if ((current[i] || 0) > required[i]) {
+      return true;
+    }
+    if ((current[i] || 0) < required[i]) {
+      return false;
+    }
+  }
+  return true;
+}
 
 /**
  * Creates a style for visualization.
@@ -124,7 +148,7 @@ export async function getStacObjectsForEvent(
       layerFilter(layer) {
         if (layer instanceof VectorLayer && layer.get('bounds') === true) {
           const stac = layer.get('stac');
-          if (stac instanceof STAC && (!exclude || !stac.equals(exclude))) {
+          if (stac && stac.isSTAC && (!exclude || !stac.is(exclude))) {
             return true;
           }
         }
@@ -146,65 +170,73 @@ export function getGeoTiffSourceInfoFromAsset(asset, selectedBands) {
     url: asset.getAbsoluteUrl(),
   };
 
-  let source = asset;
-  let bands = asset.getBands();
-  // If there's just one band, we can also read the information from there.
-  if (bands.length === 1) {
-    source = bands[0];
-    bands = [];
+  const bands = asset.getBands();
+  const sources = bands.length > 0 ? bands : [asset];
+  const perBand = sources.length > 1 && olVersionAtLeast('10.9.0');
+  const assetNodata = asset.getNoDataValues();
+  const bandCount = perBand
+    ? Math.max(...bands.map((b) => b.getIndex())) + 1
+    : 1;
+
+  const minValues = new Array(bandCount).fill(undefined);
+  const maxValues = new Array(bandCount).fill(undefined);
+  const nodataValues = new Array(bandCount).fill(undefined);
+
+  let index = 0;
+  for (const source of sources) {
+    const stats = source.getStatistics();
+    let {minimum, maximum} = stats;
+    const {mean, stddev} = stats;
+
+    // Use mean ± 2σ for a better visualization stretch (~95% of values)
+    if (typeof mean === 'number' && typeof stddev === 'number' && stddev > 0) {
+      const stretchMin = mean - 2 * stddev;
+      const stretchMax = mean + 2 * stddev;
+      minimum =
+        typeof minimum === 'number'
+          ? Math.max(minimum, stretchMin)
+          : stretchMin;
+      maximum =
+        typeof maximum === 'number'
+          ? Math.min(maximum, stretchMax)
+          : stretchMax;
+    }
+
+    if (typeof minimum === 'number') {
+      minValues[index] = minimum;
+    }
+    if (typeof maximum === 'number') {
+      maxValues[index] = maximum;
+    }
+
+    const nodata = source.getNoDataValues();
+    if (nodata.length > 0) {
+      nodataValues[index] = nodata[0];
+    } else if (assetNodata.length > 0) {
+      nodataValues[index] = assetNodata[0];
+    }
+    index++;
   }
 
-  // TODO: It would be useful if OL would allow min/max values per band
-  const {minimum, maximum} = source.getMinMaxValues();
-  if (typeof minimum === 'number') {
-    sourceInfo.min = minimum;
+  const defined = (v) => v !== undefined;
+  if (minValues.some(defined)) {
+    sourceInfo.min = perBand
+      ? minValues
+      : Math.min(...minValues.filter(defined));
   }
-  if (typeof maximum === 'number') {
-    sourceInfo.max = maximum;
+  if (maxValues.some(defined)) {
+    sourceInfo.max = perBand
+      ? maxValues
+      : Math.max(...maxValues.filter(defined));
   }
-  if (
-    typeof sourceInfo.min !== 'number' &&
-    typeof sourceInfo.max !== 'number' &&
-    bands.length > 1
-  ) {
-    // Read from bands as fallback and if available
-    for (const band of bands) {
-      const {minimum, maximum} = band.getMinMaxValues();
-      if (
-        typeof minimum === 'number' &&
-        (typeof sourceInfo.min === 'undefined' || minimum < sourceInfo.min)
-      ) {
-        sourceInfo.min = minimum;
+  if (nodataValues.some(defined)) {
+    if (perBand) {
+      sourceInfo.nodata = nodataValues;
+    } else {
+      const unique = new Set(nodataValues.filter(defined));
+      if (unique.size === 1) {
+        sourceInfo.nodata = [...unique][0];
       }
-      if (
-        typeof maximum === 'number' &&
-        (typeof sourceInfo.max === 'undefined' || maximum > sourceInfo.max)
-      ) {
-        sourceInfo.max = maximum;
-      }
-    }
-  }
-
-  // TODO: It would be useful if OL would allow multiple no-data values
-  const nodata = source.getNoDataValues();
-  if (nodata.length > 0) {
-    sourceInfo.nodata = nodata[0];
-  } else if (bands.length > 1) {
-    // Read from bands as fallback and if available
-    let nodata = undefined;
-    for (const band of bands) {
-      const bandNoData = band.getNoDataValues();
-      if (bandNoData.length > 0) {
-        if (typeof nodata === 'undefined') {
-          nodata = bandNoData[0];
-        } else if (nodata !== bandNoData[0]) {
-          nodata = undefined;
-          break;
-        }
-      }
-    }
-    if (typeof nodata !== 'undefined') {
-      sourceInfo.nodata = nodata;
     }
   }
 
@@ -213,9 +245,9 @@ export function getGeoTiffSourceInfoFromAsset(asset, selectedBands) {
       if (typeof band === 'number') {
         return band;
       }
-      const b = bands.findIndex((b) => b.name === band);
-      if (b >= 0) {
-        return b + 1;
+      const b = asset.findBand(band);
+      if (b) {
+        return b.getIndex() + 1;
       }
       // eslint-disable-next-line no-console
       console.error(
@@ -235,45 +267,6 @@ export function getGeoTiffSourceInfoFromAsset(asset, selectedBands) {
   }
 
   return sourceInfo;
-}
-
-/**
- * Load the projection for the given projection code from the internet.
- *
- * @param {string} code Projection code, e.g. 'EPSG:1234'
- * @return {Promise<Projection|null>} The loaded projection
- */
-export async function loadProjection(code) {
-  try {
-    // @ts-ignore - Support both old and new OpenLayers versions
-    const {fromProjectionCode, fromEPSGCode} = await import('ol/proj/proj4.js');
-    if (typeof fromProjectionCode === 'function') {
-      // Supported since ol v10.8.0
-      return await fromProjectionCode(code);
-    }
-    // Supported until ol v11.0.0
-    return await fromEPSGCode(code);
-  } catch (_) {
-    return null;
-  }
-}
-
-/**
- * Gets the projection from the asset or link.
- * @param {import('stac-js').STACReference} reference The asset or link to read the information from.
- * @param {ProjectionLike} defaultProjection A default projection to use.
- * @return {Promise<ProjectionLike>} The projection, if any.
- */
-export async function getProjection(reference, defaultProjection = undefined) {
-  let projection;
-  if (isProj4Registered()) {
-    // TODO: It would be great to handle WKT2 and PROJJSON, but is not supported yet by proj4js.
-    const code = reference.getMetadata('proj:code');
-    if (code) {
-      projection = await loadProjection(code);
-    }
-  }
-  return projection || defaultProjection;
 }
 
 /**

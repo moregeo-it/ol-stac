@@ -9,7 +9,8 @@ import STAC from '../src/ol/layer/STAC.js';
 register(proj4); // required to support source reprojection
 
 const layer = new STAC({
-  url: 'https://s3.us-west-2.amazonaws.com/sentinel-cogs/sentinel-s2-l2a-cogs/10/T/ES/2022/7/S2A_10TES_20220726_0_L2A/S2A_10TES_20220726_0_L2A.json',
+  url: 'https://raw.githubusercontent.com/stac-extensions/label/refs/heads/main/examples/spacenet-roads/roads_item.json',
+  displayGeoTiffByDefault: true,
 });
 
 const background = new TileLayer({
@@ -28,20 +29,4 @@ const map = new Map({
 layer.on('sourceready', () => {
   const view = map.getView();
   view.fit(layer.getExtent());
-});
-
-layer.on('layersready', () => {
-  // Assign titles for e.g. a layerswitcher
-  for (const sublayer of layer.getLayersArray()) {
-    const stac = sublayer.get('stac');
-    let title;
-    if (stac.isAsset) {
-      title = stac.getMetadata('title') || stac.getKey();
-    } else if (stac.isLink) {
-      title = stac.getMetadata('title') || stac.rel || 'Unnamed';
-    } else {
-      title = 'Footprint';
-    }
-    sublayer.set('title', title);
-  }
 });

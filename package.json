@@ -35,8 +35,8 @@
   },
   "dependencies": {
     "ol-pmtiles": "^2.0.0",
-    "proj4": "^2.15.0",
-    "stac-js": ">=0.3.0"
+    "proj4": "^2.16.1",
+    "stac-js": "^0.4.2"
   },
   "peerDependencies": {
     "ol": "10.8.1-dev.1773835236381"
