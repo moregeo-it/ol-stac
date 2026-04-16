@@ -817,7 +817,7 @@ class STACLayer extends LayerGroup {
   addFootprint_() {
     let geojson = null;
     const data = this.getData();
-    if (data.isItemCollection() || data.isCollectionCollection()) {
+    if (data.isApiCollection) {
       geojson = toGeoJSON(data.getBoundingBox());
     } else {
       geojson = data.toGeoJSON();
@@ -982,7 +982,7 @@ class STACLayer extends LayerGroup {
         if (ref.type === geojsonMediaType) {
           return await this.addGeoJson_(ref);
         }
-        if (ref.isGeoTIFF()) {
+        if (ref.isGeoTIFF) {
           return await this.addGeoTiff_(ref);
         }
         if (ref.canBrowserDisplayImage()) {
@@ -996,12 +996,12 @@ class STACLayer extends LayerGroup {
     // choose a sensible default visualization
     if (this.hasOnlyBounds()) {
       // Show the ItemCollection/CollectionCollection entries
-      if (data instanceof APICollection) {
+      if (data.isApiCollection) {
         await this.addChildren_(data.getAll(), this.childrenOptions_);
-      } else if (data instanceof STAC) {
+      } else if (data.isSTAC) {
         // Show label extension
         if (
-          data.isItem() &&
+          data.isItem &&
           data.supportsExtension(LABEL_EXTENSION) &&
           data.getMetadata('label:type') === 'vector'
         ) {
@@ -1017,7 +1017,8 @@ class STACLayer extends LayerGroup {
           await this.addLayerForLink(links[0]);
         } else {
           // Find an asset that we can visualize
-          const geotiff = data.getDefaultGeoTIFF(
+          const geotiff = data.getDefaultGeoFile(
+            'geotiff',
             true,
             !this.displayGeoTiffByDefault_,
           );
@@ -1138,15 +1139,16 @@ class STACLayer extends LayerGroup {
    * @api
    */
   async setChildren(childs, options = null, updateLayers = true) {
-    if (childs instanceof ItemCollection) {
+    const childsIsObj = isObject(childs);
+    if (childsIsObj && childs.isItemCollection) {
       this.children_ = childs.getAll();
-    } else if (childs instanceof CollectionCollection) {
+    } else if (childsIsObj && childs.isCollectionCollection) {
       this.children_ = childs.getAll();
-    } else if (isObject(childs) && childs.type === 'FeatureCollection') {
+    } else if (childsIsObj && childs.type === 'FeatureCollection') {
       this.children_ = create(childs, !this.disableMigration_).getAll();
     } else if (Array.isArray(childs)) {
       this.children_ = childs.map((child) => {
-        if (child instanceof STAC) {
+        if (child.isSTAC) {
           return child;
         }
         return create(child, !this.disableMigration_);
