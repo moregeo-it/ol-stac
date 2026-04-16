@@ -11,7 +11,6 @@ import Circle from 'ol/style/Circle.js';
 import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
 import Style from 'ol/style/Style.js';
-import {STAC} from 'stac-js';
 
 /**
  * @typedef {import('ol/colorlike.js').ColorLike} ColorLike
@@ -28,6 +27,9 @@ import {STAC} from 'stac-js';
  */
 /**
  * @typedef {import('ol/proj.js').ProjectionLike} ProjectionLike
+ */
+/**
+ * @typedef {import('stac-js').STAC} STAC
  */
 
 /**
@@ -123,7 +125,7 @@ export async function getStacObjectsForEvent(
       layerFilter(layer) {
         if (layer instanceof VectorLayer && layer.get('bounds') === true) {
           const stac = layer.get('stac');
-          if (stac instanceof STAC && (!exclude || !stac.is(exclude))) {
+          if (stac && stac.isSTAC && (!exclude || !stac.is(exclude))) {
             return true;
           }
         }

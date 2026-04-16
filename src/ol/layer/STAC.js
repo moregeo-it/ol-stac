@@ -21,16 +21,9 @@ import WMTS, {optionsFromCapabilities} from 'ol/source/WMTS.js';
 import XYZ from 'ol/source/XYZ.js';
 import {PMTilesRasterSource, PMTilesVectorSource} from 'ol-pmtiles';
 import * as pmtiles from 'pmtiles';
-import create, {
-  APICollection,
-  Asset,
-  CollectionCollection,
-  Item,
-  ItemCollection,
-  STAC,
-} from 'stac-js';
+import create, {Asset} from 'stac-js';
 import {fixGeoJson, toGeoJSON, unionBoundingBox} from 'stac-js/src/geo.js';
-import {geojsonMediaType} from 'stac-js/src/mediatypes.js';
+import {geojsonMediaType, geotiffMediaTypes} from 'stac-js/src/mediatypes.js';
 import {isObject} from 'stac-js/src/utils.js';
 import ErrorEvent from '../events/ErrorEvent.js';
 import SourceType from '../source/type.js';
@@ -52,7 +45,16 @@ import {
  * @typedef {import("ol/layer/Layer.js").default} Layer
  */
 /**
+ * @typedef {import('stac-js').APICollection} APICollection
+ */
+/**
  * @typedef {import("stac-js").Link} Link
+ */
+/**
+ * @typedef {import('stac-js').STAC} STAC
+ */
+/**
+ * @typedef {import('stac-js').STACObject} STACObject
  */
 /**
  * @typedef {import("ol/Map.js").default} Map
@@ -389,7 +391,7 @@ class STACLayer extends LayerGroup {
    */
   configure_(data, url = null, children = null, assets = null, bands = []) {
     let stac;
-    if (data instanceof Asset || data instanceof STAC) {
+    if (data.isAsset || data.isSTAC) {
       stac = data;
     } else {
       stac = create(data, !this.disableMigration_);
@@ -725,6 +727,9 @@ class STACLayer extends LayerGroup {
 
     const sourceInfo = getGeoTiffSourceInfoFromAsset(asset, this.bands_);
 
+    /**
+     * @type {import("ol/source/GeoTIFF.js").Options}
+     */
     let options = {
       sources: [sourceInfo],
       convertToRGB: 'auto',
@@ -808,7 +813,7 @@ class STACLayer extends LayerGroup {
 
   /**
    * @param {Layer|LayerGroup} [layer] A Layer to add to the LayerGroup
-   * @param {import("stac-js").STACObject} [data] The STAC object, can be any class exposed by stac-js
+   * @param {STACObject} [data] The STAC object, can be any class exposed by stac-js
    * @param {number} [zIndex] The z-index for the layer
    * @private
    */
@@ -899,7 +904,7 @@ class STACLayer extends LayerGroup {
    */
   async addLabelExtension_() {
     const data = this.getData();
-    if (!(data instanceof Item)) {
+    if (!data || !data.isItem) {
       return;
     }
     // determine the asset with the geojson labels
@@ -936,7 +941,7 @@ class STACLayer extends LayerGroup {
         }
       });
       const items = (await Promise.all(promises)).filter(
-        (item) => item instanceof STAC,
+        (item) => item && item.isSTAC,
       );
       await this.addChildren_(items, {displayFootprint: false});
     }
@@ -989,10 +994,10 @@ class STACLayer extends LayerGroup {
         if (!ref) {
           return;
         }
-        if (ref.type === geojsonMediaType) {
+        if (ref.isType(geojsonMediaType)) {
           return await this.addGeoJson_(ref);
         }
-        if (ref.isGeoTIFF) {
+        if (ref.isType(geotiffMediaTypes)) {
           return await this.addGeoTiff_(ref);
         }
         if (ref.canBrowserDisplayImage()) {
@@ -1074,7 +1079,7 @@ class STACLayer extends LayerGroup {
    */
   getWebMapLinks() {
     const data = this.getData();
-    if (data instanceof Asset) {
+    if (!data || data.isAsset) {
       return [];
     }
 
@@ -1121,10 +1126,11 @@ class STACLayer extends LayerGroup {
     if (Array.isArray(assets)) {
       const data = this.getData();
       this.assets_ = assets.map((asset) => {
-        if (data instanceof STAC && typeof asset === 'string') {
+        const isStr = typeof asset === 'string';
+        if (data.isSTAC && isStr) {
           return data.getAsset(asset);
         }
-        if (!(asset instanceof Asset)) {
+        if (!isStr && !asset.isAsset) {
           return new Asset(asset);
         }
         return asset;
