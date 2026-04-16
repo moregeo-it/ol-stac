@@ -7,7 +7,6 @@ import Circle from 'ol/style/Circle.js';
 import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
 import Style from 'ol/style/Style.js';
-import { STAC } from 'stac-js';
 /**
  * @typedef {import('ol/colorlike.js').ColorLike} ColorLike
  */
@@ -23,6 +22,9 @@ import { STAC } from 'stac-js';
  */
 /**
  * @typedef {import('ol/proj.js').ProjectionLike} ProjectionLike
+ */
+/**
+ * @typedef {import('stac-js').STAC} STAC
  */
 /**
  * The pattern for the supported versions of the label extension.
@@ -99,7 +101,7 @@ export async function getStacObjectsForEvent(event, exclude = null, selectedFeat
         layerFilter(layer) {
             if (layer instanceof VectorLayer && layer.get('bounds') === true) {
                 const stac = layer.get('stac');
-                if (stac instanceof STAC && (!exclude || !stac.equals(exclude))) {
+                if (stac && stac.isSTAC && (!exclude || !stac.is(exclude))) {
                     return true;
                 }
             }
@@ -189,27 +191,6 @@ export function getGeoTiffSourceInfoFromAsset(asset, selectedBands) {
     return sourceInfo;
 }
 /**
- * Load the projection for the given projection code from the internet.
- *
- * @param {string} code Projection code, e.g. 'EPSG:1234'
- * @return {Promise<Projection|null>} The loaded projection
- */
-export async function loadProjection(code) {
-    try {
-        // @ts-ignore - Support both old and new OpenLayers versions
-        const { fromProjectionCode, fromEPSGCode } = await import('ol/proj/proj4.js');
-        if (typeof fromProjectionCode === 'function') {
-            // Supported since ol v10.8.0
-            return await fromProjectionCode(code);
-        }
-        // Supported until ol v11.0.0
-        return await fromEPSGCode(code);
-    }
-    catch (_) {
-        return null;
-    }
-}
-/**
  * Gets the projection from the asset or link.
  * @param {import('stac-js').STACReference} reference The asset or link to read the information from.
  * @param {ProjectionLike} defaultProjection A default projection to use.
@@ -221,7 +202,16 @@ export async function getProjection(reference, defaultProjection = undefined) {
         // TODO: It would be great to handle WKT2 and PROJJSON, but is not supported yet by proj4js.
         const code = reference.getMetadata('proj:code');
         if (code) {
-            projection = await loadProjection(code);
+            let fn;
+            try {
+                fn = (await import('ol/proj/proj4.js')).fromProjectionCode;
+            }
+            catch (_a) {
+                // Not supported by older versions of ol
+            }
+            if (fn) {
+                projection = await fn(code);
+            }
         }
     }
     return projection || defaultProjection;

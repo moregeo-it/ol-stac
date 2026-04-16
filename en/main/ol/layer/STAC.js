@@ -11,7 +11,7 @@ import VectorLayer from 'ol/layer/Vector.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
 import WebGLTileLayer from 'ol/layer/WebGLTile.js';
 import { transformExtent } from 'ol/proj.js';
-// import GeoTIFF from 'ol/source/GeoTIFF.js';
+import GeoTIFF from 'ol/source/GeoTIFF.js';
 import StaticImage from 'ol/source/ImageStatic.js';
 import TileJSON from 'ol/source/TileJSON.js';
 import WMS from 'ol/source/TileWMS.js';
@@ -21,13 +21,11 @@ import WMTS, { optionsFromCapabilities } from 'ol/source/WMTS.js';
 import XYZ from 'ol/source/XYZ.js';
 import { PMTilesRasterSource, PMTilesVectorSource } from 'ol-pmtiles';
 import * as pmtiles from 'pmtiles';
-import create, { APICollection, Asset, CollectionCollection, Item, ItemCollection, STAC, } from 'stac-js';
+import create, { Asset } from 'stac-js';
 import { fixGeoJson, toGeoJSON, unionBoundingBox } from 'stac-js/src/geo.js';
-import { geojsonMediaType } from 'stac-js/src/mediatypes.js';
+import { geojsonMediaType, geotiffMediaTypes } from 'stac-js/src/mediatypes.js';
 import { isObject } from 'stac-js/src/utils.js';
 import ErrorEvent from '../events/ErrorEvent.js';
-// todo: temporary fix for https://github.com/openlayers/openlayers/issues/17153
-import GeoTIFF from '../source/GeoTIFF.js';
 import SourceType from '../source/type.js';
 import { LABEL_EXTENSION, defaultBoundsStyle, defaultCollectionStyle, getBoundsStyle, getClassificationStyle, getGeoTiffSourceInfoFromAsset, getProjection, getSpecificWebMapUrl, isScalar, } from '../util.js';
 /**
@@ -37,7 +35,16 @@ import { LABEL_EXTENSION, defaultBoundsStyle, defaultCollectionStyle, getBoundsS
  * @typedef {import("ol/layer/Layer.js").default} Layer
  */
 /**
+ * @typedef {import('stac-js').APICollection} APICollection
+ */
+/**
  * @typedef {import("stac-js").Link} Link
+ */
+/**
+ * @typedef {import('stac-js').STAC} STAC
+ */
+/**
+ * @typedef {import('stac-js').STACObject} STACObject
  */
 /**
  * @typedef {import("ol/Map.js").default} Map
@@ -296,12 +303,11 @@ class STACLayer extends LayerGroup {
      * @api
      */
     isEmpty() {
-        var _a;
         const count = this.getLayers().getLength();
         if (count > 1) {
             return false;
         }
-        const bbox = (_a = this.getData()) === null || _a === void 0 ? void 0 : _a.getBoundingBox();
+        const bbox = this.getData().getBoundingBox();
         if (!bbox || isEmpty(bbox)) {
             return true;
         }
@@ -331,7 +337,7 @@ class STACLayer extends LayerGroup {
      */
     configure_(data, url = null, children = null, assets = null, bands = []) {
         let stac;
-        if (data instanceof Asset || data instanceof STAC) {
+        if (data.isAsset || data.isSTAC) {
             stac = data;
         }
         else {
@@ -633,8 +639,7 @@ class STACLayer extends LayerGroup {
         }
         const sourceInfo = getGeoTiffSourceInfoFromAsset(asset, this.bands_);
         /**
-         * todo: temporary fix for https://github.com/openlayers/openlayers/issues/17153
-         * @type {import("../source/GeoTIFF.js").Options}
+         * @type {import("ol/source/GeoTIFF.js").Options}
          */
         let options = {
             sources: [sourceInfo],
@@ -711,7 +716,7 @@ class STACLayer extends LayerGroup {
     }
     /**
      * @param {Layer|LayerGroup} [layer] A Layer to add to the LayerGroup
-     * @param {import("stac-js").STACObject} [data] The STAC object, can be any class exposed by stac-js
+     * @param {STACObject} [data] The STAC object, can be any class exposed by stac-js
      * @param {number} [zIndex] The z-index for the layer
      * @private
      */
@@ -729,7 +734,7 @@ class STACLayer extends LayerGroup {
     addFootprint_() {
         let geojson = null;
         const data = this.getData();
-        if (data.isItemCollection || data.isCollectionCollection) {
+        if (data.isApiCollection) {
             geojson = toGeoJSON(data.getBoundingBox());
         }
         else {
@@ -794,7 +799,7 @@ class STACLayer extends LayerGroup {
      */
     async addLabelExtension_() {
         const data = this.getData();
-        if (!(data instanceof Item)) {
+        if (!data || !data.isItem) {
             return;
         }
         // determine the asset with the geojson labels
@@ -828,7 +833,7 @@ class STACLayer extends LayerGroup {
                     return null;
                 }
             });
-            const items = (await Promise.all(promises)).filter((item) => item instanceof STAC);
+            const items = (await Promise.all(promises)).filter((item) => item && item.isSTAC);
             await this.addChildren_(items, { displayFootprint: false });
         }
         // Add the GeoJSON labels
@@ -873,10 +878,10 @@ class STACLayer extends LayerGroup {
                 if (!ref) {
                     return;
                 }
-                if (ref.type === geojsonMediaType) {
+                if (ref.isType(geojsonMediaType)) {
                     return await this.addGeoJson_(ref);
                 }
-                if (ref.isGeoTIFF) {
+                if (ref.isType(geotiffMediaTypes)) {
                     return await this.addGeoTiff_(ref);
                 }
                 if (ref.canBrowserDisplayImage()) {
@@ -889,10 +894,10 @@ class STACLayer extends LayerGroup {
         // choose a sensible default visualization
         if (this.hasOnlyBounds()) {
             // Show the ItemCollection/CollectionCollection entries
-            if (data instanceof APICollection) {
+            if (data.isApiCollection) {
                 await this.addChildren_(data.getAll(), this.childrenOptions_);
             }
-            else if (data instanceof STAC) {
+            else if (data.isSTAC) {
                 // Show label extension
                 if (data.isItem &&
                     data.supportsExtension(LABEL_EXTENSION) &&
@@ -910,7 +915,7 @@ class STACLayer extends LayerGroup {
                 }
                 else {
                     // Find an asset that we can visualize
-                    const geotiff = data.getDefaultGeoTIFF(true, !this.displayGeoTiffByDefault_);
+                    const geotiff = data.getDefaultGeoFile('geotiff', true, !this.displayGeoTiffByDefault_);
                     let layer;
                     // Try to visualize the default GeoTIFF first
                     if (geotiff && this.displayOverview_) {
@@ -949,7 +954,7 @@ class STACLayer extends LayerGroup {
      */
     getWebMapLinks() {
         const data = this.getData();
-        if (data instanceof Asset) {
+        if (!data || data.isAsset) {
             return [];
         }
         let types = ['xyz', 'tilejson', 'pmtiles', 'wmts', 'wms']; // This also defines the priority
@@ -994,10 +999,11 @@ class STACLayer extends LayerGroup {
         if (Array.isArray(assets)) {
             const data = this.getData();
             this.assets_ = assets.map((asset) => {
-                if (data instanceof STAC && typeof asset === 'string') {
+                const isStr = typeof asset === 'string';
+                if (data.isSTAC && isStr) {
                     return data.getAsset(asset);
                 }
-                if (!(asset instanceof Asset)) {
+                if (!isStr && !asset.isAsset) {
                     return new Asset(asset);
                 }
                 return asset;
@@ -1022,18 +1028,19 @@ class STACLayer extends LayerGroup {
      * @api
      */
     async setChildren(childs, options = null, updateLayers = true) {
-        if (childs instanceof ItemCollection) {
+        const childsIsObj = isObject(childs);
+        if (childsIsObj && childs.isItemCollection) {
             this.children_ = childs.getAll();
         }
-        else if (childs instanceof CollectionCollection) {
+        else if (childsIsObj && childs.isCollectionCollection) {
             this.children_ = childs.getAll();
         }
-        else if (isObject(childs) && childs.type === 'FeatureCollection') {
+        else if (childsIsObj && childs.type === 'FeatureCollection') {
             this.children_ = create(childs, !this.disableMigration_).getAll();
         }
         else if (Array.isArray(childs)) {
             this.children_ = childs.map((child) => {
-                if (child instanceof STAC) {
+                if (child.isSTAC) {
                     return child;
                 }
                 return create(child, !this.disableMigration_);

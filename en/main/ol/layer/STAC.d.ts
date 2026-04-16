@@ -1,7 +1,10 @@
 export default STACLayer;
 export type Extent = import("ol/extent.js").Extent;
 export type Layer = import("ol/layer/Layer.js").default;
+export type APICollection = any;
 export type Link = any;
+export type STAC = any;
+export type STACObject = any;
 export type Map = import("ol/Map.js").default;
 export type Style = import('ol/style/Style.js').default;
 export type SourceOptions = import('../source/type.js').SourceOptions;
@@ -165,7 +168,16 @@ export type Options = {
  * @typedef {import("ol/layer/Layer.js").default} Layer
  */
 /**
+ * @typedef {import('stac-js').APICollection} APICollection
+ */
+/**
  * @typedef {import("stac-js").Link} Link
+ */
+/**
+ * @typedef {import('stac-js').STAC} STAC
+ */
+/**
+ * @typedef {import('stac-js').STACObject} STACObject
  */
 /**
  * @typedef {import("ol/Map.js").default} Map
@@ -452,7 +464,7 @@ declare class STACLayer extends LayerGroup {
     private addTileLayerForImagery_;
     /**
      * @param {Layer|LayerGroup} [layer] A Layer to add to the LayerGroup
-     * @param {import("stac-js").STACObject} [data] The STAC object, can be any class exposed by stac-js
+     * @param {STACObject} [data] The STAC object, can be any class exposed by stac-js
      * @param {number} [zIndex] The z-index for the layer
      * @private
      */

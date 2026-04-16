@@ -27,13 +27,6 @@ export function getStacObjectsForEvent(event: import('ol/MapBrowserEvent.js').de
  */
 export function getGeoTiffSourceInfoFromAsset(asset: any, selectedBands: Array<number>): import('ol/source/GeoTIFF.js').SourceInfo;
 /**
- * Load the projection for the given projection code from the internet.
- *
- * @param {string} code Projection code, e.g. 'EPSG:1234'
- * @return {Promise<Projection|null>} The loaded projection
- */
-export function loadProjection(code: string): Promise<Projection | null>;
-/**
  * Gets the projection from the asset or link.
  * @param {import('stac-js').STACReference} reference The asset or link to read the information from.
  * @param {ProjectionLike} defaultProjection A default projection to use.
@@ -102,6 +95,9 @@ export function getClassificationStyle(asset: any, bands?: number[] | undefined)
  * @typedef {import('ol/proj.js').ProjectionLike} ProjectionLike
  */
 /**
+ * @typedef {import('stac-js').STAC} STAC
+ */
+/**
  * The pattern for the supported versions of the label extension.
  * @type {string}
  */
@@ -123,5 +119,6 @@ export type Collection<T> = import("ol/Collection.js").default<any>;
 export type Feature = import('ol/Feature.js').default;
 export type Projection = import('ol/proj.js').Projection;
 export type ProjectionLike = import('ol/proj.js').ProjectionLike;
+export type STAC = any;
 import Style from 'ol/style/Style.js';
 //# sourceMappingURL=util.d.ts.map
