@@ -39,6 +39,7 @@ import {
   defaultBoundsStyle,
   defaultCollectionStyle,
   getBoundsStyle,
+  getClassificationStyle,
   getGeoTiffSourceInfoFromAsset,
   getProjection,
   getSpecificWebMapUrl,
@@ -735,6 +736,11 @@ class STACLayer extends LayerGroup {
       options.projection = projection;
     }
 
+    const classificationStyle = getClassificationStyle(asset, this.bands_);
+    if (classificationStyle) {
+      options.normalize = false;
+    }
+
     if (this.getSourceOptions_) {
       // @ts-ignore
       options = await this.getSourceOptions_(
@@ -758,7 +764,11 @@ class STACLayer extends LayerGroup {
     });
     try {
       await status;
-      const layer = new WebGLTileLayer({source});
+      const layerOptions = {source};
+      if (classificationStyle) {
+        layerOptions.style = classificationStyle;
+      }
+      const layer = new WebGLTileLayer(layerOptions);
       this.addLayer_(layer, asset);
       return layer;
     } catch (error) {

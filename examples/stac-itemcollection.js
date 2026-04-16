@@ -10,7 +10,7 @@ import {getStacObjectsForEvent} from '../src/ol/util.js';
 register(proj4); // required to support source reprojection
 
 const layer = new STAC({
-  url: 'https://tamn.snapplanet.io/search?bbox=125.727770,-29.514858,133.412707,-23.673395&collections=S2',
+  url: 'https://earth-search.aws.element84.com/v1/search?bbox=-16.9,12.85,-14.9,13.97&collections=sentinel-2-c1-l2a&limit=12',
   displayPreview: true,
 });
 

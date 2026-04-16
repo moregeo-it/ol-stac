@@ -24,12 +24,12 @@ jobs:
 
     steps:
       - name: Clone Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set Node.js Version
         uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: 'lts/*'
 
       - name: Install Dependencies
         run: npm ci
@@ -46,12 +46,12 @@ jobs:
 
     steps:
       - name: Clone Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set Node.js Version
         uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: 'lts/*'
 
       - name: Install Dependencies
         run: npm ci
@@ -68,12 +68,12 @@ jobs:
 
     steps:
       - name: Clone Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set Node.js Version
         uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: 'lts/*'
 
       - name: Install Dependencies
         run: npm ci
