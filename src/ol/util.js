@@ -144,69 +144,62 @@ export function getGeoTiffSourceInfoFromAsset(asset, selectedBands) {
     url: asset.getAbsoluteUrl(),
   };
 
-  /**
-   * @type {Asset|Band}
-   */
-  let source = asset;
-  let bands = asset.getBands();
-  // If there's just one band, we can also read the information from there.
-  if (bands.length === 1) {
-    source = bands[0];
-    bands = [];
+  const bands = asset.getBands();
+  const sources = bands.length > 0 ? bands : [asset];
+  const perBand = sources.length > 1;
+  const assetNodata = asset.getNoDataValues();
+  const bandCount = perBand
+    ? Math.max(...bands.map((b) => b.getIndex())) + 1
+    : 1;
+
+  const minValues = new Array(bandCount).fill(undefined);
+  const maxValues = new Array(bandCount).fill(undefined);
+  const nodataValues = new Array(bandCount).fill(undefined);
+
+  let index = 0;
+  for (const source of sources) {
+    const stats = source.getStatistics();
+    let {minimum, maximum} = stats;
+    const {mean, stddev} = stats;
+
+    // Use mean ± 2σ for a better visualization stretch (~95% of values)
+    if (typeof mean === 'number' && typeof stddev === 'number' && stddev > 0) {
+      const stretchMin = mean - 2 * stddev;
+      const stretchMax = mean + 2 * stddev;
+      minimum =
+        typeof minimum === 'number'
+          ? Math.max(minimum, stretchMin)
+          : stretchMin;
+      maximum =
+        typeof maximum === 'number'
+          ? Math.min(maximum, stretchMax)
+          : stretchMax;
+    }
+
+    if (typeof minimum === 'number') {
+      minValues[index] = minimum;
+    }
+    if (typeof maximum === 'number') {
+      maxValues[index] = maximum;
+    }
+
+    const nodata = source.getNoDataValues();
+    if (nodata.length > 0) {
+      nodataValues[index] = nodata[0];
+    } else if (assetNodata.length > 0) {
+      nodataValues[index] = assetNodata[0];
+    }
+    index++;
   }
 
-  // TODO: It would be useful if OL would allow min/max values per band
-  const {minimum, maximum} = source.getMinMaxValues();
-  if (typeof minimum === 'number') {
-    sourceInfo.min = minimum;
+  if (minValues.some((v) => v !== undefined)) {
+    sourceInfo.min = perBand ? minValues : minValues[0];
   }
-  if (typeof maximum === 'number') {
-    sourceInfo.max = maximum;
+  if (maxValues.some((v) => v !== undefined)) {
+    sourceInfo.max = perBand ? maxValues : maxValues[0];
   }
-  if (
-    typeof sourceInfo.min !== 'number' &&
-    typeof sourceInfo.max !== 'number' &&
-    bands.length > 1
-  ) {
-    // Read from bands as fallback and if available
-    for (const band of bands) {
-      const {minimum, maximum} = band.getMinMaxValues();
-      if (
-        typeof minimum === 'number' &&
-        (typeof sourceInfo.min === 'undefined' || minimum < sourceInfo.min)
-      ) {
-        sourceInfo.min = minimum;
-      }
-      if (
-        typeof maximum === 'number' &&
-        (typeof sourceInfo.max === 'undefined' || maximum > sourceInfo.max)
-      ) {
-        sourceInfo.max = maximum;
-      }
-    }
-  }
-
-  // TODO: It would be useful if OL would allow multiple no-data values
-  const nodata = source.getNoDataValues();
-  if (nodata.length > 0) {
-    sourceInfo.nodata = nodata[0];
-  } else if (bands.length > 1) {
-    // Read from bands as fallback and if available
-    let nodata = undefined;
-    for (const band of bands) {
-      const bandNoData = band.getNoDataValues();
-      if (bandNoData.length > 0) {
-        if (typeof nodata === 'undefined') {
-          nodata = bandNoData[0];
-        } else if (nodata !== bandNoData[0]) {
-          nodata = undefined;
-          break;
-        }
-      }
-    }
-    if (typeof nodata !== 'undefined') {
-      sourceInfo.nodata = nodata;
-    }
+  if (nodataValues.some((v) => v !== undefined)) {
+    sourceInfo.nodata = perBand ? nodataValues : nodataValues[0];
   }
 
   if (selectedBands.length > 0) {
