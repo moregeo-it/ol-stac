@@ -3,10 +3,7 @@
  */
 
 import VectorLayer from 'ol/layer/Vector.js';
-import {
-  fromProjectionCode,
-  isRegistered as isProj4Registered,
-} from 'ol/proj/proj4.js';
+import {isRegistered as isProj4Registered} from 'ol/proj/proj4.js';
 import Circle from 'ol/style/Circle.js';
 import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
@@ -237,7 +234,15 @@ export async function getProjection(reference, defaultProjection = undefined) {
     // TODO: It would be great to handle WKT2 and PROJJSON, but is not supported yet by proj4js.
     const code = reference.getMetadata('proj:code');
     if (code) {
-      projection = await fromProjectionCode(code);
+      let fn;
+      try {
+        fn = (await import('ol/proj/proj4.js')).fromProjectionCode;
+      } catch {
+        // Not supported by older versions of ol
+      }
+      if (fn) {
+        projection = await fn(code);
+      }
     }
   }
   return projection || defaultProjection;
