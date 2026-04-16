@@ -34,11 +34,11 @@
   },
   "dependencies": {
     "ol-pmtiles": "^2.0.0",
-    "proj4": "^2.15.0",
-    "stac-js": ">=0.3.0"
+    "proj4": "^2.16.1",
+    "stac-js": "^0.4.1"
   },
   "peerDependencies": {
-    "ol": ">=7.5.2, <10.8.0"
+    "ol": ">=7.5.2"
   },
   "devDependencies": {
     "@metalsmith/in-place": "^5.0.0",

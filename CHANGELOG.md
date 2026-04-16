@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.0] - 2026-03-13
 
 - Support for `classification:classes`
-- Limit upper ol version to (< 10.8.0) until we can remove the GeoTIFF.js
+- Removed GeoTIFF source and `loadProjection` helper in favor of ol
+- Recommend usage of ol >= 10.9.0
 - Update stac-js
 - Fix examples
 

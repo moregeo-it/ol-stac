@@ -35,9 +35,9 @@ layer.on('layersready', () => {
   for (const sublayer of layer.getLayersArray()) {
     const stac = sublayer.get('stac');
     let title;
-    if (stac.isAsset()) {
+    if (stac.isAsset) {
       title = stac.getMetadata('title') || stac.getKey();
-    } else if (stac.isLink()) {
+    } else if (stac.isLink) {
       title = stac.getMetadata('title') || stac.rel || 'Unnamed';
     } else {
       title = 'Footprint';
