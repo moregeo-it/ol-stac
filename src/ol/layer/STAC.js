@@ -12,7 +12,6 @@ import VectorTileLayer from 'ol/layer/VectorTile.js';
 import WebGLTileLayer from 'ol/layer/WebGLTile.js';
 import {transformExtent} from 'ol/proj.js';
 import GeoTIFF from 'ol/source/GeoTIFF.js';
-import GeoZarr from 'ol/source/GeoZarr.js';
 import StaticImage from 'ol/source/ImageStatic.js';
 import TileJSON from 'ol/source/TileJSON.js';
 import WMS from 'ol/source/TileWMS.js';
@@ -990,6 +989,7 @@ class STACLayer extends LayerGroup {
       );
     }
 
+    const GeoZarr = (await import('ol/source/GeoZarr.js')).default;
     const source = new GeoZarr(options);
     try {
       await new Promise((resolve, reject) => {
