@@ -1,6 +1,6 @@
 {
   "name": "ol-stac",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "An \"automagical\" STAC LayerGroup for OpenLayers",
   "homepage": "https://moregeo.it",
   "license": "Apache-2.0",
@@ -23,7 +23,7 @@
     "stac-js": "^0.4.2"
   },
   "peerDependencies": {
-    "ol": ">=10.9.0"
+    "ol": ">=9.0.0"
   },
   "browserslist": [
     "> 1%",
