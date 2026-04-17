@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title>STAC Item with GeoZarr asset</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/fontawesome.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/solid.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/brands.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/ol/ol.css">
+    <link rel="stylesheet" type="text/css" href="/theme/site.css">
+  </head>
+  <body>
+    <header class="navbar navbar-expand-md navbar-dark mb-3 px-3 py-0 fixed-top" role="navigation">
+      <a class="navbar-brand" href="/">OL STAC</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#olmenu" aria-controls="olmenu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- menu items that get hidden below 768px width -->
+      <nav class="collapse navbar-collapse" id="olmenu">
+        <ul class="nav navbar-nav ms-auto">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="docdropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Docs</a>
+            <div class="dropdown-menu dropdown-menu-end mb-3" aria-labelledby="docdropdown">
+              <a class="dropdown-item" href="/doc/">Docs</a>
+              <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="/doc/quickstart.html"><i class="fa fa-check fa-fw me-2 fa-lg"></i>Quick Start</a>
+                <a class="dropdown-item" href="/doc/faq.html"><i class="fa fa-question fa-fw me-2 fa-lg"></i>FAQ</a>
+                <a class="dropdown-item" href="/doc/tutorials/"><i class="fa fa-book fa-fw me-2 fa-lg"></i>Tutorials</a>
+            </div>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="./"><i class="fa fa-map me-1"></i>Examples</a></li>
+          <li class="nav-item"><a class="nav-link" href="../apidoc/"><i class="fa fa-code me-1"></i>API</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="codedropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Code</a>
+            <div class="dropdown-menu dropdown-menu-end mb-3" aria-labelledby="codedropdown">
+              <a class="dropdown-item" href="https://github.com/moregeo-it/ol-stac"><i class="fab fa-github fa-fw me-2 fa-lg"></i>Repository</a>
+              <a class="dropdown-item" href="/download/"><i class="fa fa-download fa-fw me-2 fa-lg"></i>Download</a>
+            </div>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <div class="container-fluid line-numbers">
+      <div id="latest-check" class="alert alert-warning alert-dismissible" role="alert" style="display:none">
+        <button id="latest-dismiss" type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        This example uses OL STAC v<span>1.3.0</span>. The <a id="latest-link" href="#" class="alert-link">latest</a> is v<span id="latest-version"></span>.
+      </div>
+
+
+      <div class="row-fluid">
+        <a href="#" id="codepen-button" class="btn btn-link float-end">
+          <i class="fab fa-codepen fa-lg"></i> Edit
+        </a>
+        <div class="span12">
+          <h4 id="title">STAC Item with GeoZarr asset</h4>
+          <p class="tags">
+            <span class="badge-group">
+              <a
+                href="./index.html?q=stac" class="badge badge-info">stac</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="stac"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./custom.html&quot;&gt;Custom STAC provided via URL&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-with-items.html&quot;&gt;STAC Collection with child items&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-pmtiles-raster.html&quot;&gt;STAC Collection with PMTiles (Raster)&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-pmtiles-vector.html&quot;&gt;STAC Collection with PMTiles (Vector)&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-wms.html&quot;&gt;STAC Collection with WMS&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item.html&quot;&gt;STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-itemcollection.html&quot;&gt;STAC Item Collection&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-from-object.html&quot;&gt;STAC Item from an object&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-classification.html&quot;&gt;STAC Item with Classification&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-tileserver.html&quot;&gt;STAC Item with COG rendered by a tile server&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-geojson.html&quot;&gt;STAC Item with GeoJSON assets&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-zarr.html&quot;&gt;STAC Item with GeoZarr asset&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-labels.html&quot;&gt;STAC Item with Label Extension&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >14</a>
+            </span>
+            <span class="badge-group">
+              <a
+                href="./index.html?q=stacitem" class="badge badge-info">stacitem</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="stacitem"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item.html&quot;&gt;STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-from-object.html&quot;&gt;STAC Item from an object&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-classification.html&quot;&gt;STAC Item with Classification&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-tileserver.html&quot;&gt;STAC Item with COG rendered by a tile server&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-geojson.html&quot;&gt;STAC Item with GeoJSON assets&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-zarr.html&quot;&gt;STAC Item with GeoZarr asset&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-labels.html&quot;&gt;STAC Item with Label Extension&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >8</a>
+            </span>
+            <span class="badge-group">
+              <a
+                href="./index.html?q=geozarr" class="badge badge-info">geozarr</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="geozarr"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-zarr.html&quot;&gt;STAC Item with GeoZarr asset&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >1</a>
+            </span>
+            <span class="badge-group">
+              <a
+                href="./index.html?q=zarr" class="badge badge-info">zarr</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="zarr"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-zarr.html&quot;&gt;STAC Item with GeoZarr asset&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >1</a>
+            </span>
+            <span class="badge-group">
+              <a
+                href="./index.html?q=eopf" class="badge badge-info">eopf</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="eopf"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-zarr.html&quot;&gt;STAC Item with GeoZarr asset&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >1</a>
+            </span>
+          </p>
+          <div class="modal modal-tag-example" id="tag-example-list" tabindex="-1" role="dialog" aria-labelledby="tag-example-title" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="tag-example-title"></h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="list-group"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="map" class="map"></div>
+
+<div class="row mt-2">
+  <div class="col-auto">
+    <div class="input-group">
+      <label class="input-group-text" for="url-select">Min / Max values for visualization (0-1)</label>
+      <div class="form-control">
+        <input type="range" id="min" name="min" min="0" max="1" value="0" step="0.1" />
+        <input type="range" id="max" name="max" min="0" max="1" value="0.5" step="0.1" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-2">
+  <div class="col-auto">
+    <div class="input-group">
+      <label class="input-group-text" for="url-select">URL</label>
+      <select class="form-select" id="url-select">
+        <option value="https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2C_MSIL2A_20260414T114351_N0512_R123_T30VVK_20260414T164110" selected>Sentinel-2 L2A (Highlands)</option>
+        <option value="https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2C_MSIL2A_20260120T084301_N0511_R064_T36UXA_20260120T122910">Sentinel-2 L2A (Krasnokuts'k)</option>
+        <option value="https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2B_MSIL2A_20260120T125339_N0511_R138_T27VWL_20260120T131151">Sentinel-2 L2A (Hvolsvöllur)</option>
+        <option value="custom">Custom...</option>
+      </select>
+      <input type="text" class="form-control" id="custom-url" placeholder="Enter Zarr URL" style="display: none; width: 300px;">
+      <button class="btn btn-outline-secondary" id="load-url" type="button">Load</button>
+    </div>
+  </div>
+</div>
+
+        </div>
+        <form method="POST" id="codepen-form" target="_blank" action="https://codesandbox.io/api/v1/sandboxes/define">
+          <input id="codesandbox-params" type="hidden" name="parameters">
+        </form>
+      </div>
+
+      <div class="row-fluid">
+        <div class="span12">
+          <p id="shortdesc">Rendering a STAC Item with Web-Optimized GeoZarr assets</p>
+          <div id="docs"><p>Visualize Web-Optimized GeoZarr assets from SpatioTemporal Asset Catalog (STAC) Items.</p>
+</div>
+        </div>
+      </div>
+
+      <div class="row-fluid">
+        <h5 class="source-heading">main.js</h5>
+        <pre><code id="example-js-source" class="language-js">import Map from &#x27;ol/Map.js&#x27;;
+import View from &#x27;ol/View.js&#x27;;
+import TileLayer from &#x27;ol/layer/WebGLTile.js&#x27;;
+import {register} from &#x27;ol/proj/proj4.js&#x27;;
+import OSM from &#x27;ol/source/OSM.js&#x27;;
+import proj4 from &#x27;proj4&#x27;;
+import STAC from &#x27;ol-stac&#x27;;
+
+register(proj4); // required to support source reprojection
+
+const background &#x3D; new TileLayer({
+  source: new OSM(),
+});
+
+const map &#x3D; new Map({
+  target: &#x27;map&#x27;,
+  layers: [background],
+  view: new View({
+    center: [0, 0],
+    zoom: 0,
+  }),
+});
+
+const select &#x3D; document.getElementById(&#x27;url-select&#x27;);
+const input &#x3D; document.getElementById(&#x27;custom-url&#x27;);
+const button &#x3D; document.getElementById(&#x27;load-url&#x27;);
+const min &#x3D; document.getElementById(&#x27;min&#x27;);
+const max &#x3D; document.getElementById(&#x27;max&#x27;);
+
+let layer;
+updateLayer();
+
+function getUrl() {
+  return select.value &#x3D;&#x3D;&#x3D; &#x27;custom&#x27; ? input.value : select.value;
+}
+
+function getStyle() {
+  return {
+    color: [
+      &#x27;color&#x27;,
+      [
+        &#x27;interpolate&#x27;,
+        [&#x27;linear&#x27;],
+        [&#x27;band&#x27;, 1],
+        parseFloat(min.value),
+        0,
+        parseFloat(max.value),
+        255,
+      ],
+      [
+        &#x27;interpolate&#x27;,
+        [&#x27;linear&#x27;],
+        [&#x27;band&#x27;, 2],
+        parseFloat(min.value),
+        0,
+        parseFloat(max.value),
+        255,
+      ],
+      [
+        &#x27;interpolate&#x27;,
+        [&#x27;linear&#x27;],
+        [&#x27;band&#x27;, 3],
+        parseFloat(min.value),
+        0,
+        parseFloat(max.value),
+        255,
+      ],
+    ],
+  };
+}
+
+function updateLayer() {
+  if (layer) {
+    map.removeLayer(layer);
+  }
+  layer &#x3D; new STAC({
+    url: getUrl(),
+    displayWebMapLink: false,
+    style: getStyle(),
+  });
+  layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
+    const view &#x3D; map.getView();
+    view.fit(layer.getExtent());
+  });
+  layer.on(&#x27;error&#x27;, (event) &#x3D;&gt; {
+    alert(&#x27;An unexpected error occurred: &#x27; + event.error.message);
+  });
+  map.addLayer(layer);
+  return layer;
+}
+
+button.addEventListener(&#x27;click&#x27;, updateLayer);
+
+select.addEventListener(&#x27;change&#x27;, () &#x3D;&gt; {
+  if (select.value &#x3D;&#x3D;&#x3D; &#x27;custom&#x27;) {
+    input.style.display &#x3D; &#x27;&#x27;;
+    input.focus();
+  } else {
+    input.style.display &#x3D; &#x27;none&#x27;;
+  }
+});
+
+min.addEventListener(&#x27;change&#x27;, () &#x3D;&gt; {
+  layer.setStyle(getStyle());
+});
+max.addEventListener(&#x27;change&#x27;, () &#x3D;&gt; {
+  layer.setStyle(getStyle());
+});
+</code></pre>
+      </div>
+
+      <div class="row-fluid">
+        <h5 class="source-heading">index.html</h5>
+        <pre><code id="example-html-source" class="language-markup">&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+  &lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;STAC Item with GeoZarr asset&lt;/title&gt;
+    &lt;link rel="stylesheet" href="node_modules/ol/ol.css"&gt;
+    &lt;style&gt;
+      .map {
+        width: 100%;
+        height: 400px;
+      }
+    &lt;/style&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id&#x3D;&quot;map&quot; class&#x3D;&quot;map&quot;&gt;&lt;/div&gt;
+
+    &lt;div class&#x3D;&quot;row mt-2&quot;&gt;
+      &lt;div class&#x3D;&quot;col-auto&quot;&gt;
+        &lt;div class&#x3D;&quot;input-group&quot;&gt;
+          &lt;label class&#x3D;&quot;input-group-text&quot; for&#x3D;&quot;url-select&quot;&gt;Min / Max values for visualization (0-1)&lt;/label&gt;
+          &lt;div class&#x3D;&quot;form-control&quot;&gt;
+            &lt;input type&#x3D;&quot;range&quot; id&#x3D;&quot;min&quot; name&#x3D;&quot;min&quot; min&#x3D;&quot;0&quot; max&#x3D;&quot;1&quot; value&#x3D;&quot;0&quot; step&#x3D;&quot;0.1&quot; /&gt;
+            &lt;input type&#x3D;&quot;range&quot; id&#x3D;&quot;max&quot; name&#x3D;&quot;max&quot; min&#x3D;&quot;0&quot; max&#x3D;&quot;1&quot; value&#x3D;&quot;0.5&quot; step&#x3D;&quot;0.1&quot; /&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class&#x3D;&quot;row mt-2&quot;&gt;
+      &lt;div class&#x3D;&quot;col-auto&quot;&gt;
+        &lt;div class&#x3D;&quot;input-group&quot;&gt;
+          &lt;label class&#x3D;&quot;input-group-text&quot; for&#x3D;&quot;url-select&quot;&gt;URL&lt;/label&gt;
+          &lt;select class&#x3D;&quot;form-select&quot; id&#x3D;&quot;url-select&quot;&gt;
+            &lt;option value&#x3D;&quot;https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2C_MSIL2A_20260414T114351_N0512_R123_T30VVK_20260414T164110&quot; selected&gt;Sentinel-2 L2A (Highlands)&lt;/option&gt;
+            &lt;option value&#x3D;&quot;https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2C_MSIL2A_20260120T084301_N0511_R064_T36UXA_20260120T122910&quot;&gt;Sentinel-2 L2A (Krasnokuts&#x27;k)&lt;/option&gt;
+            &lt;option value&#x3D;&quot;https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2B_MSIL2A_20260120T125339_N0511_R138_T27VWL_20260120T131151&quot;&gt;Sentinel-2 L2A (Hvolsvöllur)&lt;/option&gt;
+            &lt;option value&#x3D;&quot;custom&quot;&gt;Custom...&lt;/option&gt;
+          &lt;/select&gt;
+          &lt;input type&#x3D;&quot;text&quot; class&#x3D;&quot;form-control&quot; id&#x3D;&quot;custom-url&quot; placeholder&#x3D;&quot;Enter Zarr URL&quot; style&#x3D;&quot;display: none; width: 300px;&quot;&gt;
+          &lt;button class&#x3D;&quot;btn btn-outline-secondary&quot; id&#x3D;&quot;load-url&quot; type&#x3D;&quot;button&quot;&gt;Load&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;script type="module" src="main.js"&gt;&lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+      </div>
+
+      <div class="row-fluid">
+        <h5 class="source-heading">package.json</h5>
+        <pre><code id="example-pkg-source" class="language-json">{
+  &quot;name&quot;: &quot;stac-item-zarr&quot;,
+  &quot;dependencies&quot;: {
+    &quot;ol-stac&quot;: &quot;1.3.0&quot;,
+    &quot;proj4&quot;: &quot;^2.16.1&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;vite&quot;: &quot;^3.2.3&quot;
+  },
+  &quot;scripts&quot;: {
+    &quot;start&quot;: &quot;vite&quot;,
+    &quot;build&quot;: &quot;vite build&quot;
+  }
+}</code></pre>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="common.js"></script>
+    <script src="stac-item-zarr.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/toolbar/prism-toolbar.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.js"></script>
+    <script src="./resources/common.js"></script>
+    <script>
+      document.getElementById('tag-example-list')
+        .addEventListener('show.bs.modal', function (event) {
+          const button = event.relatedTarget; // Button that triggered the modal
+          this.querySelector('.modal-title').innerText = button.dataset.title;
+          this.querySelector('.modal-body').innerHTML = button.dataset.content;
+        });
+    </script>
+    <script>
+      const releaseUrl = 'https://cdn.jsdelivr.net/npm/ol-stac/package.json';
+      fetch(releaseUrl).then(function(response) {
+        return response.json();
+      }).then(function(json) {
+        const latestVersion = json.version;
+        document.getElementById('latest-version').innerHTML = latestVersion;
+        const url = window.location.href;
+        const branchSearch = url.match(/\/([^\/]*)\/examples\//);
+        const storageKey = 'ol-dismissed=-' + latestVersion;
+        const dismissed = localStorage.getItem(storageKey) === 'true';
+        if (branchSearch && !dismissed && /^v[0-9\.]*$/.test(branchSearch[1]) && '1.3.0' != latestVersion) {
+          const link = url.replace(branchSearch[0], '/latest/examples/');
+          fetch(link, {method: 'head'}).then(function(response) {
+            const a = document.getElementById('latest-link');
+            a.href = response.status == 200 ? link : '../../latest/examples/';
+          });
+          const latestCheck = document.getElementById('latest-check');
+          latestCheck.style.display = '';
+          document.getElementById('latest-dismiss').onclick = function() {
+            latestCheck.style.display = 'none';
+            localStorage.setItem(storageKey, 'true');
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
