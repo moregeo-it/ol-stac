@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-04-17
+
 - Support for WKT2 and PROJJSON (`proj:wkt2` and `proj:projjson`)
 - Removed GeoTIFF source and `loadProjection` helper in favor of ol
 - Render GeoTiffs better based on statistical values
@@ -196,7 +198,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release
 
-[Unreleased]: <https://github.com/stac-extensions/contacts/compare/v1.1.1...HEAD>
+[Unreleased]: <https://github.com/stac-extensions/contacts/compare/v1.3.0...HEAD>
+[1.3.0]: <https://github.com/stac-extensions/contacts/compare/v1.2.0...v1.3.0>
+[1.2.0]: <https://github.com/stac-extensions/contacts/compare/v1.1.1...v1.2.0>
 [1.1.1]: <https://github.com/stac-extensions/contacts/compare/v1.1.0...v1.1.1>
 [1.1.0]: <https://github.com/stac-extensions/contacts/compare/v1.0.5...v1.1.0>
 [1.0.5]: <https://github.com/stac-extensions/contacts/compare/v1.0.4...v1.0.5>
