@@ -8,29 +8,56 @@ import STAC from '../src/ol/layer/STAC.js';
 
 register(proj4); // required to support source reprojection
 
-const layer = new STAC({
-  url: 'https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2A_MSIL2A_20260318T142851_N0512_R139_T26WME_20260318T224412',
-  displayWebMapLink: false,
-});
-
 const background = new TileLayer({
   source: new OSM(),
 });
 
 const map = new Map({
   target: 'map',
-  layers: [background, layer],
+  layers: [background],
   view: new View({
     center: [0, 0],
     zoom: 0,
   }),
 });
 
-layer.on('sourceready', () => {
-  const view = map.getView();
-  view.fit(layer.getExtent());
-});
+const select = document.getElementById('url-select');
+const input = document.getElementById('custom-url');
+const button = document.getElementById('load-url');
 
-layer.on('error', (event) => {
-  alert('An unexpected error occured: ' + event.error.message);
+let layer;
+updateLayer();
+
+function getUrl() {
+  return select.value === 'custom' ? input.value : select.value;
+}
+
+function updateLayer() {
+  if (layer) {
+    map.removeLayer(layer);
+  }
+  layer = new STAC({
+    url: getUrl(),
+    displayWebMapLink: false,
+  });
+  layer.on('sourceready', () => {
+    const view = map.getView();
+    view.fit(layer.getExtent());
+  });
+  layer.on('error', (event) => {
+    alert('An unexpected error occurred: ' + event.error.message);
+  });
+  map.addLayer(layer);
+  return layer;
+}
+
+button.addEventListener('click', updateLayer);
+
+select.addEventListener('change', () => {
+  if (select.value === 'custom') {
+    input.style.display = '';
+    input.focus();
+  } else {
+    input.style.display = 'none';
+  }
 });

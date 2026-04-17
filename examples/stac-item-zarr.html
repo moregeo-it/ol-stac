@@ -7,3 +7,19 @@ docs: >
 tags: "stac, stac item, geozarr, zarr, eopf"
 ---
 <div id="map" class="map"></div>
+
+<div class="row mt-2">
+  <div class="col-auto">
+    <div class="input-group">
+      <label class="input-group-text" for="url-select">URL</label>
+      <select class="form-select" id="url-select">
+        <option value="https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2C_MSIL2A_20260120T084301_N0511_R064_T36UXA_20260120T122910" selected>Sentinel-2 L2A (Krasnokuts'k)</option>
+        <option value="https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2B_MSIL2A_20260120T125339_N0511_R138_T27VWL_20260120T131151">Sentinel-2 L2A (Hvolsvöllur)</option>
+        <option value="https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2C_MSIL2A_20260414T114351_N0512_R123_T30VVK_20260414T164110">Sentinel-2 L2A (Highlands)</option>
+        <option value="custom">Custom...</option>
+      </select>
+      <input type="text" class="form-control" id="custom-url" placeholder="Enter Zarr URL" style="display: none; width: 300px;">
+      <button class="btn btn-outline-secondary" id="load-url" type="button">Load</button>
+    </div>
+  </div>
+</div>
