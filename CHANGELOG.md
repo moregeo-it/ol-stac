@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Only visualize Web-Optimized Zarr, not normal Zarr
+
 ## [1.3.0] - 2026-04-17
 
 - Support for WKT2 and PROJJSON (`proj:wkt2` and `proj:projjson`)

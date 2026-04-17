@@ -26,7 +26,7 @@ import {fixGeoJson, toGeoJSON, unionBoundingBox} from 'stac-js/src/geo.js';
 import {
   geojsonMediaType,
   geotiffMediaTypes,
-  zarrMediaTypes,
+  wozMediaTypes,
 } from 'stac-js/src/mediatypes.js';
 import {isObject} from 'stac-js/src/utils.js';
 import ErrorEvent from '../events/ErrorEvent.js';
@@ -1062,7 +1062,7 @@ class STACLayer extends LayerGroup {
         if (ref.isType(geotiffMediaTypes)) {
           return await this.addGeoTiff_(ref);
         }
-        if (ref.isType(zarrMediaTypes)) {
+        if (ref.isType(wozMediaTypes)) {
           return await this.addGeoZarr_(ref);
         }
         if (ref.canBrowserDisplayImage()) {
