@@ -241,20 +241,22 @@ export function getGeoTiffSourceInfoFromAsset(asset, selectedBands) {
   }
 
   if (selectedBands.length > 0) {
-    sourceInfo.bands = selectedBands.map((band) => {
-      if (typeof band === 'number') {
-        return band;
-      }
-      const b = asset.findBand(band);
-      if (b) {
-        return b.getIndex() + 1;
-      }
-      // eslint-disable-next-line no-console
-      console.error(
-        `Band with name ${band} not found in asset ${asset.getKey()}`,
-      );
-      return null;
-    });
+    sourceInfo.bands = selectedBands
+      .map((band) => {
+        if (typeof band === 'number') {
+          return band;
+        }
+        const b = asset.findBand(band);
+        if (b) {
+          return b.getIndex() + 1;
+        }
+        // eslint-disable-next-line no-console
+        console.error(
+          `Band with name ${band} not found in asset ${asset.getKey()}`,
+        );
+        return null;
+      })
+      .filter((band) => band !== null);
   } else {
     const visualBands = asset.findVisualBands();
     if (visualBands) {
