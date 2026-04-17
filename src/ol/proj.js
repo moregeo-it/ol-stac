@@ -1,5 +1,5 @@
 /**
- * @module ol-stac/proj
+ * @module ol/proj
  */
 
 import {

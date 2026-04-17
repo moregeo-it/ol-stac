@@ -1,10 +1,14 @@
 /**
- * @module ol-stac/source/type
+ * @module ol/source/type
  */
 
 /**
  * @typedef {import("ol/source/GeoTIFF.js").Options} GeoTIFFOptions
  * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_source_GeoTIFF-GeoTIFFSource.html}
+ */
+/**
+ * @typedef {import("ol/source/GeoZarr.js").Options} GeoZarrOptions
+ * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_source_GeoZarr-GeoZarrSource.html}
  */
 /**
  * @typedef {import("ol/source/ImageStatic.js").Options} ImageStaticOptions
@@ -27,7 +31,7 @@
  * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_source_XYZ-XYZ.html}
  */
 /**
- * @typedef {GeoTIFFOptions|ImageStaticOptions|TileJSONOptions|TileWMSOptions|WMTSOptions|XYZOptions|Object<string, *>} SourceOptions
+ * @typedef {GeoTIFFOptions|GeoZarrOptions|ImageStaticOptions|TileJSONOptions|TileWMSOptions|WMTSOptions|XYZOptions|Object<string, *>} SourceOptions
  */
 
 /**
@@ -43,6 +47,12 @@ class SourceType {
    */
   static GeoTIFF = new SourceType('GeoTIFF');
   /**
+   * GeoZarr
+   * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_source_GeoZarr.html}
+   * @api
+   */
+  static GeoZarr = new SourceType('GeoZarr');
+  /**
    * Static Image (`ImageStatic`)
    * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_source_ImageStatic.html}
    * @api
@@ -55,7 +65,7 @@ class SourceType {
    */
   static PMTilesRaster = new SourceType('PMTilesRaster');
   /**
-   * GeoTiff
+   * PMTilesVector
    * @see {@link https://protomaps.com/docs/pmtiles/}
    * @api
    */

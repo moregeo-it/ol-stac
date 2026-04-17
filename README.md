@@ -29,6 +29,8 @@ or work less reliably, for example:
 Generally, we highly recommend to use OpenLayers >= 10.9.0.
 If you use an older version, please ensure it works well for your usecases.
 
+Older versions of ol-stac (< 1.3.0) support OpenLayers >= 7.5.2.
+
 ## Sponsors
 
 ol-stac appreciates contributions of all kinds.

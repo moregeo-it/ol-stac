@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed GeoTIFF source and `loadProjection` helper in favor of ol
 - Render GeoTiffs better based on statistical values
 - Better per-band Visualization of GeoTiffs
+- Add `style` option / `setStyle` method to configure styling of GeoTiffs and GeoZarrs
 - Recommend usage of ol >= 10.9.0, require ol >= 9.0.0
 - Update stac-js
 - Fix examples
