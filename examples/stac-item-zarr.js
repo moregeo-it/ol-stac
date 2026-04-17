@@ -24,12 +24,49 @@ const map = new Map({
 const select = document.getElementById('url-select');
 const input = document.getElementById('custom-url');
 const button = document.getElementById('load-url');
+const min = document.getElementById('min');
+const max = document.getElementById('max');
 
 let layer;
 updateLayer();
 
 function getUrl() {
   return select.value === 'custom' ? input.value : select.value;
+}
+
+function getStyle() {
+  return {
+    color: [
+      'color',
+      [
+        'interpolate',
+        ['linear'],
+        ['band', 1],
+        parseFloat(min.value),
+        0,
+        parseFloat(max.value),
+        255,
+      ],
+      [
+        'interpolate',
+        ['linear'],
+        ['band', 2],
+        parseFloat(min.value),
+        0,
+        parseFloat(max.value),
+        255,
+      ],
+      [
+        'interpolate',
+        ['linear'],
+        ['band', 3],
+        parseFloat(min.value),
+        0,
+        parseFloat(max.value),
+        255,
+      ],
+    ],
+  };
 }
 
 function updateLayer() {
@@ -39,6 +76,7 @@ function updateLayer() {
   layer = new STAC({
     url: getUrl(),
     displayWebMapLink: false,
+    style: getStyle(),
   });
   layer.on('sourceready', () => {
     const view = map.getView();
@@ -60,4 +98,11 @@ select.addEventListener('change', () => {
   } else {
     input.style.display = 'none';
   }
+});
+
+min.addEventListener('change', () => {
+  layer.setStyle(getStyle());
+});
+max.addEventListener('change', () => {
+  layer.setStyle(getStyle());
 });

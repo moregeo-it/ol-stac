@@ -110,6 +110,7 @@ import {
  * If set to true or to a specific type of web map link (`pmtiles`, `tilejson`, `wms`, `wmts`, `xyz`),
  * it lets this library choose a web map link to show, but only if no other data is shown.
  * To disable the functionality set this to `false`.
+ * @property {import("ol/layer/WebGLTile.js").Style|null} [style=null] The style for GeoTIFF and GeoZarr layers (WebGLTileLayer style).
  * @property {Style} [boundsStyle] The style for the overall bounds / footprint.
  * @property {Style} [collectionStyle] The style for individual children in a list of STAC Items or Collections.
  * @property {null|string} [crossOrigin] For thumbnails: The `crossOrigin` attribute for loaded images / tiles.
@@ -249,6 +250,12 @@ class STACLayer extends LayerGroup {
      * @private
      */
     this.useTileLayerAsFallback_ = options.useTileLayerAsFallback || false;
+
+    /**
+     * @type {import("ol/layer/WebGLTile.js").Style|null}
+     * @private
+     */
+    this.style_ = options.style || null;
 
     /**
      * @type {Style}
@@ -781,7 +788,9 @@ class STACLayer extends LayerGroup {
     try {
       await status;
       const layerOptions = {source};
-      if (classificationStyle) {
+      if (this.style_) {
+        layerOptions.style = this.style_;
+      } else if (classificationStyle) {
         layerOptions.style = classificationStyle;
       }
       const layer = new WebGLTileLayer(layerOptions);
@@ -992,7 +1001,11 @@ class STACLayer extends LayerGroup {
           }
         });
       });
-      const layer = new WebGLTileLayer({source});
+      const layerOptions = {source};
+      if (this.style_) {
+        layerOptions.style = this.style_;
+      }
+      const layer = new WebGLTileLayer(layerOptions);
       this.addLayer_(layer, asset);
       return layer;
     } catch (error) {
@@ -1172,6 +1185,20 @@ class STACLayer extends LayerGroup {
       });
     }
     return mapLinks;
+  }
+
+  /**
+   * Set the style for GeoTIFF and GeoZarr layers (WebGLTileLayer style).
+   * @param {import("ol/layer/WebGLTile.js").Style|null} style The style to apply.
+   * @api
+   */
+  setStyle(style) {
+    this.style_ = style || null;
+    for (const layer of this.getLayersArray()) {
+      if (layer instanceof WebGLTileLayer) {
+        layer.setStyle(this.style_);
+      }
+    }
   }
 
   /**
