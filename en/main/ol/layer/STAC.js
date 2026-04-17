@@ -23,11 +23,12 @@ import { PMTilesRasterSource, PMTilesVectorSource } from 'ol-pmtiles';
 import * as pmtiles from 'pmtiles';
 import create, { Asset } from 'stac-js';
 import { fixGeoJson, toGeoJSON, unionBoundingBox } from 'stac-js/src/geo.js';
-import { geojsonMediaType, geotiffMediaTypes } from 'stac-js/src/mediatypes.js';
+import { geojsonMediaType, geotiffMediaTypes, zarrMediaTypes, } from 'stac-js/src/mediatypes.js';
 import { isObject } from 'stac-js/src/utils.js';
 import ErrorEvent from '../events/ErrorEvent.js';
+import { getProjection } from '../proj.js';
 import SourceType from '../source/type.js';
-import { LABEL_EXTENSION, defaultBoundsStyle, defaultCollectionStyle, getBoundsStyle, getClassificationStyle, getGeoTiffSourceInfoFromAsset, getProjection, getSpecificWebMapUrl, isScalar, } from '../util.js';
+import { LABEL_EXTENSION, defaultBoundsStyle, defaultCollectionStyle, getBoundsStyle, getClassificationStyle, getGeoTiffSourceInfoFromAsset, getGeoZarrSourceOptionsFromAsset, getSpecificWebMapUrl, isScalar, } from '../util.js';
 /**
  * @typedef {import("ol/extent.js").Extent} Extent
  */
@@ -70,7 +71,7 @@ import { LABEL_EXTENSION, defaultBoundsStyle, defaultCollectionStyle, getBoundsS
  * only for STAC Items and Collections.
  * This can be an array of strings corresponding to asset keys or Asset objects.
  * null shows the default asset, an empty array shows no asset.
- * @property {Array<number>} [bands] The (one-based) bands to show.
+ * @property {Array<number|string>} [bands] The bands to show. One-based index of the band, or the name of the band.
  * @property {function(SourceType, SourceOptions, (Asset|Link)):(SourceOptions|Promise<SourceOptions>)} [getSourceOptions]
  * Optional function that can be used to configure the underlying sources. The function can do any additional work
  * and return the completed options or a promise for the same. The function will be called with the current source options
@@ -85,7 +86,7 @@ import { LABEL_EXTENSION, defaultBoundsStyle, defaultCollectionStyle, getBoundsS
  * i.e. assets with any of the roles `thumbnail`, `overview`, or a link with relation type `preview`.
  * The previews are usually not covering the full extents and as such may be placed incorrectly on the map.
  * For performance reasons, it is recommended to enable this option if you pass in STAC API Items instead of `displayOverview`.
- * @property {boolean} [displayOverview=true] Allow to display COGs and, if `displayGeoTiffByDefault` is enabled, GeoTiffs,
+ * @property {boolean} [displayOverview=true] Allow to display COGs/WOZs and, if `displayGeoTiffByDefault` is enabled, GeoTiffs,
  * usually an asset with role `overview` or `visual`.
  * @property {string|boolean|Array<Link|string>} [displayWebMapLink=false] Allow to display a layer
  * based on the information provided through the web map links extension.
@@ -93,6 +94,7 @@ import { LABEL_EXTENSION, defaultBoundsStyle, defaultCollectionStyle, getBoundsS
  * If set to true or to a specific type of web map link (`pmtiles`, `tilejson`, `wms`, `wmts`, `xyz`),
  * it lets this library choose a web map link to show, but only if no other data is shown.
  * To disable the functionality set this to `false`.
+ * @property {import("ol/layer/WebGLTile.js").Style|null} [style=null] The style for GeoTIFF and GeoZarr layers (WebGLTileLayer style).
  * @property {Style} [boundsStyle] The style for the overall bounds / footprint.
  * @property {Style} [collectionStyle] The style for individual children in a list of STAC Items or Collections.
  * @property {null|string} [crossOrigin] For thumbnails: The `crossOrigin` attribute for loaded images / tiles.
@@ -174,7 +176,7 @@ class STACLayer extends LayerGroup {
          */
         this.assets_ = null;
         /**
-         * @type {Array<number>}
+         * @type {Array<number|string>}
          * @private
          */
         this.bands_ = [];
@@ -217,6 +219,11 @@ class STACLayer extends LayerGroup {
          * @private
          */
         this.useTileLayerAsFallback_ = options.useTileLayerAsFallback || false;
+        /**
+         * @type {import("ol/layer/WebGLTile.js").Style|null}
+         * @private
+         */
+        this.style_ = options.style || null;
         /**
          * @type {Style}
          * @private
@@ -318,6 +325,11 @@ class STACLayer extends LayerGroup {
      * @private
      */
     handleError_(error) {
+        const listeners = this.getListeners('error');
+        if (!Array.isArray(listeners) || listeners.length === 0) {
+            // To avoid swallowing errors when no listener is registered, log them to the console.
+            console.error(error); // eslint-disable-line no-console
+        }
         /**
          * Error event.
          *
@@ -332,7 +344,7 @@ class STACLayer extends LayerGroup {
      * @param {string} url The url to the data.
      * @param {APICollection|Object|Array<STAC>|string|null} children The child STAC entities to show.
      * @param {Array<Asset|string>|null} assets The assets to show.
-     * @param {Array<number>} bands The (one-based) bands to show.
+     * @param {Array<number|string>} bands The bands to show.
      * @private
      */
     configure_(data, url = null, children = null, assets = null, bands = []) {
@@ -650,7 +662,7 @@ class STACLayer extends LayerGroup {
         if (projection) {
             options.projection = projection;
         }
-        const classificationStyle = getClassificationStyle(asset, this.bands_);
+        const classificationStyle = getClassificationStyle(asset, sourceInfo.bands);
         if (classificationStyle) {
             options.normalize = false;
         }
@@ -674,7 +686,10 @@ class STACLayer extends LayerGroup {
         try {
             await status;
             const layerOptions = { source };
-            if (classificationStyle) {
+            if (this.style_) {
+                layerOptions.style = this.style_;
+            }
+            else if (classificationStyle) {
                 layerOptions.style = classificationStyle;
             }
             const layer = new WebGLTileLayer(layerOptions);
@@ -844,6 +859,43 @@ class STACLayer extends LayerGroup {
             this.handleError_(error);
         }
     }
+    async addGeoZarr_(asset) {
+        if (this.buildTileUrlTemplate_ && !this.useTileLayerAsFallback_) {
+            return await this.addTileLayerForImagery_(asset);
+        }
+        let options = getGeoZarrSourceOptionsFromAsset(asset, this.bands_);
+        if (this.getSourceOptions_) {
+            // @ts-ignore
+            options = await this.getSourceOptions_(SourceType.GeoZarr, options, asset);
+        }
+        try {
+            const GeoZarr = (await import('ol/source/GeoZarr.js')).default;
+            const source = new GeoZarr(options);
+            await new Promise((resolve, reject) => {
+                source.on('change', () => {
+                    if (source.getState() === 'error') {
+                        reject(source.error_);
+                    }
+                    else {
+                        resolve();
+                    }
+                });
+            });
+            const layerOptions = { source };
+            if (this.style_) {
+                layerOptions.style = this.style_;
+            }
+            const layer = new WebGLTileLayer(layerOptions);
+            this.addLayer_(layer, asset);
+            return layer;
+        }
+        catch (error) {
+            if (this.useTileLayerAsFallback_) {
+                return await this.addTileLayerForImagery_(asset);
+            }
+            this.handleError_(error);
+        }
+    }
     /**
      * Update the layers shown manually based on the current configuration.
      * Usually this doesn't need to be called manually.
@@ -884,6 +936,9 @@ class STACLayer extends LayerGroup {
                 if (ref.isType(geotiffMediaTypes)) {
                     return await this.addGeoTiff_(ref);
                 }
+                if (ref.isType(zarrMediaTypes)) {
+                    return await this.addGeoZarr_(ref);
+                }
                 if (ref.canBrowserDisplayImage()) {
                     return await this.addPreviewImage_(ref);
                 }
@@ -909,26 +964,31 @@ class STACLayer extends LayerGroup {
                     return;
                 }
                 // Show web map links
+                let layer;
                 const links = this.getWebMapLinks();
                 if (links.length > 0) {
-                    await this.addLayerForLink(links[0]);
+                    layer = await this.addLayerForLink(links[0]);
                 }
-                else {
-                    // Find an asset that we can visualize
+                if (this.displayOverview_ && !layer) {
+                    // Find a GeoTiff asset that we can visualize
                     const geotiff = data.getDefaultGeoFile('geotiff', true, !this.displayGeoTiffByDefault_);
-                    let layer;
-                    // Try to visualize the default GeoTIFF first
-                    if (geotiff && this.displayOverview_) {
+                    if (geotiff) {
                         layer = await this.addGeoTiff_(geotiff);
                     }
-                    // If no GeoTIFF is available or it can't be shown (e.g. error),
-                    // try to visualize the default thumbnail
-                    if (this.displayPreview_ && (!geotiff || !layer)) {
-                        // This may return Links or Assets
-                        const thumbnails = data.getThumbnails(true, 'overview');
-                        if (thumbnails.length > 0) {
-                            await this.addPreviewImage_(thumbnails[0]);
-                        }
+                }
+                if (this.displayOverview_ && !layer) {
+                    // Find a Web-Optimized GeoZarr asset that we can visualize
+                    const geozarr = data.getDefaultGeoFile('geozarr', true, true);
+                    if (geozarr) {
+                        layer = await this.addGeoZarr_(geozarr);
+                    }
+                }
+                // If no other layer is available, try to visualize the default thumbnail
+                if (this.displayPreview_ && !layer) {
+                    // This may return Links or Assets
+                    const thumbnails = data.getThumbnails(true, 'overview');
+                    if (thumbnails.length > 0) {
+                        await this.addPreviewImage_(thumbnails[0]);
                     }
                 }
             }
@@ -953,6 +1013,9 @@ class STACLayer extends LayerGroup {
      * @api
      */
     getWebMapLinks() {
+        if (this.displayWebMapLink_ === false) {
+            return [];
+        }
         const data = this.getData();
         if (!data || data.isAsset) {
             return [];
@@ -984,6 +1047,19 @@ class STACLayer extends LayerGroup {
             });
         }
         return mapLinks;
+    }
+    /**
+     * Set the style for GeoTIFF and GeoZarr layers (WebGLTileLayer style).
+     * @param {import("ol/layer/WebGLTile.js").Style|null} style The style to apply.
+     * @api
+     */
+    setStyle(style) {
+        this.style_ = style || null;
+        for (const layer of this.getLayersArray()) {
+            if (layer instanceof WebGLTileLayer) {
+                layer.setStyle(this.style_);
+            }
+        }
     }
     /**
      * Update the assets to be rendered.

@@ -47,7 +47,7 @@
     <div class="container-fluid line-numbers">
       <div id="latest-check" class="alert alert-warning alert-dismissible" role="alert" style="display:none">
         <button id="latest-dismiss" type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        This example uses OL STAC v<span>1.1.1</span>. The <a id="latest-link" href="#" class="alert-link">latest</a> is v<span id="latest-version"></span>.
+        This example uses OL STAC v<span>1.2.0</span>. The <a id="latest-link" href="#" class="alert-link">latest</a> is v<span id="latest-version"></span>.
       </div>
 
 
@@ -79,10 +79,11 @@
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-classification.html&quot;&gt;STAC Item with Classification&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-tileserver.html&quot;&gt;STAC Item with COG rendered by a tile server&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-geojson.html&quot;&gt;STAC Item with GeoJSON assets&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-zarr.html&quot;&gt;STAC Item with GeoZarr asset&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-labels.html&quot;&gt;STAC Item with Label Extension&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
-                >13</a>
+                >14</a>
             </span>
             <span class="badge-group">
               <a
@@ -99,10 +100,11 @@
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-classification.html&quot;&gt;STAC Item with Classification&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-tileserver.html&quot;&gt;STAC Item with COG rendered by a tile server&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-geojson.html&quot;&gt;STAC Item with GeoJSON assets&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-zarr.html&quot;&gt;STAC Item with GeoZarr asset&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-labels.html&quot;&gt;STAC Item with Label Extension&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
-                >7</a>
+                >8</a>
             </span>
             <span class="badge-group">
               <a
@@ -214,10 +216,8 @@ import STAC from &#x27;ol-stac&#x27;;
 register(proj4); // required to support source reprojection
 
 const layer &#x3D; new STAC({
-  url: &#x27;http://127.0.0.1:8081/examples/spacenet-roads/roads_item.json&#x27;,
-  // Disabled loading the GeoTiff for now due to excessive requests.
-  // See https://github.com/openlayers/openlayers/issues/16961
-  displayGeoTiffByDefault: false,
+  url: &#x27;https://raw.githubusercontent.com/stac-extensions/label/refs/heads/main/examples/spacenet-roads/roads_item.json&#x27;,
+  displayGeoTiffByDefault: true,
 });
 
 const background &#x3D; new TileLayer({
@@ -268,8 +268,8 @@ layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
         <pre><code id="example-pkg-source" class="language-json">{
   &quot;name&quot;: &quot;stac-item-labels&quot;,
   &quot;dependencies&quot;: {
-    &quot;ol-stac&quot;: &quot;1.1.1&quot;,
-    &quot;proj4&quot;: &quot;^2.15.0&quot;
+    &quot;ol-stac&quot;: &quot;1.2.0&quot;,
+    &quot;proj4&quot;: &quot;^2.16.1&quot;
   },
   &quot;devDependencies&quot;: {
     &quot;vite&quot;: &quot;^3.2.3&quot;
@@ -309,7 +309,7 @@ layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
         const branchSearch = url.match(/\/([^\/]*)\/examples\//);
         const storageKey = 'ol-dismissed=-' + latestVersion;
         const dismissed = localStorage.getItem(storageKey) === 'true';
-        if (branchSearch && !dismissed && /^v[0-9\.]*$/.test(branchSearch[1]) && '1.1.1' != latestVersion) {
+        if (branchSearch && !dismissed && /^v[0-9\.]*$/.test(branchSearch[1]) && '1.2.0' != latestVersion) {
           const link = url.replace(branchSearch[0], '/latest/examples/');
           fetch(link, {method: 'head'}).then(function(response) {
             const a = document.getElementById('latest-link');

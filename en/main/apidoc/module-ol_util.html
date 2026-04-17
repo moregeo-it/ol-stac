@@ -75,11 +75,11 @@
     <div class="member-list" data-type="typedefs">
         <span class="subtitle">Typedefs</span>
         <ul>
+            <li data-name="asset"><a href="module-ol_util.html#~Asset">Asset</a>
+            <li data-name="band"><a href="module-ol_util.html#~Band">Band</a>
             <li data-name="collection"><a href="module-ol_util.html#~Collection">Collection</a>
             <li data-name="colorlike"><a href="module-ol_util.html#~ColorLike">ColorLike</a>
             <li data-name="feature"><a href="module-ol_util.html#~Feature">Feature</a>
-            <li data-name="projection"><a href="module-ol_util.html#~Projection">Projection</a>
-            <li data-name="projectionlike"><a href="module-ol_util.html#~ProjectionLike">ProjectionLike</a>
             <li data-name="stac"><a href="module-ol_util.html#~STAC">STAC</a>
         </ul>
     </div>
@@ -89,6 +89,7 @@
             <li data-name="getboundsstyle"><a href="module-ol_util.html#.getBoundsStyle">getBoundsStyle</a>
             <li data-name="getclassificationclasses"><a href="module-ol_util.html#.getClassificationClasses">getClassificationClasses</a>
             <li data-name="getclassificationstyle"><a href="module-ol_util.html#.getClassificationStyle">getClassificationStyle</a>
+            <li data-name="getgeozarrsourceoptionsfromasset"><a href="module-ol_util.html#.getGeoZarrSourceOptionsFromAsset">getGeoZarrSourceOptionsFromAsset</a>
             <li data-name="getstacobjectsforevent"><a href="module-ol_util.html#.getStacObjectsForEvent">getStacObjectsForEvent</a>
             <li data-name="getstyle"><a href="module-ol_util.html#.getStyle">getStyle</a>
         </ul>
@@ -300,7 +301,7 @@
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/util.js#L260">line 260</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/util.js#L283">line 283</a>
         </div>
         
     </div>
@@ -464,7 +465,7 @@ The adapted style for the footprint.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/util.js#L325">line 325</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/util.js#L393">line 393</a>
         </div>
         
     </div>
@@ -628,7 +629,7 @@ The classification classes, or null
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/util.js#L360">line 360</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/util.js#L428">line 428</a>
         </div>
         
     </div>
@@ -782,6 +783,169 @@ A WebGL tile layer style object, or null
 <dt class="">
     
     <div class="nameContainer">
+        <div class="anchor" id=".getGeoZarrSourceOptionsFromAsset">
+        </div>
+        <h4 class="name">
+            getGeoZarrSourceOptionsFromAsset<span class="signature">(asset, selectedBands)</span><span class="fa fa-arrow-circle-right"></span><span class="type-signature returnType">{Object}</span>
+            
+            
+
+        </h4>
+        
+        <div class="tag-source">
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/util.js">util.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/util.js#L299">line 299</a>
+        </div>
+        
+    </div>
+    
+    
+</dt>
+<dd class="">
+
+
+    
+    <pre class="prettyprint source"><code>import {getGeoZarrSourceOptionsFromAsset} from 'ol/util';</code></pre>
+
+
+    
+    <div class="description">
+        <p>Parse the GeoZarr source options from an asset.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr class="">
+            
+                <td class="name"><code>asset</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-ol_util.html#~Asset">Asset</a></span>
+
+
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>The asset to read the information from.</p></td>
+        </tr>
+
+	
+
+        <tr class="">
+            
+                <td class="name"><code>selectedBands</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;(number|string)></span>
+
+
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>The bands to show. One-based index of the band, or the name of the band.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+    
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+    
+
+
+<h5>Returns:</h5>
+The GeoZarr source options
+<br />
+
+    
+
+    
+</dd>
+
+        
+            
+            
+<dt class="">
+    
+    <div class="nameContainer">
         <div class="anchor" id=".getStacObjectsForEvent">
         </div>
         <h4 class="name">
@@ -793,7 +957,7 @@ A WebGL tile layer style object, or null
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/util.js#L101">line 101</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/util.js#L127">line 127</a>
         </div>
         
     </div>
@@ -1006,7 +1170,7 @@ A list of STAC objects
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/util.js#L51">line 51</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/util.js#L77">line 77</a>
         </div>
         
     </div>
@@ -1212,6 +1376,105 @@ The style for visualization.
                 
 <dt class="">
     <div class="nameContainer">
+        <div class="anchor" id="~Asset">
+        </div>
+        <h4 class="name">
+            Asset<span class="type-signature type module:stac-js~asset">{module:stac-js~Asset}</span> 
+            
+
+        </h4>
+    </div>
+    
+</dt>
+<dd class="">
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+</dd>
+
+            
+                
+<dt class="">
+    <div class="nameContainer">
+        <div class="anchor" id="~Band">
+        </div>
+        <h4 class="name">
+            Band<span class="type-signature type module:stac-js/src/band.js">{module:stac-js/src/band.js}</span> 
+            
+
+        </h4>
+    </div>
+    
+</dt>
+<dd class="">
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-todo">TODO</dt>
+    <dd class="tag-todo">
+        <ul>
+            <li>use module:stac-js~Band once exported from stac-js</li>
+        </ul>
+    </dd>
+    
+</dl>
+
+
+    
+</dd>
+
+            
+                
+<dt class="">
+    <div class="nameContainer">
         <div class="anchor" id="~Collection">
         </div>
         <h4 class="name">
@@ -1308,98 +1571,6 @@ The style for visualization.
         </div>
         <h4 class="name">
             Feature<span class="type-signature type module:ol/feature.js">{js}</span> 
-            
-
-        </h4>
-    </div>
-    
-</dt>
-<dd class="">
-    
-
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-
-    
-</dd>
-
-            
-                
-<dt class="">
-    <div class="nameContainer">
-        <div class="anchor" id="~Projection">
-        </div>
-        <h4 class="name">
-            Projection<span class="type-signature type module:ol/proj.js~projection">{Projection}</span> 
-            
-
-        </h4>
-    </div>
-    
-</dt>
-<dd class="">
-    
-
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-
-    
-</dd>
-
-            
-                
-<dt class="">
-    <div class="nameContainer">
-        <div class="anchor" id="~ProjectionLike">
-        </div>
-        <h4 class="name">
-            ProjectionLike<span class="type-signature type module:ol/proj.js~projectionlike">{ProjectionLike}</span> 
             
 
         </h4>

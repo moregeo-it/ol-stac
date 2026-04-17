@@ -22,17 +22,10 @@ export function getStacObjectsForEvent(event: import('ol/MapBrowserEvent.js').de
 /**
  * Get the source info for the GeoTiff from the asset.
  * @param {import('stac-js').Asset} asset The asset to read the information from.
- * @param {Array<number>} selectedBands The (one-based) bands to show.
+ * @param {Array<number|string>} selectedBands The bands to show. One-based index of the band, or the name of the band.
  * @return {import('ol/source/GeoTIFF.js').SourceInfo} The source info for the GeoTiff asset
  */
-export function getGeoTiffSourceInfoFromAsset(asset: any, selectedBands: Array<number>): import('ol/source/GeoTIFF.js').SourceInfo;
-/**
- * Gets the projection from the asset or link.
- * @param {import('stac-js').STACReference} reference The asset or link to read the information from.
- * @param {ProjectionLike} defaultProjection A default projection to use.
- * @return {Promise<ProjectionLike>} The projection, if any.
- */
-export function getProjection(reference: any, defaultProjection?: ProjectionLike): Promise<ProjectionLike>;
+export function getGeoTiffSourceInfoFromAsset(asset: any, selectedBands: Array<number | string>): import('ol/source/GeoTIFF.js').SourceInfo;
 /**
  * Returns the style for the footprint.
  * Removes the fill if anything is meant to be shown in the bounds.
@@ -43,6 +36,15 @@ export function getProjection(reference: any, defaultProjection?: ProjectionLike
  * @api
  */
 export function getBoundsStyle(originalStyle?: Style | undefined, layerGroup?: import("./layer/STAC.js").default | undefined): Style;
+/**
+ * Parse the GeoZarr source options from an asset.
+ *
+ * @param {Asset} asset The asset to read the information from.
+ * @param {Array<number|string>} selectedBands The bands to show. One-based index of the band, or the name of the band.
+ * @return {Object} The GeoZarr source options
+ * @api
+ */
+export function getGeoZarrSourceOptionsFromAsset(asset: any, selectedBands: Array<number | string>): any;
 /**
  * Get a URL from a web-map-link that is specific enough, i.e.
  * replaces any occurances of {s} if possible, otherwise returns null.
@@ -89,10 +91,11 @@ export function getClassificationStyle(asset: any, bands?: number[] | undefined)
  * @typedef {import('ol/Feature.js').default} Feature
  */
 /**
- * @typedef {import('ol/proj.js').Projection} Projection
+ * @typedef {import('stac-js').Asset} Asset
  */
 /**
- * @typedef {import('ol/proj.js').ProjectionLike} ProjectionLike
+ * @todo use import('stac-js').Band once exported from stac-js
+ * @typedef {import('stac-js/src/band.js').default} Band
  */
 /**
  * @typedef {import('stac-js').STAC} STAC
@@ -117,8 +120,8 @@ export const defaultCollectionStyle: Style;
 export type ColorLike = import('ol/colorlike.js').ColorLike;
 export type Collection<T> = import("ol/Collection.js").default<any>;
 export type Feature = import('ol/Feature.js').default;
-export type Projection = import('ol/proj.js').Projection;
-export type ProjectionLike = import('ol/proj.js').ProjectionLike;
+export type Asset = any;
+export type Band = any;
 export type STAC = any;
 import Style from 'ol/style/Style.js';
 //# sourceMappingURL=util.d.ts.map

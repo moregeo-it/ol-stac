@@ -80,6 +80,7 @@
             <li data-name="isempty"><a href="module-ol_layer_STAC-STACLayer.html#isEmpty">isEmpty</a>
             <li data-name="setassets"><a href="module-ol_layer_STAC-STACLayer.html#setAssets">setAssets</a>
             <li data-name="setchildren"><a href="module-ol_layer_STAC-STACLayer.html#setChildren">setChildren</a>
+            <li data-name="setstyle"><a href="module-ol_layer_STAC-STACLayer.html#setStyle">setStyle</a>
             <li data-name="updatelayers"><a href="module-ol_layer_STAC-STACLayer.html#updateLayers">updateLayers</a>
         </ul>
     </div>
@@ -148,7 +149,7 @@ The layers created by this LayerGroup all have a 'stac' value that can be retrie
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L150">line 150</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L156">line 156</a>
         </div>
         
     </div>
@@ -351,7 +352,7 @@ null shows the default asset, an empty array shows no asset.</p></td>
             <td class="type">
             
                 
-<span class="param-type">Array.&lt;number></span>
+<span class="param-type">Array.&lt;(number|string)></span>
 
  | undefined
                 
@@ -362,7 +363,7 @@ null shows the default asset, an empty array shows no asset.</p></td>
 
             <td  class="description last">
                 
-                <p>The (one-based) bands to show.</p></td>
+                <p>The bands to show. One-based index of the band, or the name of the band.</p></td>
         </tr>
 
 	
@@ -504,7 +505,7 @@ For performance reasons, it is recommended to enable this option if you pass in 
 
             <td  class="description last">
                 
-                <p>Allow to display COGs and, if <code>displayGeoTiffByDefault</code> is enabled, GeoTiffs,
+                <p>Allow to display COGs/WOZs and, if <code>displayGeoTiffByDefault</code> is enabled, GeoTiffs,
 usually an asset with role <code>overview</code> or <code>visual</code>.</p></td>
         </tr>
 
@@ -544,6 +545,36 @@ If an array of links or link ids (property <code>id</code> in a Link Object) is 
 If set to true or to a specific type of web map link (<code>pmtiles</code>, <code>tilejson</code>, <code>wms</code>, <code>wmts</code>, <code>xyz</code>),
 it lets this library choose a web map link to show, but only if no other data is shown.
 To disable the functionality set this to <code>false</code>.</p></td>
+        </tr>
+
+	
+
+        <tr class="">
+            
+                <td class="name"><code>style</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">Style</span>
+|
+
+<span class="param-type">null</span>
+
+
+                
+                    (defaults to null)
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>The style for GeoTIFF and GeoZarr layers (WebGLTileLayer style).</p></td>
         </tr>
 
 	
@@ -1085,7 +1116,7 @@ The second parameter is the return type, either <code>json</code> (default) or <
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L555">line 555</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L572">line 572</a>
         </div>
         
     </div>
@@ -1228,7 +1259,7 @@ Resolves with a list of layers or undefined when complete.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L1212">line 1212</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L1301">line 1301</a>
         </div>
         
     </div>
@@ -1318,7 +1349,7 @@ The STAC assets.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L1274">line 1274</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L1363">line 1363</a>
         </div>
         
     </div>
@@ -1408,7 +1439,7 @@ Attributions for this layer.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L345">line 345</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L357">line 357</a>
         </div>
         
     </div>
@@ -1498,7 +1529,7 @@ The vector layer for the bounds
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L1202">line 1202</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L1291">line 1291</a>
         </div>
         
     </div>
@@ -1588,7 +1619,7 @@ The STAC child entities.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L1192">line 1192</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L1281">line 1281</a>
         </div>
         
     </div>
@@ -1678,7 +1709,7 @@ The STAC object.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L1225">line 1225</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L1314">line 1314</a>
         </div>
         
     </div>
@@ -1771,7 +1802,7 @@ The layer extent.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L1080">line 1080</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L1151">line 1151</a>
         </div>
         
     </div>
@@ -1861,7 +1892,7 @@ An array of links.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L1067">line 1067</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L1138">line 1138</a>
         </div>
         
     </div>
@@ -1951,7 +1982,7 @@ An array of links.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L357">line 357</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L369">line 369</a>
         </div>
         
     </div>
@@ -2042,7 +2073,7 @@ Is the layer empty?
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L1122">line 1122</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L1211">line 1211</a>
         </div>
         
     </div>
@@ -2207,7 +2238,7 @@ Resolves when all assets are rendered.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L1157">line 1157</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L1246">line 1246</a>
         </div>
         
     </div>
@@ -2506,7 +2537,7 @@ null shows the default asset, an empty array shows no asset.</p></td>
             <td class="type">
             
                 
-<span class="param-type">Array.&lt;number></span>
+<span class="param-type">Array.&lt;(number|string)></span>
 
  | undefined
                 
@@ -2517,7 +2548,7 @@ null shows the default asset, an empty array shows no asset.</p></td>
 
             <td  class="description last">
                 
-                <p>The (one-based) bands to show.</p></td>
+                <p>The bands to show. One-based index of the band, or the name of the band.</p></td>
         </tr>
 
 	
@@ -2659,7 +2690,7 @@ For performance reasons, it is recommended to enable this option if you pass in 
 
             <td  class="description last">
                 
-                <p>Allow to display COGs and, if <code>displayGeoTiffByDefault</code> is enabled, GeoTiffs,
+                <p>Allow to display COGs/WOZs and, if <code>displayGeoTiffByDefault</code> is enabled, GeoTiffs,
 usually an asset with role <code>overview</code> or <code>visual</code>.</p></td>
         </tr>
 
@@ -2699,6 +2730,36 @@ If an array of links or link ids (property <code>id</code> in a Link Object) is 
 If set to true or to a specific type of web map link (<code>pmtiles</code>, <code>tilejson</code>, <code>wms</code>, <code>wmts</code>, <code>xyz</code>),
 it lets this library choose a web map link to show, but only if no other data is shown.
 To disable the functionality set this to <code>false</code>.</p></td>
+        </tr>
+
+	
+
+        <tr class="">
+            
+                <td class="name"><code>options.style</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">Style</span>
+|
+
+<span class="param-type">null</span>
+
+
+                
+                    (defaults to null)
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>The style for GeoTIFF and GeoZarr layers (WebGLTileLayer style).</p></td>
         </tr>
 
 	
@@ -3190,6 +3251,135 @@ Resolves when all items are rendered.
 <dt class="">
     
     <div class="nameContainer">
+        <div class="anchor" id="setStyle">
+        </div>
+        <h4 class="name">
+            setStyle<span class="signature">(style)</span>
+            
+            
+
+        </h4>
+        
+        <div class="tag-source">
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L1195">line 1195</a>
+        </div>
+        
+    </div>
+    
+    
+</dt>
+<dd class="">
+
+
+
+    
+    <div class="description">
+        <p>Set the style for GeoTIFF and GeoZarr layers (WebGLTileLayer style).</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr class="">
+            
+                <td class="name"><code>style</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">Style</span>
+|
+
+<span class="param-type">null</span>
+
+
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>The style to apply.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+    
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+            
+<dt class="">
+    
+    <div class="nameContainer">
         <div class="anchor" id="updateLayers">
         </div>
         <h4 class="name">
@@ -3201,7 +3391,7 @@ Resolves when all items are rendered.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L964">line 964</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.2.0/src/ol/layer/STAC.js#L1026">line 1026</a>
         </div>
         
     </div>

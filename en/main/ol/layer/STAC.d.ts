@@ -38,9 +38,9 @@ export type Options = {
      */
     assets?: any[] | null | undefined;
     /**
-     * The (one-based) bands to show.
+     * The bands to show. One-based index of the band, or the name of the band.
      */
-    bands?: number[] | undefined;
+    bands?: (string | number)[] | undefined;
     /**
      * Optional function that can be used to configure the underlying sources. The function can do any additional work
      * and return the completed options or a promise for the same. The function will be called with the current source options
@@ -67,7 +67,7 @@ export type Options = {
      */
     displayPreview?: boolean | undefined;
     /**
-     * Allow to display COGs and, if `displayGeoTiffByDefault` is enabled, GeoTiffs,
+     * Allow to display COGs/WOZs and, if `displayGeoTiffByDefault` is enabled, GeoTiffs,
      * usually an asset with role `overview` or `visual`.
      */
     displayOverview?: boolean | undefined;
@@ -80,6 +80,10 @@ export type Options = {
      * To disable the functionality set this to `false`.
      */
     displayWebMapLink?: string | boolean | any[] | undefined;
+    /**
+     * The style for GeoTIFF and GeoZarr layers (WebGLTileLayer style).
+     */
+    style?: import("ol/layer/WebGLTile.js").Style | null | undefined;
     /**
      * The style for the overall bounds / footprint.
      */
@@ -203,7 +207,7 @@ export type Options = {
  * only for STAC Items and Collections.
  * This can be an array of strings corresponding to asset keys or Asset objects.
  * null shows the default asset, an empty array shows no asset.
- * @property {Array<number>} [bands] The (one-based) bands to show.
+ * @property {Array<number|string>} [bands] The bands to show. One-based index of the band, or the name of the band.
  * @property {function(SourceType, SourceOptions, (Asset|Link)):(SourceOptions|Promise<SourceOptions>)} [getSourceOptions]
  * Optional function that can be used to configure the underlying sources. The function can do any additional work
  * and return the completed options or a promise for the same. The function will be called with the current source options
@@ -218,7 +222,7 @@ export type Options = {
  * i.e. assets with any of the roles `thumbnail`, `overview`, or a link with relation type `preview`.
  * The previews are usually not covering the full extents and as such may be placed incorrectly on the map.
  * For performance reasons, it is recommended to enable this option if you pass in STAC API Items instead of `displayOverview`.
- * @property {boolean} [displayOverview=true] Allow to display COGs and, if `displayGeoTiffByDefault` is enabled, GeoTiffs,
+ * @property {boolean} [displayOverview=true] Allow to display COGs/WOZs and, if `displayGeoTiffByDefault` is enabled, GeoTiffs,
  * usually an asset with role `overview` or `visual`.
  * @property {string|boolean|Array<Link|string>} [displayWebMapLink=false] Allow to display a layer
  * based on the information provided through the web map links extension.
@@ -226,6 +230,7 @@ export type Options = {
  * If set to true or to a specific type of web map link (`pmtiles`, `tilejson`, `wms`, `wmts`, `xyz`),
  * it lets this library choose a web map link to show, but only if no other data is shown.
  * To disable the functionality set this to `false`.
+ * @property {import("ol/layer/WebGLTile.js").Style|null} [style=null] The style for GeoTIFF and GeoZarr layers (WebGLTileLayer style).
  * @property {Style} [boundsStyle] The style for the overall bounds / footprint.
  * @property {Style} [collectionStyle] The style for individual children in a list of STAC Items or Collections.
  * @property {null|string} [crossOrigin] For thumbnails: The `crossOrigin` attribute for loaded images / tiles.
@@ -295,7 +300,7 @@ declare class STACLayer extends LayerGroup {
      */
     private assets_;
     /**
-     * @type {Array<number>}
+     * @type {Array<number|string>}
      * @private
      */
     private bands_;
@@ -338,6 +343,11 @@ declare class STACLayer extends LayerGroup {
      * @private
      */
     private useTileLayerAsFallback_;
+    /**
+     * @type {import("ol/layer/WebGLTile.js").Style|null}
+     * @private
+     */
+    private style_;
     /**
      * @type {Style}
      * @private
@@ -401,7 +411,7 @@ declare class STACLayer extends LayerGroup {
      * @param {string} url The url to the data.
      * @param {APICollection|Object|Array<STAC>|string|null} children The child STAC entities to show.
      * @param {Array<Asset|string>|null} assets The assets to show.
-     * @param {Array<number>} bands The (one-based) bands to show.
+     * @param {Array<number|string>} bands The bands to show.
      * @private
      */
     private configure_;
@@ -497,6 +507,7 @@ declare class STACLayer extends LayerGroup {
      * @private
      */
     private addLabelExtension_;
+    addGeoZarr_(asset: any): Promise<WebGLTileLayer | TileLayer<import("ol/source/Tile.js").default<import("ol/Tile.js").default>> | undefined>;
     /**
      * Update the layers shown manually based on the current configuration.
      * Usually this doesn't need to be called manually.
@@ -517,6 +528,12 @@ declare class STACLayer extends LayerGroup {
      * @api
      */
     getWebMapLinks(): Array<Link>;
+    /**
+     * Set the style for GeoTIFF and GeoZarr layers (WebGLTileLayer style).
+     * @param {import("ol/layer/WebGLTile.js").Style|null} style The style to apply.
+     * @api
+     */
+    setStyle(style: import("ol/layer/WebGLTile.js").Style | null): void;
     /**
      * Update the assets to be rendered.
      * @param {Array<string|Asset>|null} assets The assets to show.
@@ -583,4 +600,6 @@ declare class STACLayer extends LayerGroup {
 import SourceType from '../source/type.js';
 import LayerGroup from 'ol/layer/Group.js';
 import VectorLayer from 'ol/layer/Vector.js';
+import WebGLTileLayer from 'ol/layer/WebGLTile.js';
+import TileLayer from 'ol/layer/Tile.js';
 //# sourceMappingURL=STAC.d.ts.map

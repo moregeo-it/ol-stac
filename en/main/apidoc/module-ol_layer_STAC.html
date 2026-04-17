@@ -599,7 +599,7 @@ null shows the default asset, an empty array shows no asset.</p>
             <td class="type">
             
                 
-<span class="param-type">Array.&lt;number></span>
+<span class="param-type">Array.&lt;(number|string)></span>
 
  | undefined
                 
@@ -607,7 +607,7 @@ null shows the default asset, an empty array shows no asset.</p>
             </td>
 
             <td class="description last">
-                <p>The (one-based) bands to show.</p>
+                <p>The bands to show. One-based index of the band, or the name of the band.</p>
                 
             </td>
         </tr>
@@ -739,7 +739,7 @@ For performance reasons, it is recommended to enable this option if you pass in 
             </td>
 
             <td class="description last">
-                <p>Allow to display COGs and, if <code>displayGeoTiffByDefault</code> is enabled, GeoTiffs,
+                <p>Allow to display COGs/WOZs and, if <code>displayGeoTiffByDefault</code> is enabled, GeoTiffs,
 usually an asset with role <code>overview</code> or <code>visual</code>.</p>
                 
             </td>
@@ -777,6 +777,34 @@ If an array of links or link ids (property <code>id</code> in a Link Object) is 
 If set to true or to a specific type of web map link (<code>pmtiles</code>, <code>tilejson</code>, <code>wms</code>, <code>wmts</code>, <code>xyz</code>),
 it lets this library choose a web map link to show, but only if no other data is shown.
 To disable the functionality set this to <code>false</code>.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>style</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Style</span>
+|
+
+<span class="param-type">null</span>
+
+
+                
+                    <br>(defaults to null)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The style for GeoTIFF and GeoZarr layers (WebGLTileLayer style).</p>
                 
             </td>
         </tr>

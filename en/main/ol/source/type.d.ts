@@ -1,11 +1,12 @@
 export default SourceType;
 export type GeoTIFFOptions = import("ol/source/GeoTIFF.js").Options;
+export type GeoZarrOptions = import("ol/source/GeoZarr.js").Options;
 export type ImageStaticOptions = import("ol/source/ImageStatic.js").Options;
 export type TileJSONOptions = import("ol/source/TileJSON.js").Options;
 export type TileWMSOptions = import("ol/source/TileWMS.js").Options;
 export type WMTSOptions = import("ol/source/WMTS.js").Options;
 export type XYZOptions = import("ol/source/XYZ.js").Options;
-export type SourceOptions = GeoTIFFOptions | ImageStaticOptions | TileJSONOptions | TileWMSOptions | WMTSOptions | XYZOptions | {
+export type SourceOptions = GeoTIFFOptions | GeoZarrOptions | ImageStaticOptions | TileJSONOptions | TileWMSOptions | WMTSOptions | XYZOptions | {
     [x: string]: any;
 };
 /**
@@ -14,6 +15,10 @@ export type SourceOptions = GeoTIFFOptions | ImageStaticOptions | TileJSONOption
 /**
  * @typedef {import("ol/source/GeoTIFF.js").Options} GeoTIFFOptions
  * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_source_GeoTIFF-GeoTIFFSource.html}
+ */
+/**
+ * @typedef {import("ol/source/GeoZarr.js").Options} GeoZarrOptions
+ * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_source_GeoZarr-GeoZarrSource.html}
  */
 /**
  * @typedef {import("ol/source/ImageStatic.js").Options} ImageStaticOptions
@@ -36,7 +41,7 @@ export type SourceOptions = GeoTIFFOptions | ImageStaticOptions | TileJSONOption
  * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_source_XYZ-XYZ.html}
  */
 /**
- * @typedef {GeoTIFFOptions|ImageStaticOptions|TileJSONOptions|TileWMSOptions|WMTSOptions|XYZOptions|Object<string, *>} SourceOptions
+ * @typedef {GeoTIFFOptions|GeoZarrOptions|ImageStaticOptions|TileJSONOptions|TileWMSOptions|WMTSOptions|XYZOptions|Object<string, *>} SourceOptions
  */
 /**
  * @classdesc
@@ -51,6 +56,12 @@ declare class SourceType {
      */
     static GeoTIFF: SourceType;
     /**
+     * GeoZarr
+     * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_source_GeoZarr.html}
+     * @api
+     */
+    static GeoZarr: SourceType;
+    /**
      * Static Image (`ImageStatic`)
      * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_source_ImageStatic.html}
      * @api
@@ -63,7 +74,7 @@ declare class SourceType {
      */
     static PMTilesRaster: SourceType;
     /**
-     * GeoTiff
+     * PMTilesVector
      * @see {@link https://protomaps.com/docs/pmtiles/}
      * @api
      */
