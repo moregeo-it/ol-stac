@@ -1091,12 +1091,7 @@ class STACLayer extends LayerGroup {
           }
           return;
         }
-        // Show web map links
         let layer;
-        const links = this.getWebMapLinks();
-        if (links.length > 0) {
-          layer = await this.addLayerForLink(links[0]);
-        }
         if (this.displayOverview_ && !layer) {
           // Find a GeoTiff asset that we can visualize
           const geotiff = data.getDefaultGeoFile(
@@ -1114,6 +1109,11 @@ class STACLayer extends LayerGroup {
           if (geozarr) {
             layer = await this.addGeoZarr_(geozarr);
           }
+        }
+        // Show web map links if available
+        const links = this.getWebMapLinks();
+        if (!layer && links.length > 0) {
+          layer = await this.addLayerForLink(links[0]);
         }
         // If no other layer is available, try to visualize the default thumbnail
         if (this.displayPreview_ && !layer) {

@@ -75,7 +75,6 @@ function updateLayer() {
   }
   layer = new STAC({
     url: getUrl(),
-    displayWebMapLink: false,
     style: getStyle(),
   });
   layer.on('sourceready', () => {

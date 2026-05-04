@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - Only visualize Web-Optimized Zarr, not normal Zarr
+- Prefer loading WOZ/COG over Web Map Links
 
 ## [1.3.0] - 2026-04-17
 
