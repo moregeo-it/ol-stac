@@ -1,0 +1,26 @@
+#news {
+  background-color: var(--ol-accent-background-color);
+  border-radius: 4px;
+  padding: 1rem 0 0;
+}
+
+#news h1 {
+  margin: 0;
+}
+
+img.thumb {
+  float: right;
+  margin-left: 10px;
+}
+
+/* ol customizations */
+
+.ol-overlaycontainer-stopevent {
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+/* not done with :hover because the overlay blocks events and has no height */
+.over .ol-overlaycontainer-stopevent {
+  opacity: 1;
+}
