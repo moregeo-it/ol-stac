@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-07-13
+
 - Alternate assets are considered as candidates for the preview image and the GeoTiff/GeoZarr visualization if the original asset can't be accessed via HTTP(S)
 - Footprints that cross the antimeridian are split into multi-geometries so that they render correctly on the map
 - Add example for a STAC Item crossing the antimeridian
@@ -208,7 +210,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release
 
-[Unreleased]: <https://github.com/stac-extensions/contacts/compare/v1.4.0...HEAD>
+[Unreleased]: <https://github.com/stac-extensions/contacts/compare/v1.5.0...HEAD>
+[1.5.0]: <https://github.com/stac-extensions/contacts/compare/v1.4.0...v1.5.0>
 [1.4.0]: <https://github.com/stac-extensions/contacts/compare/v1.3.0...v1.4.0>
 [1.3.0]: <https://github.com/stac-extensions/contacts/compare/v1.2.0...v1.3.0>
 [1.2.0]: <https://github.com/stac-extensions/contacts/compare/v1.1.1...v1.2.0>
