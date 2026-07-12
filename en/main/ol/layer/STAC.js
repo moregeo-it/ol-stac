@@ -464,7 +464,13 @@ class STACLayer extends LayerGroup {
      */
     async addPreviewImage_(image) {
         const projection = await getProjection(image, 'EPSG:4326');
-        const bboxes = image.getContext().getBoundingBoxes();
+        // For alternate assets (e.g. as returned by getThumbnails), the context
+        // is the parent asset, so walk up until we reach the STAC entity.
+        let context = image.getContext();
+        while (context instanceof Asset) {
+            context = context.getContext();
+        }
+        const bboxes = context ? context.getBoundingBoxes() : [];
         if (bboxes.length !== 1) {
             return;
         }
