@@ -36,7 +36,7 @@
   "dependencies": {
     "ol-pmtiles": "^2.0.0",
     "proj4": "^2.16.1",
-    "stac-js": "^0.4.2"
+    "stac-js": "~0.5.0"
   },
   "peerDependencies": {
     "ol": ">=9.0.0"
@@ -78,6 +78,7 @@
     "shx": "^0.3.2",
     "sinon": "^17.0.0",
     "source-map-loader": "^4.0.0",
+    "terser-webpack-plugin": "^5.6.1",
     "typescript": "5.1.6",
     "walk": "^2.3.9",
     "webpack": "^5.27.2",
