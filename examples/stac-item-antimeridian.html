@@ -1,0 +1,13 @@
+---
+layout: example.html
+title: STAC Item crossing the antimeridian
+shortdesc: Rendering a STAC Item whose geometry crosses the antimeridian (180° longitude).
+docs: >
+  The footprint of this STAC Item crosses the antimeridian (180° longitude).
+  Such geometries are split into multi-geometries so that they render correctly on the map
+  instead of wrapping around the whole globe.
+  The example data is a thunderstorm warning for Mahia, New Zealand, taken from
+  <a href="https://github.com/radiantearth/stac-browser/issues/736">stac-browser issue #736</a>.
+tags: "stac, stac item, antimeridian, footprint"
+---
+<div id="map" class="map"></div>

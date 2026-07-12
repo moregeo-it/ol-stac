@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Alternate assets are considered as candidates for the preview image and
-  the GeoTiff/GeoZarr visualization if the original asset can't be accessed
-  via HTTP(S), see [stac-browser#910](https://github.com/radiantearth/stac-browser/issues/910)
+- Alternate assets are considered as candidates for the preview image and the GeoTiff/GeoZarr visualization if the original asset can't be accessed via HTTP(S)
+- Footprints that cross the antimeridian are split into multi-geometries so that they render correctly on the map
+- Add example for a STAC Item crossing the antimeridian
 - Update stac-js to v0.5.0
 
 ## [1.4.0] - 2026-05-04
