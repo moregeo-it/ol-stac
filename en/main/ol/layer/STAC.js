@@ -755,11 +755,16 @@ class STACLayer extends LayerGroup {
     addFootprint_() {
         let geojson = null;
         const data = this.getData();
+        // Split geometries that cross the antimeridian into multi-geometries
+        // so that they render correctly on the map.
+        // Uses flat interpolation for the crossing points, which corresponds to
+        // how the straight edges between the vertices are rendered by OpenLayers.
+        const fixAntimeridian = { greatCircle: false };
         if (data.isApiCollection) {
-            geojson = toGeoJSON(data.getBoundingBox());
+            geojson = toGeoJSON(data.getBoundingBox(), fixAntimeridian);
         }
         else {
-            geojson = data.toGeoJSON();
+            geojson = data.toGeoJSON(fixAntimeridian);
         }
         if (geojson) {
             const layer = this.createGeoJsonLayer_(geojson, getBoundsStyle(this.boundsStyle_, this), this.displayFootprint_);
