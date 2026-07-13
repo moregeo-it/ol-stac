@@ -42,6 +42,8 @@ import {
   getGeoZarrSourceOptionsFromAsset,
   getSpecificWebMapUrl,
   isScalar,
+  toContinuousBBox,
+  toOlExtent,
 } from '../util.js';
 /**
  * @typedef {import("ol/extent.js").Extent} Extent
@@ -372,7 +374,7 @@ class STACLayer extends LayerGroup {
       return false;
     }
     const bbox = this.getData().getBoundingBox();
-    if (!bbox || isEmpty(bbox)) {
+    if (!bbox || isEmpty(toContinuousBBox(bbox))) {
       return true;
     }
     return !this.boundsLayer_ || !this.displayFootprint_;
@@ -1352,7 +1354,7 @@ class STACLayer extends LayerGroup {
     }
 
     if (bbox) {
-      return transformExtent(bbox, 'EPSG:4326', view.getProjection());
+      return toOlExtent(bbox, view.getProjection());
     }
   }
 

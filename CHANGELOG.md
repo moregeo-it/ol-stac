@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- `getExtent` and `isEmpty` handle bounding boxes that cross the antimeridian (west > east) so that maps zoom to the correct region
+- Add `toContinuousBBox` and `toOlExtent` helpers so that consumers can convert STAC bounding boxes into continuous OpenLayers extents
+
 ## [1.5.0] - 2026-07-13
 
 - Alternate assets are considered as candidates for the preview image and the GeoTiff/GeoZarr visualization if the original asset can't be accessed via HTTP(S)

@@ -3,6 +3,7 @@
  */
 
 import VectorLayer from 'ol/layer/Vector.js';
+import {transformExtent} from 'ol/proj.js';
 import Circle from 'ol/style/Circle.js';
 import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
@@ -37,6 +38,41 @@ import {isObject} from 'stac-js/src/utils.js';
  */
 export const LABEL_EXTENSION =
   'https://stac-extensions.github.io/label/v1.*/schema.json';
+
+/**
+ * Makes a bounding box continuous for use as an (OpenLayers) extent.
+ *
+ * Bounding boxes that cross the antimeridian have a western longitude that is
+ * larger than the eastern longitude (as defined by RFC 7946, section 5.2).
+ * For those, the eastern longitude is shifted by +360 so that the extent is
+ * continuous across the antimeridian (i.e. `minX <= maxX`).
+ *
+ * @param {Array<number>} bbox The bounding box in lon/lat degrees.
+ * @return {Array<number>} The continuous bounding box.
+ * @api
+ */
+export function toContinuousBBox(bbox) {
+  if (bbox[0] > bbox[2]) {
+    return [bbox[0], bbox[1], bbox[2] + 360, bbox[3]];
+  }
+  return bbox;
+}
+
+/**
+ * Converts a lon/lat (EPSG:4326) bounding box into a continuous OpenLayers
+ * extent in the given projection.
+ *
+ * Handles antimeridian-crossing bounding boxes (west > east), see
+ * {@link toContinuousBBox}.
+ *
+ * @param {Array<number>} bbox The bounding box in lon/lat degrees (EPSG:4326).
+ * @param {import("ol/proj.js").ProjectionLike} projection The target projection.
+ * @return {Array<number>} The extent in the target projection.
+ * @api
+ */
+export function toOlExtent(bbox, projection) {
+  return transformExtent(toContinuousBBox(bbox), 'EPSG:4326', projection);
+}
 
 const transparentFill = new Fill({color: 'rgba(0,0,0,0)'});
 
