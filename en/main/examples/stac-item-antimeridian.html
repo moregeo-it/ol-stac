@@ -171,7 +171,6 @@
         <pre><code id="example-js-source" class="language-js">import Map from &#x27;ol/Map.js&#x27;;
 import View from &#x27;ol/View.js&#x27;;
 import TileLayer from &#x27;ol/layer/WebGLTile.js&#x27;;
-import {fromLonLat} from &#x27;ol/proj.js&#x27;;
 import OSM from &#x27;ol/source/OSM.js&#x27;;
 import STAC from &#x27;ol-stac&#x27;;
 
@@ -269,16 +268,20 @@ const background &#x3D; new TileLayer({
   source: new OSM(),
 });
 
-// The view is centered on the antimeridian manually as the extent
-// can&#x27;t be derived from the STAC Item: its bbox contains a longitude &gt; 180
-// and the extent of the split footprint spans the whole world.
-new Map({
+const map &#x3D; new Map({
   target: &#x27;map&#x27;,
   layers: [background, layer],
   view: new View({
-    center: fromLonLat([178.5, -39.2]),
-    zoom: 7,
+    center: [0, 0],
+    zoom: 0,
+    // The fitted extent of an antimeridian-crossing bbox extends beyond +180°,
+    // so multiWorld must be enabled to avoid clamping the wrapped portion.
+    multiWorld: true,
   }),
+});
+layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
+  const view &#x3D; map.getView();
+  view.fit(layer.getExtent(), {padding: [50, 50, 50, 50]});
 });
 </code></pre>
       </div>
