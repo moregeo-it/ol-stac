@@ -75,6 +75,10 @@ export function toContinuousBBox(bbox) {
  * Handles antimeridian-crossing bounding boxes (west > east), see
  * {@link toContinuousBBox}.
  *
+ * When fitting an antimeridian-crossing extent, configure the OpenLayers
+ * `View` with `multiWorld: true`; otherwise the default world constraint may
+ * clamp the fitted view and clip the wrapped portion.
+ *
  * @param {Array<number>} bbox The bounding box in lon/lat degrees (EPSG:4326).
  * @param {import("ol/proj.js").ProjectionLike} projection The target projection.
  * @return {Array<number>} The extent in the target projection.
