@@ -10,7 +10,6 @@ import TileLayer from 'ol/layer/Tile.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
 import WebGLTileLayer from 'ol/layer/WebGLTile.js';
-import {transformExtent} from 'ol/proj.js';
 import GeoTIFF from 'ol/source/GeoTIFF.js';
 import StaticImage from 'ol/source/ImageStatic.js';
 import TileJSON from 'ol/source/TileJSON.js';
@@ -42,6 +41,8 @@ import {
   getGeoZarrSourceOptionsFromAsset,
   getSpecificWebMapUrl,
   isScalar,
+  toContinuousBBox,
+  toOlExtent,
 } from '../util.js';
 /**
  * @typedef {import("ol/extent.js").Extent} Extent
@@ -372,7 +373,7 @@ class STACLayer extends LayerGroup {
       return false;
     }
     const bbox = this.getData().getBoundingBox();
-    if (!bbox || isEmpty(bbox)) {
+    if (!bbox || isEmpty(toContinuousBBox(bbox))) {
       return true;
     }
     return !this.boundsLayer_ || !this.displayFootprint_;
@@ -549,7 +550,7 @@ class STACLayer extends LayerGroup {
     let options = {
       url: image.getAbsoluteUrl(),
       projection,
-      imageExtent: transformExtent(bbox, 'EPSG:4326', projection),
+      imageExtent: toOlExtent(bbox, projection),
       crossOrigin: this.crossOrigin_,
     };
     if (this.getSourceOptions_) {
@@ -1352,7 +1353,7 @@ class STACLayer extends LayerGroup {
     }
 
     if (bbox) {
-      return transformExtent(bbox, 'EPSG:4326', view.getProjection());
+      return toOlExtent(bbox, view.getProjection());
     }
   }
 
