@@ -10,7 +10,6 @@ import TileLayer from 'ol/layer/Tile.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
 import WebGLTileLayer from 'ol/layer/WebGLTile.js';
-import {transformExtent} from 'ol/proj.js';
 import GeoTIFF from 'ol/source/GeoTIFF.js';
 import StaticImage from 'ol/source/ImageStatic.js';
 import TileJSON from 'ol/source/TileJSON.js';
@@ -551,7 +550,7 @@ class STACLayer extends LayerGroup {
     let options = {
       url: image.getAbsoluteUrl(),
       projection,
-      imageExtent: transformExtent(bbox, 'EPSG:4326', projection),
+      imageExtent: toOlExtent(bbox, projection),
       crossOrigin: this.crossOrigin_,
     };
     if (this.getSourceOptions_) {

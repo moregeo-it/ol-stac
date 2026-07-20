@@ -47,15 +47,25 @@ export const LABEL_EXTENSION =
  * For those, the eastern longitude is shifted by +360 so that the extent is
  * continuous across the antimeridian (i.e. `minX <= maxX`).
  *
+ * Accepts both 2D (four values) and 3D (six values) bounding boxes and always
+ * returns a 2D extent (four values).
+ *
  * @param {Array<number>} bbox The bounding box in lon/lat degrees.
- * @return {Array<number>} The continuous bounding box.
+ * @return {Array<number>} The continuous 2D bounding box.
  * @api
  */
 export function toContinuousBBox(bbox) {
-  if (bbox[0] > bbox[2]) {
-    return [bbox[0], bbox[1], bbox[2] + 360, bbox[3]];
+  // STAC bounding boxes may contain a third dimension, i.e. six values
+  // (west, south, minZ, east, north, maxZ). Extract the horizontal 2D extent.
+  const hasZ = bbox.length >= 6;
+  const west = bbox[0];
+  const south = bbox[1];
+  const east = bbox[hasZ ? 3 : 2];
+  const north = bbox[hasZ ? 4 : 3];
+  if (west > east) {
+    return [west, south, east + 360, north];
   }
-  return bbox;
+  return [west, south, east, north];
 }
 
 /**

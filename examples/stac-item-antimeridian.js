@@ -104,6 +104,9 @@ const map = new Map({
   view: new View({
     center: [0, 0],
     zoom: 0,
+    // The fitted extent of an antimeridian-crossing bbox extends beyond +180°,
+    // so multiWorld must be enabled to avoid clamping the wrapped portion.
+    multiWorld: true,
   }),
 });
 layer.on('sourceready', () => {
