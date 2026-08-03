@@ -1,0 +1,16 @@
+---
+layout: example.html
+title: NDVI from a GeoZarr STAC Item
+shortdesc: Computing an NDVI visualization for a GeoZarr datacube via getLayerOptions.
+docs: >
+  This example uses the `getLayerOptions` callback to compute a
+  <a href="https://en.wikipedia.org/wiki/Normalized_difference_vegetation_index">NDVI</a>
+  visualization for the red and near-infrared bands of a Web-Optimized GeoZarr
+  reflectance datacube. The callback derives which of the loaded bands is red
+  and which is near-infrared from the band metadata of the STAC asset
+  (`eo:common_name`) and builds the color ramp style from it. The callback can
+  also be asynchronous, e.g. to load a style definition that is referenced in
+  the STAC metadata, which only delays the creation of the individual layer.
+tags: "stac, stac item, geozarr, zarr, ndvi, style, layer options"
+---
+<div id="map" class="map"></div>
