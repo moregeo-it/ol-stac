@@ -71,6 +71,7 @@
             <li data-name="apicollection"><a href="module-ol_layer_STAC.html#~APICollection">APICollection</a>
             <li data-name="extent"><a href="module-ol_layer_STAC.html#~Extent">Extent</a>
             <li data-name="layer"><a href="module-ol_layer_STAC.html#~Layer">Layer</a>
+            <li data-name="layeroptions"><a href="module-ol_layer_STAC.html#~LayerOptions">LayerOptions</a>
             <li data-name="link"><a href="module-ol_layer_STAC.html#~Link">Link</a>
             <li data-name="map"><a href="module-ol_layer_STAC.html#~Map">Map</a>
             <li data-name="options"><a href="module-ol_layer_STAC.html#~Options">Options</a>
@@ -273,6 +274,52 @@
         </div>
         <h4 class="name">
             Layer<span class="type-signature type module:ol/layer/layer.js">{js}</span> 
+            
+
+        </h4>
+    </div>
+    
+</dt>
+<dd class="">
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+</dd>
+
+            
+                
+<dt class="">
+    <div class="nameContainer">
+        <div class="anchor" id="~LayerOptions">
+        </div>
+        <h4 class="name">
+            LayerOptions<span class="type-signature type module:ol/layer/type~layeroptions">{<a href="module-ol_layer_type.html#~LayerOptions">LayerOptions</a>}</span> 
             
 
         </h4>
@@ -635,6 +682,33 @@ and return the completed options or a promise for the same. The function will be
 and the STAC Asset or Link.
 This can be useful for adding auth information such as an API token, either via query parameter or HTTP headers.
 Please be aware that sending HTTP headers may not be supported by all sources.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>getLayerOptions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+ | undefined
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>Optional function that can be used to configure the individual layers that are created for the assets and links.
+The function can do any additional (asynchronous) work and return the completed options or a promise for the same.
+The function will be called with the layer type, the current layer options and the STAC Asset or Link.
+This can be useful to customize the layers, e.g. to apply a style to a GeoTIFF or GeoZarr layer that is
+loaded from the STAC metadata.</p>
                 
             </td>
         </tr>

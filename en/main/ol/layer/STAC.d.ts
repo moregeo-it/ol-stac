@@ -8,6 +8,7 @@ export type STACObject = any;
 export type Map = import("ol/Map.js").default;
 export type Style = import('ol/style/Style.js').default;
 export type SourceOptions = import('../source/type.js').SourceOptions;
+export type LayerOptions = import('./type.js').LayerOptions;
 export type Options = {
     /**
      * The STAC URL. Any of `url` and `data` must be provided.
@@ -49,6 +50,14 @@ export type Options = {
      * Please be aware that sending HTTP headers may not be supported by all sources.
      */
     getSourceOptions?: ((arg0: SourceType, arg1: SourceOptions, arg2: (Asset | Link)) => (SourceOptions | Promise<SourceOptions>)) | undefined;
+    /**
+     * Optional function that can be used to configure the individual layers that are created for the assets and links.
+     * The function can do any additional (asynchronous) work and return the completed options or a promise for the same.
+     * The function will be called with the layer type, the current layer options and the STAC Asset or Link.
+     * This can be useful to customize the layers, e.g. to apply a style to a GeoTIFF or GeoZarr layer that is
+     * loaded from the STAC metadata.
+     */
+    getLayerOptions?: ((arg0: LayerType, arg1: LayerOptions, arg2: (Asset | Link)) => (LayerOptions | Promise<LayerOptions>)) | undefined;
     /**
      * Allows to hide the footprints (bounding box/geometry) of the STAC object
      * by default.
@@ -193,6 +202,9 @@ export type Options = {
  * @typedef {import('../source/type.js').SourceOptions} SourceOptions
  */
 /**
+ * @typedef {import('./type.js').LayerOptions} LayerOptions
+ */
+/**
  * @typedef {Object} Options
  * @property {string} [url] The STAC URL. Any of `url` and `data` must be provided.
  * Can also be used as url for data, if it is absolute and doesn't contain a self link.
@@ -214,6 +226,12 @@ export type Options = {
  * and the STAC Asset or Link.
  * This can be useful for adding auth information such as an API token, either via query parameter or HTTP headers.
  * Please be aware that sending HTTP headers may not be supported by all sources.
+ * @property {function(LayerType, LayerOptions, (Asset|Link)):(LayerOptions|Promise<LayerOptions>)} [getLayerOptions]
+ * Optional function that can be used to configure the individual layers that are created for the assets and links.
+ * The function can do any additional (asynchronous) work and return the completed options or a promise for the same.
+ * The function will be called with the layer type, the current layer options and the STAC Asset or Link.
+ * This can be useful to customize the layers, e.g. to apply a style to a GeoTIFF or GeoZarr layer that is
+ * loaded from the STAC metadata.
  * @property {boolean} [displayFootprint=true] Allows to hide the footprints (bounding box/geometry) of the STAC object
  * by default.
  * @property {boolean} [displayGeoTiffByDefault=false] Allow to choose non-cloud-optimized GeoTiffs as default image to show,
@@ -284,6 +302,11 @@ declare class STACLayer extends LayerGroup {
      * @private
      */
     private getSourceOptions_;
+    /**
+     * @type {function(LayerType, LayerOptions, (Asset|Link)):(LayerOptions|Promise<LayerOptions>)}
+     * @private
+     */
+    private getLayerOptions_;
     /**
      * @type {Array<STAC>|null}
      * @private
@@ -473,6 +496,16 @@ declare class STACLayer extends LayerGroup {
      */
     private addTileLayerForImagery_;
     /**
+     * Passes the layer options through the `getLayerOptions` function, if given.
+     *
+     * @param {LayerType} type The type of the layer that is going to be created.
+     * @param {LayerOptions} options The layer options.
+     * @param {Asset|Link} reference The STAC Asset or Link the layer is created for.
+     * @return {Promise<*>} The updated layer options.
+     * @private
+     */
+    private updateLayerOptions_;
+    /**
      * @param {Layer|LayerGroup} [layer] A Layer to add to the LayerGroup
      * @param {STACObject} [data] The STAC object, can be any class exposed by stac-js
      * @param {number} [zIndex] The z-index for the layer
@@ -491,15 +524,15 @@ declare class STACLayer extends LayerGroup {
      */
     private addGeoJson_;
     /**
-     * Creates a GeoJSON vector layer from the given GeoJSON object.
+     * Creates the options for a GeoJSON vector layer from the given GeoJSON object.
      *
      * @param {GeoJSON} [geojson] The GeoJSON object.
      * @param {Style} [style] The style for the layer.
      * @param {boolean} [visible] Whether the layer is visible.
-     * @return {VectorLayer} The new vector layer.
+     * @return {import("ol/layer/Vector.js").Options} The vector layer options.
      * @private
      */
-    private createGeoJsonLayer_;
+    private getGeoJsonLayerOptions_;
     /**
      * Adds GeoJSON labels and GeoTIFF source imagery to the map based on the label extension.
      *
@@ -598,6 +631,7 @@ declare class STACLayer extends LayerGroup {
     private getWmtsCapabilities_;
 }
 import SourceType from '../source/type.js';
+import LayerType from './type.js';
 import LayerGroup from 'ol/layer/Group.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import WebGLTileLayer from 'ol/layer/WebGLTile.js';

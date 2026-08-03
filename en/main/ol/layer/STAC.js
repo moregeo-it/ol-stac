@@ -28,6 +28,7 @@ import ErrorEvent from '../events/ErrorEvent.js';
 import { getProjection } from '../proj.js';
 import SourceType from '../source/type.js';
 import { LABEL_EXTENSION, defaultBoundsStyle, defaultCollectionStyle, getBoundsStyle, getClassificationStyle, getGeoTiffSourceInfoFromAsset, getGeoZarrSourceOptionsFromAsset, getSpecificWebMapUrl, isScalar, toContinuousBBox, toOlExtent, } from '../util.js';
+import LayerType from './type.js';
 /**
  * @typedef {import("ol/extent.js").Extent} Extent
  */
@@ -56,6 +57,9 @@ import { LABEL_EXTENSION, defaultBoundsStyle, defaultCollectionStyle, getBoundsS
  * @typedef {import('../source/type.js').SourceOptions} SourceOptions
  */
 /**
+ * @typedef {import('./type.js').LayerOptions} LayerOptions
+ */
+/**
  * @typedef {Object} Options
  * @property {string} [url] The STAC URL. Any of `url` and `data` must be provided.
  * Can also be used as url for data, if it is absolute and doesn't contain a self link.
@@ -77,6 +81,12 @@ import { LABEL_EXTENSION, defaultBoundsStyle, defaultCollectionStyle, getBoundsS
  * and the STAC Asset or Link.
  * This can be useful for adding auth information such as an API token, either via query parameter or HTTP headers.
  * Please be aware that sending HTTP headers may not be supported by all sources.
+ * @property {function(LayerType, LayerOptions, (Asset|Link)):(LayerOptions|Promise<LayerOptions>)} [getLayerOptions]
+ * Optional function that can be used to configure the individual layers that are created for the assets and links.
+ * The function can do any additional (asynchronous) work and return the completed options or a promise for the same.
+ * The function will be called with the layer type, the current layer options and the STAC Asset or Link.
+ * This can be useful to customize the layers, e.g. to apply a style to a GeoTIFF or GeoZarr layer that is
+ * loaded from the STAC metadata.
  * @property {boolean} [displayFootprint=true] Allows to hide the footprints (bounding box/geometry) of the STAC object
  * by default.
  * @property {boolean} [displayGeoTiffByDefault=false] Allow to choose non-cloud-optimized GeoTiffs as default image to show,
@@ -159,6 +169,11 @@ class STACLayer extends LayerGroup {
          * @private
          */
         this.getSourceOptions_ = options.getSourceOptions;
+        /**
+         * @type {function(LayerType, LayerOptions, (Asset|Link)):(LayerOptions|Promise<LayerOptions>)}
+         * @private
+         */
+        this.getLayerOptions_ = options.getLayerOptions;
         /**
          * @type {Array<STAC>|null}
          * @private
@@ -487,9 +502,8 @@ class STACLayer extends LayerGroup {
             // @ts-ignore
             options = await this.getSourceOptions_(SourceType.ImageStatic, options, image);
         }
-        const layer = new ImageLayer({
-            source: new StaticImage(options),
-        });
+        const layerOptions = await this.updateLayerOptions_(LayerType.Image, { source: new StaticImage(options) }, image);
+        const layer = new ImageLayer(layerOptions);
         this.addLayer_(layer, image);
         return layer;
     }
@@ -627,23 +641,23 @@ class STACLayer extends LayerGroup {
             default:
                 return;
         }
-        return sources.map((source) => {
+        return await Promise.all(sources.map(async (source) => {
             let layer;
             if (source instanceof VectorTileSource) {
-                layer = new VectorTileLayer({
-                    source,
-                    declutter: true,
-                });
+                const layerOptions = await this.updateLayerOptions_(LayerType.VectorTile, { source, declutter: true }, link);
+                layer = new VectorTileLayer(layerOptions);
             }
             else if (source instanceof PMTilesRasterSource) {
-                layer = new WebGLTileLayer({ source });
+                const layerOptions = await this.updateLayerOptions_(LayerType.WebGLTile, { source }, link);
+                layer = new WebGLTileLayer(layerOptions);
             }
             else {
-                layer = new TileLayer({ source });
+                const layerOptions = await this.updateLayerOptions_(LayerType.Tile, { source }, link);
+                layer = new TileLayer(layerOptions);
             }
             this.addLayer_(layer, link);
             return layer;
-        });
+        }));
     }
     /**
      * @param {Asset} [asset] A STAC Asset
@@ -690,13 +704,17 @@ class STACLayer extends LayerGroup {
         });
         try {
             await status;
-            const layerOptions = { source };
+            /**
+             * @type {import("ol/layer/WebGLTile.js").Options}
+             */
+            let layerOptions = { source };
             if (this.style_) {
                 layerOptions.style = this.style_;
             }
             else if (classificationStyle) {
                 layerOptions.style = classificationStyle;
             }
+            layerOptions = await this.updateLayerOptions_(LayerType.WebGLTile, layerOptions, asset);
             const layer = new WebGLTileLayer(layerOptions);
             this.addLayer_(layer, asset);
             return layer;
@@ -728,11 +746,25 @@ class STACLayer extends LayerGroup {
         if (this.getSourceOptions_) {
             options = await this.getSourceOptions_(SourceType.XYZ, options, data);
         }
-        const layer = new TileLayer({
-            source: new XYZ(options),
-        });
+        const layerOptions = await this.updateLayerOptions_(LayerType.Tile, { source: new XYZ(options) }, data);
+        const layer = new TileLayer(layerOptions);
         this.addLayer_(layer, data);
         return layer;
+    }
+    /**
+     * Passes the layer options through the `getLayerOptions` function, if given.
+     *
+     * @param {LayerType} type The type of the layer that is going to be created.
+     * @param {LayerOptions} options The layer options.
+     * @param {Asset|Link} reference The STAC Asset or Link the layer is created for.
+     * @return {Promise<*>} The updated layer options.
+     * @private
+     */
+    async updateLayerOptions_(type, options, reference) {
+        if (this.getLayerOptions_) {
+            options = await this.getLayerOptions_(type, options, reference);
+        }
+        return options;
     }
     /**
      * @param {Layer|LayerGroup} [layer] A Layer to add to the LayerGroup
@@ -766,7 +798,7 @@ class STACLayer extends LayerGroup {
             geojson = data.toGeoJSON(fixAntimeridian);
         }
         if (geojson) {
-            const layer = this.createGeoJsonLayer_(geojson, getBoundsStyle(this.boundsStyle_, this), this.displayFootprint_);
+            const layer = new VectorLayer(this.getGeoJsonLayerOptions_(geojson, getBoundsStyle(this.boundsStyle_, this), this.displayFootprint_));
             layer.set('bounds', true);
             layer.on('change', () => this.setMap_(layer.getMapInternal()));
             this.addLayer_(layer, data, 1);
@@ -782,7 +814,8 @@ class STACLayer extends LayerGroup {
     async addGeoJson_(asset) {
         try {
             const geojson = await this.fetch_(asset.getAbsoluteUrl());
-            const layer = this.createGeoJsonLayer_(geojson);
+            const layerOptions = await this.updateLayerOptions_(LayerType.Vector, this.getGeoJsonLayerOptions_(geojson), asset);
+            const layer = new VectorLayer(layerOptions);
             this.addLayer_(layer, asset);
             return layer;
         }
@@ -791,15 +824,15 @@ class STACLayer extends LayerGroup {
         }
     }
     /**
-     * Creates a GeoJSON vector layer from the given GeoJSON object.
+     * Creates the options for a GeoJSON vector layer from the given GeoJSON object.
      *
      * @param {GeoJSON} [geojson] The GeoJSON object.
      * @param {Style} [style] The style for the layer.
      * @param {boolean} [visible] Whether the layer is visible.
-     * @return {VectorLayer} The new vector layer.
+     * @return {import("ol/layer/Vector.js").Options} The vector layer options.
      * @private
      */
-    createGeoJsonLayer_(geojson, style = null, visible = true) {
+    getGeoJsonLayerOptions_(geojson, style = null, visible = true) {
         const format = new GeoJSON();
         const source = new VectorSource({
             format,
@@ -814,7 +847,7 @@ class STACLayer extends LayerGroup {
         if (!style) {
             style = defaultCollectionStyle;
         }
-        return new VectorLayer({ source, style, visible });
+        return { source, style, visible };
     }
     /**
      * Adds GeoJSON labels and GeoTIFF source imagery to the map based on the label extension.
@@ -891,10 +924,14 @@ class STACLayer extends LayerGroup {
                     }
                 });
             });
-            const layerOptions = { source };
+            /**
+             * @type {import("ol/layer/WebGLTile.js").Options}
+             */
+            let layerOptions = { source };
             if (this.style_) {
                 layerOptions.style = this.style_;
             }
+            layerOptions = await this.updateLayerOptions_(LayerType.WebGLTile, layerOptions, asset);
             const layer = new WebGLTileLayer(layerOptions);
             this.addLayer_(layer, asset);
             return layer;

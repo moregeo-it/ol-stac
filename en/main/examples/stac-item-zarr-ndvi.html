@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
-    <title>STAC Item with GeoZarr asset</title>
+    <title>NDVI from a GeoZarr STAC Item</title>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/fontawesome.min.css" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/solid.css" crossorigin="anonymous">
@@ -56,7 +56,7 @@
           <i class="fab fa-codepen fa-lg"></i> Edit
         </a>
         <div class="span12">
-          <h4 id="title">STAC Item with GeoZarr asset</h4>
+          <h4 id="title">NDVI from a GeoZarr STAC Item</h4>
           <p class="tags">
             <span class="badge-group">
               <a
@@ -68,7 +68,7 @@
                 data-title="stac"
                 data-content="&lt;ul class=&quot;list-group&quot;&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./custom.html&quot;&gt;Custom STAC provided via URL&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-zarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-zarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-with-items.html&quot;&gt;STAC Collection with child items&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-pmtiles-raster.html&quot;&gt;STAC Collection with PMTiles (Raster)&lt;/a&gt;
@@ -81,7 +81,7 @@
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-classification.html&quot;&gt;STAC Item with Classification&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-tileserver.html&quot;&gt;STAC Item with COG rendered by a tile server&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-geojson.html&quot;&gt;STAC Item with GeoJSON assets&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-zarr.html&quot;&gt;STAC Item with GeoZarr asset&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-zarr.html&quot;&gt;STAC Item with GeoZarr asset&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-labels.html&quot;&gt;STAC Item with Label Extension&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
@@ -96,7 +96,7 @@
                 data-bs-target="#tag-example-list"
                 data-title="stacitem"
                 data-content="&lt;ul class=&quot;list-group&quot;&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-zarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-zarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item.html&quot;&gt;STAC Item&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-antimeridian.html&quot;&gt;STAC Item crossing the antimeridian&lt;/a&gt;
@@ -104,7 +104,7 @@
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-classification.html&quot;&gt;STAC Item with Classification&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-tileserver.html&quot;&gt;STAC Item with COG rendered by a tile server&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-geojson.html&quot;&gt;STAC Item with GeoJSON assets&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-zarr.html&quot;&gt;STAC Item with GeoZarr asset&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-zarr.html&quot;&gt;STAC Item with GeoZarr asset&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-labels.html&quot;&gt;STAC Item with Label Extension&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
@@ -119,8 +119,8 @@
                 data-bs-target="#tag-example-list"
                 data-title="geozarr"
                 data-content="&lt;ul class=&quot;list-group&quot;&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-zarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-zarr.html&quot;&gt;STAC Item with GeoZarr asset&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-zarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-zarr.html&quot;&gt;STAC Item with GeoZarr asset&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
                 >2</a>
@@ -134,22 +134,50 @@
                 data-bs-target="#tag-example-list"
                 data-title="zarr"
                 data-content="&lt;ul class=&quot;list-group&quot;&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-zarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-zarr.html&quot;&gt;STAC Item with GeoZarr asset&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-zarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-zarr.html&quot;&gt;STAC Item with GeoZarr asset&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
                 >2</a>
             </span>
             <span class="badge-group">
               <a
-                href="./index.html?q=eopf" class="badge badge-info">eopf</a
+                href="./index.html?q=ndvi" class="badge badge-info">ndvi</a
               ><a
                 class="badge badge-info tag-modal-toggle"
                 data-bs-toggle="modal"
                 data-bs-target="#tag-example-list"
-                data-title="eopf"
+                data-title="ndvi"
                 data-content="&lt;ul class=&quot;list-group&quot;&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-zarr.html&quot;&gt;STAC Item with GeoZarr asset&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-zarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >1</a>
+            </span>
+            <span class="badge-group">
+              <a
+                href="./index.html?q=style" class="badge badge-info">style</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="style"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-zarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >1</a>
+            </span>
+            <span class="badge-group">
+              <a
+                href="./index.html?q=layeroptions" class="badge badge-info">layeroptions</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="layeroptions"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-item-zarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
                 >1</a>
@@ -170,34 +198,6 @@
           </div>
           <div id="map" class="map"></div>
 
-<div class="row mt-2">
-  <div class="col-auto">
-    <div class="input-group">
-      <label class="input-group-text" for="url-select">Min / Max values for visualization (0-1)</label>
-      <div class="form-control">
-        <input type="range" id="min" name="min" min="0" max="1" value="0" step="0.1" />
-        <input type="range" id="max" name="max" min="0" max="1" value="0.5" step="0.1" />
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="row mt-2">
-  <div class="col-auto">
-    <div class="input-group">
-      <label class="input-group-text" for="url-select">URL</label>
-      <select class="form-select" id="url-select">
-        <option value="https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2C_MSIL2A_20260414T114351_N0512_R123_T30VVK_20260414T164110" selected>Sentinel-2 L2A (Highlands)</option>
-        <option value="https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2C_MSIL2A_20260120T084301_N0511_R064_T36UXA_20260120T122910">Sentinel-2 L2A (Krasnokuts'k)</option>
-        <option value="https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2B_MSIL2A_20260120T125339_N0511_R138_T27VWL_20260120T131151">Sentinel-2 L2A (Hvolsvöllur)</option>
-        <option value="custom">Custom...</option>
-      </select>
-      <input type="text" class="form-control" id="custom-url" placeholder="Enter Zarr URL" style="display: none; width: 300px;">
-      <button class="btn btn-outline-secondary" id="load-url" type="button">Load</button>
-    </div>
-  </div>
-</div>
-
         </div>
         <form method="POST" id="codepen-form" target="_blank" action="https://codesandbox.io/api/v1/sandboxes/define">
           <input id="codesandbox-params" type="hidden" name="parameters">
@@ -206,8 +206,8 @@
 
       <div class="row-fluid">
         <div class="span12">
-          <p id="shortdesc">Rendering a STAC Item with Web-Optimized GeoZarr assets</p>
-          <div id="docs"><p>Visualize Web-Optimized GeoZarr assets from SpatioTemporal Asset Catalog (STAC) Items.</p>
+          <p id="shortdesc">Computing an NDVI visualization for a GeoZarr datacube via getLayerOptions.</p>
+          <div id="docs"><p>This example uses the <code>getLayerOptions</code> callback to compute a <a href="https://en.wikipedia.org/wiki/Normalized_difference_vegetation_index">NDVI</a> visualization for the red and near-infrared bands of a Web-Optimized GeoZarr reflectance datacube. The callback derives which of the loaded bands is red and which is near-infrared from the band metadata of the STAC asset (<code>eo:common_name</code>) and builds the color ramp style from it. The callback can also be asynchronous, e.g. to load a style definition that is referenced in the STAC metadata, which only delays the creation of the individual layer.</p>
 </div>
         </div>
       </div>
@@ -221,8 +221,75 @@ import {register} from &#x27;ol/proj/proj4.js&#x27;;
 import OSM from &#x27;ol/source/OSM.js&#x27;;
 import proj4 from &#x27;proj4&#x27;;
 import STAC from &#x27;ol-stac&#x27;;
+import LayerType from &#x27;ol-stac/layer/type.js&#x27;;
 
 register(proj4); // required to support source reprojection
+
+// The bands of the reflectance datacube to load (red and NIR).
+const selectedBands &#x3D; [&#x27;b04&#x27;, &#x27;b08&#x27;];
+
+/**
+ * Creates an NDVI style for the given asset. Which of the selected bands is
+ * red and which is near-infrared is derived from the band metadata of the
+ * STAC asset (&#x60;eo:common_name&#x60;) instead of being hard-coded.
+ * @param {import(&#x27;stac-js&#x27;).Asset} asset The STAC asset.
+ * @return {import(&#x27;ol/layer/WebGLTile.js&#x27;).Style|undefined} The style.
+ */
+function createNdviStyle(asset) {
+  const bands &#x3D; asset.getBands();
+  const bandIndex &#x3D; (commonName) &#x3D;&gt; {
+    const band &#x3D; bands.find(
+      (candidate) &#x3D;&gt; candidate.getMetadata(&#x27;eo:common_name&#x27;) &#x3D;&#x3D;&#x3D; commonName,
+    );
+    return band ? selectedBands.indexOf(band.name) + 1 : 0;
+  };
+  const red &#x3D; bandIndex(&#x27;red&#x27;);
+  const nir &#x3D; bandIndex(&#x27;nir&#x27;);
+  if (!red || !nir) {
+    return undefined;
+  }
+  const ndvi &#x3D; [
+    &#x27;/&#x27;,
+    [&#x27;-&#x27;, [&#x27;band&#x27;, nir], [&#x27;band&#x27;, red]],
+    [&#x27;+&#x27;, [&#x27;band&#x27;, nir], [&#x27;band&#x27;, red]],
+  ];
+  return {
+    color: [
+      &#x27;interpolate&#x27;,
+      [&#x27;linear&#x27;],
+      ndvi,
+      -0.2,
+      &#x27;#a50026&#x27;,
+      0,
+      &#x27;#f46d43&#x27;,
+      0.2,
+      &#x27;#fee08b&#x27;,
+      0.4,
+      &#x27;#a6d96a&#x27;,
+      0.6,
+      &#x27;#1a9850&#x27;,
+      0.8,
+      &#x27;#006837&#x27;,
+    ],
+  };
+}
+
+const layer &#x3D; new STAC({
+  url: &#x27;https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2C_MSIL2A_20260414T114351_N0512_R123_T30VVK_20260414T164110&#x27;,
+  assets: [&#x27;reflectance&#x27;],
+  bands: selectedBands,
+  // The function may also be asynchronous, e.g. to load a style definition
+  // that is referenced in the STAC metadata.
+  async getLayerOptions(type, options, asset) {
+    if (type &#x3D;&#x3D;&#x3D; LayerType.WebGLTile) {
+      const style &#x3D; createNdviStyle(asset);
+      if (style) {
+        options.style &#x3D; style;
+      }
+    }
+    return options;
+  },
+});
 
 const background &#x3D; new TileLayer({
   source: new OSM(),
@@ -230,96 +297,16 @@ const background &#x3D; new TileLayer({
 
 const map &#x3D; new Map({
   target: &#x27;map&#x27;,
-  layers: [background],
+  layers: [background, layer],
   view: new View({
     center: [0, 0],
     zoom: 0,
   }),
 });
 
-const select &#x3D; document.getElementById(&#x27;url-select&#x27;);
-const input &#x3D; document.getElementById(&#x27;custom-url&#x27;);
-const button &#x3D; document.getElementById(&#x27;load-url&#x27;);
-const min &#x3D; document.getElementById(&#x27;min&#x27;);
-const max &#x3D; document.getElementById(&#x27;max&#x27;);
-
-let layer;
-updateLayer();
-
-function getUrl() {
-  return select.value &#x3D;&#x3D;&#x3D; &#x27;custom&#x27; ? input.value : select.value;
-}
-
-function getStyle() {
-  return {
-    color: [
-      &#x27;color&#x27;,
-      [
-        &#x27;interpolate&#x27;,
-        [&#x27;linear&#x27;],
-        [&#x27;band&#x27;, 1],
-        parseFloat(min.value),
-        0,
-        parseFloat(max.value),
-        255,
-      ],
-      [
-        &#x27;interpolate&#x27;,
-        [&#x27;linear&#x27;],
-        [&#x27;band&#x27;, 2],
-        parseFloat(min.value),
-        0,
-        parseFloat(max.value),
-        255,
-      ],
-      [
-        &#x27;interpolate&#x27;,
-        [&#x27;linear&#x27;],
-        [&#x27;band&#x27;, 3],
-        parseFloat(min.value),
-        0,
-        parseFloat(max.value),
-        255,
-      ],
-    ],
-  };
-}
-
-function updateLayer() {
-  if (layer) {
-    map.removeLayer(layer);
-  }
-  layer &#x3D; new STAC({
-    url: getUrl(),
-    style: getStyle(),
-  });
-  layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
-    const view &#x3D; map.getView();
-    view.fit(layer.getExtent());
-  });
-  layer.on(&#x27;error&#x27;, (event) &#x3D;&gt; {
-    alert(&#x27;An unexpected error occurred: &#x27; + event.error.message);
-  });
-  map.addLayer(layer);
-  return layer;
-}
-
-button.addEventListener(&#x27;click&#x27;, updateLayer);
-
-select.addEventListener(&#x27;change&#x27;, () &#x3D;&gt; {
-  if (select.value &#x3D;&#x3D;&#x3D; &#x27;custom&#x27;) {
-    input.style.display &#x3D; &#x27;&#x27;;
-    input.focus();
-  } else {
-    input.style.display &#x3D; &#x27;none&#x27;;
-  }
-});
-
-min.addEventListener(&#x27;change&#x27;, () &#x3D;&gt; {
-  layer.setStyle(getStyle());
-});
-max.addEventListener(&#x27;change&#x27;, () &#x3D;&gt; {
-  layer.setStyle(getStyle());
+layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
+  const view &#x3D; map.getView();
+  view.fit(layer.getExtent());
 });
 </code></pre>
       </div>
@@ -330,7 +317,7 @@ max.addEventListener(&#x27;change&#x27;, () &#x3D;&gt; {
 &lt;html lang="en"&gt;
   &lt;head&gt;
     &lt;meta charset="UTF-8"&gt;
-    &lt;title&gt;STAC Item with GeoZarr asset&lt;/title&gt;
+    &lt;title&gt;NDVI from a GeoZarr STAC Item&lt;/title&gt;
     &lt;link rel="stylesheet" href="node_modules/ol/ol.css"&gt;
     &lt;style&gt;
       .map {
@@ -342,34 +329,6 @@ max.addEventListener(&#x27;change&#x27;, () &#x3D;&gt; {
   &lt;body&gt;
     &lt;div id&#x3D;&quot;map&quot; class&#x3D;&quot;map&quot;&gt;&lt;/div&gt;
 
-    &lt;div class&#x3D;&quot;row mt-2&quot;&gt;
-      &lt;div class&#x3D;&quot;col-auto&quot;&gt;
-        &lt;div class&#x3D;&quot;input-group&quot;&gt;
-          &lt;label class&#x3D;&quot;input-group-text&quot; for&#x3D;&quot;url-select&quot;&gt;Min / Max values for visualization (0-1)&lt;/label&gt;
-          &lt;div class&#x3D;&quot;form-control&quot;&gt;
-            &lt;input type&#x3D;&quot;range&quot; id&#x3D;&quot;min&quot; name&#x3D;&quot;min&quot; min&#x3D;&quot;0&quot; max&#x3D;&quot;1&quot; value&#x3D;&quot;0&quot; step&#x3D;&quot;0.1&quot; /&gt;
-            &lt;input type&#x3D;&quot;range&quot; id&#x3D;&quot;max&quot; name&#x3D;&quot;max&quot; min&#x3D;&quot;0&quot; max&#x3D;&quot;1&quot; value&#x3D;&quot;0.5&quot; step&#x3D;&quot;0.1&quot; /&gt;
-          &lt;/div&gt;
-        &lt;/div&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;
-
-    &lt;div class&#x3D;&quot;row mt-2&quot;&gt;
-      &lt;div class&#x3D;&quot;col-auto&quot;&gt;
-        &lt;div class&#x3D;&quot;input-group&quot;&gt;
-          &lt;label class&#x3D;&quot;input-group-text&quot; for&#x3D;&quot;url-select&quot;&gt;URL&lt;/label&gt;
-          &lt;select class&#x3D;&quot;form-select&quot; id&#x3D;&quot;url-select&quot;&gt;
-            &lt;option value&#x3D;&quot;https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2C_MSIL2A_20260414T114351_N0512_R123_T30VVK_20260414T164110&quot; selected&gt;Sentinel-2 L2A (Highlands)&lt;/option&gt;
-            &lt;option value&#x3D;&quot;https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2C_MSIL2A_20260120T084301_N0511_R064_T36UXA_20260120T122910&quot;&gt;Sentinel-2 L2A (Krasnokuts&#x27;k)&lt;/option&gt;
-            &lt;option value&#x3D;&quot;https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2B_MSIL2A_20260120T125339_N0511_R138_T27VWL_20260120T131151&quot;&gt;Sentinel-2 L2A (Hvolsvöllur)&lt;/option&gt;
-            &lt;option value&#x3D;&quot;custom&quot;&gt;Custom...&lt;/option&gt;
-          &lt;/select&gt;
-          &lt;input type&#x3D;&quot;text&quot; class&#x3D;&quot;form-control&quot; id&#x3D;&quot;custom-url&quot; placeholder&#x3D;&quot;Enter Zarr URL&quot; style&#x3D;&quot;display: none; width: 300px;&quot;&gt;
-          &lt;button class&#x3D;&quot;btn btn-outline-secondary&quot; id&#x3D;&quot;load-url&quot; type&#x3D;&quot;button&quot;&gt;Load&lt;/button&gt;
-        &lt;/div&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;
-
     &lt;script type="module" src="main.js"&gt;&lt;/script&gt;
   &lt;/body&gt;
 &lt;/html&gt;</code></pre>
@@ -378,7 +337,7 @@ max.addEventListener(&#x27;change&#x27;, () &#x3D;&gt; {
       <div class="row-fluid">
         <h5 class="source-heading">package.json</h5>
         <pre><code id="example-pkg-source" class="language-json">{
-  &quot;name&quot;: &quot;stac-item-zarr&quot;,
+  &quot;name&quot;: &quot;stac-item-zarr-ndvi&quot;,
   &quot;dependencies&quot;: {
     &quot;ol-stac&quot;: &quot;1.5.1&quot;,
     &quot;proj4&quot;: &quot;^2.16.1&quot;
@@ -396,7 +355,7 @@ max.addEventListener(&#x27;change&#x27;, () &#x3D;&gt; {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="common.js"></script>
-    <script src="stac-item-zarr.js"></script>
+    <script src="stac-item-zarr-ndvi.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-core.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/autoloader/prism-autoloader.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/toolbar/prism-toolbar.min.js"></script>
