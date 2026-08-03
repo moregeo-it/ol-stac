@@ -44,6 +44,7 @@ import {
   toContinuousBBox,
   toOlExtent,
 } from '../util.js';
+import LayerType from './type.js';
 /**
  * @typedef {import("ol/extent.js").Extent} Extent
  */
@@ -71,6 +72,9 @@ import {
 /**
  * @typedef {import('../source/type.js').SourceOptions} SourceOptions
  */
+/**
+ * @typedef {import('./type.js').LayerOptions} LayerOptions
+ */
 
 /**
  * @typedef {Object} Options
@@ -94,6 +98,13 @@ import {
  * and the STAC Asset or Link.
  * This can be useful for adding auth information such as an API token, either via query parameter or HTTP headers.
  * Please be aware that sending HTTP headers may not be supported by all sources.
+ * @property {function(LayerType, LayerOptions, (Asset|Link)):(LayerOptions|Promise<LayerOptions>)} [getLayerOptions]
+ * Optional function that can be used to configure the individual layers that are created for the assets and links.
+ * The function can do any additional (asynchronous) work and return the completed options or a promise for the same.
+ * The function will be called with the layer type, the current layer options and the STAC Asset or Link.
+ * This can be useful to customize the layers, e.g. to apply a style to a GeoTIFF or GeoZarr layer that is
+ * loaded from the STAC metadata. It only delays the creation of the individual layer, other layers such as
+ * the footprint are not affected.
  * @property {boolean} [displayFootprint=true] Allows to hide the footprints (bounding box/geometry) of the STAC object
  * by default.
  * @property {boolean} [displayGeoTiffByDefault=false] Allow to choose non-cloud-optimized GeoTiffs as default image to show,
@@ -179,6 +190,12 @@ class STACLayer extends LayerGroup {
      * @private
      */
     this.getSourceOptions_ = options.getSourceOptions;
+
+    /**
+     * @type {function(LayerType, LayerOptions, (Asset|Link)):(LayerOptions|Promise<LayerOptions>)}
+     * @private
+     */
+    this.getLayerOptions_ = options.getLayerOptions;
 
     /**
      * @type {Array<STAC>|null}
@@ -561,9 +578,13 @@ class STACLayer extends LayerGroup {
         image,
       );
     }
-    const layer = new ImageLayer({
-      source: new StaticImage(options),
-    });
+    const layer = new ImageLayer(
+      await this.updateLayerOptions_(
+        LayerType.Image,
+        {source: new StaticImage(options)},
+        image,
+      ),
+    );
     this.addLayer_(layer, image);
     return layer;
   }
@@ -722,21 +743,30 @@ class STACLayer extends LayerGroup {
         return;
     }
 
-    return sources.map((source) => {
-      let layer;
-      if (source instanceof VectorTileSource) {
-        layer = new VectorTileLayer({
-          source,
-          declutter: true,
-        });
-      } else if (source instanceof PMTilesRasterSource) {
-        layer = new WebGLTileLayer({source});
-      } else {
-        layer = new TileLayer({source});
-      }
-      this.addLayer_(layer, link);
-      return layer;
-    });
+    return await Promise.all(
+      sources.map(async (source) => {
+        let layer;
+        if (source instanceof VectorTileSource) {
+          layer = new VectorTileLayer(
+            await this.updateLayerOptions_(
+              LayerType.VectorTile,
+              {source, declutter: true},
+              link,
+            ),
+          );
+        } else if (source instanceof PMTilesRasterSource) {
+          layer = new WebGLTileLayer(
+            await this.updateLayerOptions_(LayerType.WebGLTile, {source}, link),
+          );
+        } else {
+          layer = new TileLayer(
+            await this.updateLayerOptions_(LayerType.Tile, {source}, link),
+          );
+        }
+        this.addLayer_(layer, link);
+        return layer;
+      }),
+    );
   }
 
   /**
@@ -793,13 +823,22 @@ class STACLayer extends LayerGroup {
     });
     try {
       await status;
+      /**
+       * @type {import("ol/layer/WebGLTile.js").Options}
+       */
       const layerOptions = {source};
       if (this.style_) {
         layerOptions.style = this.style_;
       } else if (classificationStyle) {
         layerOptions.style = classificationStyle;
       }
-      const layer = new WebGLTileLayer(layerOptions);
+      const layer = new WebGLTileLayer(
+        await this.updateLayerOptions_(
+          LayerType.WebGLTile,
+          layerOptions,
+          asset,
+        ),
+      );
       this.addLayer_(layer, asset);
       return layer;
     } catch (error) {
@@ -830,11 +869,31 @@ class STACLayer extends LayerGroup {
     if (this.getSourceOptions_) {
       options = await this.getSourceOptions_(SourceType.XYZ, options, data);
     }
-    const layer = new TileLayer({
-      source: new XYZ(options),
-    });
+    const layer = new TileLayer(
+      await this.updateLayerOptions_(
+        LayerType.Tile,
+        {source: new XYZ(options)},
+        data,
+      ),
+    );
     this.addLayer_(layer, data);
     return layer;
+  }
+
+  /**
+   * Passes the layer options through the `getLayerOptions` function, if given.
+   *
+   * @param {LayerType} type The type of the layer that is going to be created.
+   * @param {LayerOptions} options The layer options.
+   * @param {Asset|Link} reference The STAC Asset or Link the layer is created for.
+   * @return {Promise<*>} The updated layer options.
+   * @private
+   */
+  async updateLayerOptions_(type, options, reference) {
+    if (this.getLayerOptions_) {
+      options = await this.getLayerOptions_(type, options, reference);
+    }
+    return options;
   }
 
   /**
@@ -870,10 +929,12 @@ class STACLayer extends LayerGroup {
     }
 
     if (geojson) {
-      const layer = this.createGeoJsonLayer_(
-        geojson,
-        getBoundsStyle(this.boundsStyle_, this),
-        this.displayFootprint_,
+      const layer = new VectorLayer(
+        this.getGeoJsonLayerOptions_(
+          geojson,
+          getBoundsStyle(this.boundsStyle_, this),
+          this.displayFootprint_,
+        ),
       );
       layer.set('bounds', true);
       layer.on('change', () => this.setMap_(layer.getMapInternal()));
@@ -892,7 +953,13 @@ class STACLayer extends LayerGroup {
   async addGeoJson_(asset) {
     try {
       const geojson = await this.fetch_(asset.getAbsoluteUrl());
-      const layer = this.createGeoJsonLayer_(geojson);
+      const layer = new VectorLayer(
+        await this.updateLayerOptions_(
+          LayerType.Vector,
+          this.getGeoJsonLayerOptions_(geojson),
+          asset,
+        ),
+      );
       this.addLayer_(layer, asset);
       return layer;
     } catch (error) {
@@ -901,15 +968,15 @@ class STACLayer extends LayerGroup {
   }
 
   /**
-   * Creates a GeoJSON vector layer from the given GeoJSON object.
+   * Creates the options for a GeoJSON vector layer from the given GeoJSON object.
    *
    * @param {GeoJSON} [geojson] The GeoJSON object.
    * @param {Style} [style] The style for the layer.
    * @param {boolean} [visible] Whether the layer is visible.
-   * @return {VectorLayer} The new vector layer.
+   * @return {import("ol/layer/Vector.js").Options} The vector layer options.
    * @private
    */
-  createGeoJsonLayer_(geojson, style = null, visible = true) {
+  getGeoJsonLayerOptions_(geojson, style = null, visible = true) {
     const format = new GeoJSON();
     const source = new VectorSource({
       format,
@@ -924,7 +991,7 @@ class STACLayer extends LayerGroup {
     if (!style) {
       style = defaultCollectionStyle;
     }
-    return new VectorLayer({source, style, visible});
+    return {source, style, visible};
   }
 
   /**
@@ -1013,11 +1080,20 @@ class STACLayer extends LayerGroup {
           }
         });
       });
+      /**
+       * @type {import("ol/layer/WebGLTile.js").Options}
+       */
       const layerOptions = {source};
       if (this.style_) {
         layerOptions.style = this.style_;
       }
-      const layer = new WebGLTileLayer(layerOptions);
+      const layer = new WebGLTileLayer(
+        await this.updateLayerOptions_(
+          LayerType.WebGLTile,
+          layerOptions,
+          asset,
+        ),
+      );
       this.addLayer_(layer, asset);
       return layer;
     } catch (error) {
