@@ -1,0 +1,14 @@
+---
+layout: example.html
+title: STAC Item with a customized layer style
+shortdesc: Customizing the style of a COG layer based on STAC metadata.
+docs: >
+  This example uses the `getLayerOptions` callback to style the single-band
+  near-infrared asset of a STAC Item. The callback derives a grayscale
+  contrast stretch from the scale, offset and data type that the asset
+  reports in its `raster:bands` metadata. The callback can also be
+  asynchronous, e.g. to load a style definition that is referenced in the
+  STAC metadata, which only delays the creation of the individual layer.
+tags: "stac, stac item, geotiff, cog, style, layer options"
+---
+<div id="map" class="map"></div>

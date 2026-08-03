@@ -103,8 +103,7 @@ import LayerType from './type.js';
  * The function can do any additional (asynchronous) work and return the completed options or a promise for the same.
  * The function will be called with the layer type, the current layer options and the STAC Asset or Link.
  * This can be useful to customize the layers, e.g. to apply a style to a GeoTIFF or GeoZarr layer that is
- * loaded from the STAC metadata. It only delays the creation of the individual layer, other layers such as
- * the footprint are not affected.
+ * loaded from the STAC metadata.
  * @property {boolean} [displayFootprint=true] Allows to hide the footprints (bounding box/geometry) of the STAC object
  * by default.
  * @property {boolean} [displayGeoTiffByDefault=false] Allow to choose non-cloud-optimized GeoTiffs as default image to show,
@@ -578,13 +577,12 @@ class STACLayer extends LayerGroup {
         image,
       );
     }
-    const layer = new ImageLayer(
-      await this.updateLayerOptions_(
-        LayerType.Image,
-        {source: new StaticImage(options)},
-        image,
-      ),
+    const layerOptions = await this.updateLayerOptions_(
+      LayerType.Image,
+      {source: new StaticImage(options)},
+      image,
     );
+    const layer = new ImageLayer(layerOptions);
     this.addLayer_(layer, image);
     return layer;
   }
@@ -747,21 +745,26 @@ class STACLayer extends LayerGroup {
       sources.map(async (source) => {
         let layer;
         if (source instanceof VectorTileSource) {
-          layer = new VectorTileLayer(
-            await this.updateLayerOptions_(
-              LayerType.VectorTile,
-              {source, declutter: true},
-              link,
-            ),
+          const layerOptions = await this.updateLayerOptions_(
+            LayerType.VectorTile,
+            {source, declutter: true},
+            link,
           );
+          layer = new VectorTileLayer(layerOptions);
         } else if (source instanceof PMTilesRasterSource) {
-          layer = new WebGLTileLayer(
-            await this.updateLayerOptions_(LayerType.WebGLTile, {source}, link),
+          const layerOptions = await this.updateLayerOptions_(
+            LayerType.WebGLTile,
+            {source},
+            link,
           );
+          layer = new WebGLTileLayer(layerOptions);
         } else {
-          layer = new TileLayer(
-            await this.updateLayerOptions_(LayerType.Tile, {source}, link),
+          const layerOptions = await this.updateLayerOptions_(
+            LayerType.Tile,
+            {source},
+            link,
           );
+          layer = new TileLayer(layerOptions);
         }
         this.addLayer_(layer, link);
         return layer;
@@ -826,19 +829,18 @@ class STACLayer extends LayerGroup {
       /**
        * @type {import("ol/layer/WebGLTile.js").Options}
        */
-      const layerOptions = {source};
+      let layerOptions = {source};
       if (this.style_) {
         layerOptions.style = this.style_;
       } else if (classificationStyle) {
         layerOptions.style = classificationStyle;
       }
-      const layer = new WebGLTileLayer(
-        await this.updateLayerOptions_(
-          LayerType.WebGLTile,
-          layerOptions,
-          asset,
-        ),
+      layerOptions = await this.updateLayerOptions_(
+        LayerType.WebGLTile,
+        layerOptions,
+        asset,
       );
+      const layer = new WebGLTileLayer(layerOptions);
       this.addLayer_(layer, asset);
       return layer;
     } catch (error) {
@@ -869,13 +871,12 @@ class STACLayer extends LayerGroup {
     if (this.getSourceOptions_) {
       options = await this.getSourceOptions_(SourceType.XYZ, options, data);
     }
-    const layer = new TileLayer(
-      await this.updateLayerOptions_(
-        LayerType.Tile,
-        {source: new XYZ(options)},
-        data,
-      ),
+    const layerOptions = await this.updateLayerOptions_(
+      LayerType.Tile,
+      {source: new XYZ(options)},
+      data,
     );
+    const layer = new TileLayer(layerOptions);
     this.addLayer_(layer, data);
     return layer;
   }
@@ -953,13 +954,12 @@ class STACLayer extends LayerGroup {
   async addGeoJson_(asset) {
     try {
       const geojson = await this.fetch_(asset.getAbsoluteUrl());
-      const layer = new VectorLayer(
-        await this.updateLayerOptions_(
-          LayerType.Vector,
-          this.getGeoJsonLayerOptions_(geojson),
-          asset,
-        ),
+      const layerOptions = await this.updateLayerOptions_(
+        LayerType.Vector,
+        this.getGeoJsonLayerOptions_(geojson),
+        asset,
       );
+      const layer = new VectorLayer(layerOptions);
       this.addLayer_(layer, asset);
       return layer;
     } catch (error) {
@@ -1083,17 +1083,16 @@ class STACLayer extends LayerGroup {
       /**
        * @type {import("ol/layer/WebGLTile.js").Options}
        */
-      const layerOptions = {source};
+      let layerOptions = {source};
       if (this.style_) {
         layerOptions.style = this.style_;
       }
-      const layer = new WebGLTileLayer(
-        await this.updateLayerOptions_(
-          LayerType.WebGLTile,
-          layerOptions,
-          asset,
-        ),
+      layerOptions = await this.updateLayerOptions_(
+        LayerType.WebGLTile,
+        layerOptions,
+        asset,
       );
+      const layer = new WebGLTileLayer(layerOptions);
       this.addLayer_(layer, asset);
       return layer;
     } catch (error) {

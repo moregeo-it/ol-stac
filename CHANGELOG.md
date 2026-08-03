@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `getLayerOptions` option to customize the options of the individual layers that are
   created for assets and links, e.g. to apply a style to a GeoTIFF or GeoZarr layer.
   The function can be asynchronous and only delays the creation of the individual layer.
+- Add example for customizing the layer style via `getLayerOptions`
 
 ## [1.5.1] - 2026-07-20
 
