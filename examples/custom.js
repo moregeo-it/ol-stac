@@ -44,27 +44,24 @@ function showUrl() {
     return;
   }
 
-  try {
-    layer = new STAC({
-      url,
-      displayPreview: true,
-      displayGeoTiffByDefault: true,
-      displayWebMapLink: true,
-    });
-    layer.on('sourceready', () => {
-      const view = map.getView();
-      view.fit(layer.getExtent());
-    });
-    layer.on('layersready', () => {
-      if (layer.isEmpty()) {
-        alert('No spatial information available in the data source');
-      }
-    });
-    layer.on('error', (event) => {
-      alert(`Error loading STAC data: ${event.error}`);
-    });
-    map.addLayer(layer);
-  } catch (error) {
-    alert(error.message);
-  }
+  layer = new STAC({
+    url,
+    displayPreview: true,
+    displayGeoTiffByDefault: true,
+    displayWebMapLink: true,
+  });
+  layer.on('sourceready', () => {
+    const view = map.getView();
+    view.fit(layer.getExtent());
+  });
+  layer.on('layersready', () => {
+    if (layer.isEmpty()) {
+      alert('No spatial information available in the data source');
+    }
+  });
+  layer.on('error', (event) => {
+    console.trace(event); // eslint-disable-line no-console
+    alert(`Error loading STAC data: ${event.error}`);
+  });
+  map.addLayer(layer);
 }

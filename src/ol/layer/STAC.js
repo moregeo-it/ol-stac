@@ -125,9 +125,11 @@ import LayerType from './type.js';
  * @property {Style} [collectionStyle] The style for individual children in a list of STAC Items or Collections.
  * @property {null|string} [crossOrigin] For thumbnails: The `crossOrigin` attribute for loaded images / tiles.
  * See https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image for more detail.
- * @property {function((Asset|Link)):Promise<string>|string|null} [buildTileUrlTemplate=null] A function that generates a URL template for a tile server (XYZ),
+ * @property {function((Asset|Link)):Promise<string|null>|string|null} [buildTileUrlTemplate=null] A function that generates a URL template for a tile server (XYZ),
  * which will be used instead of the client-side GeoTIFF rendering (except if `useTileLayerAsFallback` is `true`).
  * The function provided can return a promise (i.e. be async) or a string.
+ * The function can return `null` to not pass the given asset or link to the tile server,
+ * e.g. to filter by media type or protocol. In this case client-side rendering is used instead.
  * @property {boolean} [useTileLayerAsFallback=false] Uses the given URL template only when the client-side GeoTIFF rendering fails.
  * @property {number} [opacity=1] Opacity (0, 1).
  * @property {boolean} [visible=true] Visibility.
@@ -256,7 +258,7 @@ class STACLayer extends LayerGroup {
     this.displayWebMapLink_ = options.displayWebMapLink || false;
 
     /**
-     * @type {function((Asset|Link)):Promise<string>|string|null}
+     * @type {function((Asset|Link)):Promise<string|null>|string|null}
      * @private
      */
     this.buildTileUrlTemplate_ = options.buildTileUrlTemplate || null;
@@ -779,7 +781,11 @@ class STACLayer extends LayerGroup {
    */
   async addGeoTiff_(asset) {
     if (this.buildTileUrlTemplate_ && !this.useTileLayerAsFallback_) {
-      return await this.addTileLayerForImagery_(asset);
+      const layer = await this.addTileLayerForImagery_(asset);
+      // If no tile server URL was provided for the asset, continue with client-side rendering
+      if (layer) {
+        return layer;
+      }
     }
 
     const sourceInfo = getGeoTiffSourceInfoFromAsset(asset, this.bands_);
@@ -845,7 +851,10 @@ class STACLayer extends LayerGroup {
       return layer;
     } catch (error) {
       if (this.useTileLayerAsFallback_) {
-        return await this.addTileLayerForImagery_(asset);
+        const layer = await this.addTileLayerForImagery_(asset);
+        if (layer) {
+          return layer;
+        }
       }
       this.handleError_(error);
     }
@@ -853,13 +862,19 @@ class STACLayer extends LayerGroup {
 
   /**
    * @param {Asset|Link} [data] A STAC Asset or Link
-   * @return {Promise<TileLayer>} Resolves with a TileLayer when complete.
+   * @return {Promise<TileLayer|undefined>} Resolves with a TileLayer, or undefined if no tile server URL was provided.
    * @private
    */
   async addTileLayerForImagery_(data) {
+    if (typeof this.buildTileUrlTemplate_ !== 'function') {
+      return;
+    }
     let url = this.buildTileUrlTemplate_(data);
     if (url instanceof Promise) {
       url = await url;
+    }
+    if (!url) {
+      return;
     }
     /**
      * @type {import("ol/source/XYZ.js").Options}
@@ -1054,7 +1069,11 @@ class STACLayer extends LayerGroup {
 
   async addGeoZarr_(asset) {
     if (this.buildTileUrlTemplate_ && !this.useTileLayerAsFallback_) {
-      return await this.addTileLayerForImagery_(asset);
+      const layer = await this.addTileLayerForImagery_(asset);
+      // If no tile server URL was provided for the asset, continue with client-side rendering
+      if (layer) {
+        return layer;
+      }
     }
 
     let options = getGeoZarrSourceOptionsFromAsset(asset, this.bands_);
@@ -1097,7 +1116,10 @@ class STACLayer extends LayerGroup {
       return layer;
     } catch (error) {
       if (this.useTileLayerAsFallback_) {
-        return await this.addTileLayerForImagery_(asset);
+        const layer = await this.addTileLayerForImagery_(asset);
+        if (layer) {
+          return layer;
+        }
       }
       this.handleError_(error);
     }
