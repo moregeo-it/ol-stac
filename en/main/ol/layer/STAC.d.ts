@@ -110,8 +110,10 @@ export type Options = {
      * A function that generates a URL template for a tile server (XYZ),
      * which will be used instead of the client-side GeoTIFF rendering (except if `useTileLayerAsFallback` is `true`).
      * The function provided can return a promise (i.e. be async) or a string.
+     * The function can return `null` to not pass the given asset or link to the tile server,
+     * e.g. to filter by media type or protocol. In this case client-side rendering is used instead.
      */
-    buildTileUrlTemplate?: ((arg0: (Asset | Link)) => Promise<string> | string | null) | undefined;
+    buildTileUrlTemplate?: ((arg0: (Asset | Link)) => Promise<string | null> | string | null) | undefined;
     /**
      * Uses the given URL template only when the client-side GeoTIFF rendering fails.
      */
@@ -253,9 +255,11 @@ export type Options = {
  * @property {Style} [collectionStyle] The style for individual children in a list of STAC Items or Collections.
  * @property {null|string} [crossOrigin] For thumbnails: The `crossOrigin` attribute for loaded images / tiles.
  * See https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image for more detail.
- * @property {function((Asset|Link)):Promise<string>|string|null} [buildTileUrlTemplate=null] A function that generates a URL template for a tile server (XYZ),
+ * @property {function((Asset|Link)):Promise<string|null>|string|null} [buildTileUrlTemplate=null] A function that generates a URL template for a tile server (XYZ),
  * which will be used instead of the client-side GeoTIFF rendering (except if `useTileLayerAsFallback` is `true`).
  * The function provided can return a promise (i.e. be async) or a string.
+ * The function can return `null` to not pass the given asset or link to the tile server,
+ * e.g. to filter by media type or protocol. In this case client-side rendering is used instead.
  * @property {boolean} [useTileLayerAsFallback=false] Uses the given URL template only when the client-side GeoTIFF rendering fails.
  * @property {number} [opacity=1] Opacity (0, 1).
  * @property {boolean} [visible=true] Visibility.
@@ -357,7 +361,7 @@ declare class STACLayer extends LayerGroup {
      */
     displayWebMapLink_: string | boolean | Array<Link | string>;
     /**
-     * @type {function((Asset|Link)):Promise<string>|string|null}
+     * @type {function((Asset|Link)):Promise<string|null>|string|null}
      * @private
      */
     private buildTileUrlTemplate_;
@@ -491,7 +495,7 @@ declare class STACLayer extends LayerGroup {
     private addGeoTiff_;
     /**
      * @param {Asset|Link} [data] A STAC Asset or Link
-     * @return {Promise<TileLayer>} Resolves with a TileLayer when complete.
+     * @return {Promise<TileLayer|undefined>} Resolves with a TileLayer, or undefined if no tile server URL was provided.
      * @private
      */
     private addTileLayerForImagery_;

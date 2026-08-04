@@ -149,7 +149,7 @@ The layers created by this LayerGroup all have a 'stac' value that can be retrie
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L167">line 167</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L169">line 169</a>
         </div>
         
     </div>
@@ -711,7 +711,9 @@ See <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_imag
                 
                 <p>A function that generates a URL template for a tile server (XYZ),
 which will be used instead of the client-side GeoTIFF rendering (except if <code>useTileLayerAsFallback</code> is <code>true</code>).
-The function provided can return a promise (i.e. be async) or a string.</p></td>
+The function provided can return a promise (i.e. be async) or a string.
+The function can return <code>null</code> to not pass the given asset or link to the tile server,
+e.g. to filter by media type or protocol. In this case client-side rendering is used instead.</p></td>
         </tr>
 
 	
@@ -1145,7 +1147,7 @@ The second parameter is the return type, either <code>json</code> (default) or <
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L598">line 598</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L600">line 600</a>
         </div>
         
     </div>
@@ -1288,7 +1290,7 @@ Resolves with a list of layers or undefined when complete.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1388">line 1388</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1410">line 1410</a>
         </div>
         
     </div>
@@ -1378,7 +1380,7 @@ The STAC assets.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1450">line 1450</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1472">line 1472</a>
         </div>
         
     </div>
@@ -1468,7 +1470,7 @@ Attributions for this layer.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L374">line 374</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L376">line 376</a>
         </div>
         
     </div>
@@ -1558,7 +1560,7 @@ The vector layer for the bounds
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1378">line 1378</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1400">line 1400</a>
         </div>
         
     </div>
@@ -1648,7 +1650,7 @@ The STAC child entities.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1368">line 1368</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1390">line 1390</a>
         </div>
         
     </div>
@@ -1738,7 +1740,7 @@ The STAC object.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1401">line 1401</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1423">line 1423</a>
         </div>
         
     </div>
@@ -1831,7 +1833,7 @@ The layer extent.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1238">line 1238</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1260">line 1260</a>
         </div>
         
     </div>
@@ -1921,7 +1923,7 @@ An array of links.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1225">line 1225</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1247">line 1247</a>
         </div>
         
     </div>
@@ -2011,7 +2013,7 @@ An array of links.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L386">line 386</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L388">line 388</a>
         </div>
         
     </div>
@@ -2102,7 +2104,7 @@ Is the layer empty?
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1298">line 1298</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1320">line 1320</a>
         </div>
         
     </div>
@@ -2267,7 +2269,7 @@ Resolves when all assets are rendered.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1333">line 1333</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1355">line 1355</a>
         </div>
         
     </div>
@@ -2925,7 +2927,9 @@ See <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_imag
                 
                 <p>A function that generates a URL template for a tile server (XYZ),
 which will be used instead of the client-side GeoTIFF rendering (except if <code>useTileLayerAsFallback</code> is <code>true</code>).
-The function provided can return a promise (i.e. be async) or a string.</p></td>
+The function provided can return a promise (i.e. be async) or a string.
+The function can return <code>null</code> to not pass the given asset or link to the tile server,
+e.g. to filter by media type or protocol. In this case client-side rendering is used instead.</p></td>
         </tr>
 
 	
@@ -3320,7 +3324,7 @@ Resolves when all items are rendered.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1282">line 1282</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1304">line 1304</a>
         </div>
         
     </div>
@@ -3449,7 +3453,7 @@ Resolves when all items are rendered.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1113">line 1113</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1135">line 1135</a>
         </div>
         
     </div>

@@ -341,6 +341,9 @@ export function getGeoZarrSourceOptionsFromAsset(asset, selectedBands) {
             ].filter(Boolean);
         }
     }
+    if (!Array.isArray(options.bands)) {
+        options.bands = [];
+    }
     return options;
 }
 /**

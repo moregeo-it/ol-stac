@@ -172,29 +172,26 @@ function showUrl() {
     return;
   }
 
-  try {
-    layer &#x3D; new STAC({
-      url,
-      displayPreview: true,
-      displayGeoTiffByDefault: true,
-      displayWebMapLink: true,
-    });
-    layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
-      const view &#x3D; map.getView();
-      view.fit(layer.getExtent());
-    });
-    layer.on(&#x27;layersready&#x27;, () &#x3D;&gt; {
-      if (layer.isEmpty()) {
-        alert(&#x27;No spatial information available in the data source&#x27;);
-      }
-    });
-    layer.on(&#x27;error&#x27;, (event) &#x3D;&gt; {
-      alert(&#x60;Error loading STAC data: ${event.error}&#x60;);
-    });
-    map.addLayer(layer);
-  } catch (error) {
-    alert(error.message);
-  }
+  layer &#x3D; new STAC({
+    url,
+    displayPreview: true,
+    displayGeoTiffByDefault: true,
+    displayWebMapLink: true,
+  });
+  layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
+    const view &#x3D; map.getView();
+    view.fit(layer.getExtent());
+  });
+  layer.on(&#x27;layersready&#x27;, () &#x3D;&gt; {
+    if (layer.isEmpty()) {
+      alert(&#x27;No spatial information available in the data source&#x27;);
+    }
+  });
+  layer.on(&#x27;error&#x27;, (event) &#x3D;&gt; {
+    console.trace(event); // eslint-disable-line no-console
+    alert(&#x60;Error loading STAC data: ${event.error}&#x60;);
+  });
+  map.addLayer(layer);
 }
 </code></pre>
       </div>
