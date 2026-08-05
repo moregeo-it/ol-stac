@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   created for assets and links, e.g. to apply a style to a GeoTIFF or GeoZarr layer.
   The function can be asynchronous and only delays the creation of the individual layer.
 - Add example for computing an NDVI visualization for a GeoZarr datacube via `getLayerOptions`
+- Add `getRequestHeaders` option to attach HTTP headers (e.g. for authentication) to the requests made by the layer:
+  the default `httpRequestFn` (STAC documents, GeoJSON assets, WMTS capabilities), GeoTIFF, GeoZarr (requires a
+  corresponding ol release) and PMTiles requests, preview images, and XYZ/TileJSON/WMS/WMTS tiles.
+  Errors from image/tile requests with headers are reported through the layer's `error` event.
+- Add `ol/http.js` module with `createImageLoadFunction` and `createTileLoadFunction` helpers that load images/tiles
+  through the Fetch API with custom headers and object URLs
+- `getSourceOptions` is called with the new `SourceType.PMTiles` before the PMTiles tile type is sniffed, so that URL
+  rewrites (e.g. signed URLs) apply to all PMTiles requests (previously the sniff bypassed `getSourceOptions`).
+  `SourceType.PMTilesRaster` and `SourceType.PMTilesVector` are no longer used and deprecated.
+- Add `auth-headers` example
 
 ## [1.5.1] - 2026-07-20
 

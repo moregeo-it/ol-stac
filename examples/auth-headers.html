@@ -1,0 +1,14 @@
+---
+layout: example.html
+title: Authentication with HTTP headers
+shortdesc: Rendering a STAC Item that requires HTTP header authentication.
+docs: >
+  This example uses the `getRequestHeaders` option to attach an `Authorization`
+  header to the requests made by the STAC layer: the STAC document itself,
+  GeoTIFF/GeoZarr/PMTiles requests, preview images and map tiles.
+  The callback is invoked per URL so that credentials are only sent to trusted
+  hosts. To add credentials via query parameters (e.g. signed URLs) use the
+  `getSourceOptions` callback instead, see the Planetary Computer example.
+tags: "stac, stac item, authentication, authorization, http headers, token"
+---
+<div id="map" class="map"></div>

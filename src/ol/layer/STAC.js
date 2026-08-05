@@ -29,6 +29,7 @@ import {
 } from 'stac-js/src/mediatypes.js';
 import {isObject} from 'stac-js/src/utils.js';
 import ErrorEvent from '../events/ErrorEvent.js';
+import {createImageLoadFunction, createTileLoadFunction} from '../http.js';
 import {getProjection} from '../proj.js';
 import SourceType from '../source/type.js';
 import {
@@ -75,6 +76,15 @@ import LayerType from './type.js';
 /**
  * @typedef {import('./type.js').LayerOptions} LayerOptions
  */
+/**
+ * @typedef {import('../http.js').GetHeadersFn} GetHeadersFn
+ */
+/**
+ * @typedef {import('../http.js').OnErrorFn} OnErrorFn
+ */
+/**
+ * @typedef {function((import("ol/Image.js").default|import("ol/Tile.js").default), string): void} LoadFunction
+ */
 
 /**
  * @typedef {Object} Options
@@ -96,8 +106,8 @@ import LayerType from './type.js';
  * Optional function that can be used to configure the underlying sources. The function can do any additional work
  * and return the completed options or a promise for the same. The function will be called with the current source options
  * and the STAC Asset or Link.
- * This can be useful for adding auth information such as an API token, either via query parameter or HTTP headers.
- * Please be aware that sending HTTP headers may not be supported by all sources.
+ * This can be useful for adding auth information such as an API token via query parameters (e.g. signed URLs).
+ * To send credentials via HTTP headers, use the `getRequestHeaders` option instead.
  * @property {function(LayerType, LayerOptions, (Asset|Link)):(LayerOptions|Promise<LayerOptions>)} [getLayerOptions]
  * Optional function that can be used to configure the individual layers that are created for the assets and links.
  * The function can do any additional (asynchronous) work and return the completed options or a promise for the same.
@@ -153,6 +163,15 @@ import LayerType from './type.js';
  * @property {function(string,string):(*)} [httpRequestFn=null] Sets a custom function to make HTTP requests with.
  * The first parameter is the URL to request and the output is a promise that resolves with the response body.
  * The second parameter is the return type, either `json` (default) or `text`.
+ * @property {Object<string, string>|function((Asset|Link|STACObject|null), string):(Object<string, string>|null)} [getRequestHeaders=null]
+ * The HTTP headers (e.g. for authentication) to send with the requests made by this layer,
+ * either as a plain object or as a function that returns the headers (or `null` for none) and
+ * is called with the STAC Asset or Link that is shown (if available) and the URL that is requested.
+ * Use a function to restrict the headers to specific hosts, as tile server URLs and asset URLs
+ * may point to hosts that should not receive the credentials.
+ * The headers are attached to requests made by the default `httpRequestFn`, to GeoTIFF, GeoZarr
+ * and PMTiles requests, and via image/tile load functions (through the Fetch API and object URLs)
+ * to preview images and XYZ, TileJSON, WMS and WMTS tiles.
  */
 
 /**
@@ -197,6 +216,12 @@ class STACLayer extends LayerGroup {
      * @private
      */
     this.getLayerOptions_ = options.getLayerOptions;
+
+    /**
+     * @type {Object<string, string>|function((Asset|Link|STACObject|null), string):(Object<string, string>|null)|null}
+     * @private
+     */
+    this.getRequestHeaders_ = options.getRequestHeaders || null;
 
     /**
      * @type {Array<STAC>|null}
@@ -348,6 +373,44 @@ class STACLayer extends LayerGroup {
   }
 
   /**
+   * Returns the HTTP headers to send for the given URL, based on the
+   * `getRequestHeaders` option.
+   *
+   * @param {string} url The URL that is requested.
+   * @param {Asset|Link|STACObject|null} [ref] The STAC Asset or Link that is shown, if available.
+   * @return {Object<string, string>|null} The headers, or `null` if there are none.
+   */
+  getRequestHeadersFor_(url, ref = null) {
+    let headers = this.getRequestHeaders_;
+    if (typeof headers === 'function') {
+      headers = headers(ref, url);
+    }
+    if (isObject(headers) && Object.keys(headers).length > 0) {
+      return /** @type {Object<string, string>} */ (headers);
+    }
+    return null;
+  }
+
+  /**
+   * Creates a load function for images or tiles that attaches the headers
+   * from the `getRequestHeaders` option and reports errors through the
+   * layer's error event, or `undefined` if no headers are configured.
+   *
+   * @param {function(GetHeadersFn, OnErrorFn=):LoadFunction} factory `createImageLoadFunction` or `createTileLoadFunction`.
+   * @param {Asset|Link|STACObject|null} ref The STAC Asset or Link that is shown, if available.
+   * @return {LoadFunction|undefined} The load function.
+   */
+  createLoadFunction_(factory, ref) {
+    if (!this.getRequestHeaders_) {
+      return undefined;
+    }
+    return factory(
+      (url) => this.getRequestHeadersFor_(url, ref),
+      (error) => this.handleError_(error),
+    );
+  }
+
+  /**
    * Default function make HTTP requests with.
    *
    * @param {string} url The URL to request and the output is a promise that resolves with the response body.
@@ -355,7 +418,8 @@ class STACLayer extends LayerGroup {
    * @return {Promise<*>} The (parsed) response body.
    */
   async fetch_(url, responseType = 'json') {
-    const response = await fetch(url);
+    const headers = this.getRequestHeadersFor_(url);
+    const response = await fetch(url, headers ? {headers} : undefined);
     if (!response.ok) {
       throw new Error(`Unexpected response from ${url}: ${response.status}`);
     }
@@ -571,6 +635,13 @@ class STACLayer extends LayerGroup {
       imageExtent: toOlExtent(bbox, projection),
       crossOrigin: this.crossOrigin_,
     };
+    const imageLoadFunction = this.createLoadFunction_(
+      createImageLoadFunction,
+      image,
+    );
+    if (imageLoadFunction) {
+      options.imageLoadFunction = imageLoadFunction;
+    }
     if (this.getSourceOptions_) {
       // @ts-ignore
       options = await this.getSourceOptions_(
@@ -611,6 +682,13 @@ class STACLayer extends LayerGroup {
       crossOrigin: this.crossOrigin_,
       url,
     };
+    const tileLoadFunction = this.createLoadFunction_(
+      createTileLoadFunction,
+      link,
+    );
+    if (tileLoadFunction && link.rel !== 'pmtiles') {
+      options.tileLoadFunction = tileLoadFunction;
+    }
 
     const updateOptions = async (type, options) => {
       if (this.getSourceOptions_) {
@@ -621,29 +699,41 @@ class STACLayer extends LayerGroup {
 
     const sources = [];
     switch (link.rel) {
-      case 'pmtiles':
-        const p = new pmtiles.PMTiles(options.url);
-        const headers = await p.getHeader();
+      case 'pmtiles': {
+        /** @type {*} */
+        const pmOptions = await updateOptions(SourceType.PMTiles, options);
+        const headers = this.getRequestHeadersFor_(pmOptions.url, link);
+        if (headers && typeof pmOptions.url === 'string') {
+          pmOptions.url = new pmtiles.FetchSource(
+            pmOptions.url,
+            new Headers(headers),
+          );
+        }
+        let pmtilesHeader;
+        try {
+          const p = new pmtiles.PMTiles(pmOptions.url);
+          pmtilesHeader = await p.getHeader();
+        } catch (error) {
+          this.handleError_(error);
+          return;
+        }
         let source;
-        switch (headers.tileType) {
+        switch (pmtilesHeader.tileType) {
           case pmtiles.TileType.Mvt:
-            source = new PMTilesVectorSource(
-              await updateOptions(SourceType.PMTilesVector, options),
-            );
+            source = new PMTilesVectorSource(pmOptions);
             break;
           case pmtiles.TileType.Avif:
           case pmtiles.TileType.Jpeg:
           case pmtiles.TileType.Png:
           case pmtiles.TileType.Webp:
-            source = new PMTilesRasterSource(
-              await updateOptions(SourceType.PMTilesRaster, options),
-            );
+            source = new PMTilesRasterSource(pmOptions);
             break;
           default:
             return; // Unsupported
         }
         sources.push(source);
         break;
+      }
       case 'tilejson':
         sources.push(
           new TileJSON(await updateOptions(SourceType.TileJSON, options)),
@@ -708,6 +798,10 @@ class STACLayer extends LayerGroup {
           const opts = optionsFromCapabilities(wmtsCapabilities, wmtsOptions);
           if (opts === null) {
             continue;
+          }
+          if (wmtsOptions.tileLoadFunction) {
+            // Not passed through by optionsFromCapabilities
+            opts.tileLoadFunction = wmtsOptions.tileLoadFunction;
           }
 
           if (typeof link.uriTemplate === 'string') {
@@ -809,6 +903,11 @@ class STACLayer extends LayerGroup {
       options.normalize = false;
     }
 
+    const headers = this.getRequestHeadersFor_(sourceInfo.url, asset);
+    if (headers) {
+      options.sourceOptions = {headers};
+    }
+
     if (this.getSourceOptions_) {
       // @ts-ignore
       options = await this.getSourceOptions_(
@@ -883,6 +982,13 @@ class STACLayer extends LayerGroup {
       crossOrigin: this.crossOrigin_,
       url,
     };
+    const tileLoadFunction = this.createLoadFunction_(
+      createTileLoadFunction,
+      data,
+    );
+    if (tileLoadFunction) {
+      options.tileLoadFunction = tileLoadFunction;
+    }
     if (this.getSourceOptions_) {
       options = await this.getSourceOptions_(SourceType.XYZ, options, data);
     }
@@ -1077,6 +1183,11 @@ class STACLayer extends LayerGroup {
     }
 
     let options = getGeoZarrSourceOptionsFromAsset(asset, this.bands_);
+
+    const headers = this.getRequestHeadersFor_(options.url, asset);
+    if (headers) {
+      options.sourceOptions = {headers};
+    }
 
     if (this.getSourceOptions_) {
       // @ts-ignore
