@@ -69,8 +69,10 @@ export async function getProjection(reference, defaultProjection = undefined) {
       try {
         const lookup = await getLookupFn();
         projection = await registerProjection(code, 'code', lookup);
-      } catch {
-        // Ignore errors and fallback to default projection
+      } catch (error) {
+        // Fall back to the default projection, but let users know
+        // eslint-disable-next-line no-console
+        console.warn(`Failed to resolve projection ${code}`, error);
       }
     }
   }
@@ -101,7 +103,7 @@ async function getLookupFn() {
     const olProj = await import('ol/proj/proj4.js');
     const {getProjectionCodeLookup, getEPSGLookup} = olProj;
     if (getProjectionCodeLookup) {
-      return getProjectionCodeLookup;
+      return getProjectionCodeLookup();
     }
     if (getEPSGLookup) {
       return (code) => {

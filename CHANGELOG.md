@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   created for assets and links, e.g. to apply a style to a GeoTIFF or GeoZarr layer.
   The function can be asynchronous and only delays the creation of the individual layer.
 - Add example for computing an NDVI visualization for a GeoZarr datacube via `getLayerOptions`
+- Fix the automatic projection lookup
 
 ## [1.5.1] - 2026-07-20
 
