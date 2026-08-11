@@ -25,7 +25,7 @@ import {fixGeoJson, toGeoJSON, unionBoundingBox} from 'stac-js/src/geo.js';
 import {
   geojsonMediaType,
   geotiffMediaTypes,
-  wozMediaTypes,
+  zarrMediaTypes,
 } from 'stac-js/src/mediatypes.js';
 import {isObject} from 'stac-js/src/utils.js';
 import ErrorEvent from '../events/ErrorEvent.js';
@@ -40,6 +40,7 @@ import {
   getClassificationStyle,
   getGeoTiffSourceInfoFromAsset,
   getGeoZarrSourceOptionsFromAsset,
+  getGeoZarrStyleFromAsset,
   getSpecificWebMapUrl,
   isScalar,
   toContinuousBBox,
@@ -1282,7 +1283,7 @@ class STACLayer extends LayerGroup {
     }
 
     try {
-      const GeoZarr = (await import('ol/source/GeoZarr.js')).default;
+      const GeoZarr = (await import('../source/GeoZarr.js')).default;
       const source = new GeoZarr(options);
       await new Promise((resolve, reject) => {
         source.on('change', () => {
@@ -1299,6 +1300,12 @@ class STACLayer extends LayerGroup {
       let layerOptions = {source};
       if (this.style_) {
         layerOptions.style = this.style_;
+      } else {
+        // Derive a style from the render extension, if available
+        const style = getGeoZarrStyleFromAsset(asset, options);
+        if (style) {
+          layerOptions.style = style;
+        }
       }
       layerOptions = await this.updateLayerOptions_(
         LayerType.WebGLTile,
@@ -1365,7 +1372,9 @@ class STACLayer extends LayerGroup {
         if (ref.isType(geotiffMediaTypes)) {
           return await this.addGeoTiff_(ref);
         }
-        if (ref.isType(wozMediaTypes)) {
+        if (ref.isType(zarrMediaTypes)) {
+          // When the user explicitly selects a Zarr asset, try to render it
+          // even if it is not declared as web-optimized (multiscales profile)
           return await this.addGeoZarr_(ref);
         }
         if (ref.canBrowserDisplayImage()) {
