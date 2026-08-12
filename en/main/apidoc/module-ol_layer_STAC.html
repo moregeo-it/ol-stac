@@ -70,10 +70,13 @@
         <ul>
             <li data-name="apicollection"><a href="module-ol_layer_STAC.html#~APICollection">APICollection</a>
             <li data-name="extent"><a href="module-ol_layer_STAC.html#~Extent">Extent</a>
+            <li data-name="getheadersfn"><a href="module-ol_layer_STAC.html#~GetHeadersFn">GetHeadersFn</a>
             <li data-name="layer"><a href="module-ol_layer_STAC.html#~Layer">Layer</a>
             <li data-name="layeroptions"><a href="module-ol_layer_STAC.html#~LayerOptions">LayerOptions</a>
             <li data-name="link"><a href="module-ol_layer_STAC.html#~Link">Link</a>
+            <li data-name="loadfunction"><a href="module-ol_layer_STAC.html#~LoadFunction">LoadFunction</a>
             <li data-name="map"><a href="module-ol_layer_STAC.html#~Map">Map</a>
+            <li data-name="onerrorfn"><a href="module-ol_layer_STAC.html#~OnErrorFn">OnErrorFn</a>
             <li data-name="options"><a href="module-ol_layer_STAC.html#~Options">Options</a>
             <li data-name="stac"><a href="module-ol_layer_STAC.html#~STAC">STAC</a>
             <li data-name="stacobject"><a href="module-ol_layer_STAC.html#~STACObject">STACObject</a>
@@ -270,6 +273,52 @@
                 
 <dt class="">
     <div class="nameContainer">
+        <div class="anchor" id="~GetHeadersFn">
+        </div>
+        <h4 class="name">
+            GetHeadersFn<span class="type-signature type module:ol/http~getheadersfn">{<a href="module-ol_http.html#~GetHeadersFn">GetHeadersFn</a>}</span> 
+            
+
+        </h4>
+    </div>
+    
+</dt>
+<dd class="">
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+</dd>
+
+            
+                
+<dt class="">
+    <div class="nameContainer">
         <div class="anchor" id="~Layer">
         </div>
         <h4 class="name">
@@ -407,11 +456,133 @@
             
                 
 <dt class="">
+    
+    <div class="nameContainer">
+        <div class="anchor" id="~LoadFunction">
+        </div>
+        <h4 class="name">
+            LoadFunction<span class="signature">()</span>
+            
+            
+
+        </h4>
+        
+        <div class="tag-source">
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L85">line 85</a>
+        </div>
+        
+    </div>
+    
+    
+</dt>
+<dd class="">
+
+
+
+    
+
+    
+
+    
+
+    
+    
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+            
+                
+<dt class="">
     <div class="nameContainer">
         <div class="anchor" id="~Map">
         </div>
         <h4 class="name">
             Map<span class="type-signature type module:ol/map.js">{js}</span> 
+            
+
+        </h4>
+    </div>
+    
+</dt>
+<dd class="">
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+</dd>
+
+            
+                
+<dt class="">
+    <div class="nameContainer">
+        <div class="anchor" id="~OnErrorFn">
+        </div>
+        <h4 class="name">
+            OnErrorFn<span class="type-signature type module:ol/http~onerrorfn">{<a href="module-ol_http.html#~OnErrorFn">OnErrorFn</a>}</span> 
             
 
         </h4>
@@ -680,8 +851,9 @@ null shows the default asset, an empty array shows no asset.</p>
                 <p>Optional function that can be used to configure the underlying sources. The function can do any additional work
 and return the completed options or a promise for the same. The function will be called with the current source options
 and the STAC Asset or Link.
-This can be useful for adding auth information such as an API token, either via query parameter or HTTP headers.
-Please be aware that sending HTTP headers may not be supported by all sources.</p>
+This can be useful for advanced per-source customization such as signed URLs.
+To add credentials via query parameters, use the <code>getRequestUrl</code> option instead;
+to send credentials via HTTP headers, use the <code>getRequestHeaders</code> option instead.</p>
                 
             </td>
         </tr>
@@ -1277,7 +1449,72 @@ Only enable this if you are sure that the STAC object is already in the latest v
             <td class="description last">
                 <p>Sets a custom function to make HTTP requests with.
 The first parameter is the URL to request and the output is a promise that resolves with the response body.
-The second parameter is the return type, either <code>json</code> (default) or <code>text</code>.</p>
+The second parameter is the return type, either <code>json</code> (default) or <code>text</code>.
+The STAC Asset or Link the request is made for is passed as third parameter, if available.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>getRequestHeaders</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object.&lt;string, string></span>
+|
+
+<span class="param-type">function</span>
+
+
+                
+                    <br>(defaults to null)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The HTTP headers (e.g. for authentication) to send with the requests made by this layer,
+either as a plain object or as a function that returns the headers (or <code>null</code> for none) and
+is called with the STAC Asset or Link that is shown (if available) and the URL that is requested.
+Use a function to restrict the headers to specific hosts, as tile server URLs and asset URLs
+may point to hosts that should not receive the credentials.
+The headers are attached to requests made by the default <code>httpRequestFn</code>, to GeoTIFF, GeoZarr
+and PMTiles requests, and via image/tile load functions (through the Fetch API and object URLs)
+to preview images and XYZ, TileJSON, WMS and WMTS tiles.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>getRequestUrl</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+                
+                    <br>(defaults to null)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>Rewrites a URL before a request is made or a source is created, e.g. to append query
+parameters for authentication (signed URLs, API keys). The function is called with the
+STAC Asset or Link that is shown (if available) and the URL, and returns the new URL or
+<code>null</code> to keep the URL unchanged. The rewrite is applied before <code>getSourceOptions</code> is called.
+For tiled sources the tile URL template is rewritten, not the individual tile URLs.</p>
                 
             </td>
         </tr>

@@ -68,14 +68,32 @@ declare class SourceType {
      */
     static ImageStatic: SourceType;
     /**
+     * PMTiles.
+     * Used before the tile type (raster or vector) has been determined,
+     * i.e. `options.url` applies to both raster and vector tiles.
+     * @see {@link https://protomaps.com/docs/pmtiles/}
+     * @api
+     */
+    static PMTiles: SourceType;
+    /**
      * PMTilesRaster
      * @see {@link https://protomaps.com/docs/pmtiles/}
+     * @deprecated Use {@link SourceType.PMTiles} instead, `getSourceOptions` is
+     * called with it before the tile type is known. For backward compatibility,
+     * callbacks that leave the options unchanged for {@link SourceType.PMTiles}
+     * are still called with this type after the tile type has been determined.
+     * This fallback will be removed in 2.0.0.
      * @api
      */
     static PMTilesRaster: SourceType;
     /**
      * PMTilesVector
      * @see {@link https://protomaps.com/docs/pmtiles/}
+     * @deprecated Use {@link SourceType.PMTiles} instead, `getSourceOptions` is
+     * called with it before the tile type is known. For backward compatibility,
+     * callbacks that leave the options unchanged for {@link SourceType.PMTiles}
+     * are still called with this type after the tile type has been determined.
+     * This fallback will be removed in 2.0.0.
      * @api
      */
     static PMTilesVector: SourceType;

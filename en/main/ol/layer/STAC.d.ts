@@ -9,6 +9,9 @@ export type Map = import("ol/Map.js").default;
 export type Style = import('ol/style/Style.js').default;
 export type SourceOptions = import('../source/type.js').SourceOptions;
 export type LayerOptions = import('./type.js').LayerOptions;
+export type GetHeadersFn = import('../http.js').GetHeadersFn;
+export type OnErrorFn = import('../http.js').OnErrorFn;
+export type LoadFunction = (arg0: (import("ol/Image.js").default | import("ol/Tile.js").default), arg1: string) => void;
 export type Options = {
     /**
      * The STAC URL. Any of `url` and `data` must be provided.
@@ -46,8 +49,9 @@ export type Options = {
      * Optional function that can be used to configure the underlying sources. The function can do any additional work
      * and return the completed options or a promise for the same. The function will be called with the current source options
      * and the STAC Asset or Link.
-     * This can be useful for adding auth information such as an API token, either via query parameter or HTTP headers.
-     * Please be aware that sending HTTP headers may not be supported by all sources.
+     * This can be useful for advanced per-source customization such as signed URLs.
+     * To add credentials via query parameters, use the `getRequestUrl` option instead;
+     * to send credentials via HTTP headers, use the `getRequestHeaders` option instead.
      */
     getSourceOptions?: ((arg0: SourceType, arg1: SourceOptions, arg2: (Asset | Link)) => (SourceOptions | Promise<SourceOptions>)) | undefined;
     /**
@@ -173,8 +177,32 @@ export type Options = {
      * Sets a custom function to make HTTP requests with.
      * The first parameter is the URL to request and the output is a promise that resolves with the response body.
      * The second parameter is the return type, either `json` (default) or `text`.
+     * The STAC Asset or Link the request is made for is passed as third parameter, if available.
      */
     httpRequestFn?: ((arg0: string, arg1: string) => (any)) | undefined;
+    /**
+     * The HTTP headers (e.g. for authentication) to send with the requests made by this layer,
+     * either as a plain object or as a function that returns the headers (or `null` for none) and
+     * is called with the STAC Asset or Link that is shown (if available) and the URL that is requested.
+     * Use a function to restrict the headers to specific hosts, as tile server URLs and asset URLs
+     * may point to hosts that should not receive the credentials.
+     * The headers are attached to requests made by the default `httpRequestFn`, to GeoTIFF, GeoZarr
+     * and PMTiles requests, and via image/tile load functions (through the Fetch API and object URLs)
+     * to preview images and XYZ, TileJSON, WMS and WMTS tiles.
+     */
+    getRequestHeaders?: {
+        [x: string]: string;
+    } | ((arg0: (Asset | Link | STACObject | null), arg1: string) => ({
+        [x: string]: string;
+    } | null)) | undefined;
+    /**
+     * Rewrites a URL before a request is made or a source is created, e.g. to append query
+     * parameters for authentication (signed URLs, API keys). The function is called with the
+     * STAC Asset or Link that is shown (if available) and the URL, and returns the new URL or
+     * `null` to keep the URL unchanged. The rewrite is applied before `getSourceOptions` is called.
+     * For tiled sources the tile URL template is rewritten, not the individual tile URLs.
+     */
+    getRequestUrl?: ((arg0: (Asset | Link | STACObject | null), arg1: string) => (string | null)) | undefined;
 };
 /**
  * @typedef {import("ol/extent.js").Extent} Extent
@@ -207,6 +235,15 @@ export type Options = {
  * @typedef {import('./type.js').LayerOptions} LayerOptions
  */
 /**
+ * @typedef {import('../http.js').GetHeadersFn} GetHeadersFn
+ */
+/**
+ * @typedef {import('../http.js').OnErrorFn} OnErrorFn
+ */
+/**
+ * @typedef {function((import("ol/Image.js").default|import("ol/Tile.js").default), string): void} LoadFunction
+ */
+/**
  * @typedef {Object} Options
  * @property {string} [url] The STAC URL. Any of `url` and `data` must be provided.
  * Can also be used as url for data, if it is absolute and doesn't contain a self link.
@@ -226,8 +263,9 @@ export type Options = {
  * Optional function that can be used to configure the underlying sources. The function can do any additional work
  * and return the completed options or a promise for the same. The function will be called with the current source options
  * and the STAC Asset or Link.
- * This can be useful for adding auth information such as an API token, either via query parameter or HTTP headers.
- * Please be aware that sending HTTP headers may not be supported by all sources.
+ * This can be useful for advanced per-source customization such as signed URLs.
+ * To add credentials via query parameters, use the `getRequestUrl` option instead;
+ * to send credentials via HTTP headers, use the `getRequestHeaders` option instead.
  * @property {function(LayerType, LayerOptions, (Asset|Link)):(LayerOptions|Promise<LayerOptions>)} [getLayerOptions]
  * Optional function that can be used to configure the individual layers that are created for the assets and links.
  * The function can do any additional (asynchronous) work and return the completed options or a promise for the same.
@@ -283,6 +321,22 @@ export type Options = {
  * @property {function(string,string):(*)} [httpRequestFn=null] Sets a custom function to make HTTP requests with.
  * The first parameter is the URL to request and the output is a promise that resolves with the response body.
  * The second parameter is the return type, either `json` (default) or `text`.
+ * The STAC Asset or Link the request is made for is passed as third parameter, if available.
+ * @property {Object<string, string>|function((Asset|Link|STACObject|null), string):(Object<string, string>|null)} [getRequestHeaders=null]
+ * The HTTP headers (e.g. for authentication) to send with the requests made by this layer,
+ * either as a plain object or as a function that returns the headers (or `null` for none) and
+ * is called with the STAC Asset or Link that is shown (if available) and the URL that is requested.
+ * Use a function to restrict the headers to specific hosts, as tile server URLs and asset URLs
+ * may point to hosts that should not receive the credentials.
+ * The headers are attached to requests made by the default `httpRequestFn`, to GeoTIFF, GeoZarr
+ * and PMTiles requests, and via image/tile load functions (through the Fetch API and object URLs)
+ * to preview images and XYZ, TileJSON, WMS and WMTS tiles.
+ * @property {function((Asset|Link|STACObject|null), string):(string|null)} [getRequestUrl=null]
+ * Rewrites a URL before a request is made or a source is created, e.g. to append query
+ * parameters for authentication (signed URLs, API keys). The function is called with the
+ * STAC Asset or Link that is shown (if available) and the URL, and returns the new URL or
+ * `null` to keep the URL unchanged. The rewrite is applied before `getSourceOptions` is called.
+ * For tiled sources the tile URL template is rewritten, not the individual tile URLs.
  */
 /**
  * @classdesc
@@ -311,6 +365,16 @@ declare class STACLayer extends LayerGroup {
      * @private
      */
     private getLayerOptions_;
+    /**
+     * @type {Object<string, string>|function((Asset|Link|STACObject|null), string):(Object<string, string>|null)|null}
+     * @private
+     */
+    private getRequestHeaders_;
+    /**
+     * @type {function((Asset|Link|STACObject|null), string):(string|null)|null}
+     * @private
+     */
+    private getRequestUrl_;
     /**
      * @type {Array<STAC>|null}
      * @private
@@ -410,9 +474,39 @@ declare class STACLayer extends LayerGroup {
      *
      * @param {string} url The URL to request and the output is a promise that resolves with the response body.
      * @param {string} responseType The return type, either `json` (default) or `text`.
+     * @param {Asset|Link|STACObject|null} [ref] The STAC Asset or Link the request is made for, if available.
      * @return {Promise<*>} The (parsed) response body.
      */
-    fetch_(url: string, responseType?: string): Promise<any>;
+    fetch_(url: string, responseType?: string, ref?: Asset | Link | STACObject | null): Promise<any>;
+    /**
+     * Rewrites the given URL based on the `getRequestUrl` option.
+     *
+     * @param {string} url The URL that is requested.
+     * @param {Asset|Link|STACObject|null} [ref] The STAC Asset or Link that is shown, if available.
+     * @return {string} The rewritten URL, or the given URL if it is not rewritten.
+     */
+    getRequestUrlFor_(url: string, ref?: Asset | Link | STACObject | null): string;
+    /**
+     * Returns the HTTP headers to send for the given URL, based on the
+     * `getRequestHeaders` option.
+     *
+     * @param {string} url The URL that is requested.
+     * @param {Asset|Link|STACObject|null} [ref] The STAC Asset or Link that is shown, if available.
+     * @return {Object<string, string>|null} The headers, or `null` if there are none.
+     */
+    getRequestHeadersFor_(url: string, ref?: Asset | Link | STACObject | null): {
+        [x: string]: string;
+    } | null;
+    /**
+     * Creates a load function for images or tiles that attaches the headers
+     * from the `getRequestHeaders` option and reports errors through the
+     * layer's error event, or `undefined` if no headers are configured.
+     *
+     * @param {function(GetHeadersFn, OnErrorFn=):LoadFunction} factory `createImageLoadFunction` or `createTileLoadFunction`.
+     * @param {Asset|Link|STACObject|null} ref The STAC Asset or Link that is shown, if available.
+     * @return {LoadFunction|undefined} The load function.
+     */
+    createLoadFunction_(factory: (arg0: GetHeadersFn, arg1: OnErrorFn | undefined) => LoadFunction, ref: Asset | Link | STACObject | null): LoadFunction | undefined;
     /**
      * Returns the vector layer that visualizes the bounds / footprint.
      * @return {VectorLayer|null} The vector layer for the bounds
@@ -628,6 +722,7 @@ declare class STACLayer extends LayerGroup {
     /**
      * Gets the WMTS capabilities from the given web-map-links URL.
      * @param {string} url Base URL for the WMTS
+     * @param {Link} link The web map link the request is made for.
      * @param {string} [encoding] The request encoding, either `kvp` (default) or `rest`.
      * @return {Promise<Object|null>} Resolves with the WMTS Capabilities object
      * @private

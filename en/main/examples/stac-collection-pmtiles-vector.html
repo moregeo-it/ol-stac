@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
-    <title>STAC Collection with PMTiles (Vector)</title>
+    <title>PMTiles (Vector) visualization in a STAC Collection</title>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/fontawesome.min.css" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/solid.css" crossorigin="anonymous">
@@ -56,7 +56,7 @@
           <i class="fab fa-codepen fa-lg"></i> Edit
         </a>
         <div class="span12">
-          <h4 id="title">STAC Collection with PMTiles (Vector)</h4>
+          <h4 id="title">PMTiles (Vector) visualization in a STAC Collection</h4>
           <p class="tags">
             <span class="badge-group">
               <a
@@ -67,25 +67,26 @@
                 data-bs-target="#tag-example-list"
                 data-title="stac"
                 data-content="&lt;ul class=&quot;list-group&quot;&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./custom.html&quot;&gt;Custom STAC provided via URL&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./custom.html&quot;&gt;- Custom STAC provided via URL -&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item.html&quot;&gt;Basic STAC Item visualization&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-classification.html&quot;&gt;Classification layer visualization in a STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-tileserver.html&quot;&gt;COGs rendered by a tile server in a STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-with-items.html&quot;&gt;Collection with child items&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-itemcollection.html&quot;&gt;Displaying multiple Items from a Item Collection&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-geojson.html&quot;&gt;GeoJSON asset visualization in a STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-antimeridian.html&quot;&gt;Geometries crossing the antimeridian&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-zarr.html&quot;&gt;GeoZarr visualization in a STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./auth-headers.html&quot;&gt;HTTP header authentication&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-from-object.html&quot;&gt;JavaScript object directly embedded&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-labels.html&quot;&gt;Label Extension support in a STAC Item&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-zarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-with-items.html&quot;&gt;STAC Collection with child items&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-pmtiles-raster.html&quot;&gt;STAC Collection with PMTiles (Raster)&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-collection-pmtiles-vector.html&quot;&gt;STAC Collection with PMTiles (Vector)&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-wms.html&quot;&gt;STAC Collection with WMS&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item.html&quot;&gt;STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-itemcollection.html&quot;&gt;STAC Item Collection&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-antimeridian.html&quot;&gt;STAC Item crossing the antimeridian&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-from-object.html&quot;&gt;STAC Item from an object&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-classification.html&quot;&gt;STAC Item with Classification&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-tileserver.html&quot;&gt;STAC Item with COG rendered by a tile server&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-geojson.html&quot;&gt;STAC Item with GeoJSON assets&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-zarr.html&quot;&gt;STAC Item with GeoZarr asset&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-labels.html&quot;&gt;STAC Item with Label Extension&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-pmtiles-raster.html&quot;&gt;PMTiles (Raster) visualization in a STAC Collection&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-collection-pmtiles-vector.html&quot;&gt;PMTiles (Vector) visualization in a STAC Collection&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-wms.html&quot;&gt;WMS visualization in a STAC Collection&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
-                >16</a>
+                >17</a>
             </span>
             <span class="badge-group">
               <a
@@ -96,9 +97,9 @@
                 data-bs-target="#tag-example-list"
                 data-title="staccollection"
                 data-content="&lt;ul class=&quot;list-group&quot;&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-pmtiles-raster.html&quot;&gt;STAC Collection with PMTiles (Raster)&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-collection-pmtiles-vector.html&quot;&gt;STAC Collection with PMTiles (Vector)&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-wms.html&quot;&gt;STAC Collection with WMS&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-pmtiles-raster.html&quot;&gt;PMTiles (Raster) visualization in a STAC Collection&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-collection-pmtiles-vector.html&quot;&gt;PMTiles (Vector) visualization in a STAC Collection&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-wms.html&quot;&gt;WMS visualization in a STAC Collection&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
                 >3</a>
@@ -112,8 +113,8 @@
                 data-bs-target="#tag-example-list"
                 data-title="pmtiles"
                 data-content="&lt;ul class=&quot;list-group&quot;&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-pmtiles-raster.html&quot;&gt;STAC Collection with PMTiles (Raster)&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-collection-pmtiles-vector.html&quot;&gt;STAC Collection with PMTiles (Vector)&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-pmtiles-raster.html&quot;&gt;PMTiles (Raster) visualization in a STAC Collection&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-collection-pmtiles-vector.html&quot;&gt;PMTiles (Vector) visualization in a STAC Collection&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
                 >2</a>
@@ -127,8 +128,8 @@
                 data-bs-target="#tag-example-list"
                 data-title="vector"
                 data-content="&lt;ul class=&quot;list-group&quot;&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-pmtiles-raster.html&quot;&gt;STAC Collection with PMTiles (Raster)&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-collection-pmtiles-vector.html&quot;&gt;STAC Collection with PMTiles (Vector)&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-pmtiles-raster.html&quot;&gt;PMTiles (Raster) visualization in a STAC Collection&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-collection-pmtiles-vector.html&quot;&gt;PMTiles (Vector) visualization in a STAC Collection&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
                 >2</a>
@@ -142,9 +143,9 @@
                 data-bs-target="#tag-example-list"
                 data-title="webmaplinks"
                 data-content="&lt;ul class=&quot;list-group&quot;&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-pmtiles-raster.html&quot;&gt;STAC Collection with PMTiles (Raster)&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-collection-pmtiles-vector.html&quot;&gt;STAC Collection with PMTiles (Vector)&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-wms.html&quot;&gt;STAC Collection with WMS&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-pmtiles-raster.html&quot;&gt;PMTiles (Raster) visualization in a STAC Collection&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-collection-pmtiles-vector.html&quot;&gt;PMTiles (Vector) visualization in a STAC Collection&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-wms.html&quot;&gt;WMS visualization in a STAC Collection&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
                 >3</a>
@@ -185,38 +186,51 @@
 import View from &#x27;ol/View.js&#x27;;
 import TileLayer from &#x27;ol/layer/WebGLTile.js&#x27;;
 import {register} from &#x27;ol/proj/proj4.js&#x27;;
+import {fromLonLat} from &#x27;ol/proj.js&#x27;;
 import OSM from &#x27;ol/source/OSM.js&#x27;;
+import {Fill, Stroke, Style} from &#x27;ol/style.js&#x27;;
 import proj4 from &#x27;proj4&#x27;;
 import STAC from &#x27;ol-stac&#x27;;
+import LayerType from &#x27;ol-stac/layer/type.js&#x27;;
 
 register(proj4); // required to support source reprojection
 
 const layer &#x3D; new STAC({
   displayWebMapLink: &#x27;pmtiles&#x27;,
   displayFootprint: false,
+  // Add a custom style for the buildings
+  getLayerOptions(type, options) {
+    if (type &#x3D;&#x3D;&#x3D; LayerType.VectorTile) {
+      options.style &#x3D; new Style({
+        fill: new Fill({color: &#x27;rgba(255, 0, 0, 0.8)&#x27;}),
+        stroke: new Stroke({color: &#x27;#990000&#x27;, width: 1}),
+      });
+    }
+    return options;
+  },
   data: {
     &#x27;stac_version&#x27;: &#x27;1.1.0&#x27;,
     &#x27;stac_extensions&#x27;: [
       &#x27;https://stac-extensions.github.io/web-map-links/v1.2.0/schema.json&#x27;,
     ],
     &#x27;type&#x27;: &#x27;Collection&#x27;,
-    &#x27;id&#x27;: &#x27;Overtuere Maps Buildings&#x27;,
+    &#x27;id&#x27;: &#x27;Overture Maps Buildings&#x27;,
     &#x27;description&#x27;:
-      &#x27;The Overture Maps buildings theme describes human-made structures with roofs or interior spaces that are permanently or semi-permanently in one place.&#x27;,
+      &#x27;The Overture Maps buildings theme describes human-made structures with roofs or interior spaces that are permanently or semi-permanently in one place. Hosted on Source Cooperative.&#x27;,
     &#x27;license&#x27;: &#x27;ODbL&#x27;,
     &#x27;attribution&#x27;: &#x27;© Overture Maps Foundation&#x27;,
     &#x27;extent&#x27;: {
       &#x27;spatial&#x27;: {
-        &#x27;bbox&#x27;: [[-180, -90, 180, 90]],
+        &#x27;bbox&#x27;: [[-180, -83.66, 180, 82.53]],
       },
       &#x27;temporal&#x27;: {
-        &#x27;interval&#x27;: [[&#x27;2025-04-23T00:00:00Z&#x27;, &#x27;2025-04-24T00:00:00Z&#x27;]],
+        &#x27;interval&#x27;: [[&#x27;2023-07-26T00:00:00Z&#x27;, null]],
       },
     },
     &#x27;links&#x27;: [
       {
         &#x27;href&#x27;:
-          &#x27;https://overturemaps-tiles-us-west-2-beta.s3.amazonaws.com/2025-04-23/places.pmtiles&#x27;,
+          &#x27;https://data.source.coop/cholmes/overture/overture-buildings.pmtiles&#x27;,
         &#x27;rel&#x27;: &#x27;pmtiles&#x27;,
         &#x27;type&#x27;: &#x27;application/vnd.pmtiles&#x27;,
         &#x27;title&#x27;: &#x27;Buildings&#x27;,
@@ -233,13 +247,10 @@ const map &#x3D; new Map({
   target: &#x27;map&#x27;,
   layers: [background, layer],
   view: new View({
-    center: [0, 0],
-    zoom: 0,
+    // Zoom to a specific location to visualize the buildings
+    center: fromLonLat([7.6261, 51.9607]),
+    zoom: 15,
   }),
-});
-layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
-  const view &#x3D; map.getView();
-  view.fit(layer.getExtent());
 });
 </code></pre>
       </div>
@@ -250,7 +261,7 @@ layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
 &lt;html lang="en"&gt;
   &lt;head&gt;
     &lt;meta charset="UTF-8"&gt;
-    &lt;title&gt;STAC Collection with PMTiles (Vector)&lt;/title&gt;
+    &lt;title&gt;PMTiles (Vector) visualization in a STAC Collection&lt;/title&gt;
     &lt;link rel="stylesheet" href="node_modules/ol/ol.css"&gt;
     &lt;style&gt;
       .map {

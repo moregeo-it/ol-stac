@@ -75,14 +75,32 @@ SourceType.GeoZarr = new SourceType('GeoZarr');
  */
 SourceType.ImageStatic = new SourceType('ImageStatic');
 /**
+ * PMTiles.
+ * Used before the tile type (raster or vector) has been determined,
+ * i.e. `options.url` applies to both raster and vector tiles.
+ * @see {@link https://protomaps.com/docs/pmtiles/}
+ * @api
+ */
+SourceType.PMTiles = new SourceType('PMTiles');
+/**
  * PMTilesRaster
  * @see {@link https://protomaps.com/docs/pmtiles/}
+ * @deprecated Use {@link SourceType.PMTiles} instead, `getSourceOptions` is
+ * called with it before the tile type is known. For backward compatibility,
+ * callbacks that leave the options unchanged for {@link SourceType.PMTiles}
+ * are still called with this type after the tile type has been determined.
+ * This fallback will be removed in 2.0.0.
  * @api
  */
 SourceType.PMTilesRaster = new SourceType('PMTilesRaster');
 /**
  * PMTilesVector
  * @see {@link https://protomaps.com/docs/pmtiles/}
+ * @deprecated Use {@link SourceType.PMTiles} instead, `getSourceOptions` is
+ * called with it before the tile type is known. For backward compatibility,
+ * callbacks that leave the options unchanged for {@link SourceType.PMTiles}
+ * are still called with this type after the tile type has been determined.
+ * This fallback will be removed in 2.0.0.
  * @api
  */
 SourceType.PMTilesVector = new SourceType('PMTilesVector');

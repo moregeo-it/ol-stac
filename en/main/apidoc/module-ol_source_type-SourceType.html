@@ -71,6 +71,7 @@
             <li data-name="geotiff"><a href="module-ol_source_type-SourceType.html#GeoTIFF">GeoTIFF</a>
             <li data-name="geozarr"><a href="module-ol_source_type-SourceType.html#GeoZarr">GeoZarr</a>
             <li data-name="imagestatic"><a href="module-ol_source_type-SourceType.html#ImageStatic">ImageStatic</a>
+            <li data-name="pmtiles"><a href="module-ol_source_type-SourceType.html#PMTiles">PMTiles</a>
             <li data-name="pmtilesraster"><a href="module-ol_source_type-SourceType.html#PMTilesRaster">PMTilesRaster</a>
             <li data-name="pmtilesvector"><a href="module-ol_source_type-SourceType.html#PMTilesVector">PMTilesVector</a>
             <li data-name="tilejson"><a href="module-ol_source_type-SourceType.html#TileJSON">TileJSON</a>
@@ -444,6 +445,65 @@
             
 <dt class="">
     <div class="nameContainer">
+        <div class="anchor" id="PMTiles">
+        </div>
+        <h4 class="name">
+            PMTiles
+            
+
+        </h4>
+    </div>
+    
+</dt>
+<dd class="">
+    
+    <div class="description">
+        <p>PMTiles.
+Used before the tile type (raster or vector) has been determined,
+i.e. <code>options.url</code> applies to both raster and vector tiles.</p>
+    </div>
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="https://protomaps.com/docs/pmtiles/">https://protomaps.com/docs/pmtiles/</a></li>
+        </ul>
+    </dd>
+    
+    
+    
+</dl>
+
+
+    
+</dd>
+
+        
+            
+<dt class="">
+    <div class="nameContainer">
         <div class="anchor" id="PMTilesRaster">
         </div>
         <h4 class="name">
@@ -469,6 +529,12 @@
     
     
 
+    
+        <dt class="important tag-deprecated">Deprecated</dt><dd><ul class="dummy"><li>Use <code>SourceType.PMTiles</code> instead, `getSourceOptions` is
+called with it before the tile type is known. For backward compatibility,
+callbacks that leave the options unchanged for <code>SourceType.PMTiles</code>
+are still called with this type after the tile type has been determined.
+This fallback will be removed in 2.0.0.</li><ul></dd>
     
     
     
@@ -526,6 +592,12 @@
     
     
 
+    
+        <dt class="important tag-deprecated">Deprecated</dt><dd><ul class="dummy"><li>Use <code>SourceType.PMTiles</code> instead, `getSourceOptions` is
+called with it before the tile type is known. For backward compatibility,
+callbacks that leave the options unchanged for <code>SourceType.PMTiles</code>
+are still called with this type after the tile type has been determined.
+This fallback will be removed in 2.0.0.</li><ul></dd>
     
     
     
@@ -805,7 +877,7 @@
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/source/type.js">source/type.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/source/type.js#L113">line 113</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/source/type.js#L131">line 131</a>
         </div>
         
     </div>

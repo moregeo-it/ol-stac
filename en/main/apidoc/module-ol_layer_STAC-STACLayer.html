@@ -149,7 +149,7 @@ The layers created by this LayerGroup all have a 'stac' value that can be retrie
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L169">line 169</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L196">line 196</a>
         </div>
         
     </div>
@@ -391,8 +391,9 @@ null shows the default asset, an empty array shows no asset.</p></td>
                 <p>Optional function that can be used to configure the underlying sources. The function can do any additional work
 and return the completed options or a promise for the same. The function will be called with the current source options
 and the STAC Asset or Link.
-This can be useful for adding auth information such as an API token, either via query parameter or HTTP headers.
-Please be aware that sending HTTP headers may not be supported by all sources.</p></td>
+This can be useful for advanced per-source customization such as signed URLs.
+To add credentials via query parameters, use the <code>getRequestUrl</code> option instead;
+to send credentials via HTTP headers, use the <code>getRequestHeaders</code> option instead.</p></td>
         </tr>
 
 	
@@ -1034,7 +1035,76 @@ Only enable this if you are sure that the STAC object is already in the latest v
                 
                 <p>Sets a custom function to make HTTP requests with.
 The first parameter is the URL to request and the output is a promise that resolves with the response body.
-The second parameter is the return type, either <code>json</code> (default) or <code>text</code>.</p></td>
+The second parameter is the return type, either <code>json</code> (default) or <code>text</code>.
+The STAC Asset or Link the request is made for is passed as third parameter, if available.</p></td>
+        </tr>
+
+	
+
+        <tr class="">
+            
+                <td class="name"><code>getRequestHeaders</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object.&lt;string, string></span>
+|
+
+<span class="param-type">function</span>
+
+
+                
+                    (defaults to null)
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>The HTTP headers (e.g. for authentication) to send with the requests made by this layer,
+either as a plain object or as a function that returns the headers (or <code>null</code> for none) and
+is called with the STAC Asset or Link that is shown (if available) and the URL that is requested.
+Use a function to restrict the headers to specific hosts, as tile server URLs and asset URLs
+may point to hosts that should not receive the credentials.
+The headers are attached to requests made by the default <code>httpRequestFn</code>, to GeoTIFF, GeoZarr
+and PMTiles requests, and via image/tile load functions (through the Fetch API and object URLs)
+to preview images and XYZ, TileJSON, WMS and WMTS tiles.</p></td>
+        </tr>
+
+	
+
+        <tr class="">
+            
+                <td class="name"><code>getRequestUrl</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+                
+                    (defaults to null)
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>Rewrites a URL before a request is made or a source is created, e.g. to append query
+parameters for authentication (signed URLs, API keys). The function is called with the
+STAC Asset or Link that is shown (if available) and the URL, and returns the new URL or
+<code>null</code> to keep the URL unchanged. The rewrite is applied before <code>getSourceOptions</code> is called.
+For tiled sources the tile URL template is rewritten, not the individual tile URLs.</p></td>
         </tr>
 
 	
@@ -1147,7 +1217,7 @@ The second parameter is the return type, either <code>json</code> (default) or <
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L600">line 600</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L703">line 703</a>
         </div>
         
     </div>
@@ -1290,7 +1360,7 @@ Resolves with a list of layers or undefined when complete.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1410">line 1410</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1604">line 1604</a>
         </div>
         
     </div>
@@ -1380,7 +1450,7 @@ The STAC assets.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1472">line 1472</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1666">line 1666</a>
         </div>
         
     </div>
@@ -1470,7 +1540,7 @@ Attributions for this layer.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L376">line 376</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L472">line 472</a>
         </div>
         
     </div>
@@ -1560,7 +1630,7 @@ The vector layer for the bounds
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1400">line 1400</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1594">line 1594</a>
         </div>
         
     </div>
@@ -1650,7 +1720,7 @@ The STAC child entities.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1390">line 1390</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1584">line 1584</a>
         </div>
         
     </div>
@@ -1740,7 +1810,7 @@ The STAC object.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1423">line 1423</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1617">line 1617</a>
         </div>
         
     </div>
@@ -1833,7 +1903,7 @@ The layer extent.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1260">line 1260</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1454">line 1454</a>
         </div>
         
     </div>
@@ -1923,7 +1993,7 @@ An array of links.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1247">line 1247</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1441">line 1441</a>
         </div>
         
     </div>
@@ -2013,7 +2083,7 @@ An array of links.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L388">line 388</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L484">line 484</a>
         </div>
         
     </div>
@@ -2104,7 +2174,7 @@ Is the layer empty?
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1320">line 1320</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1514">line 1514</a>
         </div>
         
     </div>
@@ -2269,7 +2339,7 @@ Resolves when all assets are rendered.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1355">line 1355</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1549">line 1549</a>
         </div>
         
     </div>
@@ -2607,8 +2677,9 @@ null shows the default asset, an empty array shows no asset.</p></td>
                 <p>Optional function that can be used to configure the underlying sources. The function can do any additional work
 and return the completed options or a promise for the same. The function will be called with the current source options
 and the STAC Asset or Link.
-This can be useful for adding auth information such as an API token, either via query parameter or HTTP headers.
-Please be aware that sending HTTP headers may not be supported by all sources.</p></td>
+This can be useful for advanced per-source customization such as signed URLs.
+To add credentials via query parameters, use the <code>getRequestUrl</code> option instead;
+to send credentials via HTTP headers, use the <code>getRequestHeaders</code> option instead.</p></td>
         </tr>
 
 	
@@ -3250,7 +3321,76 @@ Only enable this if you are sure that the STAC object is already in the latest v
                 
                 <p>Sets a custom function to make HTTP requests with.
 The first parameter is the URL to request and the output is a promise that resolves with the response body.
-The second parameter is the return type, either <code>json</code> (default) or <code>text</code>.</p></td>
+The second parameter is the return type, either <code>json</code> (default) or <code>text</code>.
+The STAC Asset or Link the request is made for is passed as third parameter, if available.</p></td>
+        </tr>
+
+	
+
+        <tr class="">
+            
+                <td class="name"><code>options.getRequestHeaders</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object.&lt;string, string></span>
+|
+
+<span class="param-type">function</span>
+
+
+                
+                    (defaults to null)
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>The HTTP headers (e.g. for authentication) to send with the requests made by this layer,
+either as a plain object or as a function that returns the headers (or <code>null</code> for none) and
+is called with the STAC Asset or Link that is shown (if available) and the URL that is requested.
+Use a function to restrict the headers to specific hosts, as tile server URLs and asset URLs
+may point to hosts that should not receive the credentials.
+The headers are attached to requests made by the default <code>httpRequestFn</code>, to GeoTIFF, GeoZarr
+and PMTiles requests, and via image/tile load functions (through the Fetch API and object URLs)
+to preview images and XYZ, TileJSON, WMS and WMTS tiles.</p></td>
+        </tr>
+
+	
+
+        <tr class="">
+            
+                <td class="name"><code>options.getRequestUrl</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+                
+                    (defaults to null)
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>Rewrites a URL before a request is made or a source is created, e.g. to append query
+parameters for authentication (signed URLs, API keys). The function is called with the
+STAC Asset or Link that is shown (if available) and the URL, and returns the new URL or
+<code>null</code> to keep the URL unchanged. The rewrite is applied before <code>getSourceOptions</code> is called.
+For tiled sources the tile URL template is rewritten, not the individual tile URLs.</p></td>
         </tr>
 
 	
@@ -3324,7 +3464,7 @@ Resolves when all items are rendered.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1304">line 1304</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1498">line 1498</a>
         </div>
         
     </div>
@@ -3453,7 +3593,7 @@ Resolves when all items are rendered.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1135">line 1135</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1329">line 1329</a>
         </div>
         
     </div>

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
-    <title>Displaying multiple Items from a Item Collection</title>
+    <title>HTTP header authentication</title>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/fontawesome.min.css" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/solid.css" crossorigin="anonymous">
@@ -56,7 +56,7 @@
           <i class="fab fa-codepen fa-lg"></i> Edit
         </a>
         <div class="span12">
-          <h4 id="title">Displaying multiple Items from a Item Collection</h4>
+          <h4 id="title">HTTP header authentication</h4>
           <p class="tags">
             <span class="badge-group">
               <a
@@ -72,11 +72,11 @@
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-classification.html&quot;&gt;Classification layer visualization in a STAC Item&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-tileserver.html&quot;&gt;COGs rendered by a tile server in a STAC Item&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-with-items.html&quot;&gt;Collection with child items&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-itemcollection.html&quot;&gt;Displaying multiple Items from a Item Collection&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-itemcollection.html&quot;&gt;Displaying multiple Items from a Item Collection&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-geojson.html&quot;&gt;GeoJSON asset visualization in a STAC Item&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-antimeridian.html&quot;&gt;Geometries crossing the antimeridian&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-zarr.html&quot;&gt;GeoZarr visualization in a STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./auth-headers.html&quot;&gt;HTTP header authentication&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./auth-headers.html&quot;&gt;HTTP header authentication&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-from-object.html&quot;&gt;JavaScript object directly embedded&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-labels.html&quot;&gt;Label Extension support in a STAC Item&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-zarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
@@ -90,33 +90,83 @@
             </span>
             <span class="badge-group">
               <a
-                href="./index.html?q=stacapi" class="badge badge-info">stacapi</a
+                href="./index.html?q=stacitem" class="badge badge-info">stacitem</a
               ><a
                 class="badge badge-info tag-modal-toggle"
                 data-bs-toggle="modal"
                 data-bs-target="#tag-example-list"
-                data-title="stacapi"
+                data-title="stacitem"
                 data-content="&lt;ul class=&quot;list-group&quot;&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-with-items.html&quot;&gt;Collection with child items&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-itemcollection.html&quot;&gt;Displaying multiple Items from a Item Collection&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item.html&quot;&gt;Basic STAC Item visualization&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-classification.html&quot;&gt;Classification layer visualization in a STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-tileserver.html&quot;&gt;COGs rendered by a tile server in a STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-geojson.html&quot;&gt;GeoJSON asset visualization in a STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-antimeridian.html&quot;&gt;Geometries crossing the antimeridian&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-zarr.html&quot;&gt;GeoZarr visualization in a STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./auth-headers.html&quot;&gt;HTTP header authentication&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-from-object.html&quot;&gt;JavaScript object directly embedded&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-labels.html&quot;&gt;Label Extension support in a STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-zarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
-                >2</a>
+                >11</a>
             </span>
             <span class="badge-group">
               <a
-                href="./index.html?q=staticimage" class="badge badge-info">staticimage</a
+                href="./index.html?q=authentication" class="badge badge-info">authentication</a
               ><a
                 class="badge badge-info tag-modal-toggle"
                 data-bs-toggle="modal"
                 data-bs-target="#tag-example-list"
-                data-title="staticimage"
+                data-title="authentication"
                 data-content="&lt;ul class=&quot;list-group&quot;&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-with-items.html&quot;&gt;Collection with child items&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./stac-itemcollection.html&quot;&gt;Displaying multiple Items from a Item Collection&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./auth-headers.html&quot;&gt;HTTP header authentication&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
-                >2</a>
+                >1</a>
+            </span>
+            <span class="badge-group">
+              <a
+                href="./index.html?q=authorization" class="badge badge-info">authorization</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="authorization"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./auth-headers.html&quot;&gt;HTTP header authentication&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >1</a>
+            </span>
+            <span class="badge-group">
+              <a
+                href="./index.html?q=httpheaders" class="badge badge-info">httpheaders</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="httpheaders"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./auth-headers.html&quot;&gt;HTTP header authentication&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >1</a>
+            </span>
+            <span class="badge-group">
+              <a
+                href="./index.html?q=token" class="badge badge-info">token</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="token"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./auth-headers.html&quot;&gt;HTTP header authentication&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >1</a>
             </span>
           </p>
           <div class="modal modal-tag-example" id="tag-example-list" tabindex="-1" role="dialog" aria-labelledby="tag-example-title" aria-hidden="true">
@@ -132,9 +182,7 @@
               </div>
             </div>
           </div>
-          <div id="map" class="map"></div>
-<div><strong>Selected Product Identifier:</strong> <span id="ids"></span></div>
-
+          
         </div>
         <form method="POST" id="codepen-form" target="_blank" action="https://codesandbox.io/api/v1/sandboxes/define">
           <input id="codesandbox-params" type="hidden" name="parameters">
@@ -143,8 +191,8 @@
 
       <div class="row-fluid">
         <div class="span12">
-          <p id="shortdesc">Rendering a STAC Item Collection as a layer.</p>
-          <div id="docs"><p>Geometries and Thumbnails for various SpatioTemporal Asset Catalog (STAC) Items in an ItemCollection can be rendered as layer group. Adds a click event to select individual items.</p>
+          <p id="shortdesc">Rendering a STAC Item that requires HTTP header authentication.</p>
+          <div id="docs"><p>This example uses the <code>getRequestHeaders</code> option to attach an <code>Authorization</code> header to the requests made by the STAC layer: the STAC document itself, GeoTIFF/GeoZarr/PMTiles requests, preview images and map tiles. The callback is invoked per URL so that credentials are only sent to trusted hosts. To add credentials via query parameters (e.g. API keys) use the <code>getRequestUrl</code> option instead. For more complex per-source URL signing, see the Planetary Computer example (<code>getSourceOptions</code>). <strong>This example shows code only:</strong> there is no public STAC endpoint with header-based authentication, so no map is shown. Replace the host, URL and token in the code below with a protected STAC endpoint of yours.</p>
 </div>
         </div>
       </div>
@@ -158,13 +206,29 @@ import {register} from &#x27;ol/proj/proj4.js&#x27;;
 import OSM from &#x27;ol/source/OSM.js&#x27;;
 import proj4 from &#x27;proj4&#x27;;
 import STAC from &#x27;ol-stac&#x27;;
-import {getStacObjectsForEvent} from &#x27;ol-stac/util.js&#x27;;
 
-register(proj4); // required to support source reprojection
+register(proj4);
+
+// There is no public STAC endpoint with header-based authentication, so this
+// example shows the code only and doesn&#x27;t render a map. To see it in action,
+// replace the host, URL and token below with a protected STAC endpoint of
+// yours and add a &#x60;&lt;div id&#x3D;&quot;map&quot; class&#x3D;&quot;map&quot;&gt;&lt;/div&gt;&#x60; to the page.
+
+// The hosts that may receive the credentials.
+const trustedHosts &#x3D; [&#x27;example.com&#x27;];
 
 const layer &#x3D; new STAC({
-  url: &#x27;https://earth-search.aws.element84.com/v1/search?bbox&#x3D;-16.9,12.85,-14.9,13.97&amp;collections&#x3D;sentinel-2-c1-l2a&amp;limit&#x3D;12&#x27;,
-  displayPreview: true,
+  url: &#x27;https://example.com/stac/item.json&#x27;,
+  getRequestHeaders(ref, url) {
+    // Only send the credentials to trusted hosts, asset and tile URLs
+    // may point elsewhere.
+    if (!trustedHosts.includes(new URL(url).host)) {
+      return null;
+    }
+    return {
+      Authorization: &#x27;Bearer get_your_own_token&#x27;,
+    };
+  },
 });
 
 const background &#x3D; new TileLayer({
@@ -179,16 +243,15 @@ const map &#x3D; new Map({
     zoom: 0,
   }),
 });
-map.on(&#x27;singleclick&#x27;, async (event) &#x3D;&gt; {
-  const objects &#x3D; await getStacObjectsForEvent(event);
-  if (objects.length &gt; 0) {
-    const ids &#x3D; objects.map((obj) &#x3D;&gt; obj.properties.productIdentifier);
-    document.getElementById(&#x27;ids&#x27;).innerText &#x3D; ids.join(&#x27;, &#x27;);
-  }
-});
+
 layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
   const view &#x3D; map.getView();
   view.fit(layer.getExtent());
+});
+
+layer.on(&#x27;error&#x27;, (event) &#x3D;&gt; {
+  // Failed requests (e.g. expired credentials) are reported here.
+  console.error(event.error); // eslint-disable-line no-console
 });
 </code></pre>
       </div>
@@ -199,7 +262,7 @@ layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
 &lt;html lang="en"&gt;
   &lt;head&gt;
     &lt;meta charset="UTF-8"&gt;
-    &lt;title&gt;Displaying multiple Items from a Item Collection&lt;/title&gt;
+    &lt;title&gt;HTTP header authentication&lt;/title&gt;
     &lt;link rel="stylesheet" href="node_modules/ol/ol.css"&gt;
     &lt;style&gt;
       .map {
@@ -209,8 +272,6 @@ layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
     &lt;/style&gt;
   &lt;/head&gt;
   &lt;body&gt;
-    &lt;div id&#x3D;&quot;map&quot; class&#x3D;&quot;map&quot;&gt;&lt;/div&gt;
-    &lt;div&gt;&lt;strong&gt;Selected Product Identifier:&lt;/strong&gt; &lt;span id&#x3D;&quot;ids&quot;&gt;&lt;/span&gt;&lt;/div&gt;
 
     &lt;script type="module" src="main.js"&gt;&lt;/script&gt;
   &lt;/body&gt;
@@ -220,7 +281,7 @@ layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
       <div class="row-fluid">
         <h5 class="source-heading">package.json</h5>
         <pre><code id="example-pkg-source" class="language-json">{
-  &quot;name&quot;: &quot;stac-itemcollection&quot;,
+  &quot;name&quot;: &quot;auth-headers&quot;,
   &quot;dependencies&quot;: {
     &quot;ol-stac&quot;: &quot;1.5.1&quot;,
     &quot;proj4&quot;: &quot;^2.16.1&quot;
@@ -238,7 +299,7 @@ layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="common.js"></script>
-    <script src="stac-itemcollection.js"></script>
+    <script src="auth-headers.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-core.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/autoloader/prism-autoloader.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/toolbar/prism-toolbar.min.js"></script>
