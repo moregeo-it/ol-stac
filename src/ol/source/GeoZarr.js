@@ -60,7 +60,7 @@ const REQUIRED_ZARR_CONVENTIONS = [
  * @property {number} [transition=250] Duration of the opacity transition for rendering.
  * To disable the opacity transition, pass `transition: 0`.
  * @property {boolean} [wrapX=false] Render tiles beyond the tile grid extent.
- * @property {ResampleMethod} [resample='nearest'] Resampling method if bands are not available for all multi-scale levels.
+ * @property {ResampleMethod} [resample='linear'] Resampling method if bands are not available for all multi-scale levels.
  * @property {Object<string, number|string>} [dimensions] Fixed index for each non-spatial
  * dimension of the band arrays, keyed by dimension name (e.g. `{time: 0}` for the first time step
  * of a `[time, y, x]` cube); unspecified dimensions default to `0`. Names come from each array's
@@ -366,7 +366,7 @@ export default class GeoZarr extends DataTileSource {
     // Fetch group zarr.json once for both opening the group and extracting
     // consolidated metadata. Without this, open() and the manual metadata
     // read would each make a separate HTTP request for the same file.
-    const groupBytes = await store.get('/zarr.json').catch(() => undefined);
+    const groupBytes = await probe(store, '/zarr.json');
     if (groupBytes) {
       try {
         this.consolidatedMetadata_ = JSON.parse(
@@ -381,7 +381,7 @@ export default class GeoZarr extends DataTileSource {
     let v2Metadata = null;
     if (!this.consolidatedMetadata_) {
       // Zarr v2: consolidated metadata lives in .zmetadata
-      const v2Bytes = await store.get('/.zmetadata').catch(() => undefined);
+      const v2Bytes = await probe(store, '/.zmetadata');
       if (v2Bytes) {
         try {
           v2Metadata = JSON.parse(new TextDecoder().decode(v2Bytes)).metadata;
@@ -553,7 +553,10 @@ export default class GeoZarr extends DataTileSource {
       );
       const {row, col} = this.axesOf_(arrayMeta);
       this.bandSpatialAxes_[i] = {row, col};
-      this.bandExtraSelection_[i] = this.resolveExtraSelection_(arrayMeta);
+      this.bandExtraSelection_[i] = this.resolveExtraSelection_(
+        arrayMeta,
+        this.dimensions_,
+      );
       if (this.extraDimensions_.length === 0) {
         this.extraDimensions_ = this.extraDimsOf_(arrayMeta);
       }
@@ -581,10 +584,11 @@ export default class GeoZarr extends DataTileSource {
    * @param {number} z The z tile index.
    * @param {number} x The x tile index.
    * @param {number} y The y tile index.
+   * @param {import('ol/source/DataTile.js').LoaderOptions} options The loader options.
    * @return {Promise<import("ol/DataTile.js").Data>} The composed tile data.
    * @private
    */
-  async loadTile_(z, x, y) {
+  async loadTile_(z, x, y, options) {
     const resolutions = this.tileGrid.getResolutions();
     const tileResolution = this.tileGrid.getResolution(z);
     const tileExtent = this.tileGrid.getTileCoordExtent([z, x, y]);
@@ -725,7 +729,7 @@ export default class GeoZarr extends DataTileSource {
       tileRowCount,
       tileResolution,
       this.resampleMethod_,
-      this.fillValue_ ?? NaN,
+      this.fillValue_,
       bandRowResolutions,
     );
   }
@@ -965,9 +969,10 @@ export default class GeoZarr extends DataTileSource {
    *     to change; see the `dimensions` constructor option.
    */
   updateDimensions(dimensions) {
-    this.dimensions_ = {...this.dimensions_, ...dimensions};
+    const merged = {...this.dimensions_, ...dimensions};
     if (this.getState() !== 'ready') {
       // configure_ reads dimensions_ when it resolves; nothing to do yet.
+      this.dimensions_ = merged;
       return;
     }
     // Resolve every band before assigning, so an invalid name or index
@@ -975,7 +980,7 @@ export default class GeoZarr extends DataTileSource {
     const selection = this.bands_.map((band, i) => {
       const arrayMeta = this.getBandArrayMeta_(band, this.bandGroupIndex_[i]);
       if (!this.variable_) {
-        return this.resolveExtraSelection_(arrayMeta);
+        return this.resolveExtraSelection_(arrayMeta, merged);
       }
       // In `variable` mode, merge into the current selection so the axes
       // fixed through the `selector` option are kept.
@@ -1011,6 +1016,7 @@ export default class GeoZarr extends DataTileSource {
       }
       return updated;
     });
+    this.dimensions_ = merged;
     this.bandExtraSelection_ = selection;
     // Bump the tile key to reload tiles. Deriving it from the selection (rather
     // than a counter) keeps prior selections' tiles cached, so revisiting hits.
@@ -1071,10 +1077,12 @@ export default class GeoZarr extends DataTileSource {
    * `null` at the two spatial axes (e.g. `[2, null, null]` for a `[time, y, x]`
    * array with `{time: 2}`).
    * @param {Object<string, *>|undefined} arrayMeta Zarr v3 array metadata.
+   * @param {Object<string, number|string>} dimensions The dimension indices
+   *     to resolve against.
    * @return {Array<number|null>|undefined} The extra-axis selection template.
    * @private
    */
-  resolveExtraSelection_(arrayMeta) {
+  resolveExtraSelection_(arrayMeta, dimensions) {
     if (!arrayMeta) {
       return undefined;
     }
@@ -1083,7 +1091,7 @@ export default class GeoZarr extends DataTileSource {
       return undefined;
     }
     const names = dims.map((d) => d.name);
-    const dimKeys = Object.keys(this.dimensions_);
+    const dimKeys = Object.keys(dimensions);
     // A single unnamed dimension is lenient: any single key binds to it.
     const singleUnnamed =
       dims.length === 1 && !Array.isArray(arrayMeta['dimension_names']);
@@ -1103,10 +1111,10 @@ export default class GeoZarr extends DataTileSource {
     for (const dim of dims) {
       const name = dim.name;
       let index;
-      if (name in this.dimensions_) {
-        index = this.dimensions_[name];
+      if (name in dimensions) {
+        index = dimensions[name];
       } else if (singleUnnamed && dimKeys.length === 1) {
-        index = this.dimensions_[dimKeys[0]];
+        index = dimensions[dimKeys[0]];
       } else {
         index = 0; // unspecified extra dimension defaults to the first slice
       }
@@ -1966,7 +1974,7 @@ function getTileGridInfoFromLegacyAttributes(attributes) {
  * @param {number} tileRowCount The number of rows in the output data.
  * @param {number} tileResolution The tile resolution.
  * @param {ResampleMethod} resampleMethod The resampling method.
- * @param {number} fillValue The fill value.
+ * @param {number|undefined} fillValue The fill value.
  * @param {Array<number>} [chunkRowResolutions] The row resolutions for each
  * band, for data with non-square pixels. Defaults to `chunkResolutions`.
  * @return {Float32Array} The tile data.
@@ -2226,6 +2234,18 @@ function normalizeV2Metadata(v2Metadata) {
 }
 
 /**
+ * Probe the store for an optional metadata document. Absence is an expected
+ * outcome (version probing), and some servers answer 403 instead of 404 for
+ * missing keys, which zarrita treats as an error.
+ * @param {FetchStore} store The store.
+ * @param {string} key The key to probe.
+ * @return {Promise<Uint8Array|undefined>} The document, if present.
+ */
+function probe(store, key) {
+  return store.get(/** @type {`/${string}`} */ (key)).catch(() => undefined);
+}
+
+/**
  * Read a single array's metadata directly from the store, for stores
  * without consolidated metadata (Zarr v3 zarr.json or v2 .zarray/.zattrs).
  * @param {FetchStore} store The store.
@@ -2234,16 +2254,14 @@ function normalizeV2Metadata(v2Metadata) {
  */
 async function getArrayMeta(store, path) {
   const decoder = new TextDecoder();
-  let bytes = await store.get(`/${path}/zarr.json`).catch(() => undefined);
+  let bytes = await probe(store, `/${path}/zarr.json`);
   if (bytes) {
     return JSON.parse(decoder.decode(bytes));
   }
-  bytes = await store.get(`/${path}/.zarray`).catch(() => undefined);
+  bytes = await probe(store, `/${path}/.zarray`);
   if (bytes) {
     const zarray = JSON.parse(decoder.decode(bytes));
-    const attrBytes = await store
-      .get(`/${path}/.zattrs`)
-      .catch(() => undefined);
+    const attrBytes = await probe(store, `/${path}/.zattrs`);
     const attributes = attrBytes ? JSON.parse(decoder.decode(attrBytes)) : {};
     return {
       shape: zarray['shape'],

@@ -34,6 +34,13 @@ export default [
     files: ['src/ol/source/GeoZarr.js'],
     rules: {
       'import/order': 'off',
+      // OpenLayers keeps the (currently unused) loader `options` parameter.
+      // An inline eslint-disable is not an option, as it would be flagged
+      // (and removed by --fix) as unused in the OpenLayers repository.
+      'no-unused-vars': [
+        'error',
+        {'argsIgnorePattern': '^options$', 'caughtErrorsIgnorePattern': '^_$'},
+      ],
     },
   },
   {

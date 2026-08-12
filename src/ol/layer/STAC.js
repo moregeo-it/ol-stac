@@ -1268,6 +1268,11 @@ class STACLayer extends LayerGroup {
     let options = getGeoZarrSourceOptionsFromAsset(asset, this.bands_);
     options.url = this.getRequestUrlFor_(options.url, asset);
 
+    const projection = await getProjection(asset);
+    if (projection) {
+      options.projection = projection;
+    }
+
     const headers = this.getRequestHeadersFor_(options.url, asset);
     if (headers) {
       options.storeOptions = {headers};

@@ -593,7 +593,7 @@ export function getGeoZarrStyleFromAsset(asset, sourceOptions) {
  * @return {Array<number>|string} The OpenLayers color.
  */
 function toColor(color) {
-  if (Array.isArray(color) && color.length === 4 && color[3] > 1) {
+  if (Array.isArray(color) && color.length === 4) {
     return [color[0], color[1], color[2], color[3] / 255];
   }
   return color;
@@ -678,9 +678,11 @@ function getDatacubeRenderingInfo(asset) {
     }
     if (
       hasStacBands &&
-      !v.dimensions.some((dim) => !spatialDims.includes(dim))
+      !(bandDimension && v.dimensions.includes(bandDimension.name))
     ) {
-      // A per-band 2-D array, addressed through the `bands` mode
+      // With STAC bands declared, each band is expected to be its own array
+      // (addressed through the `bands` mode), unless the variable packs the
+      // declared bands dimension
       continue;
     }
     // Prefer a variable that includes the bands dimension
