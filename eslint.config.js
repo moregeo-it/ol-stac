@@ -24,7 +24,16 @@ export default [
           'ignore': ['@octokit/rest', '@typescript-eslint/parser'],
         },
       ],
-      'no-unused-vars': ['error', {'caughtErrorsIgnorePattern': '^_$' }],
+      'no-unused-vars': ['error', {'caughtErrorsIgnorePattern': '^_$'}],
+    },
+  },
+  {
+    // Vendored from OpenLayers; kept line-identical to the upstream file
+    // (only the import paths differ), so the import order must not change.
+    name: 'vendored-geozarr-config',
+    files: ['src/ol/source/GeoZarr.js'],
+    rules: {
+      'import/order': 'off',
     },
   },
   {
