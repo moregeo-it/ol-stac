@@ -7,10 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Add `getLayerOptions` option to customize the options of the individual layers that are
-  created for assets and links, e.g. to apply a style to a GeoTIFF or GeoZarr layer.
+### Added
+
+- Add `getLayerOptions` option to customize the options of the individual layers that are created for assets and links, e.g. to apply a style to a GeoTIFF or GeoZarr layer.
   The function can be asynchronous and only delays the creation of the individual layer.
-- Add example for computing an NDVI visualization for a GeoZarr datacube via `getLayerOptions`
+- Add examples for computing an NDVI visualization for a GeoZarr datacube via `getLayerOptions` and header-based authentication
+- Add `getRequestHeaders` option to attach HTTP headers (e.g. for authentication) to the requests made by the layer.
+  Errors from image/tile requests with headers are reported through the layer's `error` event.
+- Add `getRequestUrl` option to rewrite URLs before requests are made or sources are created, e.g. to append query parameters for authentication.
+
+### Changed
+
+- The TileJSON manifest is loaded through the new request function and passed to the source, unless the `jsonp` or `tileJSON` source options are set.
+- `getSourceOptions` is called with `SourceType.PMTiles` before the PMTiles tile type is sniffed, so that URL
+  rewrites (e.g. signed URLs) apply to all PMTiles requests.
+- The default `httpRequestFn` passes the STAC Asset or Link a request is made for to `getRequestHeaders`;
+  custom `httpRequestFn` implementations receive it as an optional third parameter.
+
+### Deprecated
+
+- `SourceType.PMTilesRaster` and `SourceType.PMTilesVector` — use `SourceType.PMTiles` instead.
+  Callbacks that leave the options unchanged for `SourceType.PMTiles` are still called with the
+  deprecated values after the tile type is known; this fallback will be removed in 2.0.0.
+
+### Fixes
+
 - Fix the automatic projection lookup
 - Fix antimeridian handling, which resulted in polygons not showing in certain cases
 
