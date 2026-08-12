@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
-    <title>Planetary Computer</title>
+    <title>NDVI from a GeoZarr STAC Item</title>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/fontawesome.min.css" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/solid.css" crossorigin="anonymous">
@@ -56,7 +56,7 @@
           <i class="fab fa-codepen fa-lg"></i> Edit
         </a>
         <div class="span12">
-          <h4 id="title">Planetary Computer</h4>
+          <h4 id="title">NDVI from a GeoZarr STAC Item</h4>
           <p class="tags">
             <span class="badge-group">
               <a
@@ -80,8 +80,8 @@
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./auth-headers.html&quot;&gt;HTTP header authentication&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-from-object.html&quot;&gt;JavaScript object directly embedded&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-labels.html&quot;&gt;Label Extension support in a STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./geozarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./geozarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-pmtiles-raster.html&quot;&gt;PMTiles (Raster) visualization in a STAC Collection&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-pmtiles-vector.html&quot;&gt;PMTiles (Vector) visualization in a STAC Collection&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-wms.html&quot;&gt;WMS visualization in a STAC Collection&lt;/a&gt;
@@ -107,60 +107,82 @@
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./auth-headers.html&quot;&gt;HTTP header authentication&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-from-object.html&quot;&gt;JavaScript object directly embedded&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-labels.html&quot;&gt;Label Extension support in a STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./geozarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./geozarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
                 >11</a>
             </span>
             <span class="badge-group">
               <a
-                href="./index.html?q=geotiff" class="badge badge-info">geotiff</a
+                href="./index.html?q=geozarr" class="badge badge-info">geozarr</a
               ><a
                 class="badge badge-info tag-modal-toggle"
                 data-bs-toggle="modal"
                 data-bs-target="#tag-example-list"
-                data-title="geotiff"
+                data-title="geozarr"
                 data-content="&lt;ul class=&quot;list-group&quot;&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item.html&quot;&gt;Basic STAC Item visualization&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-classification.html&quot;&gt;Classification layer visualization in a STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-tileserver.html&quot;&gt;COGs rendered by a tile server in a STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-from-object.html&quot;&gt;JavaScript object directly embedded&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-labels.html&quot;&gt;Label Extension support in a STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./geozarr-eopf.html&quot;&gt;EOPF GeoZarr visualization&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./geozarr-datacube.html&quot;&gt;GeoZarr datacubes from STAC&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./geozarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
-                >6</a>
+                >3</a>
             </span>
             <span class="badge-group">
               <a
-                href="./index.html?q=cog" class="badge badge-info">cog</a
+                href="./index.html?q=zarr" class="badge badge-info">zarr</a
               ><a
                 class="badge badge-info tag-modal-toggle"
                 data-bs-toggle="modal"
                 data-bs-target="#tag-example-list"
-                data-title="cog"
+                data-title="zarr"
                 data-content="&lt;ul class=&quot;list-group&quot;&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item.html&quot;&gt;Basic STAC Item visualization&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-classification.html&quot;&gt;Classification layer visualization in a STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-tileserver.html&quot;&gt;COGs rendered by a tile server in a STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-from-object.html&quot;&gt;JavaScript object directly embedded&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-labels.html&quot;&gt;Label Extension support in a STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./geozarr-eopf.html&quot;&gt;EOPF GeoZarr visualization&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./geozarr-datacube.html&quot;&gt;GeoZarr datacubes from STAC&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./geozarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
-                >6</a>
+                >3</a>
             </span>
             <span class="badge-group">
               <a
-                href="./index.html?q=signedurl" class="badge badge-info">signedurl</a
+                href="./index.html?q=ndvi" class="badge badge-info">ndvi</a
               ><a
                 class="badge badge-info tag-modal-toggle"
                 data-bs-toggle="modal"
                 data-bs-target="#tag-example-list"
-                data-title="signedurl"
+                data-title="ndvi"
                 data-content="&lt;ul class=&quot;list-group&quot;&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./geozarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >1</a>
+            </span>
+            <span class="badge-group">
+              <a
+                href="./index.html?q=style" class="badge badge-info">style</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="style"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./geozarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >1</a>
+            </span>
+            <span class="badge-group">
+              <a
+                href="./index.html?q=layeroptions" class="badge badge-info">layeroptions</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="layeroptions"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./geozarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
                 >1</a>
@@ -189,8 +211,8 @@
 
       <div class="row-fluid">
         <div class="span12">
-          <p id="shortdesc">Rendering a STAC Item from Planetary Computer.</p>
-          <div id="docs"><p>This example uses the STAC layer to render an item from Planetary Computer. Planetary Computer requres that asset URLs are signed with a token.  The example uses the <code>getSourceOptions</code> callback to sign the asset URL.</p>
+          <p id="shortdesc">Computing an NDVI visualization for a GeoZarr datacube via getLayerOptions.</p>
+          <div id="docs"><p>This example uses the <code>getLayerOptions</code> callback to compute a <a href="https://en.wikipedia.org/wiki/Normalized_difference_vegetation_index">NDVI</a> visualization for the red and near-infrared bands of a Web-Optimized GeoZarr reflectance datacube. The callback derives which of the loaded bands is red and which is near-infrared from the band metadata of the STAC asset (<code>eo:common_name</code>) and builds the color ramp style from it. The callback can also be asynchronous, e.g. to load a style definition that is referenced in the STAC metadata, which only delays the creation of the individual layer.</p>
 </div>
         </div>
       </div>
@@ -204,32 +226,70 @@ import {register} from &#x27;ol/proj/proj4.js&#x27;;
 import OSM from &#x27;ol/source/OSM.js&#x27;;
 import proj4 from &#x27;proj4&#x27;;
 import STAC from &#x27;ol-stac&#x27;;
-import SourceType from &#x27;ol-stac/source/type.js&#x27;;
+import LayerType from &#x27;ol-stac/layer/type.js&#x27;;
 
 register(proj4); // required to support source reprojection
 
+// The bands of the reflectance datacube to load (red and NIR).
+const selectedBands &#x3D; [&#x27;b04&#x27;, &#x27;b08&#x27;];
+
 /**
- * Get a Shared Access Signature Token to authorize asset requests.
- * See https://planetarycomputer.microsoft.com/docs/concepts/sas/
- * @param {string} href The unsigned URL.
- * @return {Promise&lt;string&gt;} A promise for the signed URL.
+ * Creates an NDVI style for the given asset. Which of the selected bands is
+ * red and which is near-infrared is derived from the band metadata of the
+ * STAC asset (&#x60;eo:common_name&#x60;) instead of being hard-coded.
+ * @param {import(&#x27;stac-js&#x27;).Asset} asset The STAC asset.
+ * @return {import(&#x27;ol/layer/WebGLTile.js&#x27;).Style|undefined} The style.
  */
-async function sign(href) {
-  const params &#x3D; new URLSearchParams({href});
-  const response &#x3D; await fetch(
-    &#x60;https://planetarycomputer.microsoft.com/api/sas/v1/sign?${params}&#x60;,
-  );
-  const body &#x3D; await response.json();
-  return body.href;
+function createNdviStyle(asset) {
+  const bands &#x3D; asset.getBands();
+  const bandIndex &#x3D; (commonName) &#x3D;&gt; {
+    const band &#x3D; bands.find(
+      (candidate) &#x3D;&gt; candidate.getMetadata(&#x27;eo:common_name&#x27;) &#x3D;&#x3D;&#x3D; commonName,
+    );
+    return band ? selectedBands.indexOf(band.name) + 1 : 0;
+  };
+  const red &#x3D; bandIndex(&#x27;red&#x27;);
+  const nir &#x3D; bandIndex(&#x27;nir&#x27;);
+  if (!red || !nir) {
+    return undefined;
+  }
+  const ndvi &#x3D; [
+    &#x27;/&#x27;,
+    [&#x27;-&#x27;, [&#x27;band&#x27;, nir], [&#x27;band&#x27;, red]],
+    [&#x27;+&#x27;, [&#x27;band&#x27;, nir], [&#x27;band&#x27;, red]],
+  ];
+  return {
+    color: [
+      &#x27;interpolate&#x27;,
+      [&#x27;linear&#x27;],
+      ndvi,
+      -0.2,
+      &#x27;#a50026&#x27;,
+      0,
+      &#x27;#f46d43&#x27;,
+      0.2,
+      &#x27;#fee08b&#x27;,
+      0.4,
+      &#x27;#a6d96a&#x27;,
+      0.6,
+      &#x27;#1a9850&#x27;,
+      0.8,
+      &#x27;#006837&#x27;,
+    ],
+  };
 }
 
 const layer &#x3D; new STAC({
-  url: &#x27;https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a/items/S2B_MSIL2A_20220909T185929_R013_T10TES_20220910T222807&#x27;,
-  assets: [&#x27;visual&#x27;],
-  async getSourceOptions(type, options) {
-    if (type &#x3D;&#x3D;&#x3D; SourceType.GeoTIFF) {
-      for (const source of options.sources) {
-        source.url &#x3D; await sign(source.url);
+  url: &#x27;https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2C_MSIL2A_20260414T114351_N0512_R123_T30VVK_20260414T164110&#x27;,
+  assets: [&#x27;reflectance&#x27;],
+  bands: selectedBands,
+  // The function may also be asynchronous, e.g. to load a style definition
+  // that is referenced in the STAC metadata.
+  async getLayerOptions(type, options, asset) {
+    if (type &#x3D;&#x3D;&#x3D; LayerType.WebGLTile) {
+      const style &#x3D; createNdviStyle(asset);
+      if (style) {
+        options.style &#x3D; style;
       }
     }
     return options;
@@ -262,7 +322,7 @@ layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
 &lt;html lang="en"&gt;
   &lt;head&gt;
     &lt;meta charset="UTF-8"&gt;
-    &lt;title&gt;Planetary Computer&lt;/title&gt;
+    &lt;title&gt;NDVI from a GeoZarr STAC Item&lt;/title&gt;
     &lt;link rel="stylesheet" href="node_modules/ol/ol.css"&gt;
     &lt;style&gt;
       .map {
@@ -282,7 +342,7 @@ layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
       <div class="row-fluid">
         <h5 class="source-heading">package.json</h5>
         <pre><code id="example-pkg-source" class="language-json">{
-  &quot;name&quot;: &quot;planetary-computer&quot;,
+  &quot;name&quot;: &quot;geozarr-ndvi&quot;,
   &quot;dependencies&quot;: {
     &quot;ol-stac&quot;: &quot;1.5.1&quot;,
     &quot;proj4&quot;: &quot;^2.16.1&quot;
@@ -300,7 +360,7 @@ layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="common.js"></script>
-    <script src="planetary-computer.js"></script>
+    <script src="geozarr-ndvi.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-core.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/autoloader/prism-autoloader.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/toolbar/prism-toolbar.min.js"></script>

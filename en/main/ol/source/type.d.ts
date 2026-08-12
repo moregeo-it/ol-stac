@@ -1,6 +1,6 @@
 export default SourceType;
 export type GeoTIFFOptions = import("ol/source/GeoTIFF.js").Options;
-export type GeoZarrOptions = import("ol/source/GeoZarr.js").Options;
+export type GeoZarrOptions = import("./GeoZarr.js").Options;
 export type ImageStaticOptions = import("ol/source/ImageStatic.js").Options;
 export type TileJSONOptions = import("ol/source/TileJSON.js").Options;
 export type TileWMSOptions = import("ol/source/TileWMS.js").Options;
@@ -17,8 +17,7 @@ export type SourceOptions = GeoTIFFOptions | GeoZarrOptions | ImageStaticOptions
  * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_source_GeoTIFF-GeoTIFFSource.html}
  */
 /**
- * @typedef {import("ol/source/GeoZarr.js").Options} GeoZarrOptions
- * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_source_GeoZarr-GeoZarrSource.html}
+ * @typedef {import("./GeoZarr.js").Options} GeoZarrOptions
  */
 /**
  * @typedef {import("ol/source/ImageStatic.js").Options} ImageStaticOptions

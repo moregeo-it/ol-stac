@@ -45,7 +45,8 @@ export async function registerProjection(proj, type, lookup = null) {
 export async function getProjection(reference, defaultProjection = undefined) {
     let projection;
     if (isProj4Registered()) {
-        const code = reference.getMetadata('proj:code');
+        const code = reference.getMetadata('proj:code') ||
+            getDatacubeReferenceSystem(reference);
         const projjson = reference.getMetadata('proj:projjson');
         const wkt2 = reference.getMetadata('proj:wkt2');
         if (projjson) {
@@ -54,10 +55,18 @@ export async function getProjection(reference, defaultProjection = undefined) {
         else if (wkt2) {
             projection = await registerProjection(wkt2, 'wkt2');
         }
+        else if (isObject(code)) {
+            // PROJJSON from a datacube reference system
+            projection = await registerProjection(code, 'projjson');
+        }
+        else if (typeof code === 'string' && /^[A-Z]+CR?S[\s[]/.test(code)) {
+            // WKT2 from a datacube reference system
+            projection = await registerProjection(code, 'wkt2');
+        }
         else if (code) {
             try {
                 const lookup = await getLookupFn();
-                projection = await registerProjection(code, 'code', lookup);
+                projection = await registerProjection(String(code), 'code', lookup);
             }
             catch (error) {
                 // Fall back to the default projection, but let users know
@@ -67,6 +76,41 @@ export async function getProjection(reference, defaultProjection = undefined) {
         }
     }
     return projection || defaultProjection;
+}
+/**
+ * Gets the common reference system of the spatial dimensions of a datacube
+ * (the datacube extension's `cube:dimensions`), if declared.
+ * @param {import('stac-js').STACReference} reference The asset or link to read the information from.
+ * @return {number|string|Object|undefined} The reference system (EPSG code,
+ * WKT2 or PROJJSON), or `undefined`.
+ */
+function getDatacubeReferenceSystem(reference) {
+    const dimensions = reference.getMetadata('cube:dimensions');
+    if (!isObject(dimensions)) {
+        return undefined;
+    }
+    let referenceSystem;
+    for (const name in dimensions) {
+        const dimension = dimensions[name];
+        if (!isObject(dimension) || dimension.type !== 'spatial') {
+            continue;
+        }
+        if (dimension.axis !== 'x' && dimension.axis !== 'y') {
+            continue;
+        }
+        if (referenceSystem === undefined) {
+            referenceSystem = dimension.reference_system;
+        }
+        else if (JSON.stringify(referenceSystem) !==
+            JSON.stringify(dimension.reference_system)) {
+            // The axes disagree; leave the projection to other means
+            return undefined;
+        }
+    }
+    if (typeof referenceSystem === 'number') {
+        return `EPSG:${referenceSystem}`;
+    }
+    return referenceSystem;
 }
 /**
  * Creates a custom projection name for a given PROJJSON object or WKT2 string.

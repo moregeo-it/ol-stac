@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
-    <title>Planetary Computer</title>
+    <title>EOPF GeoZarr visualization</title>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/fontawesome.min.css" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/solid.css" crossorigin="anonymous">
@@ -56,7 +56,7 @@
           <i class="fab fa-codepen fa-lg"></i> Edit
         </a>
         <div class="span12">
-          <h4 id="title">Planetary Computer</h4>
+          <h4 id="title">EOPF GeoZarr visualization</h4>
           <p class="tags">
             <span class="badge-group">
               <a
@@ -73,7 +73,7 @@
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-tileserver.html&quot;&gt;COGs rendered by a tile server in a STAC Item&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-with-items.html&quot;&gt;Collection with child items&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-itemcollection.html&quot;&gt;Displaying multiple Items from a Item Collection&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./geozarr-eopf.html&quot;&gt;EOPF GeoZarr visualization&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./geozarr-eopf.html&quot;&gt;EOPF GeoZarr visualization&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-geojson.html&quot;&gt;GeoJSON asset visualization in a STAC Item&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-antimeridian.html&quot;&gt;Geometries crossing the antimeridian&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./geozarr-datacube.html&quot;&gt;GeoZarr datacubes from STAC&lt;/a&gt;
@@ -81,7 +81,7 @@
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-from-object.html&quot;&gt;JavaScript object directly embedded&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-labels.html&quot;&gt;Label Extension support in a STAC Item&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./geozarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-pmtiles-raster.html&quot;&gt;PMTiles (Raster) visualization in a STAC Collection&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-pmtiles-vector.html&quot;&gt;PMTiles (Vector) visualization in a STAC Collection&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-wms.html&quot;&gt;WMS visualization in a STAC Collection&lt;/a&gt;
@@ -101,66 +101,60 @@
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item.html&quot;&gt;Basic STAC Item visualization&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-classification.html&quot;&gt;Classification layer visualization in a STAC Item&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-tileserver.html&quot;&gt;COGs rendered by a tile server in a STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./geozarr-eopf.html&quot;&gt;EOPF GeoZarr visualization&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./geozarr-eopf.html&quot;&gt;EOPF GeoZarr visualization&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-geojson.html&quot;&gt;GeoJSON asset visualization in a STAC Item&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-antimeridian.html&quot;&gt;Geometries crossing the antimeridian&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./auth-headers.html&quot;&gt;HTTP header authentication&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-from-object.html&quot;&gt;JavaScript object directly embedded&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-labels.html&quot;&gt;Label Extension support in a STAC Item&lt;/a&gt;
                   &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./geozarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
                 >11</a>
             </span>
             <span class="badge-group">
               <a
-                href="./index.html?q=geotiff" class="badge badge-info">geotiff</a
+                href="./index.html?q=geozarr" class="badge badge-info">geozarr</a
               ><a
                 class="badge badge-info tag-modal-toggle"
                 data-bs-toggle="modal"
                 data-bs-target="#tag-example-list"
-                data-title="geotiff"
+                data-title="geozarr"
                 data-content="&lt;ul class=&quot;list-group&quot;&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item.html&quot;&gt;Basic STAC Item visualization&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-classification.html&quot;&gt;Classification layer visualization in a STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-tileserver.html&quot;&gt;COGs rendered by a tile server in a STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-from-object.html&quot;&gt;JavaScript object directly embedded&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-labels.html&quot;&gt;Label Extension support in a STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./geozarr-eopf.html&quot;&gt;EOPF GeoZarr visualization&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./geozarr-datacube.html&quot;&gt;GeoZarr datacubes from STAC&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./geozarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
-                >6</a>
+                >3</a>
             </span>
             <span class="badge-group">
               <a
-                href="./index.html?q=cog" class="badge badge-info">cog</a
+                href="./index.html?q=zarr" class="badge badge-info">zarr</a
               ><a
                 class="badge badge-info tag-modal-toggle"
                 data-bs-toggle="modal"
                 data-bs-target="#tag-example-list"
-                data-title="cog"
+                data-title="zarr"
                 data-content="&lt;ul class=&quot;list-group&quot;&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item.html&quot;&gt;Basic STAC Item visualization&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-classification.html&quot;&gt;Classification layer visualization in a STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-tileserver.html&quot;&gt;COGs rendered by a tile server in a STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-from-object.html&quot;&gt;JavaScript object directly embedded&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-labels.html&quot;&gt;Label Extension support in a STAC Item&lt;/a&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./geozarr-eopf.html&quot;&gt;EOPF GeoZarr visualization&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./geozarr-datacube.html&quot;&gt;GeoZarr datacubes from STAC&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./geozarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
-                >6</a>
+                >3</a>
             </span>
             <span class="badge-group">
               <a
-                href="./index.html?q=signedurl" class="badge badge-info">signedurl</a
+                href="./index.html?q=eopf" class="badge badge-info">eopf</a
               ><a
                 class="badge badge-info tag-modal-toggle"
                 data-bs-toggle="modal"
                 data-bs-target="#tag-example-list"
-                data-title="signedurl"
+                data-title="eopf"
                 data-content="&lt;ul class=&quot;list-group&quot;&gt;
-                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./geozarr-eopf.html&quot;&gt;EOPF GeoZarr visualization&lt;/a&gt;
                   &lt;/ul&gt;"
                 tabindex="0"
                 >1</a>
@@ -181,6 +175,34 @@
           </div>
           <div id="map" class="map"></div>
 
+<div class="row mt-2">
+  <div class="col-auto">
+    <div class="input-group">
+      <label class="input-group-text" for="url-select">Min / Max values for visualization (0-1)</label>
+      <div class="form-control">
+        <input type="range" id="min" name="min" min="0" max="1" value="0" step="0.1" />
+        <input type="range" id="max" name="max" min="0" max="1" value="0.5" step="0.1" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-2">
+  <div class="col-auto">
+    <div class="input-group">
+      <label class="input-group-text" for="url-select">URL</label>
+      <select class="form-select" id="url-select">
+        <option value="https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2C_MSIL2A_20260414T114351_N0512_R123_T30VVK_20260414T164110" selected>Sentinel-2 L2A (Highlands)</option>
+        <option value="https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2C_MSIL2A_20260120T084301_N0511_R064_T36UXA_20260120T122910">Sentinel-2 L2A (Krasnokuts'k)</option>
+        <option value="https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2B_MSIL2A_20260120T125339_N0511_R138_T27VWL_20260120T131151">Sentinel-2 L2A (Hvolsvöllur)</option>
+        <option value="custom">Custom...</option>
+      </select>
+      <input type="text" class="form-control" id="custom-url" placeholder="Enter Zarr URL" style="display: none; width: 300px;">
+      <button class="btn btn-outline-secondary" id="load-url" type="button">Load</button>
+    </div>
+  </div>
+</div>
+
         </div>
         <form method="POST" id="codepen-form" target="_blank" action="https://codesandbox.io/api/v1/sandboxes/define">
           <input id="codesandbox-params" type="hidden" name="parameters">
@@ -189,8 +211,8 @@
 
       <div class="row-fluid">
         <div class="span12">
-          <p id="shortdesc">Rendering a STAC Item from Planetary Computer.</p>
-          <div id="docs"><p>This example uses the STAC layer to render an item from Planetary Computer. Planetary Computer requres that asset URLs are signed with a token.  The example uses the <code>getSourceOptions</code> callback to sign the asset URL.</p>
+          <p id="shortdesc">Rendering a STAC Item with Web-Optimized GeoZarr assets that follow the EOPF style.</p>
+          <div id="docs"><p>Visualize EOPF GeoZarr assets from SpatioTemporal Asset Catalog (STAC) Items.</p>
 </div>
         </div>
       </div>
@@ -204,37 +226,8 @@ import {register} from &#x27;ol/proj/proj4.js&#x27;;
 import OSM from &#x27;ol/source/OSM.js&#x27;;
 import proj4 from &#x27;proj4&#x27;;
 import STAC from &#x27;ol-stac&#x27;;
-import SourceType from &#x27;ol-stac/source/type.js&#x27;;
 
 register(proj4); // required to support source reprojection
-
-/**
- * Get a Shared Access Signature Token to authorize asset requests.
- * See https://planetarycomputer.microsoft.com/docs/concepts/sas/
- * @param {string} href The unsigned URL.
- * @return {Promise&lt;string&gt;} A promise for the signed URL.
- */
-async function sign(href) {
-  const params &#x3D; new URLSearchParams({href});
-  const response &#x3D; await fetch(
-    &#x60;https://planetarycomputer.microsoft.com/api/sas/v1/sign?${params}&#x60;,
-  );
-  const body &#x3D; await response.json();
-  return body.href;
-}
-
-const layer &#x3D; new STAC({
-  url: &#x27;https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a/items/S2B_MSIL2A_20220909T185929_R013_T10TES_20220910T222807&#x27;,
-  assets: [&#x27;visual&#x27;],
-  async getSourceOptions(type, options) {
-    if (type &#x3D;&#x3D;&#x3D; SourceType.GeoTIFF) {
-      for (const source of options.sources) {
-        source.url &#x3D; await sign(source.url);
-      }
-    }
-    return options;
-  },
-});
 
 const background &#x3D; new TileLayer({
   source: new OSM(),
@@ -242,16 +235,96 @@ const background &#x3D; new TileLayer({
 
 const map &#x3D; new Map({
   target: &#x27;map&#x27;,
-  layers: [background, layer],
+  layers: [background],
   view: new View({
     center: [0, 0],
     zoom: 0,
   }),
 });
 
-layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
-  const view &#x3D; map.getView();
-  view.fit(layer.getExtent());
+const select &#x3D; document.getElementById(&#x27;url-select&#x27;);
+const input &#x3D; document.getElementById(&#x27;custom-url&#x27;);
+const button &#x3D; document.getElementById(&#x27;load-url&#x27;);
+const min &#x3D; document.getElementById(&#x27;min&#x27;);
+const max &#x3D; document.getElementById(&#x27;max&#x27;);
+
+let layer;
+updateLayer();
+
+function getUrl() {
+  return select.value &#x3D;&#x3D;&#x3D; &#x27;custom&#x27; ? input.value : select.value;
+}
+
+function getStyle() {
+  return {
+    color: [
+      &#x27;color&#x27;,
+      [
+        &#x27;interpolate&#x27;,
+        [&#x27;linear&#x27;],
+        [&#x27;band&#x27;, 1],
+        parseFloat(min.value),
+        0,
+        parseFloat(max.value),
+        255,
+      ],
+      [
+        &#x27;interpolate&#x27;,
+        [&#x27;linear&#x27;],
+        [&#x27;band&#x27;, 2],
+        parseFloat(min.value),
+        0,
+        parseFloat(max.value),
+        255,
+      ],
+      [
+        &#x27;interpolate&#x27;,
+        [&#x27;linear&#x27;],
+        [&#x27;band&#x27;, 3],
+        parseFloat(min.value),
+        0,
+        parseFloat(max.value),
+        255,
+      ],
+    ],
+  };
+}
+
+function updateLayer() {
+  if (layer) {
+    map.removeLayer(layer);
+  }
+  layer &#x3D; new STAC({
+    url: getUrl(),
+    style: getStyle(),
+  });
+  layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
+    const view &#x3D; map.getView();
+    view.fit(layer.getExtent());
+  });
+  layer.on(&#x27;error&#x27;, (event) &#x3D;&gt; {
+    alert(&#x27;An unexpected error occurred: &#x27; + event.error.message);
+  });
+  map.addLayer(layer);
+  return layer;
+}
+
+button.addEventListener(&#x27;click&#x27;, updateLayer);
+
+select.addEventListener(&#x27;change&#x27;, () &#x3D;&gt; {
+  if (select.value &#x3D;&#x3D;&#x3D; &#x27;custom&#x27;) {
+    input.style.display &#x3D; &#x27;&#x27;;
+    input.focus();
+  } else {
+    input.style.display &#x3D; &#x27;none&#x27;;
+  }
+});
+
+min.addEventListener(&#x27;change&#x27;, () &#x3D;&gt; {
+  layer.setStyle(getStyle());
+});
+max.addEventListener(&#x27;change&#x27;, () &#x3D;&gt; {
+  layer.setStyle(getStyle());
 });
 </code></pre>
       </div>
@@ -262,7 +335,7 @@ layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
 &lt;html lang="en"&gt;
   &lt;head&gt;
     &lt;meta charset="UTF-8"&gt;
-    &lt;title&gt;Planetary Computer&lt;/title&gt;
+    &lt;title&gt;EOPF GeoZarr visualization&lt;/title&gt;
     &lt;link rel="stylesheet" href="node_modules/ol/ol.css"&gt;
     &lt;style&gt;
       .map {
@@ -274,6 +347,34 @@ layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
   &lt;body&gt;
     &lt;div id&#x3D;&quot;map&quot; class&#x3D;&quot;map&quot;&gt;&lt;/div&gt;
 
+    &lt;div class&#x3D;&quot;row mt-2&quot;&gt;
+      &lt;div class&#x3D;&quot;col-auto&quot;&gt;
+        &lt;div class&#x3D;&quot;input-group&quot;&gt;
+          &lt;label class&#x3D;&quot;input-group-text&quot; for&#x3D;&quot;url-select&quot;&gt;Min / Max values for visualization (0-1)&lt;/label&gt;
+          &lt;div class&#x3D;&quot;form-control&quot;&gt;
+            &lt;input type&#x3D;&quot;range&quot; id&#x3D;&quot;min&quot; name&#x3D;&quot;min&quot; min&#x3D;&quot;0&quot; max&#x3D;&quot;1&quot; value&#x3D;&quot;0&quot; step&#x3D;&quot;0.1&quot; /&gt;
+            &lt;input type&#x3D;&quot;range&quot; id&#x3D;&quot;max&quot; name&#x3D;&quot;max&quot; min&#x3D;&quot;0&quot; max&#x3D;&quot;1&quot; value&#x3D;&quot;0.5&quot; step&#x3D;&quot;0.1&quot; /&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class&#x3D;&quot;row mt-2&quot;&gt;
+      &lt;div class&#x3D;&quot;col-auto&quot;&gt;
+        &lt;div class&#x3D;&quot;input-group&quot;&gt;
+          &lt;label class&#x3D;&quot;input-group-text&quot; for&#x3D;&quot;url-select&quot;&gt;URL&lt;/label&gt;
+          &lt;select class&#x3D;&quot;form-select&quot; id&#x3D;&quot;url-select&quot;&gt;
+            &lt;option value&#x3D;&quot;https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2C_MSIL2A_20260414T114351_N0512_R123_T30VVK_20260414T164110&quot; selected&gt;Sentinel-2 L2A (Highlands)&lt;/option&gt;
+            &lt;option value&#x3D;&quot;https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2C_MSIL2A_20260120T084301_N0511_R064_T36UXA_20260120T122910&quot;&gt;Sentinel-2 L2A (Krasnokuts&#x27;k)&lt;/option&gt;
+            &lt;option value&#x3D;&quot;https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2B_MSIL2A_20260120T125339_N0511_R138_T27VWL_20260120T131151&quot;&gt;Sentinel-2 L2A (Hvolsvöllur)&lt;/option&gt;
+            &lt;option value&#x3D;&quot;custom&quot;&gt;Custom...&lt;/option&gt;
+          &lt;/select&gt;
+          &lt;input type&#x3D;&quot;text&quot; class&#x3D;&quot;form-control&quot; id&#x3D;&quot;custom-url&quot; placeholder&#x3D;&quot;Enter Zarr URL&quot; style&#x3D;&quot;display: none; width: 300px;&quot;&gt;
+          &lt;button class&#x3D;&quot;btn btn-outline-secondary&quot; id&#x3D;&quot;load-url&quot; type&#x3D;&quot;button&quot;&gt;Load&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
     &lt;script type="module" src="main.js"&gt;&lt;/script&gt;
   &lt;/body&gt;
 &lt;/html&gt;</code></pre>
@@ -282,7 +383,7 @@ layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
       <div class="row-fluid">
         <h5 class="source-heading">package.json</h5>
         <pre><code id="example-pkg-source" class="language-json">{
-  &quot;name&quot;: &quot;planetary-computer&quot;,
+  &quot;name&quot;: &quot;geozarr-eopf&quot;,
   &quot;dependencies&quot;: {
     &quot;ol-stac&quot;: &quot;1.5.1&quot;,
     &quot;proj4&quot;: &quot;^2.16.1&quot;
@@ -300,7 +401,7 @@ layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="common.js"></script>
-    <script src="planetary-computer.js"></script>
+    <script src="geozarr-eopf.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-core.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/autoloader/prism-autoloader.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/toolbar/prism-toolbar.min.js"></script>

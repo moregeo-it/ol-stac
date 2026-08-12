@@ -72,12 +72,52 @@ export function getBoundsStyle(originalStyle?: Style | undefined, layerGroup?: i
 /**
  * Parse the GeoZarr source options from an asset.
  *
+ * If the asset (or its containing Item/Collection) describes the store
+ * through the datacube extension (`cube:variables` and `cube:dimensions`),
+ * the store is treated as an n-dimensional datacube: the data variable and a
+ * selector for its non-spatial dimensions are derived from the metadata.
+ * Otherwise, each band is expected to be a separate array in the store,
+ * addressed by the band names from the STAC `bands` field.
+ *
  * @param {Asset} asset The asset to read the information from.
  * @param {Array<number|string>} selectedBands The bands to show. One-based index of the band, or the name of the band.
  * @return {Object} The GeoZarr source options
  * @api
  */
 export function getGeoZarrSourceOptionsFromAsset(asset: any, selectedBands: Array<number | string>): any;
+/**
+ * Returns the render (from the render extension's `renders` field) that
+ * applies to the given asset: the first render that lists the asset's key
+ * in its `assets` field, or the first render without an `assets` field.
+ *
+ * @param {Asset} asset The asset to find the render for.
+ * @return {Object|null} The render object, or `null`.
+ * @api
+ */
+export function getRenderForAsset(asset: any): any | null;
+/**
+ * Creates a WebGLTileLayer style for a GeoZarr layer from the render
+ * extension (`renders`): `rescale` provides the value range(s) to stretch
+ * and `colormap` provides the coloring for single-band data.
+ *
+ * The `colormap` follows the (rio-tiler) conventions referenced by the
+ * render extension and is fully self-contained (`colormap_name` is not
+ * supported, as the available names are not standardized):
+ * - an object mapping values to colors. With `rescale`, the values are the
+ *   0-255 indices that the data is rescaled to (continuous data, where
+ *   values without an entry use the closest lower entry); without
+ *   `rescale`, the values are the raw data values (categorical data,
+ *   matched exactly).
+ * - an array of intervals `[[[min, max], color], ...]`, applied to the raw
+ *   data values.
+ * Colors are `[r, g, b]` or `[r, g, b, a]` arrays (alpha in 0-255).
+ *
+ * @param {Asset} asset The asset to read the render information from.
+ * @param {Object} sourceOptions The GeoZarr source options (to determine the number of rendered bands).
+ * @return {Object|null} A WebGLTileLayer style, or `null` if the metadata provides none.
+ * @api
+ */
+export function getGeoZarrStyleFromAsset(asset: any, sourceOptions: any): any | null;
 /**
  * Get a URL from a web-map-link that is specific enough, i.e.
  * replaces any occurances of {s} if possible, otherwise returns null.
@@ -150,6 +190,37 @@ export const defaultBoundsStyle: Style;
  * @api
  */
 export const defaultCollectionStyle: Style;
+/**
+ * Information for rendering a datacube asset.
+ */
+export type DatacubeRenderingInfo = {
+    /**
+     * The name of the data variable to render.
+     */
+    variable: string;
+    /**
+     * The
+     * bands dimension of the variable with its ordered values, if any.
+     */
+    bandDimension: {
+        name: string;
+        values: Array<string>;
+    } | null;
+    /**
+     * All
+     * other non-spatial dimensions of the variable with the index to show by
+     * default (the most recent value for temporal dimensions, otherwise 0).
+     */
+    extraDimensions: Array<{
+        name: string;
+        defaultIndex: number;
+    }>;
+    /**
+     * The extent of the spatial dimensions
+     * (in their reference system), if declared.
+     */
+    extent: Array<number> | null;
+};
 export type ColorLike = import('ol/colorlike.js').ColorLike;
 export type Collection<T> = import("ol/Collection.js").default<any>;
 export type Feature = import('ol/Feature.js').default;

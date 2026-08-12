@@ -22,13 +22,13 @@ import { PMTilesRasterSource, PMTilesVectorSource } from 'ol-pmtiles';
 import * as pmtiles from 'pmtiles';
 import create, { Asset } from 'stac-js';
 import { fixGeoJson, toGeoJSON, unionBoundingBox } from 'stac-js/src/geo.js';
-import { geojsonMediaType, geotiffMediaTypes, wozMediaTypes, } from 'stac-js/src/mediatypes.js';
+import { geojsonMediaType, geotiffMediaTypes, zarrMediaTypes, } from 'stac-js/src/mediatypes.js';
 import { isObject } from 'stac-js/src/utils.js';
 import ErrorEvent from '../events/ErrorEvent.js';
 import { createImageLoadFunction, createTileLoadFunction } from '../http.js';
 import { getProjection } from '../proj.js';
 import SourceType from '../source/type.js';
-import { LABEL_EXTENSION, defaultBoundsStyle, defaultCollectionStyle, getBoundsStyle, getClassificationStyle, getGeoTiffSourceInfoFromAsset, getGeoZarrSourceOptionsFromAsset, getSpecificWebMapUrl, isScalar, toContinuousBBox, toOlExtent, } from '../util.js';
+import { LABEL_EXTENSION, defaultBoundsStyle, defaultCollectionStyle, getBoundsStyle, getClassificationStyle, getGeoTiffSourceInfoFromAsset, getGeoZarrSourceOptionsFromAsset, getGeoZarrStyleFromAsset, getSpecificWebMapUrl, isScalar, toContinuousBBox, toOlExtent, } from '../util.js';
 import LayerType from './type.js';
 /**
  * @typedef {import("ol/extent.js").Extent} Extent
@@ -1092,6 +1092,10 @@ class STACLayer extends LayerGroup {
         }
         let options = getGeoZarrSourceOptionsFromAsset(asset, this.bands_);
         options.url = this.getRequestUrlFor_(options.url, asset);
+        const projection = await getProjection(asset);
+        if (projection) {
+            options.projection = projection;
+        }
         const headers = this.getRequestHeadersFor_(options.url, asset);
         if (headers) {
             options.storeOptions = { headers };
@@ -1101,7 +1105,7 @@ class STACLayer extends LayerGroup {
             options = await this.getSourceOptions_(SourceType.GeoZarr, options, asset);
         }
         try {
-            const GeoZarr = (await import('ol/source/GeoZarr.js')).default;
+            const GeoZarr = (await import('../source/GeoZarr.js')).default;
             const source = new GeoZarr(options);
             await new Promise((resolve, reject) => {
                 source.on('change', () => {
@@ -1119,6 +1123,13 @@ class STACLayer extends LayerGroup {
             let layerOptions = { source };
             if (this.style_) {
                 layerOptions.style = this.style_;
+            }
+            else {
+                // Derive a style from the render extension, if available
+                const style = getGeoZarrStyleFromAsset(asset, options);
+                if (style) {
+                    layerOptions.style = style;
+                }
             }
             layerOptions = await this.updateLayerOptions_(LayerType.WebGLTile, layerOptions, asset);
             const layer = new WebGLTileLayer(layerOptions);
@@ -1175,7 +1186,9 @@ class STACLayer extends LayerGroup {
                 if (ref.isType(geotiffMediaTypes)) {
                     return await this.addGeoTiff_(ref);
                 }
-                if (ref.isType(wozMediaTypes)) {
+                if (ref.isType(zarrMediaTypes)) {
+                    // When the user explicitly selects a Zarr asset, try to render it
+                    // even if it is not declared as web-optimized (multiscales profile)
                     return await this.addGeoZarr_(ref);
                 }
                 if (ref.canBrowserDisplayImage()) {

@@ -79,6 +79,7 @@
             <li data-name="band"><a href="module-ol_util.html#~Band">Band</a>
             <li data-name="collection"><a href="module-ol_util.html#~Collection">Collection</a>
             <li data-name="colorlike"><a href="module-ol_util.html#~ColorLike">ColorLike</a>
+            <li data-name="datacuberenderinginfo"><a href="module-ol_util.html#~DatacubeRenderingInfo">DatacubeRenderingInfo</a>
             <li data-name="feature"><a href="module-ol_util.html#~Feature">Feature</a>
             <li data-name="stac"><a href="module-ol_util.html#~STAC">STAC</a>
         </ul>
@@ -90,6 +91,8 @@
             <li data-name="getclassificationclasses"><a href="module-ol_util.html#.getClassificationClasses">getClassificationClasses</a>
             <li data-name="getclassificationstyle"><a href="module-ol_util.html#.getClassificationStyle">getClassificationStyle</a>
             <li data-name="getgeozarrsourceoptionsfromasset"><a href="module-ol_util.html#.getGeoZarrSourceOptionsFromAsset">getGeoZarrSourceOptionsFromAsset</a>
+            <li data-name="getgeozarrstylefromasset"><a href="module-ol_util.html#.getGeoZarrStyleFromAsset">getGeoZarrStyleFromAsset</a>
+            <li data-name="getrenderforasset"><a href="module-ol_util.html#.getRenderForAsset">getRenderForAsset</a>
             <li data-name="getstacobjectsforevent"><a href="module-ol_util.html#.getStacObjectsForEvent">getStacObjectsForEvent</a>
             <li data-name="getstyle"><a href="module-ol_util.html#.getStyle">getStyle</a>
             <li data-name="tocontinuousbbox"><a href="module-ol_util.html#.toContinuousBBox">toContinuousBBox</a>
@@ -467,7 +470,7 @@ The adapted style for the footprint.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L446">line 446</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L878">line 878</a>
         </div>
         
     </div>
@@ -631,7 +634,7 @@ The classification classes, or null
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L481">line 481</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L913">line 913</a>
         </div>
         
     </div>
@@ -796,7 +799,7 @@ A WebGL tile layer style object, or null
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L349">line 349</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L356">line 356</a>
         </div>
         
     </div>
@@ -813,6 +816,12 @@ A WebGL tile layer style object, or null
     
     <div class="description">
         <p>Parse the GeoZarr source options from an asset.</p>
+<p>If the asset (or its containing Item/Collection) describes the store
+through the datacube extension (<code>cube:variables</code> and <code>cube:dimensions</code>),
+the store is treated as an n-dimensional datacube: the data variable and a
+selector for its non-spatial dimensions are derived from the metadata.
+Otherwise, each band is expected to be a separate array in the store,
+addressed by the band names from the STAC <code>bands</code> field.</p>
     </div>
     
 
@@ -935,6 +944,324 @@ A WebGL tile layer style object, or null
 
 <h5>Returns:</h5>
 The GeoZarr source options
+<br />
+
+    
+
+    
+</dd>
+
+        
+            
+            
+<dt class="">
+    
+    <div class="nameContainer">
+        <div class="anchor" id=".getGeoZarrStyleFromAsset">
+        </div>
+        <h4 class="name">
+            getGeoZarrStyleFromAsset<span class="signature">(asset, sourceOptions)</span><span class="fa fa-arrow-circle-right"></span><span class="type-signature returnType">{Object | null}</span>
+            
+            
+
+        </h4>
+        
+        <div class="tag-source">
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js">util.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L490">line 490</a>
+        </div>
+        
+    </div>
+    
+    
+</dt>
+<dd class="">
+
+
+    
+    <pre class="prettyprint source"><code>import {getGeoZarrStyleFromAsset} from 'ol/util';</code></pre>
+
+
+    
+    <div class="description">
+        <p>Creates a WebGLTileLayer style for a GeoZarr layer from the render
+extension (<code>renders</code>): <code>rescale</code> provides the value range(s) to stretch
+and <code>colormap</code> provides the coloring for single-band data.</p>
+<p>The <code>colormap</code> follows the (rio-tiler) conventions referenced by the
+render extension and is fully self-contained (<code>colormap_name</code> is not
+supported, as the available names are not standardized):</p>
+<ul>
+<li>an object mapping values to colors. With <code>rescale</code>, the values are the
+0-255 indices that the data is rescaled to (continuous data, where
+values without an entry use the closest lower entry); without
+<code>rescale</code>, the values are the raw data values (categorical data,
+matched exactly).</li>
+<li>an array of intervals <code>[[[min, max], color], ...]</code>, applied to the raw
+data values.
+Colors are <code>[r, g, b]</code> or <code>[r, g, b, a]</code> arrays (alpha in 0-255).</li>
+</ul>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr class="">
+            
+                <td class="name"><code>asset</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-ol_util.html#~Asset">Asset</a></span>
+
+
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>The asset to read the render information from.</p></td>
+        </tr>
+
+	
+
+        <tr class="">
+            
+                <td class="name"><code>sourceOptions</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>The GeoZarr source options (to determine the number of rendered bands).</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+    
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+    
+
+
+<h5>Returns:</h5>
+A WebGLTileLayer style, or <code>null</code> if the metadata provides none.
+<br />
+
+    
+
+    
+</dd>
+
+        
+            
+            
+<dt class="">
+    
+    <div class="nameContainer">
+        <div class="anchor" id=".getRenderForAsset">
+        </div>
+        <h4 class="name">
+            getRenderForAsset<span class="signature">(asset)</span><span class="fa fa-arrow-circle-right"></span><span class="type-signature returnType">{Object | null}</span>
+            
+            
+
+        </h4>
+        
+        <div class="tag-source">
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js">util.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L445">line 445</a>
+        </div>
+        
+    </div>
+    
+    
+</dt>
+<dd class="">
+
+
+    
+    <pre class="prettyprint source"><code>import {getRenderForAsset} from 'ol/util';</code></pre>
+
+
+    
+    <div class="description">
+        <p>Returns the render (from the render extension's <code>renders</code> field) that
+applies to the given asset: the first render that lists the asset's key
+in its <code>assets</code> field, or the first render without an <code>assets</code> field.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr class="">
+            
+                <td class="name"><code>asset</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-ol_util.html#~Asset">Asset</a></span>
+
+
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>The asset to find the render for.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+    
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+    
+
+
+<h5>Returns:</h5>
+The render object, or <code>null</code>.
 <br />
 
     
@@ -1851,6 +2178,182 @@ The extent in the target projection.
 
     
 <dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+</dd>
+
+            
+                
+<dt class="">
+    <div class="nameContainer">
+        <div class="anchor" id="~DatacubeRenderingInfo">
+        </div>
+        <h4 class="name">
+            DatacubeRenderingInfo<span class="type-signature type object">{Object}</span> 
+            
+
+        </h4>
+    </div>
+    
+</dt>
+<dd class="">
+    
+    <div class="description">
+        <p>Information for rendering a datacube asset.</p>
+    </div>
+    
+
+    
+<dl class="details">
+    
+        
+        <h5 class="subsection-title">Properties:</h5>
+        
+        <dl>
+
+<table class="props">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>variable</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The name of the data variable to render.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>bandDimension</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">null</span>
+
+
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The
+bands dimension of the variable with its ordered values, if any.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>extraDimensions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;{name: string, defaultIndex: number}></span>
+
+
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>All
+other non-spatial dimensions of the variable with the index to show by
+default (the most recent value for temporal dimensions, otherwise 0).</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>extent</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;number></span>
+|
+
+<span class="param-type">null</span>
+
+
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The extent of the spatial dimensions
+(in their reference system), if declared.</p>
+                
+            </td>
+        </tr>
+
+	
+	</tbody>
+</table></dl>
+        
     
         
     

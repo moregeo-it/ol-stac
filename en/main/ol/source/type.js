@@ -6,8 +6,7 @@
  * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_source_GeoTIFF-GeoTIFFSource.html}
  */
 /**
- * @typedef {import("ol/source/GeoZarr.js").Options} GeoZarrOptions
- * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_source_GeoZarr-GeoZarrSource.html}
+ * @typedef {import("./GeoZarr.js").Options} GeoZarrOptions
  */
 /**
  * @typedef {import("ol/source/ImageStatic.js").Options} ImageStaticOptions
