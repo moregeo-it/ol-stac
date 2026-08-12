@@ -24,7 +24,23 @@ export default [
           'ignore': ['@octokit/rest', '@typescript-eslint/parser'],
         },
       ],
-      'no-unused-vars': ['error', {'caughtErrorsIgnorePattern': '^_$' }],
+      'no-unused-vars': ['error', {'caughtErrorsIgnorePattern': '^_$'}],
+    },
+  },
+  {
+    // Vendored from OpenLayers; kept line-identical to the upstream file
+    // (only the import paths differ), so the import order must not change.
+    name: 'vendored-geozarr-config',
+    files: ['src/ol/source/GeoZarr.js'],
+    rules: {
+      'import/order': 'off',
+      // OpenLayers keeps the (currently unused) loader `options` parameter.
+      // An inline eslint-disable is not an option, as it would be flagged
+      // (and removed by --fix) as unused in the OpenLayers repository.
+      'no-unused-vars': [
+        'error',
+        {'argsIgnorePattern': '^options$', 'caughtErrorsIgnorePattern': '^_$'},
+      ],
     },
   },
   {

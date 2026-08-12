@@ -341,6 +341,13 @@ export function getBoundsStyle(originalStyle, layerGroup) {
 /**
  * Parse the GeoZarr source options from an asset.
  *
+ * If the asset (or its containing Item/Collection) describes the store
+ * through the datacube extension (`cube:variables` and `cube:dimensions`),
+ * the store is treated as an n-dimensional datacube: the data variable and a
+ * selector for its non-spatial dimensions are derived from the metadata.
+ * Otherwise, each band is expected to be a separate array in the store,
+ * addressed by the band names from the STAC `bands` field.
+ *
  * @param {Asset} asset The asset to read the information from.
  * @param {Array<number|string>} selectedBands The bands to show. One-based index of the band, or the name of the band.
  * @return {Object} The GeoZarr source options
@@ -350,6 +357,45 @@ export function getGeoZarrSourceOptionsFromAsset(asset, selectedBands) {
   const options = {
     url: asset.getAbsoluteUrl(),
   };
+
+  const cube = getDatacubeRenderingInfo(asset);
+  if (cube) {
+    options.variable = cube.variable;
+    options.selector = {};
+    if (cube.bandDimension) {
+      const indices = getDatacubeBandIndices(
+        cube.bandDimension.values,
+        selectedBands,
+        asset,
+      );
+      if (indices.length > 0) {
+        options.selector[cube.bandDimension.name] = indices;
+      }
+    }
+    for (const dimension of cube.extraDimensions) {
+      options.selector[dimension.name] = dimension.defaultIndex;
+    }
+    if (cube.extent) {
+      options.extent = cube.extent;
+    }
+    const projBBox = asset.getMetadata('proj:bbox');
+    if (Array.isArray(projBBox) && projBBox.length >= 4) {
+      // proj:bbox may be 3D (xmin, ymin, zmin, xmax, ymax, zmax)
+      options.extent =
+        projBBox.length >= 6
+          ? [projBBox[0], projBBox[1], projBBox[3], projBBox[4]]
+          : projBBox.slice(0, 4);
+    }
+    const projTransform = asset.getMetadata('proj:transform');
+    if (
+      Array.isArray(projTransform) &&
+      projTransform.length >= 6 &&
+      projTransform[4] > 0
+    ) {
+      options.flipY = true;
+    }
+    return options;
+  }
 
   if (selectedBands.length > 0) {
     options.bands = selectedBands
@@ -362,21 +408,22 @@ export function getGeoZarrSourceOptionsFromAsset(asset, selectedBands) {
         if (isObject(bandObj) && typeof bandObj.name === 'string') {
           return bandObj.name;
         }
-        // eslint-disable-next-line no-console
-        console.error(
-          `Band with index ${band} not found in asset ${asset.getKey()}`,
-        );
         return null;
       })
       .filter(Boolean);
   } else {
-    const bands = asset.findVisualBands();
-    if (bands) {
-      options.bands = [
-        bands.red.name,
-        bands.green.name,
-        bands.blue.name,
-      ].filter(Boolean);
+    const render = getRenderForAsset(asset);
+    if (render && Array.isArray(render.bands) && render.bands.length > 0) {
+      options.bands = render.bands;
+    } else {
+      const bands = asset.findVisualBands();
+      if (bands) {
+        options.bands = [
+          bands.red.name,
+          bands.green.name,
+          bands.blue.name,
+        ].filter(Boolean);
+      }
     }
   }
   if (!Array.isArray(options.bands)) {
@@ -384,6 +431,391 @@ export function getGeoZarrSourceOptionsFromAsset(asset, selectedBands) {
   }
 
   return options;
+}
+
+/**
+ * Returns the render (from the render extension's `renders` field) that
+ * applies to the given asset: the first render that lists the asset's key
+ * in its `assets` field, or the first render without an `assets` field.
+ *
+ * @param {Asset} asset The asset to find the render for.
+ * @return {Object|null} The render object, or `null`.
+ * @api
+ */
+export function getRenderForAsset(asset) {
+  const renders = asset.getMetadata('renders');
+  if (!isObject(renders)) {
+    return null;
+  }
+  const key = asset.getKey();
+  let fallback = null;
+  for (const name in renders) {
+    const render = renders[name];
+    if (!isObject(render)) {
+      continue;
+    }
+    if (Array.isArray(render.assets)) {
+      if (render.assets.includes(key)) {
+        return render;
+      }
+    } else if (!fallback) {
+      fallback = render;
+    }
+  }
+  return fallback;
+}
+
+/**
+ * Creates a WebGLTileLayer style for a GeoZarr layer from the render
+ * extension (`renders`): `rescale` provides the value range(s) to stretch
+ * and `colormap` provides the coloring for single-band data.
+ *
+ * The `colormap` follows the (rio-tiler) conventions referenced by the
+ * render extension and is fully self-contained (`colormap_name` is not
+ * supported, as the available names are not standardized):
+ * - an object mapping values to colors. With `rescale`, the values are the
+ *   0-255 indices that the data is rescaled to (continuous data, where
+ *   values without an entry use the closest lower entry); without
+ *   `rescale`, the values are the raw data values (categorical data,
+ *   matched exactly).
+ * - an array of intervals `[[[min, max], color], ...]`, applied to the raw
+ *   data values.
+ * Colors are `[r, g, b]` or `[r, g, b, a]` arrays (alpha in 0-255).
+ *
+ * @param {Asset} asset The asset to read the render information from.
+ * @param {Object} sourceOptions The GeoZarr source options (to determine the number of rendered bands).
+ * @return {Object|null} A WebGLTileLayer style, or `null` if the metadata provides none.
+ * @api
+ */
+export function getGeoZarrStyleFromAsset(asset, sourceOptions) {
+  const render = getRenderForAsset(asset);
+  if (!render) {
+    return null;
+  }
+
+  let bandCount = 1;
+  if (sourceOptions.variable) {
+    if (isObject(sourceOptions.selector)) {
+      for (const key in sourceOptions.selector) {
+        if (Array.isArray(sourceOptions.selector[key])) {
+          bandCount = sourceOptions.selector[key].length;
+        }
+      }
+    }
+  } else if (Array.isArray(sourceOptions.bands)) {
+    bandCount = sourceOptions.bands.length || 1;
+  }
+
+  const rescale = Array.isArray(render.rescale) ? render.rescale : [];
+  const rangeFor = (index) => {
+    if (Array.isArray(rescale[index]) && rescale[index].length >= 2) {
+      return rescale[index];
+    }
+    if (Array.isArray(rescale[0]) && rescale[0].length >= 2) {
+      return rescale[0];
+    }
+    return null;
+  };
+
+  const stretch = (band, range) => [
+    'interpolate',
+    ['linear'],
+    ['band', band],
+    range[0],
+    0,
+    range[1],
+    255,
+  ];
+
+  if (bandCount >= 3) {
+    if (!rangeFor(0)) {
+      return null;
+    }
+    return {
+      color: [
+        'color',
+        stretch(1, rangeFor(0)),
+        stretch(2, rangeFor(1)),
+        stretch(3, rangeFor(2)),
+      ],
+    };
+  }
+
+  // Single band
+  const colormap = render['colormap'];
+  if (Array.isArray(colormap)) {
+    // Interval form: [[[min, max], color], ...], applied to raw values
+    const cases = [];
+    for (const entry of colormap) {
+      if (!Array.isArray(entry) || !Array.isArray(entry[0])) {
+        continue;
+      }
+      cases.push(['between', ['band', 1], entry[0][0], entry[0][1]]);
+      cases.push(toColor(entry[1]));
+    }
+    if (cases.length > 0) {
+      return {color: ['case', ...cases, [0, 0, 0, 0]]};
+    }
+  } else if (isObject(colormap)) {
+    const range = rangeFor(0);
+    if (range) {
+      // Continuous data: the values are the 0-255 indices that the data is
+      // rescaled to; values without an entry use the closest lower entry.
+      const keys = Object.keys(colormap)
+        .map(Number)
+        .filter((key) => Number.isInteger(key) && key >= 0 && key < 256)
+        .sort((a, b) => a - b);
+      if (keys.length > 0) {
+        const palette = new Array(256);
+        /** @type {Array<number>|string} */
+        let color = [0, 0, 0, 0]; // transparent below the first entry
+        let keyIndex = 0;
+        for (let i = 0; i < 256; i++) {
+          while (keyIndex < keys.length && keys[keyIndex] <= i) {
+            color = toColor(colormap[keys[keyIndex]]);
+            keyIndex++;
+          }
+          palette[i] = color;
+        }
+        const index = [
+          'interpolate',
+          ['linear'],
+          ['band', 1],
+          range[0],
+          0,
+          range[1],
+          255,
+        ];
+        return {color: ['palette', index, palette]};
+      }
+    } else {
+      // Categorical data: the values are the raw data values (which may be
+      // negative or sparse)
+      const cases = [];
+      for (const key of Object.keys(colormap)) {
+        const value = Number(key);
+        if (!isNaN(value)) {
+          cases.push(['==', ['band', 1], value], toColor(colormap[key]));
+        }
+      }
+      if (cases.length > 0) {
+        return {color: ['case', ...cases, [0, 0, 0, 0]]};
+      }
+    }
+  }
+  if (rangeFor(0)) {
+    const gray = stretch(1, rangeFor(0));
+    return {color: ['color', gray, gray, gray]};
+  }
+  return null;
+}
+
+/**
+ * Normalizes a color from render extension metadata (alpha in 0-255, as in
+ * rio-tiler) to an OpenLayers color (alpha in 0-1).
+ * @param {Array<number>|string} color The color to normalize.
+ * @return {Array<number>|string} The OpenLayers color.
+ */
+function toColor(color) {
+  if (Array.isArray(color) && color.length === 4) {
+    return [color[0], color[1], color[2], color[3] / 255];
+  }
+  return color;
+}
+
+/**
+ * Information for rendering a datacube asset.
+ *
+ * @typedef {Object} DatacubeRenderingInfo
+ * @property {string} variable The name of the data variable to render.
+ * @property {{name: string, values: Array<string>}|null} bandDimension The
+ * bands dimension of the variable with its ordered values, if any.
+ * @property {Array<{name: string, defaultIndex: number}>} extraDimensions All
+ * other non-spatial dimensions of the variable with the index to show by
+ * default (the most recent value for temporal dimensions, otherwise 0).
+ * @property {Array<number>|null} extent The extent of the spatial dimensions
+ * (in their reference system), if declared.
+ */
+
+/**
+ * Reads the datacube extension metadata (`cube:variables` and
+ * `cube:dimensions`, inherited from the containing Item/Collection if not
+ * present on the asset) and determines the data variable to render and how
+ * its non-spatial dimensions should be sliced.
+ *
+ * @param {Asset} asset The asset to read the information from.
+ * @return {DatacubeRenderingInfo|null} The rendering info, or `null` if the
+ * asset is not described as a datacube.
+ */
+function getDatacubeRenderingInfo(asset) {
+  const dimensions = asset.getMetadata('cube:dimensions');
+  const variables = asset.getMetadata('cube:variables');
+  if (!isObject(dimensions) || !isObject(variables)) {
+    return null;
+  }
+
+  const spatialDims = [];
+  const spatialExtents = {x: null, y: null};
+  let bandDimension = null;
+  for (const name in dimensions) {
+    const dimension = dimensions[name];
+    if (!isObject(dimension)) {
+      continue;
+    }
+    if (dimension.type === 'spatial') {
+      spatialDims.push(name);
+      if (
+        (dimension.axis === 'x' || dimension.axis === 'y') &&
+        Array.isArray(dimension.extent) &&
+        dimension.extent.length === 2
+      ) {
+        spatialExtents[dimension.axis] = dimension.extent;
+      }
+    } else if (dimension.type === 'bands') {
+      bandDimension = {
+        name,
+        values: Array.isArray(dimension.values) ? dimension.values : [],
+      };
+    }
+  }
+  if (spatialDims.length < 2) {
+    return null;
+  }
+
+  // Find the data variable that covers the spatial dimensions. When the
+  // asset declares STAC `bands`, each band is expected to be its own array
+  // in the store (e.g. EOPF), which the `bands` mode handles instead —
+  // unless a variable packs the bands dimension into a single array.
+  const hasStacBands = asset.getBands().length > 0;
+  let variable = null;
+  let variableDims = null;
+  for (const name in variables) {
+    const v = variables[name];
+    if (!isObject(v) || !Array.isArray(v.dimensions)) {
+      continue;
+    }
+    if (typeof v.type === 'string' && v.type !== 'data') {
+      continue;
+    }
+    if (!spatialDims.every((dim) => v.dimensions.includes(dim))) {
+      continue;
+    }
+    if (
+      hasStacBands &&
+      !(bandDimension && v.dimensions.includes(bandDimension.name))
+    ) {
+      // With STAC bands declared, each band is expected to be its own array
+      // (addressed through the `bands` mode), unless the variable packs the
+      // declared bands dimension
+      continue;
+    }
+    // Prefer a variable that includes the bands dimension
+    if (bandDimension && v.dimensions.includes(bandDimension.name)) {
+      variable = name;
+      variableDims = v.dimensions;
+      break;
+    }
+    if (!variable) {
+      variable = name;
+      variableDims = v.dimensions;
+    }
+  }
+  if (!variable) {
+    return null;
+  }
+
+  if (bandDimension && !variableDims.includes(bandDimension.name)) {
+    bandDimension = null;
+  }
+
+  const extraDimensions = [];
+  for (const name of variableDims) {
+    if (
+      spatialDims.includes(name) ||
+      (bandDimension && name === bandDimension.name)
+    ) {
+      continue;
+    }
+    const dimension = dimensions[name];
+    let defaultIndex = 0;
+    if (
+      isObject(dimension) &&
+      dimension.type === 'temporal' &&
+      Array.isArray(dimension.values) &&
+      dimension.values.length > 0
+    ) {
+      // Show the most recent time step by default. Timestamps are compared
+      // as instants, as string comparison breaks with mixed UTC offsets.
+      defaultIndex = dimension.values.reduce(
+        (latest, value, index, values) =>
+          Date.parse(value) > Date.parse(values[latest]) ? index : latest,
+        0,
+      );
+    }
+    extraDimensions.push({name, defaultIndex});
+  }
+
+  let extent = null;
+  if (spatialExtents.x && spatialExtents.y) {
+    extent = [
+      spatialExtents.x[0],
+      spatialExtents.y[0],
+      spatialExtents.x[1],
+      spatialExtents.y[1],
+    ];
+  }
+
+  return {variable, bandDimension, extraDimensions, extent};
+}
+
+/**
+ * Determines the (0-based) indices into the bands dimension of a datacube
+ * to render.
+ *
+ * @param {Array<string>} values The ordered values of the bands dimension.
+ * @param {Array<number|string>} selectedBands The bands to show. One-based index of the band, or the name of the band.
+ * @param {Asset} asset The asset, for finding the RGB bands.
+ * @return {Array<number>} The band indices.
+ */
+function getDatacubeBandIndices(values, selectedBands, asset) {
+  const isValid = (index) =>
+    index >= 0 && (values.length === 0 || index < values.length);
+  if (selectedBands.length > 0) {
+    return selectedBands
+      .map((band) => {
+        const index =
+          typeof band === 'number' ? band - 1 : values.indexOf(band);
+        if (!isValid(index)) {
+          // eslint-disable-next-line no-console
+          console.error(`Band ${band} not found in asset ${asset.getKey()}`);
+          return -1;
+        }
+        return index;
+      })
+      .filter((index) => index >= 0);
+  }
+  // Prefer the bands declared by the render extension
+  const render = getRenderForAsset(asset);
+  if (render && Array.isArray(render.bands) && render.bands.length > 0) {
+    const indices = render.bands
+      .map((name) => values.indexOf(name))
+      .filter((index) => index >= 0);
+    if (indices.length > 0) {
+      return indices;
+    }
+  }
+  // Otherwise, prefer the RGB bands if they can be identified
+  const visual = asset.findVisualBands();
+  if (visual) {
+    const indices = [visual.red.name, visual.green.name, visual.blue.name]
+      .map((name) => values.indexOf(name))
+      .filter((index) => index >= 0);
+    if (indices.length === 3) {
+      return indices;
+    }
+  }
+  // Default to the first (up to) three bands, shown as RGB
+  return values.slice(0, 3).map((_, index) => index);
 }
 
 /**

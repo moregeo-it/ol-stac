@@ -1,0 +1,34 @@
+---
+layout: example.html
+title: GeoZarr datacubes from STAC
+shortdesc: Rendering n-dimensional GeoZarr datacubes described through the STAC datacube extension
+docs: >
+  Visualize n-dimensional Zarr datacubes (v2 and v3, single- and multiscale) that are described
+  through the STAC datacube extension. The datasets below are real-world stores from different
+  producers: band selection, time/dimension slices, custom projections and south-up data are
+  all derived from the STAC and Zarr metadata. Datasets without their own STAC metadata are
+  described with a small inline STAC Collection.
+tags: "stac, geozarr, zarr, datacube, multiscale"
+---
+<div id="map" class="map"></div>
+
+<div class="row mt-2">
+  <div class="col-auto">
+    <div class="input-group">
+      <label class="input-group-text" for="preset-select">Dataset</label>
+      <select class="form-select" id="preset-select">
+        <option value="ftw-rgb" selected>FTW Field Predictions 2025 (RGB, multiscale v3)</option>
+        <option value="ftw-field-2024">FTW Field Probability 2024 (single band, multiscale v3)</option>
+        <option value="usgs-dem">USGS CONUS DEM 10m (multiscale v3)</option>
+        <option value="hurricane">Hurricane Florence — ERA5 surface pressure (v3)</option>
+        <option value="antarctic-era5">Antarctic ERA5 wind speed (v3, polar stereographic)</option>
+        <option value="polar">Thwaites Glacier ice velocity (v2, EPSG:3031)</option>
+        <option value="fgco2">Delta FG CO2 (v2, south-up)</option>
+        <option value="carbonplan-4d">Monthly average temperature (v2 pyramid, EPSG:3857)</option>
+        <option value="cmip6-tasmax">CMIP6 max. temperature (v2 pyramid)</option>
+        <option value="tos-con">Ocean surface temperature (v3 pyramid, EPSG:3857)</option>
+      </select>
+      <button class="btn btn-outline-secondary" id="load-preset" type="button">Load</button>
+    </div>
+  </div>
+</div>
