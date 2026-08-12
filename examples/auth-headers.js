@@ -9,8 +9,9 @@ import STAC from '../src/ol/layer/STAC.js';
 register(proj4);
 
 // There is no public STAC endpoint with header-based authentication, so this
-// example can't render anything as-is. Replace the host, URL and token below
-// with a protected STAC endpoint of yours to see it in action.
+// example shows the code only and doesn't render a map. To see it in action,
+// replace the host, URL and token below with a protected STAC endpoint of
+// yours and add a `<div id="map" class="map"></div>` to the page.
 
 // The hosts that may receive the credentials.
 const trustedHosts = ['example.com'];
