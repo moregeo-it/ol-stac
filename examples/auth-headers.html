@@ -1,6 +1,6 @@
 ---
 layout: example.html
-title: Authentication with HTTP headers
+title: HTTP header authentication
 shortdesc: Rendering a STAC Item that requires HTTP header authentication.
 docs: >
   This example uses the `getRequestHeaders` option to attach an `Authorization`
@@ -10,6 +10,8 @@ docs: >
   hosts. To add credentials via query parameters (e.g. API keys) use the
   `getRequestUrl` option instead. For more complex per-source URL signing,
   see the Planetary Computer example (`getSourceOptions`).
+  **This example shows code only:** there is no public STAC endpoint with
+  header-based authentication, so no map is shown. Replace the host, URL and
+  token in the code below with a protected STAC endpoint of yours.
 tags: "stac, stac item, authentication, authorization, http headers, token"
 ---
-<div id="map" class="map"></div>
