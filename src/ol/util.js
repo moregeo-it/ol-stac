@@ -380,7 +380,11 @@ export function getGeoZarrSourceOptionsFromAsset(asset, selectedBands) {
     }
     const projBBox = asset.getMetadata('proj:bbox');
     if (Array.isArray(projBBox) && projBBox.length >= 4) {
-      options.extent = projBBox;
+      // proj:bbox may be 3D (xmin, ymin, zmin, xmax, ymax, zmax)
+      options.extent =
+        projBBox.length >= 6
+          ? [projBBox[0], projBBox[1], projBBox[3], projBBox[4]]
+          : projBBox.slice(0, 4);
     }
     const projTransform = asset.getMetadata('proj:transform');
     if (
@@ -470,9 +474,10 @@ export function getRenderForAsset(asset) {
  * render extension and is fully self-contained (`colormap_name` is not
  * supported, as the available names are not standardized):
  * - an object mapping values to colors. With `rescale`, the values are the
- *   0-255 indices that the data is rescaled to (continuous data); without
- *   `rescale`, the values are the raw data values (categorical data).
- *   Values without an entry use the closest lower entry.
+ *   0-255 indices that the data is rescaled to (continuous data, where
+ *   values without an entry use the closest lower entry); without
+ *   `rescale`, the values are the raw data values (categorical data,
+ *   matched exactly).
  * - an array of intervals `[[[min, max], color], ...]`, applied to the raw
  *   data values.
  * Colors are `[r, g, b]` or `[r, g, b, a]` arrays (alpha in 0-255).
@@ -552,31 +557,50 @@ export function getGeoZarrStyleFromAsset(asset, sourceOptions) {
       return {color: ['case', ...cases, [0, 0, 0, 0]]};
     }
   } else if (isObject(colormap)) {
-    // Value-to-color form: build a palette that is indexed either by the
-    // 0-255 rescaled value (continuous data) or by the raw value
-    // (categorical data, no rescale given).
-    const keys = Object.keys(colormap)
-      .map(Number)
-      .filter((key) => Number.isInteger(key) && key >= 0)
-      .sort((a, b) => a - b);
     const range = rangeFor(0);
-    const size = range ? 256 : Math.min(keys[keys.length - 1] + 1, 4096);
-    if (keys.length > 0 && size > 0) {
-      const palette = new Array(size);
-      /** @type {Array<number>|string} */
-      let color = [0, 0, 0, 0]; // transparent below the first entry
-      let keyIndex = 0;
-      for (let i = 0; i < size; i++) {
-        while (keyIndex < keys.length && keys[keyIndex] <= i) {
-          color = toColor(colormap[keys[keyIndex]]);
-          keyIndex++;
+    if (range) {
+      // Continuous data: the values are the 0-255 indices that the data is
+      // rescaled to; values without an entry use the closest lower entry.
+      const keys = Object.keys(colormap)
+        .map(Number)
+        .filter((key) => Number.isInteger(key) && key >= 0 && key < 256)
+        .sort((a, b) => a - b);
+      if (keys.length > 0) {
+        const palette = new Array(256);
+        /** @type {Array<number>|string} */
+        let color = [0, 0, 0, 0]; // transparent below the first entry
+        let keyIndex = 0;
+        for (let i = 0; i < 256; i++) {
+          while (keyIndex < keys.length && keys[keyIndex] <= i) {
+            color = toColor(colormap[keys[keyIndex]]);
+            keyIndex++;
+          }
+          palette[i] = color;
         }
-        palette[i] = color;
+        const index = [
+          'interpolate',
+          ['linear'],
+          ['band', 1],
+          range[0],
+          0,
+          range[1],
+          255,
+        ];
+        return {color: ['palette', index, palette]};
       }
-      const index = range
-        ? ['interpolate', ['linear'], ['band', 1], range[0], 0, range[1], 255]
-        : ['band', 1];
-      return {color: ['palette', index, palette]};
+    } else {
+      // Categorical data: the values are the raw data values (which may be
+      // negative or sparse)
+      const cases = [];
+      for (const key of Object.keys(colormap)) {
+        const value = Number(key);
+        if (!isNaN(value)) {
+          cases.push(['==', ['band', 1], value], toColor(colormap[key]));
+        }
+      }
+      if (cases.length > 0) {
+        return {color: ['case', ...cases, [0, 0, 0, 0]]};
+      }
     }
   }
   if (rangeFor(0)) {
@@ -720,11 +744,11 @@ function getDatacubeRenderingInfo(asset) {
       Array.isArray(dimension.values) &&
       dimension.values.length > 0
     ) {
-      // Show the most recent time step by default.
-      // ISO 8601 timestamps sort chronologically as strings.
+      // Show the most recent time step by default. Timestamps are compared
+      // as instants, as string comparison breaks with mixed UTC offsets.
       defaultIndex = dimension.values.reduce(
         (latest, value, index, values) =>
-          String(value) > String(values[latest]) ? index : latest,
+          Date.parse(value) > Date.parse(values[latest]) ? index : latest,
         0,
       );
     }

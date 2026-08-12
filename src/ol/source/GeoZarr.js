@@ -6,12 +6,12 @@ import {FetchStore, get, open, slice, withRangeCoalescing} from 'zarrita';
 import {warn} from 'ol/console.js';
 import {getCenter} from 'ol/extent.js';
 import {get as getProjection, toUserCoordinate, toUserExtent} from 'ol/proj.js';
-import {fromProjectionDefinition} from 'ol/proj/proj4.js';
+import {fromProjectionDefinition} from '../shim/proj4.js';
 import {toSize} from 'ol/size.js';
 import WMTSTileGrid from 'ol/tilegrid/WMTS.js';
 import {getUid} from 'ol/util.js';
 import DataTileSource from 'ol/source/DataTile.js';
-import {parseTileMatrixSet} from 'ol/source/ogcTileUtil.js';
+import {parseTileMatrixSet} from '../shim/ogcTileUtil.js';
 
 const REQUIRED_ZARR_CONVENTIONS = [
   'd35379db-88df-4056-af3a-620245f8e347', // multiscales
@@ -1405,6 +1405,18 @@ export default class GeoZarr extends DataTileSource {
         } else {
           indices.push(
             await this.resolveCoordinateLabel_(dimName, v, finestPath),
+          );
+        }
+      }
+      for (const index of indices) {
+        if (
+          !Number.isInteger(index) ||
+          index < 0 ||
+          index >= meta.shape[axis]
+        ) {
+          throw new Error(
+            `GeoZarr: invalid index ${index} for dimension "${dimName}" ` +
+              `(size ${meta.shape[axis]}).`,
           );
         }
       }
