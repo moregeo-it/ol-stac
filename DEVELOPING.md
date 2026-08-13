@@ -9,7 +9,7 @@ You will start by [forking](https://github.com/moregeo-it/ol-stac/fork) the OL S
 The minimum requirements are:
 
 * Git
-* [Node.js](https://nodejs.org/) (version 16 and above)
+* [Node.js](https://nodejs.org/) (version 20.19 and above)
 
 The executables `git` and `node` should be in your `PATH`.
 
@@ -58,10 +58,10 @@ To run the tests once:
 npm test
 ```
 
-To run the tests continuously during development:
+To run the tests continuously during development, start Vitest in watch mode:
 
 ```shell
-npm run karma
+npx vitest --config test/browser/vitest.config.mjs
 ```
 
 
