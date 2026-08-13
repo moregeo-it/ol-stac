@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - All Zarr assets are considered for the default visualization, not only WOZ.
   Non-WOZ assets are only shown automatically when the STAC metadata declares what to render.
+- Slightly adapted default visualization for raster assets
+- Partial support for the render extension
 - GeoTIFF and Zarr assets whose coarsest resolution level exceeds the new `maxDisplayPixels` option
   (default: 16 megapixels) are skipped for the default visualization, as displaying them requires
   excessive tile loads. When such an asset is selected explicitly, an error is reported through

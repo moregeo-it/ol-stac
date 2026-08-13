@@ -39,9 +39,9 @@ import {
   defaultCollectionStyle,
   exceedsDisplayLimit,
   getBoundsStyle,
-  getClassificationStyle,
   getDisplayPixels,
   getGeoTiffSourceInfoFromAsset,
+  getGeoTiffStyleFromAsset,
   getGeoZarrSourceOptionsFromAsset,
   getGeoZarrStyleFromAsset,
   getSpecificWebMapUrl,
@@ -992,8 +992,8 @@ class STACLayer extends LayerGroup {
       options.projection = projection;
     }
 
-    const classificationStyle = getClassificationStyle(asset, sourceInfo.bands);
-    if (classificationStyle) {
+    const metadataStyle = getGeoTiffStyleFromAsset(asset, sourceInfo);
+    if (metadataStyle) {
       options.normalize = false;
     }
 
@@ -1034,8 +1034,8 @@ class STACLayer extends LayerGroup {
       let layerOptions = {source};
       if (this.style_) {
         layerOptions.style = this.style_;
-      } else if (classificationStyle) {
-        layerOptions.style = classificationStyle;
+      } else if (metadataStyle) {
+        layerOptions.style = metadataStyle;
       }
       layerOptions = await this.updateLayerOptions_(
         LayerType.WebGLTile,
@@ -1386,7 +1386,6 @@ class STACLayer extends LayerGroup {
       if (this.style_) {
         layerOptions.style = this.style_;
       } else {
-        // Derive a style from the render extension, if available
         const style = getGeoZarrStyleFromAsset(asset, options);
         if (style) {
           layerOptions.style = style;
