@@ -123,6 +123,10 @@ import LayerType from './type.js';
  * it lets this library choose a web map link to show, but only if no other data is shown.
  * To disable the functionality set this to `false`.
  * @property {import("ol/layer/WebGLTile.js").Style|null} [style=null] The style for GeoTIFF and GeoZarr layers (WebGLTileLayer style).
+ * @property {Array<import("ol/color.js").Color|string>|null} [defaultColormap=null] The colors of the colormap
+ * that is used for continuous single-band data when neither the STAC metadata nor the `style` option define
+ * a coloring. The colors are evenly distributed over the value range of the data (e.g. from the STAC
+ * `statistics`). If not set, the data is stretched to grayscale.
  * @property {Style} [boundsStyle] The style for the overall bounds / footprint.
  * @property {Style} [collectionStyle] The style for individual children in a list of STAC Items or Collections.
  * @property {null|string} [crossOrigin] For thumbnails: The `crossOrigin` attribute for loaded images / tiles.
@@ -290,6 +294,11 @@ class STACLayer extends LayerGroup {
          * @private
          */
         this.style_ = options.style || null;
+        /**
+         * @type {Array<import("ol/color.js").Color|string>|null}
+         * @private
+         */
+        this.defaultColormap_ = options.defaultColormap || null;
         /**
          * @type {Style}
          * @private
@@ -859,7 +868,7 @@ class STACLayer extends LayerGroup {
         if (projection) {
             options.projection = projection;
         }
-        const metadataStyle = getGeoTiffStyleFromAsset(asset, sourceInfo);
+        const metadataStyle = getGeoTiffStyleFromAsset(asset, sourceInfo, this.defaultColormap_);
         if (metadataStyle) {
             options.normalize = false;
         }
@@ -1195,7 +1204,7 @@ class STACLayer extends LayerGroup {
                 layerOptions.style = this.style_;
             }
             else {
-                const style = getGeoZarrStyleFromAsset(asset, options);
+                const style = getGeoZarrStyleFromAsset(asset, options, this.defaultColormap_);
                 if (style) {
                     layerOptions.style = style;
                 }
@@ -1378,6 +1387,26 @@ class STACLayer extends LayerGroup {
                 layer.setStyle(this.style_);
             }
         }
+    }
+    /**
+     * Set the colors of the colormap that is used for continuous single-band
+     * data when neither the STAC metadata nor the `style` option define a
+     * coloring. The colors are evenly distributed over the value range of the
+     * data (e.g. from the STAC `statistics`). Set to `null` to stretch the
+     * data to grayscale instead.
+     * @param {Array<import("ol/color.js").Color|string>|null} colormap The colors of the colormap.
+     * @return {Promise} Resolves once the layers are updated.
+     * @api
+     */
+    async setDefaultColormap(colormap) {
+        if (colormap === this.defaultColormap_) {
+            return;
+        }
+        this.defaultColormap_ = colormap || null;
+        // The layers are recreated, as switching between a styled and an
+        // unstyled visualization also changes how the sources are configured
+        // (e.g. the normalization of GeoTIFF sources)
+        await this.updateLayers();
     }
     /**
      * Update the assets to be rendered.

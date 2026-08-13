@@ -126,15 +126,18 @@ export function getRenderForAsset(asset: any): any | null;
  * `statistics` of the rendered bands (or the asset), the classification
  * extension (`classification:classes`) provides the coloring for
  * single-band categorical data (not applied to floating point data, which
- * is assumed to be continuous), and continuous data is stretched to
- * grayscale (consistent with single-band COGs).
+ * is assumed to be continuous), and continuous data is colored with the
+ * given default colormap or stretched to grayscale (consistent with
+ * single-band COGs).
  *
  * @param {Asset} asset The asset to read the metadata from.
  * @param {Object} sourceOptions The GeoZarr source options (to determine the rendered bands).
+ * @param {Array<import('ol/color.js').Color|string>|null} [defaultColormap] The colors
+ * of the colormap for continuous single-band data, evenly distributed over the value range.
  * @return {Object|null} A WebGLTileLayer style, or `null` if the metadata provides none.
  * @api
  */
-export function getGeoZarrStyleFromAsset(asset: any, sourceOptions: any): any | null;
+export function getGeoZarrStyleFromAsset(asset: any, sourceOptions: any, defaultColormap?: (string | import("ol/color.js").Color)[] | null | undefined): any | null;
 /**
  * Get a URL from a web-map-link that is specific enough, i.e.
  * replaces any occurances of {s} if possible, otherwise returns null.
@@ -183,7 +186,8 @@ export function getClassificationStyle(asset: any, bands?: number[] | undefined,
  * Without a usable render, the classification extension
  * (`classification:classes`) provides the coloring for single-band
  * categorical data (not applied to floating point data, which is assumed
- * to be continuous).
+ * to be continuous), and continuous single-band data is colored with the
+ * given default colormap (over the value range from the statistics).
  *
  * When no style is returned, the value ranges from
  * {@link getGeoTiffSourceInfoFromAsset} stretch the data (to grayscale for
@@ -194,10 +198,12 @@ export function getClassificationStyle(asset: any, bands?: number[] | undefined,
  * @param {import('stac-js').Asset} asset The STAC asset
  * @param {import('ol/source/GeoTIFF.js').SourceInfo} sourceInfo The source info
  * (for the selected bands).
+ * @param {Array<import('ol/color.js').Color|string>|null} [defaultColormap] The colors
+ * of the colormap for continuous single-band data, evenly distributed over the value range.
  * @return {Object|null} A WebGL tile layer style object, or null
  * @api
  */
-export function getGeoTiffStyleFromAsset(asset: any, sourceInfo: import('ol/source/GeoTIFF.js').SourceInfo): any | null;
+export function getGeoTiffStyleFromAsset(asset: any, sourceInfo: import('ol/source/GeoTIFF.js').SourceInfo, defaultColormap?: (string | import("ol/color.js").Color)[] | null | undefined): any | null;
 /**
  * @typedef {import('ol/colorlike.js').ColorLike} ColorLike
  */

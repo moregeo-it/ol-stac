@@ -1091,6 +1091,37 @@ To disable the functionality set this to <code>false</code>.</p>
 
         <tr>
             
+                <td class="name"><code>defaultColormap</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;(module:ol/color.js~Color|string)></span>
+|
+
+<span class="param-type">null</span>
+
+
+                
+                    <br>(defaults to null)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The colors of the colormap
+that is used for continuous single-band data when neither the STAC metadata nor the <code>style</code> option define
+a coloring. The colors are evenly distributed over the value range of the data (e.g. from the STAC
+<code>statistics</code>). If not set, the data is stretched to grayscale.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
                 <td class="name"><code>boundsStyle</code></td>
             
 

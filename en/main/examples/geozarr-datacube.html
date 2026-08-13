@@ -184,6 +184,17 @@
       <button class="btn btn-outline-secondary" id="load-preset" type="button">Load</button>
     </div>
   </div>
+  <div class="col-auto">
+    <div class="input-group">
+      <label class="input-group-text" for="colormap-select">Colormap</label>
+      <select class="form-select" id="colormap-select">
+        <option value="grayscale" selected>Grayscale</option>
+        <option value="viridis">Viridis</option>
+        <option value="inferno">Inferno</option>
+        <option value="rdbu">Red-Blue</option>
+      </select>
+    </div>
+  </div>
 </div>
 
         </div>
@@ -482,6 +493,16 @@ const presets &#x3D; {
 
 const select &#x3D; document.getElementById(&#x27;preset-select&#x27;);
 const button &#x3D; document.getElementById(&#x27;load-preset&#x27;);
+const colormapSelect &#x3D; document.getElementById(&#x27;colormap-select&#x27;);
+
+// Colormaps for continuous single-band data (grayscale if not set),
+// evenly distributed over the value range from the STAC statistics
+const colormaps &#x3D; {
+  &#x27;grayscale&#x27;: null,
+  &#x27;viridis&#x27;: [&#x27;#440154&#x27;, &#x27;#3b528b&#x27;, &#x27;#21918c&#x27;, &#x27;#5ec962&#x27;, &#x27;#fde725&#x27;],
+  &#x27;inferno&#x27;: [&#x27;#000004&#x27;, &#x27;#57106e&#x27;, &#x27;#bc3754&#x27;, &#x27;#f98e09&#x27;, &#x27;#fcffa4&#x27;],
+  &#x27;rdbu&#x27;: [&#x27;#b2182b&#x27;, &#x27;#ef8a62&#x27;, &#x27;#f7f7f7&#x27;, &#x27;#67a9cf&#x27;, &#x27;#2166ac&#x27;],
+};
 
 let layer;
 updateLayer();
@@ -497,6 +518,7 @@ function updateLayer() {
     assets: preset.assets,
     bands: preset.bands,
     maxDisplayPixels: preset.maxDisplayPixels,
+    defaultColormap: colormaps[colormapSelect.value],
     getSourceOptions: (type, options) &#x3D;&gt; {
       if (preset.sourceOptions) {
         const {selector, ...rest} &#x3D; preset.sourceOptions;
@@ -519,6 +541,9 @@ function updateLayer() {
 
 button.addEventListener(&#x27;click&#x27;, updateLayer);
 select.addEventListener(&#x27;change&#x27;, updateLayer);
+colormapSelect.addEventListener(&#x27;change&#x27;, () &#x3D;&gt; {
+  layer.setDefaultColormap(colormaps[colormapSelect.value]);
+});
 </code></pre>
       </div>
 
@@ -557,6 +582,17 @@ select.addEventListener(&#x27;change&#x27;, updateLayer);
             &lt;option value&#x3D;&quot;tos-con&quot;&gt;Ocean surface temperature (v3 pyramid, EPSG:3857)&lt;/option&gt;
           &lt;/select&gt;
           &lt;button class&#x3D;&quot;btn btn-outline-secondary&quot; id&#x3D;&quot;load-preset&quot; type&#x3D;&quot;button&quot;&gt;Load&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class&#x3D;&quot;col-auto&quot;&gt;
+        &lt;div class&#x3D;&quot;input-group&quot;&gt;
+          &lt;label class&#x3D;&quot;input-group-text&quot; for&#x3D;&quot;colormap-select&quot;&gt;Colormap&lt;/label&gt;
+          &lt;select class&#x3D;&quot;form-select&quot; id&#x3D;&quot;colormap-select&quot;&gt;
+            &lt;option value&#x3D;&quot;grayscale&quot; selected&gt;Grayscale&lt;/option&gt;
+            &lt;option value&#x3D;&quot;viridis&quot;&gt;Viridis&lt;/option&gt;
+            &lt;option value&#x3D;&quot;inferno&quot;&gt;Inferno&lt;/option&gt;
+            &lt;option value&#x3D;&quot;rdbu&quot;&gt;Red-Blue&lt;/option&gt;
+          &lt;/select&gt;
         &lt;/div&gt;
       &lt;/div&gt;
     &lt;/div&gt;

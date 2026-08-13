@@ -109,6 +109,13 @@ export type Options = {
      */
     style?: import("ol/layer/WebGLTile.js").Style | null | undefined;
     /**
+     * The colors of the colormap
+     * that is used for continuous single-band data when neither the STAC metadata nor the `style` option define
+     * a coloring. The colors are evenly distributed over the value range of the data (e.g. from the STAC
+     * `statistics`). If not set, the data is stretched to grayscale.
+     */
+    defaultColormap?: (string | import("ol/color.js").Color)[] | null | undefined;
+    /**
      * The style for the overall bounds / footprint.
      */
     boundsStyle?: import("ol/style/Style.js").default | undefined;
@@ -308,6 +315,10 @@ export type Options = {
  * it lets this library choose a web map link to show, but only if no other data is shown.
  * To disable the functionality set this to `false`.
  * @property {import("ol/layer/WebGLTile.js").Style|null} [style=null] The style for GeoTIFF and GeoZarr layers (WebGLTileLayer style).
+ * @property {Array<import("ol/color.js").Color|string>|null} [defaultColormap=null] The colors of the colormap
+ * that is used for continuous single-band data when neither the STAC metadata nor the `style` option define
+ * a coloring. The colors are evenly distributed over the value range of the data (e.g. from the STAC
+ * `statistics`). If not set, the data is stretched to grayscale.
  * @property {Style} [boundsStyle] The style for the overall bounds / footprint.
  * @property {Style} [collectionStyle] The style for individual children in a list of STAC Items or Collections.
  * @property {null|string} [crossOrigin] For thumbnails: The `crossOrigin` attribute for loaded images / tiles.
@@ -463,6 +474,11 @@ declare class STACLayer extends LayerGroup {
      * @private
      */
     private style_;
+    /**
+     * @type {Array<import("ol/color.js").Color|string>|null}
+     * @private
+     */
+    private defaultColormap_;
     /**
      * @type {Style}
      * @private
@@ -714,6 +730,17 @@ declare class STACLayer extends LayerGroup {
      * @api
      */
     setStyle(style: import("ol/layer/WebGLTile.js").Style | null): void;
+    /**
+     * Set the colors of the colormap that is used for continuous single-band
+     * data when neither the STAC metadata nor the `style` option define a
+     * coloring. The colors are evenly distributed over the value range of the
+     * data (e.g. from the STAC `statistics`). Set to `null` to stretch the
+     * data to grayscale instead.
+     * @param {Array<import("ol/color.js").Color|string>|null} colormap The colors of the colormap.
+     * @return {Promise} Resolves once the layers are updated.
+     * @api
+     */
+    setDefaultColormap(colormap: Array<import("ol/color.js").Color | string> | null): Promise<any>;
     /**
      * Update the assets to be rendered.
      * @param {Array<string|Asset>|null} assets The assets to show.

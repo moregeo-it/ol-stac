@@ -80,6 +80,7 @@
             <li data-name="isempty"><a href="module-ol_layer_STAC-STACLayer.html#isEmpty">isEmpty</a>
             <li data-name="setassets"><a href="module-ol_layer_STAC-STACLayer.html#setAssets">setAssets</a>
             <li data-name="setchildren"><a href="module-ol_layer_STAC-STACLayer.html#setChildren">setChildren</a>
+            <li data-name="setdefaultcolormap"><a href="module-ol_layer_STAC-STACLayer.html#setDefaultColormap">setDefaultColormap</a>
             <li data-name="setstyle"><a href="module-ol_layer_STAC-STACLayer.html#setStyle">setStyle</a>
             <li data-name="updatelayers"><a href="module-ol_layer_STAC-STACLayer.html#updateLayers">updateLayers</a>
         </ul>
@@ -149,7 +150,7 @@ The layers created by this LayerGroup all have a 'stac' value that can be retrie
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L208">line 208</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L212">line 212</a>
         </div>
         
     </div>
@@ -639,6 +640,39 @@ To disable the functionality set this to <code>false</code>.</p></td>
             <td  class="description last">
                 
                 <p>The style for GeoTIFF and GeoZarr layers (WebGLTileLayer style).</p></td>
+        </tr>
+
+	
+
+        <tr class="">
+            
+                <td class="name"><code>defaultColormap</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;(module:ol/color.js~Color|string)></span>
+|
+
+<span class="param-type">null</span>
+
+
+                
+                    (defaults to null)
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>The colors of the colormap
+that is used for continuous single-band data when neither the STAC metadata nor the <code>style</code> option define
+a coloring. The colors are evenly distributed over the value range of the data (e.g. from the STAC
+<code>statistics</code>). If not set, the data is stretched to grayscale.</p></td>
         </tr>
 
 	
@@ -1251,7 +1285,7 @@ For tiled sources the tile URL template is rewritten, not the individual tile UR
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L721">line 721</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L731">line 731</a>
         </div>
         
     </div>
@@ -1394,7 +1428,7 @@ Resolves with a list of layers or undefined when complete.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1694">line 1694</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1733">line 1733</a>
         </div>
         
     </div>
@@ -1484,7 +1518,7 @@ The STAC assets.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1756">line 1756</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1795">line 1795</a>
         </div>
         
     </div>
@@ -1574,7 +1608,7 @@ Attributions for this layer.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L490">line 490</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L500">line 500</a>
         </div>
         
     </div>
@@ -1664,7 +1698,7 @@ The vector layer for the bounds
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1684">line 1684</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1723">line 1723</a>
         </div>
         
     </div>
@@ -1754,7 +1788,7 @@ The STAC child entities.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1674">line 1674</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1713">line 1713</a>
         </div>
         
     </div>
@@ -1844,7 +1878,7 @@ The STAC object.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1707">line 1707</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1746">line 1746</a>
         </div>
         
     </div>
@@ -1937,7 +1971,7 @@ The layer extent.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1544">line 1544</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1562">line 1562</a>
         </div>
         
     </div>
@@ -2027,7 +2061,7 @@ An array of links.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1531">line 1531</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1549">line 1549</a>
         </div>
         
     </div>
@@ -2117,7 +2151,7 @@ An array of links.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L502">line 502</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L512">line 512</a>
         </div>
         
     </div>
@@ -2208,7 +2242,7 @@ Is the layer empty?
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1604">line 1604</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1643">line 1643</a>
         </div>
         
     </div>
@@ -2373,7 +2407,7 @@ Resolves when all assets are rendered.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1639">line 1639</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1678">line 1678</a>
         </div>
         
     </div>
@@ -2965,6 +2999,39 @@ To disable the functionality set this to <code>false</code>.</p></td>
 
         <tr class="">
             
+                <td class="name"><code>options.defaultColormap</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;(module:ol/color.js~Color|string)></span>
+|
+
+<span class="param-type">null</span>
+
+
+                
+                    (defaults to null)
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>The colors of the colormap
+that is used for continuous single-band data when neither the STAC metadata nor the <code>style</code> option define
+a coloring. The colors are evenly distributed over the value range of the data (e.g. from the STAC
+<code>statistics</code>). If not set, the data is stretched to grayscale.</p></td>
+        </tr>
+
+	
+
+        <tr class="">
+            
                 <td class="name"><code>options.boundsStyle</code></td>
             
 
@@ -3521,6 +3588,148 @@ Resolves when all items are rendered.
 <dt class="">
     
     <div class="nameContainer">
+        <div class="anchor" id="setDefaultColormap">
+        </div>
+        <h4 class="name">
+            setDefaultColormap<span class="signature">(colormap)</span><span class="fa fa-arrow-circle-right"></span><span class="type-signature returnType">{Promise}</span>
+            
+            
+
+        </h4>
+        
+        <div class="tag-source">
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1625">line 1625</a>
+        </div>
+        
+    </div>
+    
+    
+</dt>
+<dd class="">
+
+
+
+    
+    <div class="description">
+        <p>Set the colors of the colormap that is used for continuous single-band
+data when neither the STAC metadata nor the <code>style</code> option define a
+coloring. The colors are evenly distributed over the value range of the
+data (e.g. from the STAC <code>statistics</code>). Set to <code>null</code> to stretch the
+data to grayscale instead.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr class="">
+            
+                <td class="name"><code>colormap</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;(module:ol/color.js~Color|string)></span>
+|
+
+<span class="param-type">null</span>
+
+
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>The colors of the colormap.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+    
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+    
+
+
+<h5>Returns:</h5>
+Resolves once the layers are updated.
+<br />
+
+    
+
+    
+</dd>
+
+        
+            
+            
+<dt class="">
+    
+    <div class="nameContainer">
         <div class="anchor" id="setStyle">
         </div>
         <h4 class="name">
@@ -3532,7 +3741,7 @@ Resolves when all items are rendered.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1588">line 1588</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1606">line 1606</a>
         </div>
         
     </div>
@@ -3661,7 +3870,7 @@ Resolves when all items are rendered.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1420">line 1420</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1438">line 1438</a>
         </div>
         
     </div>
