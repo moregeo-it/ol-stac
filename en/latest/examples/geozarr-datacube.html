@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title>GeoZarr datacubes from STAC</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/fontawesome.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/solid.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/brands.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/ol/ol.css">
+    <link rel="stylesheet" type="text/css" href="/theme/site.css">
+  </head>
+  <body>
+    <header class="navbar navbar-expand-md navbar-dark mb-3 px-3 py-0 fixed-top" role="navigation">
+      <a class="navbar-brand" href="/">OL STAC</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#olmenu" aria-controls="olmenu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- menu items that get hidden below 768px width -->
+      <nav class="collapse navbar-collapse" id="olmenu">
+        <ul class="nav navbar-nav ms-auto">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="docdropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Docs</a>
+            <div class="dropdown-menu dropdown-menu-end mb-3" aria-labelledby="docdropdown">
+              <a class="dropdown-item" href="/doc/">Docs</a>
+              <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="/doc/quickstart.html"><i class="fa fa-check fa-fw me-2 fa-lg"></i>Quick Start</a>
+                <a class="dropdown-item" href="/doc/faq.html"><i class="fa fa-question fa-fw me-2 fa-lg"></i>FAQ</a>
+                <a class="dropdown-item" href="/doc/tutorials/"><i class="fa fa-book fa-fw me-2 fa-lg"></i>Tutorials</a>
+            </div>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="./"><i class="fa fa-map me-1"></i>Examples</a></li>
+          <li class="nav-item"><a class="nav-link" href="../apidoc/"><i class="fa fa-code me-1"></i>API</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="codedropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Code</a>
+            <div class="dropdown-menu dropdown-menu-end mb-3" aria-labelledby="codedropdown">
+              <a class="dropdown-item" href="https://github.com/moregeo-it/ol-stac"><i class="fab fa-github fa-fw me-2 fa-lg"></i>Repository</a>
+              <a class="dropdown-item" href="/download/"><i class="fa fa-download fa-fw me-2 fa-lg"></i>Download</a>
+            </div>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <div class="container-fluid line-numbers">
+      <div id="latest-check" class="alert alert-warning alert-dismissible" role="alert" style="display:none">
+        <button id="latest-dismiss" type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        This example uses OL STAC v<span>1.6.0</span>. The <a id="latest-link" href="#" class="alert-link">latest</a> is v<span id="latest-version"></span>.
+      </div>
+
+
+      <div class="row-fluid">
+        <a href="#" id="codepen-button" class="btn btn-link float-end">
+          <i class="fab fa-codepen fa-lg"></i> Edit
+        </a>
+        <div class="span12">
+          <h4 id="title">GeoZarr datacubes from STAC</h4>
+          <p class="tags">
+            <span class="badge-group">
+              <a
+                href="./index.html?q=stac" class="badge badge-info">stac</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="stac"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./custom.html&quot;&gt;- Custom STAC provided via URL -&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item.html&quot;&gt;Basic STAC Item visualization&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-classification.html&quot;&gt;Classification layer visualization in a STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-tileserver.html&quot;&gt;COGs rendered by a tile server in a STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-with-items.html&quot;&gt;Collection with child items&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-itemcollection.html&quot;&gt;Displaying multiple Items from a Item Collection&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./geozarr-eopf.html&quot;&gt;EOPF GeoZarr visualization&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-geojson.html&quot;&gt;GeoJSON asset visualization in a STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-antimeridian.html&quot;&gt;Geometries crossing the antimeridian&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./geozarr-datacube.html&quot;&gt;GeoZarr datacubes from STAC&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./auth-headers.html&quot;&gt;HTTP header authentication&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-from-object.html&quot;&gt;JavaScript object directly embedded&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-item-labels.html&quot;&gt;Label Extension support in a STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./geozarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./planetary-computer.html&quot;&gt;Planetary Computer&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-pmtiles-raster.html&quot;&gt;PMTiles (Raster) visualization in a STAC Collection&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-pmtiles-vector.html&quot;&gt;PMTiles (Vector) visualization in a STAC Collection&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./stac-collection-wms.html&quot;&gt;WMS visualization in a STAC Collection&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >18</a>
+            </span>
+            <span class="badge-group">
+              <a
+                href="./index.html?q=geozarr" class="badge badge-info">geozarr</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="geozarr"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./geozarr-eopf.html&quot;&gt;EOPF GeoZarr visualization&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./geozarr-datacube.html&quot;&gt;GeoZarr datacubes from STAC&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./geozarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >3</a>
+            </span>
+            <span class="badge-group">
+              <a
+                href="./index.html?q=zarr" class="badge badge-info">zarr</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="zarr"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./geozarr-eopf.html&quot;&gt;EOPF GeoZarr visualization&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./geozarr-datacube.html&quot;&gt;GeoZarr datacubes from STAC&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./geozarr-ndvi.html&quot;&gt;NDVI from a GeoZarr STAC Item&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >3</a>
+            </span>
+            <span class="badge-group">
+              <a
+                href="./index.html?q=datacube" class="badge badge-info">datacube</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="datacube"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./geozarr-datacube.html&quot;&gt;GeoZarr datacubes from STAC&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >1</a>
+            </span>
+            <span class="badge-group">
+              <a
+                href="./index.html?q=multiscale" class="badge badge-info">multiscale</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="multiscale"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./geozarr-datacube.html&quot;&gt;GeoZarr datacubes from STAC&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >1</a>
+            </span>
+          </p>
+          <div class="modal modal-tag-example" id="tag-example-list" tabindex="-1" role="dialog" aria-labelledby="tag-example-title" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="tag-example-title"></h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="list-group"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="map" class="map"></div>
+
+<div class="row mt-2">
+  <div class="col-auto">
+    <div class="input-group">
+      <label class="input-group-text" for="preset-select">Dataset</label>
+      <select class="form-select" id="preset-select">
+        <option value="ftw-rgb" selected>FTW Field Predictions 2025 (RGB, multiscale v3)</option>
+        <option value="ftw-field-2024">FTW Field Probability 2024 (single band, multiscale v3)</option>
+        <option value="usgs-dem">USGS CONUS DEM 10m (multiscale v3)</option>
+        <option value="hurricane">Hurricane Florence — ERA5 surface pressure (v3)</option>
+        <option value="antarctic-era5">Antarctic ERA5 wind speed (v3, polar stereographic)</option>
+        <option value="polar">Thwaites Glacier ice velocity (v2, EPSG:3031)</option>
+        <option value="fgco2">Delta FG CO2 (v2, south-up)</option>
+        <option value="carbonplan-4d">Monthly average temperature (v2 pyramid, EPSG:3857)</option>
+        <option value="cmip6-tasmax">CMIP6 max. temperature (v2 pyramid)</option>
+        <option value="tos-con">Ocean surface temperature (v3 pyramid, EPSG:3857)</option>
+      </select>
+      <button class="btn btn-outline-secondary" id="load-preset" type="button">Load</button>
+    </div>
+  </div>
+  <div class="col-auto">
+    <div class="input-group">
+      <label class="input-group-text" for="colormap-select">Colormap</label>
+      <select class="form-select" id="colormap-select">
+        <option value="grayscale" selected>Grayscale</option>
+        <option value="viridis">Viridis</option>
+        <option value="inferno">Inferno</option>
+        <option value="rdbu">Red-Blue</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+        </div>
+        <form method="POST" id="codepen-form" target="_blank" action="https://codesandbox.io/api/v1/sandboxes/define">
+          <input id="codesandbox-params" type="hidden" name="parameters">
+        </form>
+      </div>
+
+      <div class="row-fluid">
+        <div class="span12">
+          <p id="shortdesc">Rendering n-dimensional GeoZarr datacubes described through the STAC datacube extension</p>
+          <div id="docs"><p>Visualize n-dimensional Zarr datacubes (v2 and v3, single- and multiscale) that are described through the STAC datacube extension. The datasets below are real-world stores from different producers: band selection, time/dimension slices, custom projections and south-up data are all derived from the STAC and Zarr metadata. Datasets without their own STAC metadata are described with a small inline STAC Collection.</p>
+</div>
+        </div>
+      </div>
+
+      <div class="row-fluid">
+        <h5 class="source-heading">main.js</h5>
+        <pre><code id="example-js-source" class="language-js">import Map from &#x27;ol/Map.js&#x27;;
+import View from &#x27;ol/View.js&#x27;;
+import TileLayer from &#x27;ol/layer/WebGLTile.js&#x27;;
+import {register} from &#x27;ol/proj/proj4.js&#x27;;
+import OSM from &#x27;ol/source/OSM.js&#x27;;
+import proj4 from &#x27;proj4&#x27;;
+import STAC from &#x27;ol-stac&#x27;;
+
+register(proj4); // required to support source reprojection
+
+const background &#x3D; new TileLayer({
+  source: new OSM(),
+});
+
+const map &#x3D; new Map({
+  target: &#x27;map&#x27;,
+  layers: [background],
+  view: new View({
+    center: [0, 0],
+    zoom: 0,
+  }),
+});
+
+/**
+ * Creates a minimal STAC Collection for a Zarr store that has no STAC
+ * metadata of its own. Everything needed for visualization is expressed
+ * through general STAC metadata:
+ * - the datacube extension describes the store&#x27;s dimensions and variables,
+ * - the &#x60;statistics&#x60; of the asset provide the value range for the default
+ *   (grayscale) visualization,
+ * - the projection extension provides the extent and orientation for stores
+ *   without their own spatial metadata.
+ * A specific visualization (e.g. a colormap) could additionally be declared
+ * through the render extension.
+ * @param {string} id The collection id.
+ * @param {string} description The collection description.
+ * @param {Array&lt;number&gt;} bbox The bounding box in WGS84.
+ * @param {Object} asset The &#x60;data&#x60; asset, including &#x60;href&#x60;, &#x60;type&#x60; and any
+ * asset-level fields such as &#x60;statistics&#x60;, &#x60;proj:bbox&#x60; or &#x60;proj:transform&#x60;.
+ * @param {{dimensions: Object, variables: Object}} cube The datacube extension fields.
+ * @return {Object} The STAC Collection.
+ */
+function zarrCollection(id, description, bbox, asset, cube) {
+  return {
+    type: &#x27;Collection&#x27;,
+    stac_version: &#x27;1.1.0&#x27;,
+    stac_extensions: [
+      &#x27;https://stac-extensions.github.io/datacube/v2.2.0/schema.json&#x27;,
+      &#x27;https://stac-extensions.github.io/projection/v2.0.0/schema.json&#x27;,
+    ],
+    id,
+    description,
+    license: &#x27;other&#x27;,
+    extent: {
+      spatial: {bbox: [bbox]},
+      temporal: {interval: [[null, null]]},
+    },
+    &#x27;cube:dimensions&#x27;: cube.dimensions,
+    &#x27;cube:variables&#x27;: cube.variables,
+    links: [],
+    assets: {
+      data: {
+        roles: [&#x27;data&#x27;],
+        ...asset,
+      },
+    },
+  };
+}
+
+const FTW_URL &#x3D;
+  &#x27;https://data.source.coop/ftw/global-data/predictions/zarr/collection.json&#x27;;
+const ZARR_V2 &#x3D; &#x27;application/vnd.zarr; version&#x3D;2&#x27;;
+const ZARR_V3 &#x3D; &#x27;application/vnd.zarr; version&#x3D;3&#x27;;
+const ZARR_V3_MULTISCALES &#x3D;
+  &#x27;application/vnd.zarr; version&#x3D;3; profile&#x3D;multiscales&#x27;;
+
+const presets &#x3D; {
+  &#x27;ftw-rgb&#x27;: {
+    url: FTW_URL,
+  },
+  &#x27;ftw-field-2024&#x27;: {
+    url: FTW_URL,
+    bands: [&#x27;field&#x27;],
+    sourceOptions: {selector: {time: 0}}, // 2024 instead of the latest year
+  },
+  &#x27;usgs-dem&#x27;: {
+    data: zarrCollection(
+      &#x27;usgs-conus-dem&#x27;,
+      &#x27;USGS 10m DEM for the conterminous US, as a multiscale Zarr v3 store.&#x27;,
+      [-125.6, 24.8, -67.2, 49.1],
+      {
+        href: &#x27;https://carbonplan-share.s3.us-west-2.amazonaws.com/zarr-layer-examples/USGS-CONUS-DEM-10m.zarr&#x27;,
+        type: ZARR_V3_MULTISCALES,
+        statistics: {minimum: 0, maximum: 3500},
+      },
+      {
+        dimensions: {
+          latitude: {type: &#x27;spatial&#x27;, axis: &#x27;y&#x27;, extent: [24.8, 49.1]},
+          longitude: {type: &#x27;spatial&#x27;, axis: &#x27;x&#x27;, extent: [-125.6, -67.2]},
+        },
+        variables: {
+          DEM: {type: &#x27;data&#x27;, dimensions: [&#x27;latitude&#x27;, &#x27;longitude&#x27;]},
+        },
+      },
+    ),
+  },
+  &#x27;hurricane&#x27;: {
+    data: zarrCollection(
+      &#x27;hurricane-florence-era5&#x27;,
+      &#x27;ERA5 surface pressure during Hurricane Florence (Zarr v3, single resolution).&#x27;,
+      [-95.1, 14.9, -39.9, 45.1],
+      {
+        href: &#x27;https://atlantis-vis-o.s3-ext.jc.rl.ac.uk/hurricanes/era5/florence&#x27;,
+        type: ZARR_V3,
+        statistics: {minimum: 96000, maximum: 103000},
+      },
+      {
+        dimensions: {
+          time: {type: &#x27;temporal&#x27;, extent: [null, null]},
+          latitude: {type: &#x27;spatial&#x27;, axis: &#x27;y&#x27;, extent: [14.9, 45.1]},
+          longitude: {type: &#x27;spatial&#x27;, axis: &#x27;x&#x27;, extent: [-95.1, -39.9]},
+        },
+        variables: {
+          surface_pressure: {
+            type: &#x27;data&#x27;,
+            dimensions: [&#x27;time&#x27;, &#x27;latitude&#x27;, &#x27;longitude&#x27;],
+          },
+        },
+      },
+    ),
+  },
+  &#x27;antarctic-era5&#x27;: {
+    data: zarrCollection(
+      &#x27;antarctic-era5-wind&#x27;,
+      &#x27;ERA5 wind speed over Antarctica (Zarr v3, custom polar stereographic projection).&#x27;,
+      [-180, -85, 180, -60],
+      {
+        href: &#x27;https://carbonplan-share.s3.us-west-2.amazonaws.com/zarr-layer-examples/antarctic_era5.zarr&#x27;,
+        type: ZARR_V3,
+        statistics: {minimum: 0, maximum: 12},
+      },
+      {
+        dimensions: {
+          y: {type: &#x27;spatial&#x27;, axis: &#x27;y&#x27;, extent: [-3316902, 3315371]},
+          x: {type: &#x27;spatial&#x27;, axis: &#x27;x&#x27;, extent: [-3315363, 3316909]},
+        },
+        variables: {
+          wind_speed: {type: &#x27;data&#x27;, dimensions: [&#x27;y&#x27;, &#x27;x&#x27;]},
+        },
+      },
+    ),
+  },
+  &#x27;polar&#x27;: {
+    // This store is a single ~5700x4900 pixel resolution level, which is more
+    // data than the layer loads by default. Select the asset explicitly and
+    // raise the pixel limit to display it anyway.
+    assets: [&#x27;data&#x27;],
+    maxDisplayPixels: Infinity,
+    data: zarrCollection(
+      &#x27;thwaites-ice-velocity&#x27;,
+      &#x27;Antarctic ice velocity subset for Thwaites Glacier (Zarr v2, EPSG:3031).&#x27;,
+      [-130.6, -78.6, -105.9, -71.9],
+      {
+        href: &#x27;https://carbonplan-share.s3.us-west-2.amazonaws.com/zarr-layer-examples/polar-subset.zarr&#x27;,
+        type: ZARR_V2,
+        statistics: {minimum: 0, maximum: 1},
+      },
+      {
+        dimensions: {
+          y: {type: &#x27;spatial&#x27;, axis: &#x27;y&#x27;, extent: [-983450, -491950]},
+          x: {type: &#x27;spatial&#x27;, axis: &#x27;x&#x27;, extent: [-1720950, -1147450]},
+        },
+        variables: {
+          velocity: {type: &#x27;data&#x27;, dimensions: [&#x27;y&#x27;, &#x27;x&#x27;]},
+        },
+      },
+    ),
+  },
+  &#x27;fgco2&#x27;: {
+    data: zarrCollection(
+      &#x27;delta-fg-co2&#x27;,
+      &#x27;OAE efficiency delta FG CO2 (Zarr v2, south-up, no spatial metadata in the store).&#x27;,
+      [-180, -85, 180, 85],
+      {
+        href: &#x27;https://carbonplan-oae-efficiency.s3.us-west-2.amazonaws.com/fgco2-2021-180x360.zarr&#x27;,
+        type: ZARR_V2,
+        // The store has neither spatial metadata nor coordinate arrays, so
+        // the projection extension provides the extent; the positive y scale
+        // in the transform declares the south-up orientation.
+        &#x27;proj:code&#x27;: &#x27;EPSG:4326&#x27;,
+        &#x27;proj:bbox&#x27;: [-180, -90, 180, 90],
+        &#x27;proj:shape&#x27;: [180, 360],
+        &#x27;proj:transform&#x27;: [1, 0, -180, 0, 1, -90],
+        statistics: {minimum: -5, maximum: 5},
+      },
+      {
+        dimensions: {
+          time: {type: &#x27;temporal&#x27;, extent: [null, null]},
+          nlat: {type: &#x27;spatial&#x27;, axis: &#x27;y&#x27;, extent: [-90, 90]},
+          nlon: {type: &#x27;spatial&#x27;, axis: &#x27;x&#x27;, extent: [-180, 180]},
+        },
+        variables: {
+          FG_CO2_2: {type: &#x27;data&#x27;, dimensions: [&#x27;time&#x27;, &#x27;nlat&#x27;, &#x27;nlon&#x27;]},
+        },
+      },
+    ),
+  },
+  &#x27;carbonplan-4d&#x27;: {
+    // Select the temperature slice of the packed bands dimension
+    bands: [&#x27;tavg&#x27;],
+    data: zarrCollection(
+      &#x27;carbonplan-4d&#x27;,
+      &#x27;Monthly average temperature and precipitation (Zarr v2 ndpyramid, EPSG:3857).&#x27;,
+      [-180, -85, 180, 85],
+      {
+        href: &#x27;https://carbonplan-maps.s3.us-west-2.amazonaws.com/v2/demo/4d/tavg-prec-month&#x27;,
+        type: ZARR_V2,
+        statistics: {minimum: -30, maximum: 30},
+      },
+      {
+        dimensions: {
+          band: {type: &#x27;bands&#x27;, values: [&#x27;tavg&#x27;, &#x27;prec&#x27;]},
+          month: {type: &#x27;other&#x27;},
+          y: {type: &#x27;spatial&#x27;, axis: &#x27;y&#x27;, extent: [-20037509, 20037509]},
+          x: {type: &#x27;spatial&#x27;, axis: &#x27;x&#x27;, extent: [-20037509, 20037509]},
+        },
+        variables: {
+          climate: {type: &#x27;data&#x27;, dimensions: [&#x27;band&#x27;, &#x27;month&#x27;, &#x27;y&#x27;, &#x27;x&#x27;]},
+        },
+      },
+    ),
+  },
+  &#x27;cmip6-tasmax&#x27;: {
+    data: zarrCollection(
+      &#x27;cmip6-tasmax&#x27;,
+      &#x27;CMIP6 daily maximum temperature, ACCESS-CM2 historical (Zarr v2 ndpyramid).&#x27;,
+      [-180, -85, 180, 85],
+      {
+        href: &#x27;https://carbonplan-benchmarks.s3.us-west-2.amazonaws.com/data/NEX-GDDP-CMIP6/ACCESS-CM2/historical/r1i1p1f1/tasmax/tasmax_day_ACCESS-CM2_historical_r1i1p1f1_gn/pyramids-v2-4326-True-128-1-0-0-f4-0-0-0-gzipL1-100&#x27;,
+        type: ZARR_V2,
+        statistics: {minimum: 250, maximum: 320},
+      },
+      {
+        dimensions: {
+          time: {type: &#x27;temporal&#x27;, extent: [null, null]},
+          y: {type: &#x27;spatial&#x27;, axis: &#x27;y&#x27;, extent: [-90, 90]},
+          x: {type: &#x27;spatial&#x27;, axis: &#x27;x&#x27;, extent: [-180, 180]},
+        },
+        variables: {
+          tasmax: {type: &#x27;data&#x27;, dimensions: [&#x27;time&#x27;, &#x27;y&#x27;, &#x27;x&#x27;]},
+        },
+      },
+    ),
+  },
+  &#x27;tos-con&#x27;: {
+    data: zarrCollection(
+      &#x27;ocean-tos-con&#x27;,
+      &#x27;Ocean surface temperature from the NOC eORCA1 model (Zarr v3 pyramid, EPSG:3857).&#x27;,
+      [-180, -85, 180, 85],
+      {
+        href: &#x27;https://atlantis-vis-o.s3-ext.jc.rl.ac.uk/noc-npd-era5-demo/npd-eorca1-era5v1/gn/T1y/tos_con&#x27;,
+        type: ZARR_V3_MULTISCALES,
+        statistics: {minimum: -2, maximum: 30},
+      },
+      {
+        dimensions: {
+          time: {type: &#x27;temporal&#x27;, extent: [null, null]},
+          y: {type: &#x27;spatial&#x27;, axis: &#x27;y&#x27;, extent: [-20037508, 20037508]},
+          x: {type: &#x27;spatial&#x27;, axis: &#x27;x&#x27;, extent: [-20037508, 20037508]},
+        },
+        variables: {
+          tos_con: {type: &#x27;data&#x27;, dimensions: [&#x27;time&#x27;, &#x27;y&#x27;, &#x27;x&#x27;]},
+        },
+      },
+    ),
+  },
+};
+
+const select &#x3D; document.getElementById(&#x27;preset-select&#x27;);
+const button &#x3D; document.getElementById(&#x27;load-preset&#x27;);
+const colormapSelect &#x3D; document.getElementById(&#x27;colormap-select&#x27;);
+
+// Colormaps for continuous single-band data (grayscale if not set),
+// evenly distributed over the value range from the STAC statistics
+const colormaps &#x3D; {
+  &#x27;grayscale&#x27;: null,
+  &#x27;viridis&#x27;: [&#x27;#440154&#x27;, &#x27;#3b528b&#x27;, &#x27;#21918c&#x27;, &#x27;#5ec962&#x27;, &#x27;#fde725&#x27;],
+  &#x27;inferno&#x27;: [&#x27;#000004&#x27;, &#x27;#57106e&#x27;, &#x27;#bc3754&#x27;, &#x27;#f98e09&#x27;, &#x27;#fcffa4&#x27;],
+  &#x27;rdbu&#x27;: [&#x27;#b2182b&#x27;, &#x27;#ef8a62&#x27;, &#x27;#f7f7f7&#x27;, &#x27;#67a9cf&#x27;, &#x27;#2166ac&#x27;],
+};
+
+let layer;
+updateLayer();
+
+function updateLayer() {
+  if (layer) {
+    map.removeLayer(layer);
+  }
+  const preset &#x3D; presets[select.value];
+  layer &#x3D; new STAC({
+    url: preset.url,
+    data: preset.data,
+    assets: preset.assets,
+    bands: preset.bands,
+    maxDisplayPixels: preset.maxDisplayPixels,
+    defaultColormap: colormaps[colormapSelect.value],
+    getSourceOptions: (type, options) &#x3D;&gt; {
+      if (preset.sourceOptions) {
+        const {selector, ...rest} &#x3D; preset.sourceOptions;
+        Object.assign(options, rest);
+        if (selector) {
+          options.selector &#x3D; Object.assign({}, options.selector, selector);
+        }
+      }
+      return options;
+    },
+  });
+  layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
+    map.getView().fit(layer.getExtent(), {padding: [20, 20, 20, 20]});
+  });
+  layer.on(&#x27;error&#x27;, (event) &#x3D;&gt; {
+    alert(&#x27;An unexpected error occurred: &#x27; + event.error.message);
+  });
+  map.addLayer(layer);
+}
+
+button.addEventListener(&#x27;click&#x27;, updateLayer);
+select.addEventListener(&#x27;change&#x27;, updateLayer);
+colormapSelect.addEventListener(&#x27;change&#x27;, () &#x3D;&gt; {
+  layer.setDefaultColormap(colormaps[colormapSelect.value]);
+});
+</code></pre>
+      </div>
+
+      <div class="row-fluid">
+        <h5 class="source-heading">index.html</h5>
+        <pre><code id="example-html-source" class="language-markup">&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+  &lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;GeoZarr datacubes from STAC&lt;/title&gt;
+    &lt;link rel="stylesheet" href="node_modules/ol/ol.css"&gt;
+    &lt;style&gt;
+      .map {
+        width: 100%;
+        height: 400px;
+      }
+    &lt;/style&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id&#x3D;&quot;map&quot; class&#x3D;&quot;map&quot;&gt;&lt;/div&gt;
+
+    &lt;div class&#x3D;&quot;row mt-2&quot;&gt;
+      &lt;div class&#x3D;&quot;col-auto&quot;&gt;
+        &lt;div class&#x3D;&quot;input-group&quot;&gt;
+          &lt;label class&#x3D;&quot;input-group-text&quot; for&#x3D;&quot;preset-select&quot;&gt;Dataset&lt;/label&gt;
+          &lt;select class&#x3D;&quot;form-select&quot; id&#x3D;&quot;preset-select&quot;&gt;
+            &lt;option value&#x3D;&quot;ftw-rgb&quot; selected&gt;FTW Field Predictions 2025 (RGB, multiscale v3)&lt;/option&gt;
+            &lt;option value&#x3D;&quot;ftw-field-2024&quot;&gt;FTW Field Probability 2024 (single band, multiscale v3)&lt;/option&gt;
+            &lt;option value&#x3D;&quot;usgs-dem&quot;&gt;USGS CONUS DEM 10m (multiscale v3)&lt;/option&gt;
+            &lt;option value&#x3D;&quot;hurricane&quot;&gt;Hurricane Florence — ERA5 surface pressure (v3)&lt;/option&gt;
+            &lt;option value&#x3D;&quot;antarctic-era5&quot;&gt;Antarctic ERA5 wind speed (v3, polar stereographic)&lt;/option&gt;
+            &lt;option value&#x3D;&quot;polar&quot;&gt;Thwaites Glacier ice velocity (v2, EPSG:3031)&lt;/option&gt;
+            &lt;option value&#x3D;&quot;fgco2&quot;&gt;Delta FG CO2 (v2, south-up)&lt;/option&gt;
+            &lt;option value&#x3D;&quot;carbonplan-4d&quot;&gt;Monthly average temperature (v2 pyramid, EPSG:3857)&lt;/option&gt;
+            &lt;option value&#x3D;&quot;cmip6-tasmax&quot;&gt;CMIP6 max. temperature (v2 pyramid)&lt;/option&gt;
+            &lt;option value&#x3D;&quot;tos-con&quot;&gt;Ocean surface temperature (v3 pyramid, EPSG:3857)&lt;/option&gt;
+          &lt;/select&gt;
+          &lt;button class&#x3D;&quot;btn btn-outline-secondary&quot; id&#x3D;&quot;load-preset&quot; type&#x3D;&quot;button&quot;&gt;Load&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class&#x3D;&quot;col-auto&quot;&gt;
+        &lt;div class&#x3D;&quot;input-group&quot;&gt;
+          &lt;label class&#x3D;&quot;input-group-text&quot; for&#x3D;&quot;colormap-select&quot;&gt;Colormap&lt;/label&gt;
+          &lt;select class&#x3D;&quot;form-select&quot; id&#x3D;&quot;colormap-select&quot;&gt;
+            &lt;option value&#x3D;&quot;grayscale&quot; selected&gt;Grayscale&lt;/option&gt;
+            &lt;option value&#x3D;&quot;viridis&quot;&gt;Viridis&lt;/option&gt;
+            &lt;option value&#x3D;&quot;inferno&quot;&gt;Inferno&lt;/option&gt;
+            &lt;option value&#x3D;&quot;rdbu&quot;&gt;Red-Blue&lt;/option&gt;
+          &lt;/select&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;script type="module" src="main.js"&gt;&lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+      </div>
+
+      <div class="row-fluid">
+        <h5 class="source-heading">package.json</h5>
+        <pre><code id="example-pkg-source" class="language-json">{
+  &quot;name&quot;: &quot;geozarr-datacube&quot;,
+  &quot;dependencies&quot;: {
+    &quot;ol-stac&quot;: &quot;1.6.0&quot;,
+    &quot;proj4&quot;: &quot;^2.16.1&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;vite&quot;: &quot;^3.2.3&quot;
+  },
+  &quot;scripts&quot;: {
+    &quot;start&quot;: &quot;vite&quot;,
+    &quot;build&quot;: &quot;vite build&quot;
+  }
+}</code></pre>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="common.js"></script>
+    <script src="geozarr-datacube.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/toolbar/prism-toolbar.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.js"></script>
+    <script src="./resources/common.js"></script>
+    <script>
+      document.getElementById('tag-example-list')
+        .addEventListener('show.bs.modal', function (event) {
+          const button = event.relatedTarget; // Button that triggered the modal
+          this.querySelector('.modal-title').innerText = button.dataset.title;
+          this.querySelector('.modal-body').innerHTML = button.dataset.content;
+        });
+    </script>
+    <script>
+      const releaseUrl = 'https://cdn.jsdelivr.net/npm/ol-stac/package.json';
+      fetch(releaseUrl).then(function(response) {
+        return response.json();
+      }).then(function(json) {
+        const latestVersion = json.version;
+        document.getElementById('latest-version').innerHTML = latestVersion;
+        const url = window.location.href;
+        const branchSearch = url.match(/\/([^\/]*)\/examples\//);
+        const storageKey = 'ol-dismissed=-' + latestVersion;
+        const dismissed = localStorage.getItem(storageKey) === 'true';
+        if (branchSearch && !dismissed && /^v[0-9\.]*$/.test(branchSearch[1]) && '1.6.0' != latestVersion) {
+          const link = url.replace(branchSearch[0], '/latest/examples/');
+          fetch(link, {method: 'head'}).then(function(response) {
+            const a = document.getElementById('latest-link');
+            a.href = response.status == 200 ? link : '../../latest/examples/';
+          });
+          const latestCheck = document.getElementById('latest-check');
+          latestCheck.style.display = '';
+          document.getElementById('latest-dismiss').onclick = function() {
+            latestCheck.style.display = 'none';
+            localStorage.setItem(storageKey, 'true');
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

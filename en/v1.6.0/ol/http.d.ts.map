@@ -1,0 +1,1 @@
+{"version":3,"file":"http.d.ts","sourceRoot":"","sources":["../../src/ol/http.js"],"names":[],"mappings":"AAyEA;;;;;;;;;GASG;AACH,oDALW,YAAY,kDAEF,OAAO,aAAa,EAAE,OAAO,QAAE,MAAM,KAAG,IAAI,CAQhE;AAED;;;;;;;;;;GAUG;AACH,mDALW,YAAY,kDAEF,OAAO,YAAY,EAAE,OAAO,QAAE,MAAM,KAAG,IAAI,CAU/D;;;;;kCArGqB,MAAM,KAAG,CAAC;QAAO,MAAM,GAAE,MAAM;IAAE,IAAI,CAAC;;;;+BAKtC,KAAK,KAAG,IAAI"}
