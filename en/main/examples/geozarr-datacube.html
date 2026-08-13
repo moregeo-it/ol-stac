@@ -228,28 +228,28 @@ const map &#x3D; new Map({
 /**
  * Creates a minimal STAC Collection for a Zarr store that has no STAC
  * metadata of its own. Everything needed for visualization is expressed
- * through STAC extensions:
+ * through general STAC metadata:
  * - the datacube extension describes the store&#x27;s dimensions and variables,
- * - the render extension describes how to visualize them
- *   (band selection, value ranges, colormaps),
+ * - the &#x60;statistics&#x60; of the asset provide the value range for the default
+ *   (grayscale) visualization,
  * - the projection extension provides the extent and orientation for stores
  *   without their own spatial metadata.
+ * A specific visualization (e.g. a colormap) could additionally be declared
+ * through the render extension.
  * @param {string} id The collection id.
  * @param {string} description The collection description.
  * @param {Array&lt;number&gt;} bbox The bounding box in WGS84.
  * @param {Object} asset The &#x60;data&#x60; asset, including &#x60;href&#x60;, &#x60;type&#x60; and any
- * asset-level fields such as &#x60;proj:bbox&#x60; or &#x60;proj:transform&#x60;.
+ * asset-level fields such as &#x60;statistics&#x60;, &#x60;proj:bbox&#x60; or &#x60;proj:transform&#x60;.
  * @param {{dimensions: Object, variables: Object}} cube The datacube extension fields.
- * @param {Object} [render] The render object for the &#x60;data&#x60; asset.
  * @return {Object} The STAC Collection.
  */
-function zarrCollection(id, description, bbox, asset, cube, render) {
+function zarrCollection(id, description, bbox, asset, cube) {
   return {
     type: &#x27;Collection&#x27;,
     stac_version: &#x27;1.1.0&#x27;,
     stac_extensions: [
       &#x27;https://stac-extensions.github.io/datacube/v2.2.0/schema.json&#x27;,
-      &#x27;https://stac-extensions.github.io/render/v2.0.0/schema.json&#x27;,
       &#x27;https://stac-extensions.github.io/projection/v2.0.0/schema.json&#x27;,
     ],
     id,
@@ -261,7 +261,6 @@ function zarrCollection(id, description, bbox, asset, cube, render) {
     },
     &#x27;cube:dimensions&#x27;: cube.dimensions,
     &#x27;cube:variables&#x27;: cube.variables,
-    renders: render ? {default: {assets: [&#x27;data&#x27;], ...render}} : undefined,
     links: [],
     assets: {
       data: {
@@ -270,27 +269,6 @@ function zarrCollection(id, description, bbox, asset, cube, render) {
       },
     },
   };
-}
-
-/**
- * Expands a few anchor colors into an explicit render extension colormap:
- * an object mapping each of the 0-255 (rescaled) values to an RGB color.
- * This is what server-side tooling (e.g. rio-tiler) produces when
- * serializing a color ramp, and keeps the STAC metadata self-contained.
- * @param {Array&lt;Array&lt;number&gt;&gt;} colors The anchor colors, as RGB arrays.
- * @return {Object&lt;string, Array&lt;number&gt;&gt;} The colormap.
- */
-function gradient(colors) {
-  const colormap &#x3D; {};
-  for (let i &#x3D; 0; i &lt; 256; i++) {
-    const t &#x3D; (i / 255) * (colors.length - 1);
-    const j &#x3D; Math.min(Math.floor(t), colors.length - 2);
-    const f &#x3D; t - j;
-    colormap[i] &#x3D; colors[j].map((c, k) &#x3D;&gt;
-      Math.round(c + f * (colors[j + 1][k] - c)),
-    );
-  }
-  return colormap;
 }
 
 const FTW_URL &#x3D;
@@ -317,6 +295,7 @@ const presets &#x3D; {
       {
         href: &#x27;https://carbonplan-share.s3.us-west-2.amazonaws.com/zarr-layer-examples/USGS-CONUS-DEM-10m.zarr&#x27;,
         type: ZARR_V3_MULTISCALES,
+        statistics: {minimum: 0, maximum: 3500},
       },
       {
         dimensions: {
@@ -326,17 +305,6 @@ const presets &#x3D; {
         variables: {
           DEM: {type: &#x27;data&#x27;, dimensions: [&#x27;latitude&#x27;, &#x27;longitude&#x27;]},
         },
-      },
-      {
-        rescale: [[0, 3500]],
-        colormap: gradient([
-          [51, 51, 153],
-          [0, 153, 255],
-          [0, 204, 102],
-          [255, 255, 153],
-          [128, 92, 84],
-          [255, 255, 255],
-        ]),
       },
     ),
   },
@@ -348,6 +316,7 @@ const presets &#x3D; {
       {
         href: &#x27;https://atlantis-vis-o.s3-ext.jc.rl.ac.uk/hurricanes/era5/florence&#x27;,
         type: ZARR_V3,
+        statistics: {minimum: 96000, maximum: 103000},
       },
       {
         dimensions: {
@@ -362,16 +331,6 @@ const presets &#x3D; {
           },
         },
       },
-      {
-        rescale: [[96000, 103000]],
-        colormap: gradient([
-          [68, 1, 84],
-          [59, 81, 139],
-          [33, 144, 141],
-          [92, 200, 99],
-          [253, 231, 37],
-        ]),
-      },
     ),
   },
   &#x27;antarctic-era5&#x27;: {
@@ -382,6 +341,7 @@ const presets &#x3D; {
       {
         href: &#x27;https://carbonplan-share.s3.us-west-2.amazonaws.com/zarr-layer-examples/antarctic_era5.zarr&#x27;,
         type: ZARR_V3,
+        statistics: {minimum: 0, maximum: 12},
       },
       {
         dimensions: {
@@ -391,14 +351,6 @@ const presets &#x3D; {
         variables: {
           wind_speed: {type: &#x27;data&#x27;, dimensions: [&#x27;y&#x27;, &#x27;x&#x27;]},
         },
-      },
-      {
-        rescale: [[0, 12]],
-        colormap: gradient([
-          [247, 251, 255],
-          [107, 174, 214],
-          [8, 48, 107],
-        ]),
       },
     ),
   },
@@ -415,6 +367,7 @@ const presets &#x3D; {
       {
         href: &#x27;https://carbonplan-share.s3.us-west-2.amazonaws.com/zarr-layer-examples/polar-subset.zarr&#x27;,
         type: ZARR_V2,
+        statistics: {minimum: 0, maximum: 1},
       },
       {
         dimensions: {
@@ -424,14 +377,6 @@ const presets &#x3D; {
         variables: {
           velocity: {type: &#x27;data&#x27;, dimensions: [&#x27;y&#x27;, &#x27;x&#x27;]},
         },
-      },
-      {
-        rescale: [[0, 1]],
-        colormap: gradient([
-          [255, 245, 240],
-          [251, 106, 74],
-          [103, 0, 13],
-        ]),
       },
     ),
   },
@@ -450,6 +395,7 @@ const presets &#x3D; {
         &#x27;proj:bbox&#x27;: [-180, -90, 180, 90],
         &#x27;proj:shape&#x27;: [180, 360],
         &#x27;proj:transform&#x27;: [1, 0, -180, 0, 1, -90],
+        statistics: {minimum: -5, maximum: 5},
       },
       {
         dimensions: {
@@ -461,19 +407,11 @@ const presets &#x3D; {
           FG_CO2_2: {type: &#x27;data&#x27;, dimensions: [&#x27;time&#x27;, &#x27;nlat&#x27;, &#x27;nlon&#x27;]},
         },
       },
-      {
-        rescale: [[-5, 5]],
-        colormap: gradient([
-          [103, 0, 31],
-          [214, 96, 77],
-          [247, 247, 247],
-          [67, 147, 195],
-          [5, 48, 97],
-        ]),
-      },
     ),
   },
   &#x27;carbonplan-4d&#x27;: {
+    // Select the temperature slice of the packed bands dimension
+    bands: [&#x27;tavg&#x27;],
     data: zarrCollection(
       &#x27;carbonplan-4d&#x27;,
       &#x27;Monthly average temperature and precipitation (Zarr v2 ndpyramid, EPSG:3857).&#x27;,
@@ -481,6 +419,7 @@ const presets &#x3D; {
       {
         href: &#x27;https://carbonplan-maps.s3.us-west-2.amazonaws.com/v2/demo/4d/tavg-prec-month&#x27;,
         type: ZARR_V2,
+        statistics: {minimum: -30, maximum: 30},
       },
       {
         dimensions: {
@@ -493,17 +432,6 @@ const presets &#x3D; {
           climate: {type: &#x27;data&#x27;, dimensions: [&#x27;band&#x27;, &#x27;month&#x27;, &#x27;y&#x27;, &#x27;x&#x27;]},
         },
       },
-      {
-        bands: [&#x27;tavg&#x27;],
-        rescale: [[-30, 30]],
-        colormap: gradient([
-          [5, 48, 97],
-          [67, 147, 195],
-          [247, 247, 247],
-          [214, 96, 77],
-          [103, 0, 31],
-        ]),
-      },
     ),
   },
   &#x27;cmip6-tasmax&#x27;: {
@@ -514,6 +442,7 @@ const presets &#x3D; {
       {
         href: &#x27;https://carbonplan-benchmarks.s3.us-west-2.amazonaws.com/data/NEX-GDDP-CMIP6/ACCESS-CM2/historical/r1i1p1f1/tasmax/tasmax_day_ACCESS-CM2_historical_r1i1p1f1_gn/pyramids-v2-4326-True-128-1-0-0-f4-0-0-0-gzipL1-100&#x27;,
         type: ZARR_V2,
+        statistics: {minimum: 250, maximum: 320},
       },
       {
         dimensions: {
@@ -525,16 +454,6 @@ const presets &#x3D; {
           tasmax: {type: &#x27;data&#x27;, dimensions: [&#x27;time&#x27;, &#x27;y&#x27;, &#x27;x&#x27;]},
         },
       },
-      {
-        rescale: [[250, 320]],
-        colormap: gradient([
-          [0, 0, 4],
-          [101, 21, 110],
-          [212, 72, 66],
-          [250, 193, 39],
-          [252, 255, 164],
-        ]),
-      },
     ),
   },
   &#x27;tos-con&#x27;: {
@@ -545,6 +464,7 @@ const presets &#x3D; {
       {
         href: &#x27;https://atlantis-vis-o.s3-ext.jc.rl.ac.uk/noc-npd-era5-demo/npd-eorca1-era5v1/gn/T1y/tos_con&#x27;,
         type: ZARR_V3_MULTISCALES,
+        statistics: {minimum: -2, maximum: 30},
       },
       {
         dimensions: {
@@ -555,16 +475,6 @@ const presets &#x3D; {
         variables: {
           tos_con: {type: &#x27;data&#x27;, dimensions: [&#x27;time&#x27;, &#x27;y&#x27;, &#x27;x&#x27;]},
         },
-      },
-      {
-        rescale: [[-2, 30]],
-        colormap: gradient([
-          [5, 48, 97],
-          [67, 147, 195],
-          [247, 247, 247],
-          [214, 96, 77],
-          [103, 0, 31],
-        ]),
       },
     ),
   },

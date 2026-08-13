@@ -114,24 +114,23 @@ export function exceedsDisplayLimit(source: import('ol/source/Tile.js').default,
  */
 export function getRenderForAsset(asset: any): any | null;
 /**
- * Creates a WebGLTileLayer style for a GeoZarr layer from the render
- * extension (`renders`): `rescale` provides the value range(s) to stretch
- * and `colormap` provides the coloring for single-band data.
+ * Creates a WebGLTileLayer style for a GeoZarr layer from the STAC metadata.
  *
- * The `colormap` follows the (rio-tiler) conventions referenced by the
- * render extension and is fully self-contained (`colormap_name` is not
- * supported, as the available names are not standardized):
- * - an object mapping values to colors. With `rescale`, the values are the
- *   0-255 indices that the data is rescaled to (continuous data, where
- *   values without an entry use the closest lower entry); without
- *   `rescale`, the values are the raw data values (categorical data,
- *   matched exactly).
- * - an array of intervals `[[[min, max], color], ...]`, applied to the raw
- *   data values.
- * Colors are `[r, g, b]` or `[r, g, b, a]` arrays (alpha in 0-255).
+ * A usable render from the render extension (see {@link isUsableRender})
+ * defines the complete visualization: the value range comes from its
+ * `rescale` and single-band colors from its `colormap` (see
+ * {@link createColormapStyle} for the supported forms).
  *
- * @param {Asset} asset The asset to read the render information from.
- * @param {Object} sourceOptions The GeoZarr source options (to determine the number of rendered bands).
+ * Without a usable render, a default visualization is derived from the
+ * general STAC metadata: the value range to stretch comes from the
+ * `statistics` of the rendered bands (or the asset), the classification
+ * extension (`classification:classes`) provides the coloring for
+ * single-band categorical data (not applied to floating point data, which
+ * is assumed to be continuous), and continuous data is stretched to
+ * grayscale (consistent with single-band COGs).
+ *
+ * @param {Asset} asset The asset to read the metadata from.
+ * @param {Object} sourceOptions The GeoZarr source options (to determine the rendered bands).
  * @return {Object|null} A WebGLTileLayer style, or `null` if the metadata provides none.
  * @api
  */
@@ -167,10 +166,38 @@ export function getClassificationClasses(asset: any, bands?: number[] | undefine
  *
  * @param {import('stac-js').Asset} asset The STAC asset
  * @param {Array<number>} [bands] The selected bands (one-based)
+ * @param {number} [styleBand] The one-based band to style, if it differs
+ * from the selected band (e.g. when the source only loads the selected band)
  * @return {Object|null} A WebGL tile layer style object, or null
  * @api
  */
-export function getClassificationStyle(asset: any, bands?: number[] | undefined): any | null;
+export function getClassificationStyle(asset: any, bands?: number[] | undefined, styleBand?: number | undefined): any | null;
+/**
+ * Creates a WebGLTileLayer style for a GeoTIFF layer from the STAC metadata.
+ *
+ * A usable render from the render extension (see {@link isUsableRender})
+ * defines the complete visualization: for single-band data its `colormap`
+ * provides the colors (see {@link createColormapStyle} for the supported
+ * forms), applied over the range from its `rescale`.
+ *
+ * Without a usable render, the classification extension
+ * (`classification:classes`) provides the coloring for single-band
+ * categorical data (not applied to floating point data, which is assumed
+ * to be continuous).
+ *
+ * When no style is returned, the value ranges from
+ * {@link getGeoTiffSourceInfoFromAsset} stretch the data (to grayscale for
+ * a single band) instead. The returned styles operate on the raw data
+ * values, i.e. the GeoTIFF source must be configured with
+ * `normalize: false`.
+ *
+ * @param {import('stac-js').Asset} asset The STAC asset
+ * @param {import('ol/source/GeoTIFF.js').SourceInfo} sourceInfo The source info
+ * (for the selected bands).
+ * @return {Object|null} A WebGL tile layer style object, or null
+ * @api
+ */
+export function getGeoTiffStyleFromAsset(asset: any, sourceInfo: import('ol/source/GeoTIFF.js').SourceInfo): any | null;
 /**
  * @typedef {import('ol/colorlike.js').ColorLike} ColorLike
  */

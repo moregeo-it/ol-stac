@@ -92,6 +92,7 @@
             <li data-name="getclassificationclasses"><a href="module-ol_util.html#.getClassificationClasses">getClassificationClasses</a>
             <li data-name="getclassificationstyle"><a href="module-ol_util.html#.getClassificationStyle">getClassificationStyle</a>
             <li data-name="getdisplaypixels"><a href="module-ol_util.html#.getDisplayPixels">getDisplayPixels</a>
+            <li data-name="getgeotiffstylefromasset"><a href="module-ol_util.html#.getGeoTiffStyleFromAsset">getGeoTiffStyleFromAsset</a>
             <li data-name="getgeozarrsourceoptionsfromasset"><a href="module-ol_util.html#.getGeoZarrSourceOptionsFromAsset">getGeoZarrSourceOptionsFromAsset</a>
             <li data-name="getgeozarrstylefromasset"><a href="module-ol_util.html#.getGeoZarrStyleFromAsset">getGeoZarrStyleFromAsset</a>
             <li data-name="getrenderforasset"><a href="module-ol_util.html#.getRenderForAsset">getRenderForAsset</a>
@@ -308,7 +309,7 @@
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L492">line 492</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L582">line 582</a>
         </div>
         
     </div>
@@ -472,7 +473,7 @@ the coarsest available resolution requires excessive tile loads.</p>
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L333">line 333</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L417">line 417</a>
         </div>
         
     </div>
@@ -636,7 +637,7 @@ The adapted style for the footprint.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L941">line 941</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L1157">line 1157</a>
         </div>
         
     </div>
@@ -792,7 +793,7 @@ The classification classes, or null
         <div class="anchor" id=".getClassificationStyle">
         </div>
         <h4 class="name">
-            getClassificationStyle<span class="signature">(asset, <span class="optional">bands</span>)</span><span class="fa fa-arrow-circle-right"></span><span class="type-signature returnType">{Object | null}</span>
+            getClassificationStyle<span class="signature">(asset, <span class="optional">bands</span>, <span class="optional">styleBand</span>)</span><span class="fa fa-arrow-circle-right"></span><span class="type-signature returnType">{Object | null}</span>
             
             
 
@@ -800,7 +801,7 @@ The classification classes, or null
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L976">line 976</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L1197">line 1197</a>
         </div>
         
     </div>
@@ -895,6 +896,32 @@ The classification classes, or null
         </tr>
 
 	
+
+        <tr class="">
+            
+                <td class="name"><code>styleBand</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+ | undefined
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>The one-based band to style, if it differs
+from the selected band (e.g. when the source only loads the selected band)</p></td>
+        </tr>
+
+	
 	</tbody>
 </table>
     
@@ -965,7 +992,7 @@ A WebGL tile layer style object, or null
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L453">line 453</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L543">line 543</a>
         </div>
         
     </div>
@@ -1094,6 +1121,183 @@ The number of pixels, or <code>Infinity</code> if unknown.
 <dt class="">
     
     <div class="nameContainer">
+        <div class="anchor" id=".getGeoTiffStyleFromAsset">
+        </div>
+        <h4 class="name">
+            getGeoTiffStyleFromAsset<span class="signature">(asset, sourceInfo)</span><span class="fa fa-arrow-circle-right"></span><span class="type-signature returnType">{Object | null}</span>
+            
+            
+
+        </h4>
+        
+        <div class="tag-source">
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js">util.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L1261">line 1261</a>
+        </div>
+        
+    </div>
+    
+    
+</dt>
+<dd class="">
+
+
+    
+    <pre class="prettyprint source"><code>import {getGeoTiffStyleFromAsset} from 'ol/util';</code></pre>
+
+
+    
+    <div class="description">
+        <p>Creates a WebGLTileLayer style for a GeoTIFF layer from the STAC metadata.</p>
+<p>A usable render from the render extension (see <code>isUsableRender</code>)
+defines the complete visualization: for single-band data its <code>colormap</code>
+provides the colors (see <code>createColormapStyle</code> for the supported
+forms), applied over the range from its <code>rescale</code>.</p>
+<p>Without a usable render, the classification extension
+(<code>classification:classes</code>) provides the coloring for single-band
+categorical data (not applied to floating point data, which is assumed
+to be continuous).</p>
+<p>When no style is returned, the value ranges from
+<code>getGeoTiffSourceInfoFromAsset</code> stretch the data (to grayscale for
+a single band) instead. The returned styles operate on the raw data
+values, i.e. the GeoTIFF source must be configured with
+<code>normalize: false</code>.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr class="">
+            
+                <td class="name"><code>asset</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">module:stac-js~Asset</span>
+
+
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>The STAC asset</p></td>
+        </tr>
+
+	
+
+        <tr class="">
+            
+                <td class="name"><code>sourceInfo</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">SourceInfo</span>
+
+
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>The source info
+(for the selected bands).</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+    
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+    
+
+
+<h5>Returns:</h5>
+A WebGL tile layer style object, or null
+<br />
+
+    
+
+    
+</dd>
+
+        
+            
+            
+<dt class="">
+    
+    <div class="nameContainer">
         <div class="anchor" id=".getGeoZarrSourceOptionsFromAsset">
         </div>
         <h4 class="name">
@@ -1105,7 +1309,7 @@ The number of pixels, or <code>Infinity</code> if unknown.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L356">line 356</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L440">line 440</a>
         </div>
         
     </div>
@@ -1274,7 +1478,7 @@ The GeoZarr source options
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L553">line 553</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L776">line 776</a>
         </div>
         
     </div>
@@ -1290,22 +1494,18 @@ The GeoZarr source options
 
     
     <div class="description">
-        <p>Creates a WebGLTileLayer style for a GeoZarr layer from the render
-extension (<code>renders</code>): <code>rescale</code> provides the value range(s) to stretch
-and <code>colormap</code> provides the coloring for single-band data.</p>
-<p>The <code>colormap</code> follows the (rio-tiler) conventions referenced by the
-render extension and is fully self-contained (<code>colormap_name</code> is not
-supported, as the available names are not standardized):</p>
-<ul>
-<li>an object mapping values to colors. With <code>rescale</code>, the values are the
-0-255 indices that the data is rescaled to (continuous data, where
-values without an entry use the closest lower entry); without
-<code>rescale</code>, the values are the raw data values (categorical data,
-matched exactly).</li>
-<li>an array of intervals <code>[[[min, max], color], ...]</code>, applied to the raw
-data values.
-Colors are <code>[r, g, b]</code> or <code>[r, g, b, a]</code> arrays (alpha in 0-255).</li>
-</ul>
+        <p>Creates a WebGLTileLayer style for a GeoZarr layer from the STAC metadata.</p>
+<p>A usable render from the render extension (see <code>isUsableRender</code>)
+defines the complete visualization: the value range comes from its
+<code>rescale</code> and single-band colors from its <code>colormap</code> (see
+<code>createColormapStyle</code> for the supported forms).</p>
+<p>Without a usable render, a default visualization is derived from the
+general STAC metadata: the value range to stretch comes from the
+<code>statistics</code> of the rendered bands (or the asset), the classification
+extension (<code>classification:classes</code>) provides the coloring for
+single-band categorical data (not applied to floating point data, which
+is assumed to be continuous), and continuous data is stretched to
+grayscale (consistent with single-band COGs).</p>
     </div>
     
 
@@ -1353,7 +1553,7 @@ Colors are <code>[r, g, b]</code> or <code>[r, g, b, a]</code> arrays (alpha in 
 
             <td  class="description last">
                 
-                <p>The asset to read the render information from.</p></td>
+                <p>The asset to read the metadata from.</p></td>
         </tr>
 
 	
@@ -1378,7 +1578,7 @@ Colors are <code>[r, g, b]</code> or <code>[r, g, b, a]</code> arrays (alpha in 
 
             <td  class="description last">
                 
-                <p>The GeoZarr source options (to determine the number of rendered bands).</p></td>
+                <p>The GeoZarr source options (to determine the rendered bands).</p></td>
         </tr>
 
 	
@@ -1452,7 +1652,7 @@ A WebGLTileLayer style, or <code>null</code> if the metadata provides none.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L508">line 508</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/util.js#L598">line 598</a>
         </div>
         
     </div>

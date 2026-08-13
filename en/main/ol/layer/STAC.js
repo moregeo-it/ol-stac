@@ -28,7 +28,7 @@ import ErrorEvent from '../events/ErrorEvent.js';
 import { createImageLoadFunction, createTileLoadFunction } from '../http.js';
 import { getProjection } from '../proj.js';
 import SourceType from '../source/type.js';
-import { LABEL_EXTENSION, defaultBoundsStyle, defaultCollectionStyle, exceedsDisplayLimit, getBoundsStyle, getClassificationStyle, getDisplayPixels, getGeoTiffSourceInfoFromAsset, getGeoZarrSourceOptionsFromAsset, getGeoZarrStyleFromAsset, getSpecificWebMapUrl, isScalar, toContinuousBBox, toOlExtent, } from '../util.js';
+import { LABEL_EXTENSION, defaultBoundsStyle, defaultCollectionStyle, exceedsDisplayLimit, getBoundsStyle, getDisplayPixels, getGeoTiffSourceInfoFromAsset, getGeoTiffStyleFromAsset, getGeoZarrSourceOptionsFromAsset, getGeoZarrStyleFromAsset, getSpecificWebMapUrl, isScalar, toContinuousBBox, toOlExtent, } from '../util.js';
 import LayerType from './type.js';
 /**
  * @typedef {import("ol/extent.js").Extent} Extent
@@ -859,8 +859,8 @@ class STACLayer extends LayerGroup {
         if (projection) {
             options.projection = projection;
         }
-        const classificationStyle = getClassificationStyle(asset, sourceInfo.bands);
-        if (classificationStyle) {
+        const metadataStyle = getGeoTiffStyleFromAsset(asset, sourceInfo);
+        if (metadataStyle) {
             options.normalize = false;
         }
         const headers = this.getRequestHeadersFor_(sourceInfo.url, asset);
@@ -896,8 +896,8 @@ class STACLayer extends LayerGroup {
             if (this.style_) {
                 layerOptions.style = this.style_;
             }
-            else if (classificationStyle) {
-                layerOptions.style = classificationStyle;
+            else if (metadataStyle) {
+                layerOptions.style = metadataStyle;
             }
             layerOptions = await this.updateLayerOptions_(LayerType.WebGLTile, layerOptions, asset);
             const layer = new WebGLTileLayer(layerOptions);
@@ -1195,7 +1195,6 @@ class STACLayer extends LayerGroup {
                 layerOptions.style = this.style_;
             }
             else {
-                // Derive a style from the render extension, if available
                 const style = getGeoZarrStyleFromAsset(asset, options);
                 if (style) {
                     layerOptions.style = style;
