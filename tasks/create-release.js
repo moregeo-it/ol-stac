@@ -1,7 +1,7 @@
-import {readFile, stat} from 'node:fs/promises';
-import {basename} from 'node:path';
 import {Octokit} from '@octokit/rest';
 import esMain from 'es-main';
+import {readFile, stat} from 'node:fs/promises';
+import {basename} from 'node:path';
 import yargs from 'yargs';
 import {hideBin} from 'yargs/helpers';
 

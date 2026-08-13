@@ -1,5 +1,5 @@
-import {register} from 'ol/proj/proj4.js';
 import {transform} from 'ol/proj.js';
+import {register} from 'ol/proj/proj4.js';
 import proj4 from 'proj4';
 import {getProjection} from '../../../../src/ol/proj.js';
 

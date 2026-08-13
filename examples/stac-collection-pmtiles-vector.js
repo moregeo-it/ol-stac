@@ -1,8 +1,8 @@
 import Map from 'ol/Map.js';
 import View from 'ol/View.js';
 import TileLayer from 'ol/layer/WebGLTile.js';
-import {register} from 'ol/proj/proj4.js';
 import {fromLonLat} from 'ol/proj.js';
+import {register} from 'ol/proj/proj4.js';
 import OSM from 'ol/source/OSM.js';
 import {Fill, Stroke, Style} from 'ol/style.js';
 import proj4 from 'proj4';

@@ -191,7 +191,10 @@ class ExampleBuilder {
         start = comment.end;
       }
       cleanedSource += sourceCode.slice(start);
-      cleanedSource = this.linter.verifyAndFix(cleanedSource, flatConfig).output;
+      cleanedSource = this.linter.verifyAndFix(
+        cleanedSource,
+        flatConfig,
+      ).output;
       cacheItem = {original: sourceCode, cleaned: cleanedSource};
       this.lintCache[cacheKey] = cacheItem;
     }

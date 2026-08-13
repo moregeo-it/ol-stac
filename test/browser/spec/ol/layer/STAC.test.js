@@ -176,7 +176,9 @@ describe('ol/layer/STAC', function () {
       captured = [];
       fetchStub = vi
         .spyOn(window, 'fetch')
-        .mockImplementation(() => Promise.resolve(new Response('', {status: 404})));
+        .mockImplementation(() =>
+          Promise.resolve(new Response('', {status: 404})),
+        );
     });
 
     afterEach(function () {
@@ -256,7 +258,9 @@ describe('ol/layer/STAC', function () {
       group.on('error', () => {});
       await waitFor(() => getCaptured(SourceType.XYZ));
       const options = getCaptured(SourceType.XYZ);
-      expect(options.url).to.equal('https://example.com/{z}/{x}/{y}.png?token=1');
+      expect(options.url).to.equal(
+        'https://example.com/{z}/{x}/{y}.png?token=1',
+      );
     });
 
     it('rewrites the URL for the default fetch function', async function () {
@@ -474,7 +478,9 @@ describe('ol/layer/STAC', function () {
       captured = [];
       fetchStub = vi
         .spyOn(window, 'fetch')
-        .mockImplementation(() => Promise.resolve(new Response('', {status: 404})));
+        .mockImplementation(() =>
+          Promise.resolve(new Response('', {status: 404})),
+        );
     });
 
     afterEach(function () {
