@@ -680,6 +680,24 @@ function stretch(band, range) {
 }
 
 /**
+ * Creates a WebGLTileLayer style that colors the given value range of a
+ * band with the given colors, evenly distributed over the range.
+ * @param {Array<import('ol/color.js').Color|string>} colors The colors.
+ * @param {number} band The one-based rendered band.
+ * @param {Array<number>} range The [min, max] value range.
+ * @return {Object} A WebGLTileLayer style.
+ */
+function createGradientStyle(colors, band, range) {
+  /** @type {Array<*>} */
+  const color = ['interpolate', ['linear'], ['band', band]];
+  const last = colors.length - 1;
+  colors.forEach((stop, i) => {
+    color.push(range[0] + (i / last) * (range[1] - range[0]), stop);
+  });
+  return {color};
+}
+
+/**
  * Creates a WebGLTileLayer color expression from a render extension
  * `colormap`, following the rio-tiler semantics that the render extension
  * references (`colormap_name` is not supported, as the available names are
@@ -765,15 +783,22 @@ function createColormapStyle(colormap, range) {
  * `statistics` of the rendered bands (or the asset), the classification
  * extension (`classification:classes`) provides the coloring for
  * single-band categorical data (not applied to floating point data, which
- * is assumed to be continuous), and continuous data is stretched to
- * grayscale (consistent with single-band COGs).
+ * is assumed to be continuous), and continuous data is colored with the
+ * given default colormap or stretched to grayscale (consistent with
+ * single-band COGs).
  *
  * @param {Asset} asset The asset to read the metadata from.
  * @param {Object} sourceOptions The GeoZarr source options (to determine the rendered bands).
+ * @param {Array<import('ol/color.js').Color|string>|null} [defaultColormap] The colors
+ * of the colormap for continuous single-band data, evenly distributed over the value range.
  * @return {Object|null} A WebGLTileLayer style, or `null` if the metadata provides none.
  * @api
  */
-export function getGeoZarrStyleFromAsset(asset, sourceOptions) {
+export function getGeoZarrStyleFromAsset(
+  asset,
+  sourceOptions,
+  defaultColormap = null,
+) {
   let bandCount = 1;
   /** @type {Array<string>} */
   let bandNames = [];
@@ -874,10 +899,13 @@ export function getGeoZarrStyleFromAsset(asset, sourceOptions) {
       return classification;
     }
   }
-  // Continuous data is stretched to grayscale (consistent with single-band
-  // COGs)
+  // Continuous data is colored with the default colormap or stretched to
+  // grayscale (consistent with single-band COGs)
   const range = rangeFor(0);
   if (range) {
+    if (Array.isArray(defaultColormap) && defaultColormap.length >= 2) {
+      return createGradientStyle(defaultColormap, 1, range);
+    }
     const gray = stretch(1, range);
     return {color: ['color', gray, gray, gray]};
   }
@@ -1244,7 +1272,8 @@ export function getClassificationStyle(asset, bands, styleBand = null) {
  * Without a usable render, the classification extension
  * (`classification:classes`) provides the coloring for single-band
  * categorical data (not applied to floating point data, which is assumed
- * to be continuous).
+ * to be continuous), and continuous single-band data is colored with the
+ * given default colormap (over the value range from the statistics).
  *
  * When no style is returned, the value ranges from
  * {@link getGeoTiffSourceInfoFromAsset} stretch the data (to grayscale for
@@ -1255,10 +1284,16 @@ export function getClassificationStyle(asset, bands, styleBand = null) {
  * @param {import('stac-js').Asset} asset The STAC asset
  * @param {import('ol/source/GeoTIFF.js').SourceInfo} sourceInfo The source info
  * (for the selected bands).
+ * @param {Array<import('ol/color.js').Color|string>|null} [defaultColormap] The colors
+ * of the colormap for continuous single-band data, evenly distributed over the value range.
  * @return {Object|null} A WebGL tile layer style object, or null
  * @api
  */
-export function getGeoTiffStyleFromAsset(asset, sourceInfo) {
+export function getGeoTiffStyleFromAsset(
+  asset,
+  sourceInfo,
+  defaultColormap = null,
+) {
   const selected = Array.isArray(sourceInfo.bands) ? sourceInfo.bands : [];
   const bandCount =
     selected.length > 0
@@ -1294,12 +1329,24 @@ export function getGeoTiffStyleFromAsset(asset, sourceInfo) {
   if (!isFloatingPoint(bandSource)) {
     // The source only loads the selected bands, so a single selected band
     // is rendered as band 1
-    return getClassificationStyle(
+    const classification = getClassificationStyle(
       asset,
       selected,
       selected.length === 1 ? 1 : null,
     );
+    if (classification) {
+      return classification;
+    }
   }
-  // Continuous data is stretched to grayscale through the source info
+  // Continuous data is colored with the default colormap, if given
+  if (Array.isArray(defaultColormap) && defaultColormap.length >= 2) {
+    const range =
+      getStatisticsRange(bandSource) ||
+      (bandSource !== asset ? getStatisticsRange(asset) : null);
+    if (range) {
+      return createGradientStyle(defaultColormap, 1, range);
+    }
+  }
+  // Otherwise it is stretched to grayscale through the source info
   return null;
 }

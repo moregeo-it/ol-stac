@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Errors from image/tile requests with headers are reported through the layer's `error` event.
 - Add `getRequestUrl` option to rewrite URLs before requests are made or sources are created, e.g. to append query parameters for authentication.
 - Add `geozarr-datacube` example that visualizes a variety of real-world Zarr datacubes through STAC metadata.
+- Add `defaultColormap` option and `setDefaultColormap` method to color continuous single-band data
+  with a colormap (instead of grayscale) when neither the STAC metadata nor the `style` option define a coloring.
 
 ### Changed
 

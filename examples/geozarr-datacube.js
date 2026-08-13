@@ -278,6 +278,16 @@ const presets = {
 
 const select = document.getElementById('preset-select');
 const button = document.getElementById('load-preset');
+const colormapSelect = document.getElementById('colormap-select');
+
+// Colormaps for continuous single-band data (grayscale if not set),
+// evenly distributed over the value range from the STAC statistics
+const colormaps = {
+  'grayscale': null,
+  'viridis': ['#440154', '#3b528b', '#21918c', '#5ec962', '#fde725'],
+  'inferno': ['#000004', '#57106e', '#bc3754', '#f98e09', '#fcffa4'],
+  'rdbu': ['#b2182b', '#ef8a62', '#f7f7f7', '#67a9cf', '#2166ac'],
+};
 
 let layer;
 updateLayer();
@@ -293,6 +303,7 @@ function updateLayer() {
     assets: preset.assets,
     bands: preset.bands,
     maxDisplayPixels: preset.maxDisplayPixels,
+    defaultColormap: colormaps[colormapSelect.value],
     getSourceOptions: (type, options) => {
       if (preset.sourceOptions) {
         const {selector, ...rest} = preset.sourceOptions;
@@ -315,3 +326,6 @@ function updateLayer() {
 
 button.addEventListener('click', updateLayer);
 select.addEventListener('change', updateLayer);
+colormapSelect.addEventListener('change', () => {
+  layer.setDefaultColormap(colormaps[colormapSelect.value]);
+});
