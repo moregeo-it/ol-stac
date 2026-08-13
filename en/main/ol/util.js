@@ -390,6 +390,59 @@ export function getGeoZarrSourceOptionsFromAsset(asset, selectedBands) {
     return options;
 }
 /**
+ * The default maximum number of pixels of the coarsest resolution level for
+ * an asset to be shown. Showing the full extent of an asset loads every
+ * tile of the coarsest level, so files without (sufficient) overviews
+ * would trigger excessive tile loads.
+ * @type {number}
+ */
+export const MAX_DEFAULT_DISPLAY_PIXELS = 16 * 1024 * 1024;
+/**
+ * Returns the number of pixels of the coarsest resolution level of a
+ * configured tile source (e.g. GeoTIFF or GeoZarr). This is the amount of
+ * data that displaying the full extent of the asset requires to load.
+ * @param {import('ol/source/Tile.js').default} source The configured (ready) source.
+ * @return {number} The number of pixels, or `Infinity` if unknown.
+ * @api
+ */
+export function getDisplayPixels(source) {
+    const tileGrid = source.getTileGrid();
+    if (!tileGrid) {
+        return Infinity;
+    }
+    const extent = tileGrid.getExtent();
+    const resolution = tileGrid.getResolutions()[0];
+    if (!extent || !(resolution > 0)) {
+        return Infinity;
+    }
+    let rowResolution = resolution;
+    // GeoZarr pixels are not necessarily square (e.g. a square array covering
+    // the full EPSG:4326 world); use the row resolution the source tracks for
+    // the coarsest level, if available
+    const zarrSource = /** @type {*} */ (source);
+    const wmtsTileGrid = /** @type {*} */ (tileGrid);
+    if (zarrSource.levelRowInfo_ &&
+        typeof wmtsTileGrid.getMatrixIds === 'function') {
+        const rowInfo = zarrSource.levelRowInfo_[wmtsTileGrid.getMatrixIds()[0]];
+        if (rowInfo && rowInfo.rowResolution > 0) {
+            rowResolution = rowInfo.rowResolution;
+        }
+    }
+    return (((extent[2] - extent[0]) / resolution) *
+        ((extent[3] - extent[1]) / rowResolution));
+}
+/**
+ * Checks whether displaying the full extent of a configured tile source at
+ * the coarsest available resolution requires excessive tile loads.
+ * @param {import('ol/source/Tile.js').default} source The configured (ready) source.
+ * @param {number} [maxPixels] The pixel limit for the coarsest resolution level.
+ * @return {boolean} `true` if the source exceeds the limit.
+ * @api
+ */
+export function exceedsDisplayLimit(source, maxPixels = MAX_DEFAULT_DISPLAY_PIXELS) {
+    return getDisplayPixels(source) > maxPixels;
+}
+/**
  * Returns the render (from the render extension's `renders` field) that
  * applies to the given asset: the first render that lists the asset's key
  * in its `assets` field, or the first render without an `assets` field.

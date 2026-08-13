@@ -80,10 +80,21 @@ export type Options = {
      */
     displayPreview?: boolean | undefined;
     /**
-     * Allow to display COGs/WOZs and, if `displayGeoTiffByDefault` is enabled, GeoTiffs,
+     * Allow to display COGs, Zarr and, if `displayGeoTiffByDefault` is enabled, GeoTiffs,
      * usually an asset with role `overview` or `visual`.
+     * Zarr assets other than Web-Optimized Zarr are only displayed if the STAC metadata declares what to render
+     * (see the datacube extension) and the store is within the `maxDisplayPixels` limit.
      */
     displayOverview?: boolean | undefined;
+    /**
+     * The maximum number of pixels the coarsest resolution level
+     * of a GeoTIFF or Zarr asset may have to be displayed client-side, as displaying the full extent of an asset
+     * loads every tile of that level. Files without (sufficient) overviews can easily exceed this limit.
+     * Larger assets are not chosen for the default visualization, and selecting one explicitly through `assets`
+     * reports an error through the `error` event (or renders through the tile server if `buildTileUrlTemplate`
+     * and `useTileLayerAsFallback` are set). Set to `Infinity` to display assets of any size.
+     */
+    maxDisplayPixels?: number | undefined;
     /**
      * Allow to display a layer
      * based on the information provided through the web map links extension.
@@ -280,8 +291,16 @@ export type Options = {
  * i.e. assets with any of the roles `thumbnail`, `overview`, or a link with relation type `preview`.
  * The previews are usually not covering the full extents and as such may be placed incorrectly on the map.
  * For performance reasons, it is recommended to enable this option if you pass in STAC API Items instead of `displayOverview`.
- * @property {boolean} [displayOverview=true] Allow to display COGs/WOZs and, if `displayGeoTiffByDefault` is enabled, GeoTiffs,
+ * @property {boolean} [displayOverview=true] Allow to display COGs, Zarr and, if `displayGeoTiffByDefault` is enabled, GeoTiffs,
  * usually an asset with role `overview` or `visual`.
+ * Zarr assets other than Web-Optimized Zarr are only displayed if the STAC metadata declares what to render
+ * (see the datacube extension) and the store is within the `maxDisplayPixels` limit.
+ * @property {number} [maxDisplayPixels=16777216] The maximum number of pixels the coarsest resolution level
+ * of a GeoTIFF or Zarr asset may have to be displayed client-side, as displaying the full extent of an asset
+ * loads every tile of that level. Files without (sufficient) overviews can easily exceed this limit.
+ * Larger assets are not chosen for the default visualization, and selecting one explicitly through `assets`
+ * reports an error through the `error` event (or renders through the tile server if `buildTileUrlTemplate`
+ * and `useTileLayerAsFallback` are set). Set to `Infinity` to display assets of any size.
  * @property {string|boolean|Array<Link|string>} [displayWebMapLink=false] Allow to display a layer
  * based on the information provided through the web map links extension.
  * If an array of links or link ids (property `id` in a Link Object) is provided, all corresponding layers will be shown.
@@ -424,6 +443,11 @@ declare class STACLayer extends LayerGroup {
      * @type {string|boolean|Array<Link|string>}
      */
     displayWebMapLink_: string | boolean | Array<Link | string>;
+    /**
+     * @type {number|undefined}
+     * @private
+     */
+    private maxDisplayPixels_;
     /**
      * @type {function((Asset|Link)):Promise<string|null>|string|null}
      * @private
@@ -583,6 +607,9 @@ declare class STACLayer extends LayerGroup {
     addLayerForLink(link: any): Promise<Array<Layer> | undefined>;
     /**
      * @param {Asset} [asset] A STAC Asset
+     * @param {boolean} [autoDisplay] Whether the asset was chosen automatically
+     * (not explicitly requested): skip it silently instead of reporting an
+     * error when it can't be displayed within the configured limits.
      * @return {Promise<Layer|undefined>} Resolves with a Layer or undefined when complete.
      * @private
      */
@@ -638,7 +665,29 @@ declare class STACLayer extends LayerGroup {
      * @private
      */
     private addLabelExtension_;
-    addGeoZarr_(asset: any): Promise<WebGLTileLayer | TileLayer<import("ol/source/Tile.js").default<import("ol/Tile.js").default>> | undefined>;
+    /**
+     * Checks the `maxDisplayPixels` limit for the given source.
+     * Returns `true` when the layer must not be added: automatically chosen
+     * assets are limited silently, for explicitly requested assets an error
+     * is thrown so that callers can fall back or report it.
+     * @param {import('ol/source/Tile.js').default} source The configured (ready) source.
+     * @param {Asset} asset The asset the source was created for.
+     * @param {boolean} autoDisplay Whether the asset was chosen automatically.
+     * @return {boolean} `true` if the asset must not be displayed.
+     * @private
+     */
+    private checkDisplayLimit_;
+    /**
+     * Adds a layer for a GeoZarr asset.
+     * @param {Asset} asset The Zarr asset to show.
+     * @param {boolean} [autoDisplay] Whether the asset was chosen automatically
+     * (not explicitly requested): skip it silently instead of reporting an
+     * error when it doesn't declare what to render or can't be displayed
+     * within the configured limits.
+     * @return {Promise<Layer|undefined>} The layer, if one was added.
+     * @private
+     */
+    private addGeoZarr_;
     /**
      * Update the layers shown manually based on the current configuration.
      * Usually this doesn't need to be called manually.
@@ -733,6 +782,4 @@ import SourceType from '../source/type.js';
 import LayerType from './type.js';
 import LayerGroup from 'ol/layer/Group.js';
 import VectorLayer from 'ol/layer/Vector.js';
-import WebGLTileLayer from 'ol/layer/WebGLTile.js';
-import TileLayer from 'ol/layer/Tile.js';
 //# sourceMappingURL=STAC.d.ts.map

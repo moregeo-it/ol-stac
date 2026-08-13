@@ -86,6 +86,24 @@ export function getBoundsStyle(originalStyle?: Style | undefined, layerGroup?: i
  */
 export function getGeoZarrSourceOptionsFromAsset(asset: any, selectedBands: Array<number | string>): any;
 /**
+ * Returns the number of pixels of the coarsest resolution level of a
+ * configured tile source (e.g. GeoTIFF or GeoZarr). This is the amount of
+ * data that displaying the full extent of the asset requires to load.
+ * @param {import('ol/source/Tile.js').default} source The configured (ready) source.
+ * @return {number} The number of pixels, or `Infinity` if unknown.
+ * @api
+ */
+export function getDisplayPixels(source: import('ol/source/Tile.js').default): number;
+/**
+ * Checks whether displaying the full extent of a configured tile source at
+ * the coarsest available resolution requires excessive tile loads.
+ * @param {import('ol/source/Tile.js').default} source The configured (ready) source.
+ * @param {number} [maxPixels] The pixel limit for the coarsest resolution level.
+ * @return {boolean} `true` if the source exceeds the limit.
+ * @api
+ */
+export function exceedsDisplayLimit(source: import('ol/source/Tile.js').default, maxPixels?: number | undefined): boolean;
+/**
  * Returns the render (from the render extension's `renders` field) that
  * applies to the given asset: the first render that lists the asset's key
  * in its `assets` field, or the first render without an `assets` field.
@@ -190,6 +208,14 @@ export const defaultBoundsStyle: Style;
  * @api
  */
 export const defaultCollectionStyle: Style;
+/**
+ * The default maximum number of pixels of the coarsest resolution level for
+ * an asset to be shown. Showing the full extent of an asset loads every
+ * tile of the coarsest level, so files without (sufficient) overviews
+ * would trigger excessive tile loads.
+ * @type {number}
+ */
+export const MAX_DEFAULT_DISPLAY_PIXELS: number;
 /**
  * Information for rendering a datacube asset.
  */

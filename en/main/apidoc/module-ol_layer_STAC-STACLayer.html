@@ -149,7 +149,7 @@ The layers created by this LayerGroup all have a 'stac' value that can be retrie
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L197">line 197</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L208">line 208</a>
         </div>
         
     </div>
@@ -535,8 +535,42 @@ For performance reasons, it is recommended to enable this option if you pass in 
 
             <td  class="description last">
                 
-                <p>Allow to display COGs/WOZs and, if <code>displayGeoTiffByDefault</code> is enabled, GeoTiffs,
-usually an asset with role <code>overview</code> or <code>visual</code>.</p></td>
+                <p>Allow to display COGs, Zarr and, if <code>displayGeoTiffByDefault</code> is enabled, GeoTiffs,
+usually an asset with role <code>overview</code> or <code>visual</code>.
+Zarr assets other than Web-Optimized Zarr are only displayed if the STAC metadata declares what to render
+(see the datacube extension) and the store is within the <code>maxDisplayPixels</code> limit.</p></td>
+        </tr>
+
+	
+
+        <tr class="">
+            
+                <td class="name"><code>maxDisplayPixels</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+                
+                    (defaults to 16777216)
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>The maximum number of pixels the coarsest resolution level
+of a GeoTIFF or Zarr asset may have to be displayed client-side, as displaying the full extent of an asset
+loads every tile of that level. Files without (sufficient) overviews can easily exceed this limit.
+Larger assets are not chosen for the default visualization, and selecting one explicitly through <code>assets</code>
+reports an error through the <code>error</code> event (or renders through the tile server if <code>buildTileUrlTemplate</code>
+and <code>useTileLayerAsFallback</code> are set). Set to <code>Infinity</code> to display assets of any size.</p></td>
         </tr>
 
 	
@@ -1217,7 +1251,7 @@ For tiled sources the tile URL template is rewritten, not the individual tile UR
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L704">line 704</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L721">line 721</a>
         </div>
         
     </div>
@@ -1360,7 +1394,7 @@ Resolves with a list of layers or undefined when complete.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1618">line 1618</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1695">line 1695</a>
         </div>
         
     </div>
@@ -1450,7 +1484,7 @@ The STAC assets.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1680">line 1680</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1757">line 1757</a>
         </div>
         
     </div>
@@ -1540,7 +1574,7 @@ Attributions for this layer.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L473">line 473</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L490">line 490</a>
         </div>
         
     </div>
@@ -1630,7 +1664,7 @@ The vector layer for the bounds
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1608">line 1608</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1685">line 1685</a>
         </div>
         
     </div>
@@ -1720,7 +1754,7 @@ The STAC child entities.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1598">line 1598</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1675">line 1675</a>
         </div>
         
     </div>
@@ -1810,7 +1844,7 @@ The STAC object.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1631">line 1631</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1708">line 1708</a>
         </div>
         
     </div>
@@ -1903,7 +1937,7 @@ The layer extent.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1468">line 1468</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1545">line 1545</a>
         </div>
         
     </div>
@@ -1993,7 +2027,7 @@ An array of links.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1455">line 1455</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1532">line 1532</a>
         </div>
         
     </div>
@@ -2083,7 +2117,7 @@ An array of links.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L485">line 485</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L502">line 502</a>
         </div>
         
     </div>
@@ -2174,7 +2208,7 @@ Is the layer empty?
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1528">line 1528</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1605">line 1605</a>
         </div>
         
     </div>
@@ -2339,7 +2373,7 @@ Resolves when all assets are rendered.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1563">line 1563</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1640">line 1640</a>
         </div>
         
     </div>
@@ -2821,8 +2855,42 @@ For performance reasons, it is recommended to enable this option if you pass in 
 
             <td  class="description last">
                 
-                <p>Allow to display COGs/WOZs and, if <code>displayGeoTiffByDefault</code> is enabled, GeoTiffs,
-usually an asset with role <code>overview</code> or <code>visual</code>.</p></td>
+                <p>Allow to display COGs, Zarr and, if <code>displayGeoTiffByDefault</code> is enabled, GeoTiffs,
+usually an asset with role <code>overview</code> or <code>visual</code>.
+Zarr assets other than Web-Optimized Zarr are only displayed if the STAC metadata declares what to render
+(see the datacube extension) and the store is within the <code>maxDisplayPixels</code> limit.</p></td>
+        </tr>
+
+	
+
+        <tr class="">
+            
+                <td class="name"><code>options.maxDisplayPixels</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+                
+                    (defaults to 16777216)
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>The maximum number of pixels the coarsest resolution level
+of a GeoTIFF or Zarr asset may have to be displayed client-side, as displaying the full extent of an asset
+loads every tile of that level. Files without (sufficient) overviews can easily exceed this limit.
+Larger assets are not chosen for the default visualization, and selecting one explicitly through <code>assets</code>
+reports an error through the <code>error</code> event (or renders through the tile server if <code>buildTileUrlTemplate</code>
+and <code>useTileLayerAsFallback</code> are set). Set to <code>Infinity</code> to display assets of any size.</p></td>
         </tr>
 
 	
@@ -3464,7 +3532,7 @@ Resolves when all items are rendered.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1512">line 1512</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1589">line 1589</a>
         </div>
         
     </div>
@@ -3593,7 +3661,7 @@ Resolves when all items are rendered.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1341">line 1341</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L1421">line 1421</a>
         </div>
         
     </div>

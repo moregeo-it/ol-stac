@@ -403,6 +403,11 @@ const presets &#x3D; {
     ),
   },
   &#x27;polar&#x27;: {
+    // This store is a single ~5700x4900 pixel resolution level, which is more
+    // data than the layer loads by default. Select the asset explicitly and
+    // raise the pixel limit to display it anyway.
+    assets: [&#x27;data&#x27;],
+    maxDisplayPixels: Infinity,
     data: zarrCollection(
       &#x27;thwaites-ice-velocity&#x27;,
       &#x27;Antarctic ice velocity subset for Thwaites Glacier (Zarr v2, EPSG:3031).&#x27;,
@@ -579,8 +584,9 @@ function updateLayer() {
   layer &#x3D; new STAC({
     url: preset.url,
     data: preset.data,
-    assets: preset.data ? [&#x27;data&#x27;] : null,
+    assets: preset.assets,
     bands: preset.bands,
+    maxDisplayPixels: preset.maxDisplayPixels,
     getSourceOptions: (type, options) &#x3D;&gt; {
       if (preset.sourceOptions) {
         const {selector, ...rest} &#x3D; preset.sourceOptions;

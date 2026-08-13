@@ -469,7 +469,7 @@
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L86">line 86</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.5.1/src/ol/layer/STAC.js#L89">line 89</a>
         </div>
         
     </div>
@@ -985,8 +985,40 @@ For performance reasons, it is recommended to enable this option if you pass in 
             </td>
 
             <td class="description last">
-                <p>Allow to display COGs/WOZs and, if <code>displayGeoTiffByDefault</code> is enabled, GeoTiffs,
-usually an asset with role <code>overview</code> or <code>visual</code>.</p>
+                <p>Allow to display COGs, Zarr and, if <code>displayGeoTiffByDefault</code> is enabled, GeoTiffs,
+usually an asset with role <code>overview</code> or <code>visual</code>.
+Zarr assets other than Web-Optimized Zarr are only displayed if the STAC metadata declares what to render
+(see the datacube extension) and the store is within the <code>maxDisplayPixels</code> limit.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>maxDisplayPixels</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+                
+                    <br>(defaults to 16777216)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The maximum number of pixels the coarsest resolution level
+of a GeoTIFF or Zarr asset may have to be displayed client-side, as displaying the full extent of an asset
+loads every tile of that level. Files without (sufficient) overviews can easily exceed this limit.
+Larger assets are not chosen for the default visualization, and selecting one explicitly through <code>assets</code>
+reports an error through the <code>error</code> event (or renders through the tile server if <code>buildTileUrlTemplate</code>
+and <code>useTileLayerAsFallback</code> are set). Set to <code>Infinity</code> to display assets of any size.</p>
                 
             </td>
         </tr>

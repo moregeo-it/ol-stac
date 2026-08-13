@@ -22,13 +22,13 @@ import { PMTilesRasterSource, PMTilesVectorSource } from 'ol-pmtiles';
 import * as pmtiles from 'pmtiles';
 import create, { Asset } from 'stac-js';
 import { fixGeoJson, toGeoJSON, unionBoundingBox } from 'stac-js/src/geo.js';
-import { geojsonMediaType, geotiffMediaTypes, zarrMediaTypes, } from 'stac-js/src/mediatypes.js';
+import { geojsonMediaType, geotiffMediaTypes, wozMediaTypes, zarrMediaTypes, } from 'stac-js/src/mediatypes.js';
 import { isObject } from 'stac-js/src/utils.js';
 import ErrorEvent from '../events/ErrorEvent.js';
 import { createImageLoadFunction, createTileLoadFunction } from '../http.js';
 import { getProjection } from '../proj.js';
 import SourceType from '../source/type.js';
-import { LABEL_EXTENSION, defaultBoundsStyle, defaultCollectionStyle, getBoundsStyle, getClassificationStyle, getGeoTiffSourceInfoFromAsset, getGeoZarrSourceOptionsFromAsset, getGeoZarrStyleFromAsset, getSpecificWebMapUrl, isScalar, toContinuousBBox, toOlExtent, } from '../util.js';
+import { LABEL_EXTENSION, defaultBoundsStyle, defaultCollectionStyle, exceedsDisplayLimit, getBoundsStyle, getClassificationStyle, getDisplayPixels, getGeoTiffSourceInfoFromAsset, getGeoZarrSourceOptionsFromAsset, getGeoZarrStyleFromAsset, getSpecificWebMapUrl, isScalar, toContinuousBBox, toOlExtent, } from '../util.js';
 import LayerType from './type.js';
 /**
  * @typedef {import("ol/extent.js").Extent} Extent
@@ -106,8 +106,16 @@ import LayerType from './type.js';
  * i.e. assets with any of the roles `thumbnail`, `overview`, or a link with relation type `preview`.
  * The previews are usually not covering the full extents and as such may be placed incorrectly on the map.
  * For performance reasons, it is recommended to enable this option if you pass in STAC API Items instead of `displayOverview`.
- * @property {boolean} [displayOverview=true] Allow to display COGs/WOZs and, if `displayGeoTiffByDefault` is enabled, GeoTiffs,
+ * @property {boolean} [displayOverview=true] Allow to display COGs, Zarr and, if `displayGeoTiffByDefault` is enabled, GeoTiffs,
  * usually an asset with role `overview` or `visual`.
+ * Zarr assets other than Web-Optimized Zarr are only displayed if the STAC metadata declares what to render
+ * (see the datacube extension) and the store is within the `maxDisplayPixels` limit.
+ * @property {number} [maxDisplayPixels=16777216] The maximum number of pixels the coarsest resolution level
+ * of a GeoTIFF or Zarr asset may have to be displayed client-side, as displaying the full extent of an asset
+ * loads every tile of that level. Files without (sufficient) overviews can easily exceed this limit.
+ * Larger assets are not chosen for the default visualization, and selecting one explicitly through `assets`
+ * reports an error through the `error` event (or renders through the tile server if `buildTileUrlTemplate`
+ * and `useTileLayerAsFallback` are set). Set to `Infinity` to display assets of any size.
  * @property {string|boolean|Array<Link|string>} [displayWebMapLink=false] Allow to display a layer
  * based on the information provided through the web map links extension.
  * If an array of links or link ids (property `id` in a Link Object) is provided, all corresponding layers will be shown.
@@ -262,6 +270,11 @@ class STACLayer extends LayerGroup {
          * @type {string|boolean|Array<Link|string>}
          */
         this.displayWebMapLink_ = options.displayWebMapLink || false;
+        /**
+         * @type {number|undefined}
+         * @private
+         */
+        this.maxDisplayPixels_ = options.maxDisplayPixels;
         /**
          * @type {function((Asset|Link)):Promise<string|null>|string|null}
          * @private
@@ -818,10 +831,13 @@ class STACLayer extends LayerGroup {
     }
     /**
      * @param {Asset} [asset] A STAC Asset
+     * @param {boolean} [autoDisplay] Whether the asset was chosen automatically
+     * (not explicitly requested): skip it silently instead of reporting an
+     * error when it can't be displayed within the configured limits.
      * @return {Promise<Layer|undefined>} Resolves with a Layer or undefined when complete.
      * @private
      */
-    async addGeoTiff_(asset) {
+    async addGeoTiff_(asset, autoDisplay = false) {
         if (this.buildTileUrlTemplate_ && !this.useTileLayerAsFallback_) {
             const layer = await this.addTileLayerForImagery_(asset);
             // If no tile server URL was provided for the asset, continue with client-side rendering
@@ -870,6 +886,9 @@ class STACLayer extends LayerGroup {
         });
         try {
             await status;
+            if (this.checkDisplayLimit_(source, asset, autoDisplay)) {
+                return;
+            }
             /**
              * @type {import("ol/layer/WebGLTile.js").Options}
              */
@@ -1082,7 +1101,43 @@ class STACLayer extends LayerGroup {
             this.handleError_(error);
         }
     }
-    async addGeoZarr_(asset) {
+    /**
+     * Checks the `maxDisplayPixels` limit for the given source.
+     * Returns `true` when the layer must not be added: automatically chosen
+     * assets are limited silently, for explicitly requested assets an error
+     * is thrown so that callers can fall back or report it.
+     * @param {import('ol/source/Tile.js').default} source The configured (ready) source.
+     * @param {Asset} asset The asset the source was created for.
+     * @param {boolean} autoDisplay Whether the asset was chosen automatically.
+     * @return {boolean} `true` if the asset must not be displayed.
+     * @private
+     */
+    checkDisplayLimit_(source, asset, autoDisplay) {
+        if (!exceedsDisplayLimit(source, this.maxDisplayPixels_)) {
+            return false;
+        }
+        if (!autoDisplay) {
+            const megapixels = Math.ceil(getDisplayPixels(source) / 1048576);
+            const error = new Error(`Asset ${asset.getKey()} is too large to display safely` +
+                ` (~${megapixels} megapixels at the coarsest resolution);` +
+                ` set the maxDisplayPixels option to display it anyway`);
+            // Allows applications to detect the error without matching the message
+            error.name = 'DisplayLimitError';
+            throw error;
+        }
+        return true;
+    }
+    /**
+     * Adds a layer for a GeoZarr asset.
+     * @param {Asset} asset The Zarr asset to show.
+     * @param {boolean} [autoDisplay] Whether the asset was chosen automatically
+     * (not explicitly requested): skip it silently instead of reporting an
+     * error when it doesn't declare what to render or can't be displayed
+     * within the configured limits.
+     * @return {Promise<Layer|undefined>} The layer, if one was added.
+     * @private
+     */
+    async addGeoZarr_(asset, autoDisplay = false) {
         if (this.buildTileUrlTemplate_ && !this.useTileLayerAsFallback_) {
             const layer = await this.addTileLayerForImagery_(asset);
             // If no tile server URL was provided for the asset, continue with client-side rendering
@@ -1091,6 +1146,15 @@ class STACLayer extends LayerGroup {
             }
         }
         let options = getGeoZarrSourceOptionsFromAsset(asset, this.bands_);
+        // Web-Optimized Zarr describes its bands in the store metadata,
+        // everything else must declare what to render in the STAC metadata
+        // (or provide it through getSourceOptions for explicitly selected assets)
+        const declaresRendering = () => asset.isType(wozMediaTypes) ||
+            Boolean(options.variable) ||
+            Boolean(options.bands && options.bands.length > 0);
+        if (autoDisplay && !declaresRendering()) {
+            return;
+        }
         options.url = this.getRequestUrlFor_(options.url, asset);
         const projection = await getProjection(asset);
         if (projection) {
@@ -1105,6 +1169,9 @@ class STACLayer extends LayerGroup {
             options = await this.getSourceOptions_(SourceType.GeoZarr, options, asset);
         }
         try {
+            if (!declaresRendering()) {
+                throw new Error(`Asset ${asset.getKey()} declares neither bands nor a datacube variable to render`);
+            }
             const GeoZarr = (await import('../source/GeoZarr.js')).default;
             const source = new GeoZarr(options);
             await new Promise((resolve, reject) => {
@@ -1117,6 +1184,9 @@ class STACLayer extends LayerGroup {
                     }
                 });
             });
+            if (this.checkDisplayLimit_(source, asset, autoDisplay)) {
+                return;
+            }
             /**
              * @type {import("ol/layer/WebGLTile.js").Options}
              */
@@ -1187,8 +1257,6 @@ class STACLayer extends LayerGroup {
                     return await this.addGeoTiff_(ref);
                 }
                 if (ref.isType(zarrMediaTypes)) {
-                    // When the user explicitly selects a Zarr asset, try to render it
-                    // even if it is not declared as web-optimized (multiscales profile)
                     return await this.addGeoZarr_(ref);
                 }
                 if (ref.canBrowserDisplayImage()) {
@@ -1220,14 +1288,13 @@ class STACLayer extends LayerGroup {
                     // Find a GeoTiff asset that we can visualize
                     const geotiff = data.getDefaultGeoFile('geotiff', true, !this.displayGeoTiffByDefault_);
                     if (geotiff) {
-                        layer = await this.addGeoTiff_(geotiff);
+                        layer = await this.addGeoTiff_(geotiff, true);
                     }
                 }
                 if (this.displayOverview_ && !layer) {
-                    // Find a Web-Optimized GeoZarr asset that we can visualize
-                    const geozarr = data.getDefaultGeoFile('geozarr', true, true);
+                    const geozarr = data.getDefaultGeoFile('geozarr', true, false);
                     if (geozarr) {
-                        layer = await this.addGeoZarr_(geozarr);
+                        layer = await this.addGeoZarr_(geozarr, true);
                     }
                 }
                 // Show web map links if available
