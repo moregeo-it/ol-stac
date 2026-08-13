@@ -122,7 +122,7 @@ describe('ol/layer/STAC', function () {
     });
 
     it('creates an instance', function () {
-      expect(group).to.be.a(STAC);
+      expect(group).to.be.a.instanceOf(STAC);
     });
   });
 
@@ -143,14 +143,14 @@ describe('ol/layer/STAC', function () {
       const link = group.getData().getLinksWithRels(['xyz'])[0];
       const [layer] = await group.addLayerForLink(link);
 
-      expect(calls.length).to.be(1);
-      expect(calls[0].type).to.be(LayerType.Tile);
-      expect(calls[0].options.source).to.be.an(XYZ);
-      expect(calls[0].reference.rel).to.be('xyz');
+      expect(calls.length).to.equal(1);
+      expect(calls[0].type).to.equal(LayerType.Tile);
+      expect(calls[0].options.source).to.be.an.instanceOf(XYZ);
+      expect(calls[0].reference.rel).to.equal('xyz');
 
-      expect(layer).to.be.a(TileLayer);
-      expect(layer.getOpacity()).to.be(0.5);
-      expect(layer.get('custom')).to.be(true);
+      expect(layer).to.be.a.instanceOf(TileLayer);
+      expect(layer.getOpacity()).to.equal(0.5);
+      expect(layer.get('custom')).to.equal(true);
     });
 
     it('supports asynchronous functions', async function () {
@@ -164,7 +164,7 @@ describe('ol/layer/STAC', function () {
       const link = group.getData().getLinksWithRels(['xyz'])[0];
       const [layer] = await group.addLayerForLink(link);
 
-      expect(layer.getOpacity()).to.be(0.25);
+      expect(layer.getOpacity()).to.equal(0.25);
     });
   });
 
@@ -174,13 +174,13 @@ describe('ol/layer/STAC', function () {
 
     beforeEach(function () {
       captured = [];
-      fetchStub = sinon
-        .stub(window, 'fetch')
-        .callsFake(() => Promise.resolve(new Response('', {status: 404})));
+      fetchStub = vi
+        .spyOn(window, 'fetch')
+        .mockImplementation(() => Promise.resolve(new Response('', {status: 404})));
     });
 
     afterEach(function () {
-      fetchStub.restore();
+      fetchStub.mockRestore();
       fetchStub = null;
     });
 
@@ -224,7 +224,7 @@ describe('ol/layer/STAC', function () {
       group.on('error', () => {});
       await waitFor(() => getCaptured(SourceType.GeoTIFF));
       const options = getCaptured(SourceType.GeoTIFF);
-      expect(options.sources[0].url).to.be(`${COG_ASSET.href}?token=1`);
+      expect(options.sources[0].url).to.equal(`${COG_ASSET.href}?token=1`);
     });
 
     it('rewrites the preview image URL', async function () {
@@ -237,7 +237,7 @@ describe('ol/layer/STAC', function () {
       group.on('error', () => {});
       await waitFor(() => getCaptured(SourceType.ImageStatic));
       const options = getCaptured(SourceType.ImageStatic);
-      expect(options.url).to.be(`${THUMBNAIL_ASSET.href}?token=1`);
+      expect(options.url).to.equal(`${THUMBNAIL_ASSET.href}?token=1`);
     });
 
     it('rewrites web map link URLs', async function () {
@@ -256,11 +256,11 @@ describe('ol/layer/STAC', function () {
       group.on('error', () => {});
       await waitFor(() => getCaptured(SourceType.XYZ));
       const options = getCaptured(SourceType.XYZ);
-      expect(options.url).to.be('https://example.com/{z}/{x}/{y}.png?token=1');
+      expect(options.url).to.equal('https://example.com/{z}/{x}/{y}.png?token=1');
     });
 
     it('rewrites the URL for the default fetch function', async function () {
-      fetchStub.callsFake(() =>
+      fetchStub.mockImplementation(() =>
         Promise.resolve(
           new Response(JSON.stringify(createItem()), {
             status: 200,
@@ -273,8 +273,8 @@ describe('ol/layer/STAC', function () {
         getRequestUrl: appendToken,
       });
       group.on('error', () => {});
-      await waitFor(() => fetchStub.called);
-      expect(fetchStub.firstCall.args[0]).to.be(
+      await waitFor(() => fetchStub.mock.calls.length > 0);
+      expect(fetchStub.mock.calls[0][0]).to.equal(
         'https://example.com/item.json?token=1',
       );
     });
@@ -288,7 +288,7 @@ describe('ol/layer/STAC', function () {
       group.on('error', () => {});
       await waitFor(() => getCaptured(SourceType.GeoTIFF));
       const options = getCaptured(SourceType.GeoTIFF);
-      expect(options.sources[0].url).to.be(COG_ASSET.href);
+      expect(options.sources[0].url).to.equal(COG_ASSET.href);
     });
 
     it('rewrites the WMTS URI template', async function () {
@@ -318,7 +318,7 @@ describe('ol/layer/STAC', function () {
     </TileMatrixSet>
   </Contents>
 </Capabilities>`;
-      fetchStub.callsFake(() =>
+      fetchStub.mockImplementation(() =>
         Promise.resolve(new Response(capabilities, {status: 200})),
       );
       const group = new STAC({
@@ -359,7 +359,7 @@ describe('ol/layer/STAC', function () {
             typeof s.getUrls === 'function' &&
             (s.getUrls() || []).length > 0,
         );
-      expect(source.getUrls()[0]).to.be(
+      expect(source.getUrls()[0]).to.equal(
         'https://example.com/tiles/{TileMatrix}/{TileRow}/{TileCol}.png?token=1',
       );
     });
@@ -379,7 +379,7 @@ describe('ol/layer/STAC', function () {
     let fetchStub;
 
     beforeEach(function () {
-      fetchStub = sinon.stub(window, 'fetch').callsFake(() =>
+      fetchStub = vi.spyOn(window, 'fetch').mockImplementation(() =>
         Promise.resolve(
           new Response(JSON.stringify(TILEJSON_DOC), {
             status: 200,
@@ -390,7 +390,7 @@ describe('ol/layer/STAC', function () {
     });
 
     afterEach(function () {
-      fetchStub.restore();
+      fetchStub.mockRestore();
       fetchStub = null;
     });
 
@@ -400,8 +400,8 @@ describe('ol/layer/STAC', function () {
         displayWebMapLink: true,
       });
       group.on('error', () => {});
-      await waitFor(() => fetchStub.called);
-      expect(fetchStub.firstCall.args[0]).to.be(TILEJSON_LINK.href);
+      await waitFor(() => fetchStub.mock.calls.length > 0);
+      expect(fetchStub.mock.calls[0][0]).to.equal(TILEJSON_LINK.href);
       await waitFor(() =>
         group
           .getLayersArray()
@@ -426,11 +426,11 @@ describe('ol/layer/STAC', function () {
         },
       });
       group.on('error', () => {});
-      await waitFor(() => fetchStub.called);
-      const init = fetchStub.firstCall.args[1];
+      await waitFor(() => fetchStub.mock.calls.length > 0);
+      const init = fetchStub.mock.calls[0][1];
       expect(init.headers).to.eql(AUTH_HEADERS);
       // The headers callback receives the STAC reference of the request
-      expect(refs.some((ref) => ref && ref.rel === 'tilejson')).to.be(true);
+      expect(refs.some((ref) => ref && ref.rel === 'tilejson')).to.equal(true);
     });
 
     it('rewrites the tile templates with getRequestUrl', async function () {
@@ -460,7 +460,7 @@ describe('ol/layer/STAC', function () {
         .find(
           (s) => s && typeof s.getTileJSON === 'function' && s.getTileJSON(),
         );
-      expect(source.getTileJSON().tiles[0]).to.be(
+      expect(source.getTileJSON().tiles[0]).to.equal(
         'https://example.com/tiles/{z}/{x}/{y}.png?token=1',
       );
     });
@@ -472,13 +472,13 @@ describe('ol/layer/STAC', function () {
 
     beforeEach(function () {
       captured = [];
-      fetchStub = sinon
-        .stub(window, 'fetch')
-        .callsFake(() => Promise.resolve(new Response('', {status: 404})));
+      fetchStub = vi
+        .spyOn(window, 'fetch')
+        .mockImplementation(() => Promise.resolve(new Response('', {status: 404})));
     });
 
     afterEach(function () {
-      fetchStub.restore();
+      fetchStub.mockRestore();
       fetchStub = null;
     });
 
@@ -536,7 +536,7 @@ describe('ol/layer/STAC', function () {
       group.on('error', () => {});
       await waitFor(() => getCaptured(SourceType.GeoTIFF));
       const options = getCaptured(SourceType.GeoTIFF);
-      expect(options.sourceOptions).to.be(undefined);
+      expect(options.sourceOptions).to.equal(undefined);
     });
 
     it('excludes URLs for which no headers are returned', async function () {
@@ -549,7 +549,7 @@ describe('ol/layer/STAC', function () {
       group.on('error', () => {});
       await waitFor(() => getCaptured(SourceType.GeoTIFF));
       const options = getCaptured(SourceType.GeoTIFF);
-      expect(options.sourceOptions).to.be(undefined);
+      expect(options.sourceOptions).to.equal(undefined);
     });
 
     it('passes headers to the GeoZarr store options', async function () {
@@ -573,7 +573,7 @@ describe('ol/layer/STAC', function () {
       group.on('error', () => {});
       await waitFor(() => getCaptured(SourceType.GeoZarr));
       const options = getCaptured(SourceType.GeoZarr);
-      expect(options.storeOptions).to.be(undefined);
+      expect(options.storeOptions).to.equal(undefined);
     });
 
     it('sets an imageLoadFunction for preview images', async function () {
@@ -598,7 +598,7 @@ describe('ol/layer/STAC', function () {
       group.on('error', () => {});
       await waitFor(() => getCaptured(SourceType.ImageStatic));
       const options = getCaptured(SourceType.ImageStatic);
-      expect(options.imageLoadFunction).to.be(undefined);
+      expect(options.imageLoadFunction).to.equal(undefined);
     });
 
     it('sets a tileLoadFunction for XYZ web map links', async function () {
@@ -635,11 +635,11 @@ describe('ol/layer/STAC', function () {
       group.on('error', () => {});
       await waitFor(() => getCaptured(SourceType.XYZ));
       const options = getCaptured(SourceType.XYZ);
-      expect(options.tileLoadFunction).to.be(undefined);
+      expect(options.tileLoadFunction).to.equal(undefined);
     });
 
     it('sends headers with the default fetch function', async function () {
-      fetchStub.callsFake(() =>
+      fetchStub.mockImplementation(() =>
         Promise.resolve(
           new Response(JSON.stringify(createItem()), {
             status: 200,
@@ -652,13 +652,13 @@ describe('ol/layer/STAC', function () {
         getRequestHeaders: () => AUTH_HEADERS,
       });
       group.on('error', () => {});
-      await waitFor(() => fetchStub.called);
-      const init = fetchStub.firstCall.args[1];
+      await waitFor(() => fetchStub.mock.calls.length > 0);
+      const init = fetchStub.mock.calls[0][1];
       expect(init.headers).to.eql(AUTH_HEADERS);
     });
 
     it('sends no headers with the default fetch function by default', async function () {
-      fetchStub.callsFake(() =>
+      fetchStub.mockImplementation(() =>
         Promise.resolve(
           new Response(JSON.stringify(createItem()), {
             status: 200,
@@ -670,9 +670,9 @@ describe('ol/layer/STAC', function () {
         url: 'https://example.com/item.json',
       });
       group.on('error', () => {});
-      await waitFor(() => fetchStub.called);
-      const init = fetchStub.firstCall.args[1];
-      expect(init && init.headers).to.be(undefined);
+      await waitFor(() => fetchStub.mock.calls.length > 0);
+      const init = fetchStub.mock.calls[0][1];
+      expect(init && init.headers).to.equal(undefined);
     });
 
     describe('PMTiles', function () {
@@ -695,9 +695,9 @@ describe('ol/layer/STAC', function () {
           },
         });
         group.on('error', () => {});
-        await waitFor(() => fetchStub.called);
+        await waitFor(() => fetchStub.mock.calls.length > 0);
         expect(getCaptured(SourceType.PMTiles)).to.be.an('object');
-        const url = fetchStub.firstCall.args[0];
+        const url = fetchStub.mock.calls[0][0];
         expect(url).to.contain('rewritten.example');
       });
 
@@ -709,9 +709,9 @@ describe('ol/layer/STAC', function () {
           getSourceOptions: captureSourceOptions,
         });
         group.on('error', () => {});
-        await waitFor(() => fetchStub.called);
-        const init = fetchStub.firstCall.args[1];
-        expect(init.headers.get('authorization')).to.be('Bearer 123');
+        await waitFor(() => fetchStub.mock.calls.length > 0);
+        const init = fetchStub.mock.calls[0][1];
+        expect(init.headers.get('authorization')).to.equal('Bearer 123');
       });
 
       /**
@@ -749,7 +749,7 @@ describe('ol/layer/STAC', function () {
 
       // Remove together with SourceType.PMTilesRaster/PMTilesVector in 2.0.0
       it('still calls getSourceOptions with the deprecated type-specific source type', async function () {
-        fetchStub.callsFake(() => Promise.resolve(pmtilesResponse(2)));
+        fetchStub.mockImplementation(() => Promise.resolve(pmtilesResponse(2)));
         const group = new STAC({
           data: createItem({}, [PMTILES_LINK]),
           displayWebMapLink: true,
@@ -760,12 +760,12 @@ describe('ol/layer/STAC', function () {
         await waitFor(() => getCaptured(SourceType.PMTilesRaster));
         // The generic source type is passed before the sniff,
         // the deprecated type-specific one after the sniff
-        expect(captured[0].type).to.be(SourceType.PMTiles);
+        expect(captured[0].type).to.equal(SourceType.PMTiles);
         expect(getCaptured(SourceType.PMTilesRaster)).to.be.an('object');
       });
 
       it('skips the deprecated call when the callback handles SourceType.PMTiles', async function () {
-        fetchStub.callsFake(() => Promise.resolve(pmtilesResponse(1)));
+        fetchStub.mockImplementation(() => Promise.resolve(pmtilesResponse(1)));
         const group = new STAC({
           data: createItem({}, [PMTILES_LINK]),
           displayWebMapLink: true,
@@ -780,8 +780,8 @@ describe('ol/layer/STAC', function () {
         group.on('error', () => {});
         await waitFor(() => group.getLayersArray().length >= 2);
         expect(getCaptured(SourceType.PMTiles)).to.be.an('object');
-        expect(getCaptured(SourceType.PMTilesVector)).to.be(undefined);
-        expect(getCaptured(SourceType.PMTilesRaster)).to.be(undefined);
+        expect(getCaptured(SourceType.PMTilesVector)).to.equal(undefined);
+        expect(getCaptured(SourceType.PMTilesRaster)).to.equal(undefined);
       });
     });
   });

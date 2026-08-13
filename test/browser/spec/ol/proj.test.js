@@ -39,8 +39,8 @@ describe('ol/proj', function () {
       const projection = await getProjection(
         fakeReference({'proj:code': 'EPSG:25832'}),
       );
-      expect(projection).to.be.ok();
-      expect(projection.getCode()).to.be('EPSG:25832');
+      expect(projection).to.be.ok;
+      expect(projection.getCode()).to.equal('EPSG:25832');
       // The definition must be usable, i.e. transforms must be registered
       const [lon, lat] = transform(
         [533000, 5929000],
@@ -53,7 +53,7 @@ describe('ol/proj', function () {
 
     it('falls back to the default projection without projection metadata', async function () {
       const projection = await getProjection(fakeReference({}), 'EPSG:4326');
-      expect(projection).to.be('EPSG:4326');
+      expect(projection).to.equal('EPSG:4326');
     });
   });
 });
