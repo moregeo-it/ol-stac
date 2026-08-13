@@ -9,15 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Support for rendering generic Zarr datacubes, not just Web-Optimized Zarr (WOZ)
 - Add `getLayerOptions` option to customize the options of the individual layers that are created for assets and links, e.g. to apply a style to a GeoTIFF or GeoZarr layer.
-  The function can be asynchronous and only delays the creation of the individual layer.
 - Add examples for computing an NDVI visualization for a GeoZarr datacube via `getLayerOptions` and header-based authentication
 - Add `getRequestHeaders` option to attach HTTP headers (e.g. for authentication) to the requests made by the layer.
   Errors from image/tile requests with headers are reported through the layer's `error` event.
 - Add `getRequestUrl` option to rewrite URLs before requests are made or sources are created, e.g. to append query parameters for authentication.
+- Add `geozarr-datacube` example that visualizes a variety of real-world Zarr datacubes through STAC metadata.
 
 ### Changed
 
+- All Zarr assets are considered for the default visualization, not only WOZ.
+  Non-WOZ assets are only shown automatically when the STAC metadata declares what to render.
+- GeoTIFF and Zarr assets whose coarsest resolution level exceeds the new `maxDisplayPixels` option
+  (default: 16 megapixels) are skipped for the default visualization, as displaying them requires
+  excessive tile loads. When such an asset is selected explicitly, an error is reported through
+  the `error` event, or the asset is rendered through the tile server if one is configured
+  (`buildTileUrlTemplate` with `useTileLayerAsFallback`). Raise the limit (e.g. to `Infinity`) to
+  display such assets anyway. The reported error can be detected through its name, `DisplayLimitError`.
+- Header-based authentication (`getRequestHeaders`) and URL rewriting (`getRequestUrl`) also apply to all requests made by the GeoZarr source.
 - The TileJSON manifest is loaded through the new request function and passed to the source, unless the `jsonp` or `tileJSON` source options are set.
 - `getSourceOptions` is called with `SourceType.PMTiles` before the PMTiles tile type is sniffed, so that URL
   rewrites (e.g. signed URLs) apply to all PMTiles requests.
