@@ -1,8 +1,8 @@
 /**
  * @module ol/shim/proj4
  */
-import * as olProj4 from 'ol/proj/proj4.js';
 import { get as getProjection } from 'ol/proj.js';
+import * as olProj4 from 'ol/proj/proj4.js';
 import proj4 from 'proj4';
 /**
  * `fromProjectionDefinition` from `ol/proj/proj4.js`, with a fallback for

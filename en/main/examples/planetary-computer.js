@@ -1,2 +1,36 @@
-"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[977],{9420:function(e,t,s){var n=s(5654),a=s(2459),r=s(1662),o=s(9160),c=s(3370),i=s(2247),u=s(9766),f=s(2533);async function l(e){const t=new URLSearchParams({href:e}),s=await fetch(`https://planetarycomputer.microsoft.com/api/sas/v1/sign?${t}`);return(await s.json()).href}(0,o.kz)(i.A);const p=new u.A({url:"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a/items/S2B_MSIL2A_20220909T185929_R013_T10TES_20220910T222807",assets:["visual"],async getSourceOptions(e,t){if(e===f.A.GeoTIFF)for(const e of t.sources)e.url=await l(e.url);return t}}),w=new r.A({source:new c.A}),m=new n.A({target:"map",layers:[w,p],view:new a.Ay({center:[0,0],zoom:0})});p.on("sourceready",()=>{m.getView().fit(p.getExtent())})}},function(e){var t;t=9420,e(e.s=t)}]);
+import { a as SourceType, c as register, l as WebGLTileLayer, m as View, o as proj4, s as OSM, t as STACLayer, u as Map } from "./common.js";
+//#region examples/planetary-computer.js
+register(proj4);
+/**
+* Get a Shared Access Signature Token to authorize asset requests.
+* See https://planetarycomputer.microsoft.com/docs/concepts/sas/
+* @param {string} href The unsigned URL.
+* @return {Promise<string>} A promise for the signed URL.
+*/
+async function sign(href) {
+	const params = new URLSearchParams({ href });
+	return (await (await fetch(`https://planetarycomputer.microsoft.com/api/sas/v1/sign?${params}`)).json()).href;
+}
+var layer = new STACLayer({
+	url: "https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a/items/S2B_MSIL2A_20220909T185929_R013_T10TES_20220910T222807",
+	assets: ["visual"],
+	async getSourceOptions(type, options) {
+		if (type === SourceType.GeoTIFF) for (const source of options.sources) source.url = await sign(source.url);
+		return options;
+	}
+});
+var background = new WebGLTileLayer({ source: new OSM() });
+var map = new Map({
+	target: "map",
+	layers: [background, layer],
+	view: new View({
+		center: [0, 0],
+		zoom: 0
+	})
+});
+layer.on("sourceready", () => {
+	map.getView().fit(layer.getExtent());
+});
+//#endregion
+
 //# sourceMappingURL=planetary-computer.js.map

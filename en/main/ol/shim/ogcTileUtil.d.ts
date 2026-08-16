@@ -7,5 +7,5 @@
  * @param {Array<*>} [tileMatrixSetLimits] Tile matrix set limits.
  * @return {*} Tile set info.
  */
-export function parseTileMatrixSet(sourceInfo: any, tileMatrixSet: any, tileUrlTemplate?: string | undefined, tileMatrixSetLimits?: any[] | undefined): any;
+export function parseTileMatrixSet(sourceInfo: any, tileMatrixSet: any, tileUrlTemplate?: string, tileMatrixSetLimits?: Array<any>): any;
 //# sourceMappingURL=ogcTileUtil.d.ts.map

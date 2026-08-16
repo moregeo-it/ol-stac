@@ -8,7 +8,7 @@
  * @return {function(import('ol/Image.js').default, string): void} The image load function.
  * @api
  */
-export function createImageLoadFunction(getHeaders: GetHeadersFn, onError?: OnErrorFn | null | undefined): (arg0: import('ol/Image.js').default, arg1: string) => void;
+export function createImageLoadFunction(getHeaders: GetHeadersFn, onError?: OnErrorFn | null): (arg0: import("ol/Image.js").default, arg1: string) => void;
 /**
  * Creates a `tileLoadFunction` for image tile sources (e.g. `ol/source/XYZ`)
  * that attaches the headers returned by the given function to the tile
@@ -20,7 +20,7 @@ export function createImageLoadFunction(getHeaders: GetHeadersFn, onError?: OnEr
  * @return {function(import('ol/Tile.js').default, string): void} The tile load function.
  * @api
  */
-export function createTileLoadFunction(getHeaders: GetHeadersFn, onError?: OnErrorFn | null | undefined): (arg0: import('ol/Tile.js').default, arg1: string) => void;
+export function createTileLoadFunction(getHeaders: GetHeadersFn, onError?: OnErrorFn | null): (arg0: import("ol/Tile.js").default, arg1: string) => void;
 /**
  * A function that returns the HTTP headers to send for the given URL,
  * or `null` if no additional headers should be sent.

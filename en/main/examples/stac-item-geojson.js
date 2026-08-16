@@ -1,2 +1,22 @@
-"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[188],{4711:function(e,t,a){var n=a(5654),s=a(2459),c=a(1662),o=a(9160),r=a(3370),i=a(2247),l=a(9766);(0,o.kz)(i.A);const u=new l.A({url:"https://transfer.data.aad.gov.au/aadc-aerial-photography/casc8916/collection.json",assets:["flightline-1","flightline-2"]}),w=new c.A({source:new r.A}),f=new n.A({target:"map",layers:[w,u],view:new s.Ay({center:[0,0],zoom:0})});u.on("sourceready",()=>{f.getView().fit(u.getExtent())})}},function(e){var t;t=4711,e(e.s=t)}]);
+import { c as register, l as WebGLTileLayer, m as View, o as proj4, s as OSM, t as STACLayer, u as Map } from "./common.js";
+//#region examples/stac-item-geojson.js
+register(proj4);
+var layer = new STACLayer({
+	url: "https://transfer.data.aad.gov.au/aadc-aerial-photography/casc8916/collection.json",
+	assets: ["flightline-1", "flightline-2"]
+});
+var background = new WebGLTileLayer({ source: new OSM() });
+var map = new Map({
+	target: "map",
+	layers: [background, layer],
+	view: new View({
+		center: [0, 0],
+		zoom: 0
+	})
+});
+layer.on("sourceready", () => {
+	map.getView().fit(layer.getExtent());
+});
+//#endregion
+
 //# sourceMappingURL=stac-item-geojson.js.map

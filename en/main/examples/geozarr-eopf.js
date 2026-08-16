@@ -1,2 +1,85 @@
-"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[732],{2695:function(e,t,n){var a=n(5654),r=n(2459),l=n(1662),o=n(9160),u=n(3370),s=n(2247),c=n(9766);(0,o.kz)(s.A);const d=new l.A({source:new u.A}),i=new a.A({target:"map",layers:[d],view:new r.Ay({center:[0,0],zoom:0})}),m=document.getElementById("url-select"),v=document.getElementById("custom-url"),y=document.getElementById("load-url"),p=document.getElementById("min"),g=document.getElementById("max");let E;function w(){return{color:["color",["interpolate",["linear"],["band",1],parseFloat(p.value),0,parseFloat(g.value),255],["interpolate",["linear"],["band",2],parseFloat(p.value),0,parseFloat(g.value),255],["interpolate",["linear"],["band",3],parseFloat(p.value),0,parseFloat(g.value),255]]}}function f(){return E&&i.removeLayer(E),E=new c.A({url:"custom"===m.value?v.value:m.value,style:w()}),E.on("sourceready",()=>{i.getView().fit(E.getExtent())}),E.on("error",e=>{alert("An unexpected error occurred: "+e.error.message)}),i.addLayer(E),E}f(),y.addEventListener("click",f),m.addEventListener("change",()=>{"custom"===m.value?(v.style.display="",v.focus()):v.style.display="none"}),p.addEventListener("change",()=>{E.setStyle(w())}),g.addEventListener("change",()=>{E.setStyle(w())})}},function(e){var t;t=2695,e(e.s=t)}]);
+import { c as register, l as WebGLTileLayer, m as View, o as proj4, s as OSM, t as STACLayer, u as Map } from "./common.js";
+//#region examples/geozarr-eopf.js
+register(proj4);
+var background = new WebGLTileLayer({ source: new OSM() });
+var map = new Map({
+	target: "map",
+	layers: [background],
+	view: new View({
+		center: [0, 0],
+		zoom: 0
+	})
+});
+var select = document.getElementById("url-select");
+var input = document.getElementById("custom-url");
+var button = document.getElementById("load-url");
+var min = document.getElementById("min");
+var max = document.getElementById("max");
+var layer;
+updateLayer();
+function getUrl() {
+	return select.value === "custom" ? input.value : select.value;
+}
+function getStyle() {
+	return { color: [
+		"color",
+		[
+			"interpolate",
+			["linear"],
+			["band", 1],
+			parseFloat(min.value),
+			0,
+			parseFloat(max.value),
+			255
+		],
+		[
+			"interpolate",
+			["linear"],
+			["band", 2],
+			parseFloat(min.value),
+			0,
+			parseFloat(max.value),
+			255
+		],
+		[
+			"interpolate",
+			["linear"],
+			["band", 3],
+			parseFloat(min.value),
+			0,
+			parseFloat(max.value),
+			255
+		]
+	] };
+}
+function updateLayer() {
+	if (layer) map.removeLayer(layer);
+	layer = new STACLayer({
+		url: getUrl(),
+		style: getStyle()
+	});
+	layer.on("sourceready", () => {
+		map.getView().fit(layer.getExtent());
+	});
+	layer.on("error", (event) => {
+		alert("An unexpected error occurred: " + event.error.message);
+	});
+	map.addLayer(layer);
+	return layer;
+}
+button.addEventListener("click", updateLayer);
+select.addEventListener("change", () => {
+	if (select.value === "custom") {
+		input.style.display = "";
+		input.focus();
+	} else input.style.display = "none";
+});
+min.addEventListener("change", () => {
+	layer.setStyle(getStyle());
+});
+max.addEventListener("change", () => {
+	layer.setStyle(getStyle());
+});
+//#endregion
+
 //# sourceMappingURL=geozarr-eopf.js.map

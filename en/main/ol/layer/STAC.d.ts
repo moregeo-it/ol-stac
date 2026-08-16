@@ -6,11 +6,11 @@ export type Link = any;
 export type STAC = any;
 export type STACObject = any;
 export type Map = import("ol/Map.js").default;
-export type Style = import('ol/style/Style.js').default;
-export type SourceOptions = import('../source/type.js').SourceOptions;
-export type LayerOptions = import('./type.js').LayerOptions;
-export type GetHeadersFn = import('../http.js').GetHeadersFn;
-export type OnErrorFn = import('../http.js').OnErrorFn;
+export type Style = import("ol/style/Style.js").default;
+export type SourceOptions = import("../source/type.js").SourceOptions;
+export type LayerOptions = import("./type.js").LayerOptions;
+export type GetHeadersFn = import("../http.js").GetHeadersFn;
+export type OnErrorFn = import("../http.js").OnErrorFn;
 export type LoadFunction = (arg0: (import("ol/Image.js").default | import("ol/Tile.js").default), arg1: string) => void;
 export type Options = {
     /**
@@ -620,7 +620,7 @@ declare class STACLayer extends LayerGroup {
      * @return {Promise<Array<Layer>|undefined>} Resolves with a list of layers or undefined when complete.
      * @api
      */
-    addLayerForLink(link: any): Promise<Array<Layer> | undefined>;
+    addLayerForLink(link: Link): Promise<Array<Layer> | undefined>;
     /**
      * @param {Asset} [asset] A STAC Asset
      * @param {boolean} [autoDisplay] Whether the asset was chosen automatically
@@ -711,7 +711,7 @@ declare class STACLayer extends LayerGroup {
      * @return {Promise} Resolves once the layers are updated.
      * @api
      */
-    updateLayers(emit?: boolean | undefined): Promise<any>;
+    updateLayers(emit?: boolean): Promise<any>;
     /**
      * Indicates whether the LayerGroup shows only the bounds layer (i.e. no imagery/tile layers).
      * @return {boolean} `true` if only the bounds layer is shown, `false` otherwise.
@@ -748,7 +748,7 @@ declare class STACLayer extends LayerGroup {
      * @return {Promise} Resolves when all assets are rendered.
      * @api
      */
-    setAssets(assets: Array<string | Asset> | null, updateLayers?: boolean | undefined): Promise<any>;
+    setAssets(assets: Array<string | Asset> | null, updateLayers?: boolean): Promise<any>;
     /**
      * Updates the children STAC entities to be rendered.
      *
@@ -760,7 +760,7 @@ declare class STACLayer extends LayerGroup {
      * @return {Promise} Resolves when all items are rendered.
      * @api
      */
-    setChildren(childs: APICollection | any | Array<STAC | any> | null, options?: Options | null | undefined, updateLayers?: boolean | undefined): Promise<any>;
+    setChildren(childs: APICollection | any | Array<STAC | any> | null, options?: Options | null, updateLayers?: boolean): Promise<any>;
     /**
      * Get the STAC object.
      *

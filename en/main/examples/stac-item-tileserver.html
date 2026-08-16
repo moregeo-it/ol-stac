@@ -197,13 +197,13 @@
 
       <div class="row-fluid">
         <h5 class="source-heading">main.js</h5>
-        <pre><code id="example-js-source" class="language-js">import Map from &#x27;ol/Map.js&#x27;;
+        <pre><code id="example-js-source" class="language-js">import STAC from &#x27;ol-stac&#x27;;
+import Map from &#x27;ol/Map.js&#x27;;
 import View from &#x27;ol/View.js&#x27;;
 import TileLayer from &#x27;ol/layer/WebGLTile.js&#x27;;
 import {register} from &#x27;ol/proj/proj4.js&#x27;;
 import OSM from &#x27;ol/source/OSM.js&#x27;;
 import proj4 from &#x27;proj4&#x27;;
-import STAC from &#x27;ol-stac&#x27;;
 
 register(proj4); // required to support source reprojection
 
@@ -263,10 +263,11 @@ layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
   &quot;name&quot;: &quot;stac-item-tileserver&quot;,
   &quot;dependencies&quot;: {
     &quot;ol-stac&quot;: &quot;1.6.0&quot;,
+    &quot;ol&quot;: &quot;&gt;&#x3D;9.0.0&quot;,
     &quot;proj4&quot;: &quot;^2.16.1&quot;
   },
   &quot;devDependencies&quot;: {
-    &quot;vite&quot;: &quot;^3.2.3&quot;
+    &quot;vite&quot;: &quot;^8.1.5&quot;
   },
   &quot;scripts&quot;: {
     &quot;start&quot;: &quot;vite&quot;,
@@ -277,8 +278,7 @@ layer.on(&#x27;sourceready&#x27;, () &#x3D;&gt; {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="common.js"></script>
-    <script src="stac-item-tileserver.js"></script>
+    <script type="module" src="stac-item-tileserver.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-core.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/autoloader/prism-autoloader.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/toolbar/prism-toolbar.min.js"></script>

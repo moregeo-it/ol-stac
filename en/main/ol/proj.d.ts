@@ -21,6 +21,6 @@ export function registerProjection(proj: string | any, type: string, lookup?: Fu
  * @return {Promise<ProjectionLike>} The projection, if any.
  */
 export function getProjection(reference: any, defaultProjection?: ProjectionLike): Promise<ProjectionLike>;
-export type ProjectionLike = import('ol/proj.js').ProjectionLike;
-export type Projection = import('ol/proj/Projection.js').default;
+export type ProjectionLike = import("ol/proj.js").ProjectionLike;
+export type Projection = import("ol/proj/Projection.js").default;
 //# sourceMappingURL=proj.d.ts.map

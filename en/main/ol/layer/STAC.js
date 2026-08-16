@@ -1,6 +1,7 @@
 /**
  * @module ol/layer/STAC
  */
+import { PMTilesRasterSource, PMTilesVectorSource } from 'ol-pmtiles';
 import { isEmpty } from 'ol/extent.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import WMTSCapabilities from 'ol/format/WMTSCapabilities.js';
@@ -18,7 +19,6 @@ import VectorSource from 'ol/source/Vector.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
 import WMTS, { optionsFromCapabilities } from 'ol/source/WMTS.js';
 import XYZ from 'ol/source/XYZ.js';
-import { PMTilesRasterSource, PMTilesVectorSource } from 'ol-pmtiles';
 import * as pmtiles from 'pmtiles';
 import create, { Asset } from 'stac-js';
 import { fixGeoJson, toGeoJSON, unionBoundingBox } from 'stac-js/src/geo.js';

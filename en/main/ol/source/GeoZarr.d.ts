@@ -334,7 +334,7 @@ export default class GeoZarr extends DataTileSource<import("ol/DataTile.js").def
      *     to change; see the `dimensions` constructor option.
      */
     updateDimensions(dimensions: {
-        [x: string]: number | string;
+        [x: string]: string | number;
     }): void;
     /**
      * Locate the spatial (y, x) axes of an array (see {@link getSpatialAxes}) and
@@ -421,7 +421,7 @@ export type ShardInfo = {
      */
     innerChunkShape: Array<number>;
 };
-export type ResampleMethod = 'nearest' | 'linear';
+export type ResampleMethod = "nearest" | "linear";
 export type Band = {
     /**
      * The band name.
@@ -450,14 +450,14 @@ export type Options = {
     /**
      * When `bands` contains plain strings, this must be the full URL to the
      * multiscales group (e.g. `'https://example.com/store.zarr/measurements/reflectance'`).
-     * When `bands` contains {@link Band } objects, this is the base URL from which each band's
+     * When `bands` contains {@link Band} objects, this is the base URL from which each band's
      * `group` path is resolved (e.g. `'https://example.com/store.zarr/satellite/sentinel2'`).
      */
     url: string;
     /**
      * The bands to render, for stores where each
      * band is a separate array. Mutually exclusive with `variable`.  Each entry is either a band name
-     * string (single-group mode) or a {@link Band } object specifying both the band name and the
+     * string (single-group mode) or a {@link Band} object specifying both the band name and the
      * group it belongs to (multi-group mode).  In multi-group mode, the first band's group
      * determines the tile grid and must follow at least the proj: and spatial: conventions.
      * If it also has a multiscales layout (all three conventions), multiple resolution levels are
@@ -495,7 +495,7 @@ export type Options = {
      * dimension of the band arrays, keyed by dimension name (e.g. `{time: 0}` for the first time step
      * of a `[time, y, x]` cube); unspecified dimensions default to `0`. Names come from each array's
      * `dimension_names`, or are the axis position as a string when it has none. Only integer indices
-     * are supported. Use the names from {@link getDimensions }, and change the selection on the fly with
+     * are supported. Use the names from {@link getDimensions}, and change the selection on the fly with
      * {@link module :ol/source/GeoZarr~GeoZarr#updateDimensions}.
      */
     dimensions?: {
@@ -541,12 +541,12 @@ export type DatasetAttributes = {
     zarr_conventions: Array<{
         uuid: string;
     }>;
-    'spatial:bbox': import("ol/extent.js").Extent;
-    'spatial:shape': Array<number>;
-    'spatial:dimensions'?: Array<string>;
-    'proj:wkt2'?: string;
-    'proj:projjson'?: any;
-    'proj:code'?: string | null;
+    "spatial:bbox": import("ol/extent.js").Extent;
+    "spatial:shape": Array<number>;
+    "spatial:dimensions"?: Array<string>;
+    "proj:wkt2"?: string;
+    "proj:projjson"?: any;
+    "proj:code"?: string | null;
 };
 export type Multiscales = {
     /**

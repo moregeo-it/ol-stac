@@ -51,14 +51,14 @@ export function getStyle(strokeColor: ColorLike, strokeWidth: number, fillColor?
  * @return {Promise<Array<STAC>>} A list of STAC objects
  * @api
  */
-export function getStacObjectsForEvent(event: import('ol/MapBrowserEvent.js').default, exclude?: any, selectedFeatures?: import("ol/Collection.js").default<any> | undefined, hitTolerance?: number | undefined): Promise<Array<STAC>>;
+export function getStacObjectsForEvent(event: import("ol/MapBrowserEvent.js").default, exclude?: STAC, selectedFeatures?: Collection<Feature>, hitTolerance?: number): Promise<Array<STAC>>;
 /**
  * Get the source info for the GeoTiff from the asset.
  * @param {import('stac-js').Asset} asset The asset to read the information from.
  * @param {Array<number|string>} selectedBands The bands to show. One-based index of the band, or the name of the band.
  * @return {import('ol/source/GeoTIFF.js').SourceInfo} The source info for the GeoTiff asset
  */
-export function getGeoTiffSourceInfoFromAsset(asset: any, selectedBands: Array<number | string>): import('ol/source/GeoTIFF.js').SourceInfo;
+export function getGeoTiffSourceInfoFromAsset(asset: any, selectedBands: Array<number | string>): import("ol/source/GeoTIFF.js").SourceInfo;
 /**
  * Returns the style for the footprint.
  * Removes the fill if anything is meant to be shown in the bounds.
@@ -68,7 +68,7 @@ export function getGeoTiffSourceInfoFromAsset(asset: any, selectedBands: Array<n
  * @return {Style} The adapted style for the footprint.
  * @api
  */
-export function getBoundsStyle(originalStyle?: Style | undefined, layerGroup?: import("./layer/STAC.js").default | undefined): Style;
+export function getBoundsStyle(originalStyle?: Style, layerGroup?: import("./layer/STAC.js").default): Style;
 /**
  * Parse the GeoZarr source options from an asset.
  *
@@ -84,7 +84,7 @@ export function getBoundsStyle(originalStyle?: Style | undefined, layerGroup?: i
  * @return {Object} The GeoZarr source options
  * @api
  */
-export function getGeoZarrSourceOptionsFromAsset(asset: any, selectedBands: Array<number | string>): any;
+export function getGeoZarrSourceOptionsFromAsset(asset: Asset, selectedBands: Array<number | string>): any;
 /**
  * Returns the number of pixels of the coarsest resolution level of a
  * configured tile source (e.g. GeoTIFF or GeoZarr). This is the amount of
@@ -93,7 +93,7 @@ export function getGeoZarrSourceOptionsFromAsset(asset: any, selectedBands: Arra
  * @return {number} The number of pixels, or `Infinity` if unknown.
  * @api
  */
-export function getDisplayPixels(source: import('ol/source/Tile.js').default): number;
+export function getDisplayPixels(source: import("ol/source/Tile.js").default): number;
 /**
  * Checks whether displaying the full extent of a configured tile source at
  * the coarsest available resolution requires excessive tile loads.
@@ -102,7 +102,7 @@ export function getDisplayPixels(source: import('ol/source/Tile.js').default): n
  * @return {boolean} `true` if the source exceeds the limit.
  * @api
  */
-export function exceedsDisplayLimit(source: import('ol/source/Tile.js').default, maxPixels?: number | undefined): boolean;
+export function exceedsDisplayLimit(source: import("ol/source/Tile.js").default, maxPixels?: number): boolean;
 /**
  * Returns the render (from the render extension's `renders` field) that
  * applies to the given asset: the first render that lists the asset's key
@@ -112,7 +112,7 @@ export function exceedsDisplayLimit(source: import('ol/source/Tile.js').default,
  * @return {Object|null} The render object, or `null`.
  * @api
  */
-export function getRenderForAsset(asset: any): any | null;
+export function getRenderForAsset(asset: Asset): any | null;
 /**
  * Creates a WebGLTileLayer style for a GeoZarr layer from the STAC metadata.
  *
@@ -137,14 +137,14 @@ export function getRenderForAsset(asset: any): any | null;
  * @return {Object|null} A WebGLTileLayer style, or `null` if the metadata provides none.
  * @api
  */
-export function getGeoZarrStyleFromAsset(asset: any, sourceOptions: any, defaultColormap?: (string | import("ol/color.js").Color)[] | null | undefined): any | null;
+export function getGeoZarrStyleFromAsset(asset: Asset, sourceOptions: any, defaultColormap?: Array<import("ol/color.js").Color | string> | null): any | null;
 /**
  * Get a URL from a web-map-link that is specific enough, i.e.
  * replaces any occurances of {s} if possible, otherwise returns null.
  * @param {import('./layer/STAC.js').Link} link The web map link.
  * @return {string|null} Specific URL
  */
-export function getSpecificWebMapUrl(link: any): string | null;
+export function getSpecificWebMapUrl(link: import("./layer/STAC.js").Link): string | null;
 /**
  * Checks whether the given value is a scalar (string, number, boolean).
  * @param {*} value The value to check
@@ -160,7 +160,7 @@ export function isScalar(value: any): boolean;
  * @return {Array<Object>|null} The classification classes, or null
  * @api
  */
-export function getClassificationClasses(asset: any, bands?: number[] | undefined): Array<any> | null;
+export function getClassificationClasses(asset: any, bands?: Array<number>): Array<any> | null;
 /**
  * Builds a WebGL tile layer style for classified raster data based on
  * `classification:classes` from a STAC Asset.
@@ -174,7 +174,7 @@ export function getClassificationClasses(asset: any, bands?: number[] | undefine
  * @return {Object|null} A WebGL tile layer style object, or null
  * @api
  */
-export function getClassificationStyle(asset: any, bands?: number[] | undefined, styleBand?: number | undefined): any | null;
+export function getClassificationStyle(asset: any, bands?: Array<number>, styleBand?: number): any | null;
 /**
  * Creates a WebGLTileLayer style for a GeoTIFF layer from the STAC metadata.
  *
@@ -203,7 +203,7 @@ export function getClassificationStyle(asset: any, bands?: number[] | undefined,
  * @return {Object|null} A WebGL tile layer style object, or null
  * @api
  */
-export function getGeoTiffStyleFromAsset(asset: any, sourceInfo: import('ol/source/GeoTIFF.js').SourceInfo, defaultColormap?: (string | import("ol/color.js").Color)[] | null | undefined): any | null;
+export function getGeoTiffStyleFromAsset(asset: any, sourceInfo: import("ol/source/GeoTIFF.js").SourceInfo, defaultColormap?: Array<import("ol/color.js").Color | string> | null): any | null;
 /**
  * @typedef {import('ol/colorlike.js').ColorLike} ColorLike
  */
@@ -280,9 +280,9 @@ export type DatacubeRenderingInfo = {
      */
     extent: Array<number> | null;
 };
-export type ColorLike = import('ol/colorlike.js').ColorLike;
+export type ColorLike = import("ol/colorlike.js").ColorLike;
 export type Collection<T> = import("ol/Collection.js").default<any>;
-export type Feature = import('ol/Feature.js').default;
+export type Feature = import("ol/Feature.js").default;
 export type Asset = any;
 export type Band = any;
 export type STAC = any;

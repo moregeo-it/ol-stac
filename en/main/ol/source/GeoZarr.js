@@ -12,8 +12,8 @@ import { getUid } from 'ol/util.js';
 import DataTileSource from 'ol/source/DataTile.js';
 import { parseTileMatrixSet } from '../shim/ogcTileUtil.js';
 const REQUIRED_ZARR_CONVENTIONS = [
-    'd35379db-88df-4056-af3a-620245f8e347',
-    'f17cb550-5864-4468-aeb7-f3180cfb622f',
+    'd35379db-88df-4056-af3a-620245f8e347', // multiscales
+    'f17cb550-5864-4468-aeb7-f3180cfb622f', // proj:
     '689b58e2-cf7b-45e0-9fff-9cfc0883d6b4', // spatial:
 ];
 /**
