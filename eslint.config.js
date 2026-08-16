@@ -1,4 +1,3 @@
-import tsParser from '@typescript-eslint/parser';
 import openlayers from 'eslint-config-openlayers';
 
 /**
@@ -18,28 +17,28 @@ export default [
   {
     name: 'common-config',
     rules: {
-      'import/no-unresolved': [
+      'jsdoc/reject-any-type': ['off'], //TODO: make codebase work with 'error' instead of 'off'
+      'jsdoc/reject-function-type': ['off'], //TODO: make codebase work with 'error' instead of 'off'
+      'no-unused-vars': [
         'error',
-        {
-          'ignore': ['@octokit/rest', '@typescript-eslint/parser'],
-        },
+        {'vars': 'all', 'args': 'none', 'caughtErrorsIgnorePattern': '^_$'},
       ],
-      'no-unused-vars': ['error', {'caughtErrorsIgnorePattern': '^_$'}],
     },
   },
   {
     // Vendored from OpenLayers; kept line-identical to the upstream file
     // (only the import paths differ), so the import order must not change.
+    // Drop the organize-imports plugin here so imports are not reordered.
     name: 'vendored-geozarr-config',
     files: ['src/ol/source/GeoZarr.js'],
     rules: {
-      'import/order': 'off',
-      // OpenLayers keeps the (currently unused) loader `options` parameter.
-      // An inline eslint-disable is not an option, as it would be flagged
-      // (and removed by --fix) as unused in the OpenLayers repository.
-      'no-unused-vars': [
+      'prettier/prettier': [
         'error',
-        {'argsIgnorePattern': '^options$', 'caughtErrorsIgnorePattern': '^_$'},
+        {
+          singleQuote: true,
+          bracketSpacing: false,
+          quoteProps: 'preserve',
+        },
       ],
     },
   },
@@ -68,10 +67,10 @@ export default [
     files: ['test/**/*'],
     languageOptions: {
       globals: {
-        after: 'readonly',
+        afterAll: 'readonly',
         afterEach: 'readonly',
         afterLoadText: 'readonly',
-        before: 'readonly',
+        beforeAll: 'readonly',
         beforeEach: 'readonly',
         createMapDiv: 'readonly',
         defineCustomMapEl: 'readonly',
@@ -80,19 +79,9 @@ export default [
         disposeMap: 'readonly',
         it: 'readonly',
         render: 'readonly',
-        sinon: 'readonly',
+        vi: 'readonly',
         where: 'readonly',
       },
-    },
-  },
-  {
-    name: 'test-typescript-config',
-    files: ['test/typescript/**/*.ts'],
-    languageOptions: {
-      parser: tsParser,
-    },
-    rules: {
-      'import/named': 'off',
     },
   },
 ];
