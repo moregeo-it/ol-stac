@@ -17,7 +17,14 @@ const builder = Metalsmith(baseDir)
   })
   .use(inPlace({transform: 'handlebars'}))
   .use(markdown())
-  .use(layouts());
+  .use(
+    layouts({
+      directory: 'layouts',
+      transform: 'handlebars',
+      default: 'default.hbs',
+      pattern: '**/*.(html|hbs|md)',
+    }),
+  );
 
 builder.build(async (err) => {
   if (err) {
