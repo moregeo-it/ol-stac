@@ -391,7 +391,7 @@ export function getBoundsStyle(originalStyle, layerGroup) {
  * If the asset (or its containing Item/Collection) describes the store
  * through the datacube extension (`cube:variables` and `cube:dimensions`),
  * the store is treated as an n-dimensional datacube: the data variable and a
- * selector for its non-spatial dimensions are derived from the metadata.
+ * selection for its non-spatial dimensions are derived from the metadata.
  * Otherwise, each band is expected to be a separate array in the store,
  * addressed by the band names from the STAC `bands` field.
  *
@@ -407,15 +407,15 @@ export function getGeoZarrSourceOptionsFromAsset(asset, selectedBands) {
     const cube = getDatacubeRenderingInfo(asset);
     if (cube) {
         options.variable = cube.variable;
-        options.selector = {};
+        options.dimensions = {};
         if (cube.bandDimension) {
             const indices = getDatacubeBandIndices(cube.bandDimension.values, selectedBands, asset);
             if (indices.length > 0) {
-                options.selector[cube.bandDimension.name] = indices;
+                options.dimensions[cube.bandDimension.name] = indices;
             }
         }
         for (const dimension of cube.extraDimensions) {
-            options.selector[dimension.name] = dimension.defaultIndex;
+            options.dimensions[dimension.name] = dimension.defaultIndex;
         }
         if (cube.extent) {
             options.extent = cube.extent;
@@ -732,10 +732,10 @@ export function getGeoZarrStyleFromAsset(asset, sourceOptions, defaultColormap =
     /** @type {Array<string>} */
     let bandNames = [];
     if (sourceOptions.variable) {
-        if (isObject(sourceOptions.selector)) {
-            for (const key in sourceOptions.selector) {
-                if (Array.isArray(sourceOptions.selector[key])) {
-                    bandCount = sourceOptions.selector[key].length;
+        if (isObject(sourceOptions.dimensions)) {
+            for (const key in sourceOptions.dimensions) {
+                if (Array.isArray(sourceOptions.dimensions[key])) {
+                    bandCount = sourceOptions.dimensions[key].length;
                 }
             }
         }

@@ -62,7 +62,7 @@ var presets = {
 	"ftw-field-2024": {
 		url: FTW_URL,
 		bands: ["field"],
-		sourceOptions: { selector: { time: 0 } },
+		sourceOptions: { dimensions: { time: 0 } },
 		colormap: false
 	},
 	"usgs-dem": { data: zarrCollection("usgs-conus-dem", "USGS 10m DEM for the conterminous US, as a multiscale Zarr v3 store.", [
@@ -413,9 +413,9 @@ function updateLayer() {
 		defaultColormap: colormaps[colormapSelect.value],
 		getSourceOptions: (type, options) => {
 			if (preset.sourceOptions) {
-				const { selector, ...rest } = preset.sourceOptions;
+				const { dimensions, ...rest } = preset.sourceOptions;
 				Object.assign(options, rest);
-				if (selector) options.selector = Object.assign({}, options.selector, selector);
+				if (dimensions) options.dimensions = Object.assign({}, options.dimensions, dimensions);
 			}
 			return options;
 		}

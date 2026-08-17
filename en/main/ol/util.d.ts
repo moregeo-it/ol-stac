@@ -75,7 +75,7 @@ export function getBoundsStyle(originalStyle?: Style, layerGroup?: import("./lay
  * If the asset (or its containing Item/Collection) describes the store
  * through the datacube extension (`cube:variables` and `cube:dimensions`),
  * the store is treated as an n-dimensional datacube: the data variable and a
- * selector for its non-spatial dimensions are derived from the metadata.
+ * selection for its non-spatial dimensions are derived from the metadata.
  * Otherwise, each band is expected to be a separate array in the store,
  * addressed by the band names from the STAC `bands` field.
  *

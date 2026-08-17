@@ -296,7 +296,7 @@ const presets &#x3D; {
   &#x27;ftw-field-2024&#x27;: {
     url: FTW_URL,
     bands: [&#x27;field&#x27;],
-    sourceOptions: {selector: {time: 0}}, // 2024 instead of the latest year
+    sourceOptions: {dimensions: {time: 0}}, // 2024 instead of the latest year
     colormap: false, // no STAC statistics, so there is no range to color over
   },
   &#x27;usgs-dem&#x27;: {
@@ -523,10 +523,14 @@ function updateLayer() {
     defaultColormap: colormaps[colormapSelect.value],
     getSourceOptions: (type, options) &#x3D;&gt; {
       if (preset.sourceOptions) {
-        const {selector, ...rest} &#x3D; preset.sourceOptions;
+        const {dimensions, ...rest} &#x3D; preset.sourceOptions;
         Object.assign(options, rest);
-        if (selector) {
-          options.selector &#x3D; Object.assign({}, options.selector, selector);
+        if (dimensions) {
+          options.dimensions &#x3D; Object.assign(
+            {},
+            options.dimensions,
+            dimensions,
+          );
         }
       }
       return options;
