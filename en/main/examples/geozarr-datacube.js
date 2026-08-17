@@ -55,11 +55,15 @@ var ZARR_V2 = "application/vnd.zarr; version=2";
 var ZARR_V3 = "application/vnd.zarr; version=3";
 var ZARR_V3_MULTISCALES = "application/vnd.zarr; version=3; profile=multiscales";
 var presets = {
-	"ftw-rgb": { url: FTW_URL },
+	"ftw-rgb": {
+		url: FTW_URL,
+		colormap: false
+	},
 	"ftw-field-2024": {
 		url: FTW_URL,
 		bands: ["field"],
-		sourceOptions: { selector: { time: 0 } }
+		sourceOptions: { selector: { time: 0 } },
+		colormap: false
 	},
 	"usgs-dem": { data: zarrCollection("usgs-conus-dem", "USGS 10m DEM for the conterminous US, as a multiscale Zarr v3 store.", [
 		-125.6,
@@ -368,8 +372,8 @@ var presets = {
 	}) }
 };
 var select = document.getElementById("preset-select");
-var button = document.getElementById("load-preset");
 var colormapSelect = document.getElementById("colormap-select");
+var colormapGroup = document.getElementById("colormap-group");
 var colormaps = {
 	"grayscale": null,
 	"viridis": [
@@ -399,6 +403,7 @@ updateLayer();
 function updateLayer() {
 	if (layer) map.removeLayer(layer);
 	const preset = presets[select.value];
+	colormapGroup.style.display = preset.colormap === false ? "none" : "";
 	layer = new STACLayer({
 		url: preset.url,
 		data: preset.data,
@@ -428,7 +433,6 @@ function updateLayer() {
 	});
 	map.addLayer(layer);
 }
-button.addEventListener("click", updateLayer);
 select.addEventListener("change", updateLayer);
 colormapSelect.addEventListener("change", () => {
 	layer.setDefaultColormap(colormaps[colormapSelect.value]);

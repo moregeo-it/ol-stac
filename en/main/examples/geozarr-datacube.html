@@ -181,10 +181,9 @@
         <option value="cmip6-tasmax">CMIP6 max. temperature (v2 pyramid)</option>
         <option value="tos-con">Ocean surface temperature (v3 pyramid, EPSG:3857)</option>
       </select>
-      <button class="btn btn-outline-secondary" id="load-preset" type="button">Load</button>
     </div>
   </div>
-  <div class="col-auto">
+  <div class="col-auto" id="colormap-group">
     <div class="input-group">
       <label class="input-group-text" for="colormap-select">Colormap</label>
       <select class="form-select" id="colormap-select">
@@ -292,11 +291,13 @@ const ZARR_V3_MULTISCALES &#x3D;
 const presets &#x3D; {
   &#x27;ftw-rgb&#x27;: {
     url: FTW_URL,
+    colormap: false, // RGB, so a colormap does not apply
   },
   &#x27;ftw-field-2024&#x27;: {
     url: FTW_URL,
     bands: [&#x27;field&#x27;],
     sourceOptions: {selector: {time: 0}}, // 2024 instead of the latest year
+    colormap: false, // no STAC statistics, so there is no range to color over
   },
   &#x27;usgs-dem&#x27;: {
     data: zarrCollection(
@@ -492,8 +493,8 @@ const presets &#x3D; {
 };
 
 const select &#x3D; document.getElementById(&#x27;preset-select&#x27;);
-const button &#x3D; document.getElementById(&#x27;load-preset&#x27;);
 const colormapSelect &#x3D; document.getElementById(&#x27;colormap-select&#x27;);
+const colormapGroup &#x3D; document.getElementById(&#x27;colormap-group&#x27;);
 
 // Colormaps for continuous single-band data (grayscale if not set),
 // evenly distributed over the value range from the STAC statistics
@@ -512,6 +513,7 @@ function updateLayer() {
     map.removeLayer(layer);
   }
   const preset &#x3D; presets[select.value];
+  colormapGroup.style.display &#x3D; preset.colormap &#x3D;&#x3D;&#x3D; false ? &#x27;none&#x27; : &#x27;&#x27;;
   layer &#x3D; new STAC({
     url: preset.url,
     data: preset.data,
@@ -539,7 +541,6 @@ function updateLayer() {
   map.addLayer(layer);
 }
 
-button.addEventListener(&#x27;click&#x27;, updateLayer);
 select.addEventListener(&#x27;change&#x27;, updateLayer);
 colormapSelect.addEventListener(&#x27;change&#x27;, () &#x3D;&gt; {
   layer.setDefaultColormap(colormaps[colormapSelect.value]);
@@ -581,10 +582,9 @@ colormapSelect.addEventListener(&#x27;change&#x27;, () &#x3D;&gt; {
             &lt;option value&#x3D;&quot;cmip6-tasmax&quot;&gt;CMIP6 max. temperature (v2 pyramid)&lt;/option&gt;
             &lt;option value&#x3D;&quot;tos-con&quot;&gt;Ocean surface temperature (v3 pyramid, EPSG:3857)&lt;/option&gt;
           &lt;/select&gt;
-          &lt;button class&#x3D;&quot;btn btn-outline-secondary&quot; id&#x3D;&quot;load-preset&quot; type&#x3D;&quot;button&quot;&gt;Load&lt;/button&gt;
         &lt;/div&gt;
       &lt;/div&gt;
-      &lt;div class&#x3D;&quot;col-auto&quot;&gt;
+      &lt;div class&#x3D;&quot;col-auto&quot; id&#x3D;&quot;colormap-group&quot;&gt;
         &lt;div class&#x3D;&quot;input-group&quot;&gt;
           &lt;label class&#x3D;&quot;input-group-text&quot; for&#x3D;&quot;colormap-select&quot;&gt;Colormap&lt;/label&gt;
           &lt;select class&#x3D;&quot;form-select&quot; id&#x3D;&quot;colormap-select&quot;&gt;

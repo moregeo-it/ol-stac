@@ -12,7 +12,6 @@ var map = new Map({
 });
 var select = document.getElementById("url-select");
 var input = document.getElementById("custom-url");
-var button = document.getElementById("load-url");
 var min = document.getElementById("min");
 var max = document.getElementById("max");
 var layer;
@@ -67,13 +66,16 @@ function updateLayer() {
 	map.addLayer(layer);
 	return layer;
 }
-button.addEventListener("click", updateLayer);
 select.addEventListener("change", () => {
 	if (select.value === "custom") {
 		input.style.display = "";
 		input.focus();
-	} else input.style.display = "none";
+	} else {
+		input.style.display = "none";
+		updateLayer();
+	}
 });
+input.addEventListener("change", updateLayer);
 min.addEventListener("change", () => {
 	layer.setStyle(getStyle());
 });
