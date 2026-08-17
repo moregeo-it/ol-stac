@@ -2,22 +2,24 @@
  * @module ol/source/GeoZarr
  */
 
-import {FetchStore, get, open, slice, withRangeCoalescing} from 'zarrita';
+import {
+  FetchStore,
+  NotFoundError,
+  get,
+  open,
+  slice,
+  withRangeCoalescing,
+} from 'zarrita';
 import {warn} from 'ol/console.js';
 import {getCenter} from 'ol/extent.js';
 import {get as getProjection, toUserCoordinate, toUserExtent} from 'ol/proj.js';
 import {fromProjectionDefinition} from '../shim/proj4.js';
 import {toSize} from 'ol/size.js';
 import WMTSTileGrid from 'ol/tilegrid/WMTS.js';
+import {DEFAULT_TILE_SIZE} from 'ol/tilegrid/common.js';
 import {getUid} from 'ol/util.js';
 import DataTileSource from 'ol/source/DataTile.js';
 import {parseTileMatrixSet} from '../shim/ogcTileUtil.js';
-
-const REQUIRED_ZARR_CONVENTIONS = [
-  'd35379db-88df-4056-af3a-620245f8e347', // multiscales
-  'f17cb550-5864-4468-aeb7-f3180cfb622f', // proj:
-  '689b58e2-cf7b-45e0-9fff-9cfc0883d6b4', // spatial:
-];
 
 /**
  * @typedef {'nearest'|'linear'} ResampleMethod
@@ -61,23 +63,21 @@ const REQUIRED_ZARR_CONVENTIONS = [
  * To disable the opacity transition, pass `transition: 0`.
  * @property {boolean} [wrapX=false] Render tiles beyond the tile grid extent.
  * @property {ResampleMethod} [resample='linear'] Resampling method if bands are not available for all multi-scale levels.
- * @property {Object<string, number|string>} [dimensions] Fixed index for each non-spatial
- * dimension of the band arrays, keyed by dimension name (e.g. `{time: 0}` for the first time step
- * of a `[time, y, x]` cube); unspecified dimensions default to `0`. Names come from each array's
- * `dimension_names`, or are the axis position as a string when it has none. Only integer indices
- * are supported. Use the names from {@link getDimensions}, and change the selection on the fly with
+ * @property {Object<string, number|string|Array<number|string>>} [dimensions] How to slice
+ * each non-spatial dimension of the band arrays, keyed by dimension name (e.g. `{time: 0}` for
+ * the first time step of a `[time, y, x]` cube). Values are 0-based indices (number) or
+ * coordinate labels (string); unlisted dimensions default to index 0. Names come from each
+ * array's `dimension_names`, or are the axis position as a string when it has none; use the
+ * names from {@link getDimensions}. Labels are resolved against the dimension's coordinate
+ * array; if that array cannot be read, pass indices instead. With `variable`, at most one
+ * dimension may map to an array of values, whose entries are rendered as separate bands in
+ * the given order. Change the selection on the fly with
  * {@link module:ol/source/GeoZarr~GeoZarr#updateDimensions}.
  * @property {string} [variable] The name of an n-dimensional data array (variable) to
  * render, for stores where all bands are packed into a single array (e.g. a
  * `(time, band, y, x)` datacube). The array must exist within each multiscale level
- * group (or at the group root for single-scale stores). Mutually exclusive with `bands`.
- * @property {Object<string, number|string|Array<number|string>>} [selector] For
- * `variable` mode: how to slice each non-spatial dimension, keyed by dimension name
- * (from the array's `dimension_names`). Values are 0-based indices (number), coordinate
- * labels (string), or an array of these. At most one dimension may map to an array; its
- * entries are rendered as separate bands (in the given order). Unlisted non-spatial
- * dimensions default to index 0. Labels are resolved against the dimension's coordinate
- * array; if that array cannot be read, pass indices instead.
+ * group (or at the group root for single-scale stores). Mutually exclusive with `bands`,
+ * and required to select several bands from one dimension through `dimensions`.
  * @property {import("ol/extent.js").Extent} [extent] Fallback extent of the data, in
  * coordinates of the source projection. Only used when the store neither declares its
  * extent (`spatial:bbox` or `bounds` attributes) nor has coordinate arrays to infer it.
@@ -92,19 +92,25 @@ const REQUIRED_ZARR_CONVENTIONS = [
  * - [Geospatial projection convention](https://github.com/zarr-conventions/geo-proj)
  * - [Spatial convention](https://github.com/zarr-conventions/spatial)
  *
- * When all three conventions are present, multiple resolution levels are supported.
- * When only proj: and spatial: are present, a single-resolution tile grid is derived
- * from `spatial:bbox`, `proj:code`, and `spatial:shape`.
- * The legacy `tile_matrix_set` attribute is also supported, as is the GeoZarr-style
- * `multiscales` array attribute (`[{tile_matrix_set, datasets: [{path, ...}]}]`).
+ * The store is read as a stack of resolution levels, enumerated from the
+ * `multiscales` attribute in either its `{layout: [{asset, ...}]}` or its
+ * `[{datasets: [{path, ...}]}]` form; a store with neither has the group itself as
+ * its only level. The legacy `tile_matrix_set` attribute is also supported, and
+ * describes the levels itself.
+ *
+ * Extent, resolution, projection and y-axis orientation are read from the store
+ * metadata (`spatial:bbox`, `spatial:shape`, `spatial:transform`, `proj:code`,
+ * ...) where declared, and otherwise inferred from the coordinate arrays. The
+ * conventions above are what make that metadata available, but none of them has
+ * to be declared for a store that provides the attributes.
  *
  * Two data layouts are supported:
  * - One array per band (`bands` option), addressed by name at `<matrixId>/<bandName>`
- *   (multi-scale) or at the group root (single-scale). Supports Zarr v3.
- * - A single n-dimensional data array shared by all bands (`variable` + `selector`
- *   options), e.g. a `(time, band, y, x)` datacube. Supports Zarr v2 and v3; the
- *   extent, resolution, projection and y-axis orientation are read from the store
- *   metadata or inferred from the coordinate arrays.
+ *   (multi-scale) or at the group root (single-scale).
+ * - A single n-dimensional data array shared by all bands (`variable` + `dimensions`
+ *   options), e.g. a `(time, band, y, x)` datacube.
+ *
+ * Both layouts support Zarr v2 and v3.
  */
 export default class GeoZarr extends DataTileSource {
   /**
@@ -135,8 +141,9 @@ export default class GeoZarr extends DataTileSource {
     this.storeOptions_ = options.storeOptions;
 
     /**
-     * Fixed index per non-spatial dimension name, from the `dimensions` option.
-     * @type {Object<string, number|string>}
+     * Selection per non-spatial dimension name, from the `dimensions` option.
+     * Coordinate labels are replaced by their index once resolved.
+     * @type {Object<string, number|string|Array<number|string>>}
      * @private
      */
     this.dimensions_ = options.dimensions || {};
@@ -146,12 +153,6 @@ export default class GeoZarr extends DataTileSource {
      * @private
      */
     this.variable_ = options.variable;
-
-    /**
-     * @type {Object<string, number|string|Array<number|string>>}
-     * @private
-     */
-    this.selector_ = options.selector || {};
 
     /**
      * @type {import("ol/extent.js").Extent|undefined}
@@ -166,12 +167,13 @@ export default class GeoZarr extends DataTileSource {
     this.fallbackFlipY_ = options.flipY;
 
     /**
-     * The zarrita open function, pinned to v2 when the store cannot be
-     * probed for v3 metadata (e.g. servers answering 403 for missing keys).
+     * The zarrita open function, pinned to the store's Zarr version by
+     * `configure_`. Never the unpinned `open`, which probes v2 metadata first
+     * and so requests keys that a v3 store does not have.
      * @type {Function}
      * @private
      */
-    this.openFn_ = open;
+    this.openFn_ = open.v3;
 
     /**
      * Group path prefix per tile matrix id, for stores whose levels are not
@@ -191,7 +193,7 @@ export default class GeoZarr extends DataTileSource {
     this.levelRowInfo_ = null;
 
     /**
-     * The axis selected as multiple bands through the `selector` option,
+     * The axis selected as multiple bands through the `dimensions` option,
      * or -1.
      * @type {number}
      * @private
@@ -322,21 +324,28 @@ export default class GeoZarr extends DataTileSource {
      * Number of bands.
      * @type {number}
      */
-    this.bandCount = this.bands_.length;
-    if (this.variable_) {
-      let bandCount = 1;
-      for (const key in this.selector_) {
-        const value = this.selector_[key];
-        if (Array.isArray(value)) {
-          if (bandCount > 1) {
-            throw new Error(
-              'Only one selector dimension may select multiple values',
-            );
-          }
-          bandCount = value.length;
-        }
+    this.bandCount = this.variable_ ? 1 : this.bands_.length;
+    // A dimension listing several values renders one band per value. Only
+    // `variable` can do that, since `bands` names one array per band.
+    let multiName;
+    for (const name in this.dimensions_) {
+      const value = this.dimensions_[name];
+      if (!Array.isArray(value)) {
+        continue;
       }
-      this.bandCount = bandCount;
+      if (!this.variable_) {
+        throw new Error(
+          `GeoZarr: dimension "${name}" selects several bands, which requires ` +
+            'the `variable` option.',
+        );
+      }
+      if (multiName) {
+        throw new Error(
+          `GeoZarr: dimensions "${multiName}" and "${name}" both select ` +
+            'several bands; at most one may.',
+        );
+      }
+      multiName = name;
     }
 
     /**
@@ -352,7 +361,15 @@ export default class GeoZarr extends DataTileSource {
         this.setState('ready');
       })
       .catch((err) => {
-        this.error_ = err;
+        // A 403 reads as a missing key, so the two causes are indistinguishable.
+        this.error_ =
+          err instanceof NotFoundError
+            ? new Error(
+                `GeoZarr: could not read ${this.url_}; it is missing, or ` +
+                  `access to it is denied.`,
+                {cause: err},
+              )
+            : err;
         this.setState('error');
       });
   }
@@ -360,13 +377,15 @@ export default class GeoZarr extends DataTileSource {
   async configure_() {
     const overrides = /** @type {RequestInit} */ (this.storeOptions_) || {};
     const store = /** @type {FetchStore} */ (
-      withRangeCoalescing(new FetchStore(this.url_, {overrides}))
+      withRangeCoalescing(
+        new FetchStore(this.url_, {overrides, fetch: storeFetch}),
+      )
     );
 
-    // Fetch group zarr.json once for both opening the group and extracting
-    // consolidated metadata. Without this, open() and the manual metadata
-    // read would each make a separate HTTP request for the same file.
+    // Fetch group zarr.json once for opening the group, extracting consolidated
+    // metadata, and pinning the detected Zarr version.
     const groupBytes = await probe(store, '/zarr.json');
+    this.openFn_ = groupBytes ? open.v3 : open.v2;
     if (groupBytes) {
       try {
         this.consolidatedMetadata_ = JSON.parse(
@@ -379,7 +398,7 @@ export default class GeoZarr extends DataTileSource {
 
     /** @type {Object<string, *>|null} */
     let v2Metadata = null;
-    if (!this.consolidatedMetadata_) {
+    if (!groupBytes) {
       // Zarr v2: consolidated metadata lives in .zmetadata
       const v2Bytes = await probe(store, '/.zmetadata');
       if (v2Bytes) {
@@ -409,13 +428,15 @@ export default class GeoZarr extends DataTileSource {
     const groupPromises = [];
     if (this.groupPaths_) {
       // Multi-group mode: open root, then each sub-group
-      const rootGroup = await open(cachedStore, {kind: 'group'});
+      const rootGroup = await this.openFn_(cachedStore, {kind: 'group'});
       for (const groupPath of this.groupPaths_) {
-        groupPromises.push(open(rootGroup.resolve(groupPath), {kind: 'group'}));
+        groupPromises.push(
+          this.openFn_(rootGroup.resolve(groupPath), {kind: 'group'}),
+        );
       }
     } else {
       // Single group mode
-      groupPromises.push(this.openGroup_(cachedStore));
+      groupPromises.push(this.openFn_(cachedStore, {kind: 'group'}));
     }
     this.groups_.push(...(await Promise.all(groupPromises)));
 
@@ -434,99 +455,42 @@ export default class GeoZarr extends DataTileSource {
       this.spatialDimensionNames_ = spatialDimensions;
     }
 
-    // For multi-group mode, use sub-metadata for the first group so that
-    // consolidated metadata keys match the expected relative paths.
-    const consolidatedMetadata =
-      this.groupPaths_ && this.consolidatedMetadata_
-        ? getSubMetadata(this.consolidatedMetadata_, this.groupPaths_[0])
-        : this.consolidatedMetadata_;
-
-    if (this.variable_) {
-      await this.configureDatacube_(attributes, store);
-    }
+    const multiscales = attributes.multiscales;
+    // The two multiscale layouts that enumerate level groups: the GeoZarr
+    // `[{datasets: [...]}]` form and the convention's `{layout: [...]}` form.
+    const hasMultiscaleLevels =
+      Array.isArray(multiscales) ||
+      Array.isArray(/** @type {Multiscales} */ (multiscales)?.layout);
+    // The legacy tile_matrix_set describes the levels itself, so a store that
+    // has nothing else to enumerate them by is configured from it alone.
+    const legacyOnly =
+      !!multiscales && 'tile_matrix_set' in multiscales && !hasMultiscaleLevels;
 
     let hasTileSizes = false;
     if (
-      !this.tileGrid &&
-      'zarr_conventions' in attributes &&
-      Array.isArray(attributes.zarr_conventions) &&
-      REQUIRED_ZARR_CONVENTIONS.every((uuid) =>
-        attributes.zarr_conventions.find((c) => c.uuid === uuid),
-      ) &&
-      'layout' in attributes.multiscales
+      this.variable_ ||
+      (!legacyOnly &&
+        (hasMultiscaleLevels ||
+          'spatial:bbox' in attributes ||
+          'bounds' in attributes))
     ) {
-      const {tileGrid, projection, bandsByLevel, fillValue, tileSizes} =
-        getTileGridInfoFromAttributes(
-          /** @type {DatasetAttributes} */ (attributes),
-          consolidatedMetadata,
-          this.bands_,
-        );
-      this.bandsByLevel_ = bandsByLevel;
-      this.tileGrid = tileGrid;
-      this.projection = projection;
-      this.fillValue_ = fillValue;
-      hasTileSizes = !!tileSizes;
+      hasTileSizes = await this.configureLevels_(attributes, store);
     }
-    if (
-      !hasTileSizes &&
-      attributes.multiscales &&
-      'tile_matrix_set' in attributes.multiscales
-    ) {
+    if (!hasTileSizes && multiscales && 'tile_matrix_set' in multiscales) {
       // If available, use tile_matrix_set (legacy attributes) to get a tile grid, because it
       // should provide a better mapping of tiles to zarr chunks.
       const {tileGrid, projection} = getTileGridInfoFromLegacyAttributes(
         /** @type {LegacyDatasetAttributes} */ (attributes),
       );
       this.tileGrid = tileGrid;
+      // The tile matrix set brings its own matrix ids, which the levels
+      // resolved above are not keyed by.
+      this.bandsByLevel_ = null;
+      this.levelPaths_ = null;
+      this.levelRowInfo_ = null;
       if (!this.projection) {
-        // If there were no required zarr conventions, we don't have a projection yet
+        // Only the tile matrix set declares one for a legacy-only store
         this.projection = projection;
-      }
-    }
-    if (!this.tileGrid && 'spatial:bbox' in attributes) {
-      // Standalone single-scale group: build tile grid directly from
-      // spatial:bbox and spatial:shape (`[height, width]`), or the x axis size
-      // from the array metadata.
-      let xSize = attributes['spatial:shape']?.[1];
-      if (xSize === undefined && consolidatedMetadata) {
-        for (const band of this.bands_) {
-          const bandMeta = consolidatedMetadata[band];
-          if (bandMeta?.shape) {
-            xSize = bandMeta.shape[this.axesOf_(bandMeta).col];
-            break;
-          }
-        }
-      }
-      if (xSize !== undefined) {
-        const extent = attributes['spatial:bbox'];
-        const resolution = (extent[2] - extent[0]) / xSize;
-        if (!this.projection) {
-          this.projection = getProjectionFromAttributes(attributes);
-        }
-        if (consolidatedMetadata) {
-          this.bandsByLevel_ = {level0: []};
-          for (const band of this.bands_) {
-            if (consolidatedMetadata[band]) {
-              this.bandsByLevel_['level0'].push(band);
-              if (this.fillValue_ === undefined) {
-                this.fillValue_ = Number(
-                  consolidatedMetadata[band]['fill_value'],
-                );
-              }
-            }
-          }
-        }
-        this.tileGrid = new WMTSTileGrid({
-          extent: extent,
-          origins: [[extent[0], extent[3]]],
-          resolutions: [resolution],
-          matrixIds: ['level0'],
-        });
-        for (let i = 0; i < this.bands_.length; ++i) {
-          if (this.bandGroupIndex_[i] === 0) {
-            this.bandSingleScaleResolution_[i] = resolution;
-          }
-        }
       }
     }
     // For multi-group: determine which group owns each band and supplement
@@ -543,9 +507,24 @@ export default class GeoZarr extends DataTileSource {
       throw new Error('Could not determine tile grid');
     }
 
+    // Replace coordinate labels by their index once, so that the per-band
+    // resolution below and `updateDimensions` can stay synchronous.
+    // (In `variable` mode, configureLevels_ resolves them per band instead.)
+    if (!this.variable_) {
+      for (const [name, value] of Object.entries(this.dimensions_)) {
+        if (typeof value === 'string') {
+          this.dimensions_[name] = await this.resolveCoordinateLabel_(
+            name,
+            value,
+            this.coordinateArray_(name)?.path ?? name,
+          );
+        }
+      }
+    }
+
     // Resolve, per band, the spatial axes and the fixed indices for any
     // non-spatial dimensions, and record the selectable dimensions.
-    // (In `variable` mode, configureDatacube_ resolves these instead.)
+    // (In `variable` mode, configureLevels_ resolves these instead.)
     for (let i = 0, ii = this.variable_ ? 0 : this.bands_.length; i < ii; ++i) {
       const arrayMeta = this.getBandArrayMeta_(
         this.bands_[i],
@@ -964,8 +943,9 @@ export default class GeoZarr extends DataTileSource {
    * another `time` slice) without rebuilding the source. Values are merged into
    * the current selection, so a partial update like `{time: 3}` leaves the other
    * dimensions untouched. Takes effect immediately when the source is `ready`,
-   * otherwise once it becomes ready.
-   * @param {Object<string, number|string>} dimensions Index per dimension name
+   * otherwise once it becomes ready. Only integer indices are accepted here;
+   * coordinate labels are resolved once, when the source configures.
+   * @param {Object<string, number>} dimensions Index per dimension name
    *     to change; see the `dimensions` constructor option.
    */
   updateDimensions(dimensions) {
@@ -983,7 +963,7 @@ export default class GeoZarr extends DataTileSource {
         return this.resolveExtraSelection_(arrayMeta, merged);
       }
       // In `variable` mode, merge into the current selection so the axes
-      // fixed through the `selector` option are kept.
+      // fixed through the `dimensions` option are kept.
       const dims = this.extraDimsOf_(arrayMeta);
       const current = this.bandExtraSelection_[i];
       const updated = current ? current.slice() : undefined;
@@ -998,7 +978,7 @@ export default class GeoZarr extends DataTileSource {
         if (dim.axis === this.multiAxis_) {
           throw new Error(
             `GeoZarr: dimension "${name}" selects the rendered bands; ` +
-              `set it through the \`selector\` option instead.`,
+              `set it when constructing the source instead.`,
           );
         }
         if (
@@ -1077,8 +1057,8 @@ export default class GeoZarr extends DataTileSource {
    * `null` at the two spatial axes (e.g. `[2, null, null]` for a `[time, y, x]`
    * array with `{time: 2}`).
    * @param {Object<string, *>|undefined} arrayMeta Zarr v3 array metadata.
-   * @param {Object<string, number|string>} dimensions The dimension indices
-   *     to resolve against.
+   * @param {Object<string, number|string|Array<number|string>>} dimensions The
+   *     dimension indices to resolve against.
    * @return {Array<number|null>|undefined} The extra-axis selection template.
    * @private
    */
@@ -1119,52 +1099,49 @@ export default class GeoZarr extends DataTileSource {
         index = 0; // unspecified extra dimension defaults to the first slice
       }
       if (typeof index === 'string') {
-        // Datetime-label selection is not implemented yet; only integer indices.
+        // Labels are resolved once, when the source configures.
         throw new Error(
-          `GeoZarr: datetime-label selection for dimension "${name}" is not yet ` +
-            `implemented; pass an integer index in the \`dimensions\` option.`,
+          `GeoZarr: coordinate labels cannot be passed to updateDimensions; ` +
+            `pass an integer index for dimension "${name}".`,
         );
       }
-      if (!Number.isInteger(index) || index < 0 || index >= dim.size) {
+      if (
+        !Number.isInteger(index) ||
+        /** @type {number} */ (index) < 0 ||
+        /** @type {number} */ (index) >= dim.size
+      ) {
         throw new Error(
           `GeoZarr: invalid index ${index} for dimension "${name}" ` +
             `(size ${dim.size}).`,
         );
       }
-      selection[dim.axis] = index;
+      selection[dim.axis] = /** @type {number} */ (index);
     }
     return selection;
   }
 
   /**
-   * Open the group, retrying as Zarr v2 without probing for v3 metadata
-   * first, for servers that answer 403 for missing keys.
-   * @param {*} source The store or location to open.
-   * @return {Promise<import('zarrita').Group<any>>} The opened group.
-   * @private
-   */
-  async openGroup_(source) {
-    try {
-      return await this.openFn_(source, {kind: 'group'});
-    } catch (err) {
-      if (this.openFn_ !== open) {
-        throw err;
-      }
-      const group = await open.v2(source, {kind: 'group'});
-      this.openFn_ = open.v2;
-      return group;
-    }
-  }
-
-  /**
+   * Build the tile grid and the per-level band layout. Every store is read as a
+   * stack of levels holding n-dimensional arrays: in `variable` mode all bands
+   * are slices of one array, otherwise each band has an array of its own.
    * @param {Object<string, *>} attributes The dataset attributes.
    * @param {FetchStore} store The store, for metadata requests not covered
    * by consolidated metadata.
+   * @return {Promise<boolean>} Whether the tile grid has explicit tile sizes.
    * @private
    */
-  async configureDatacube_(attributes, store) {
-    const variable = /** @type {string} */ (this.variable_);
-    const consolidatedMetadata = this.consolidatedMetadata_;
+  async configureLevels_(attributes, store) {
+    const variable = this.variable_;
+    // The arrays to look for at each level, and how to name them in messages.
+    const arrayNames = variable ? [variable] : this.bands_;
+    const what = variable
+      ? `variable "${variable}"`
+      : `bands [${arrayNames.join(', ')}]`;
+    // For multi-group mode, use sub-metadata for the first group so that
+    // consolidated metadata keys match the expected relative paths.
+    const consolidatedMetadata = this.consolidatedMetadata_
+      ? this.groupMetadata_(0)
+      : null;
 
     // Collect the multiscale level paths; without multiscale metadata the
     // group itself is the only level.
@@ -1194,6 +1171,11 @@ export default class GeoZarr extends DataTileSource {
       }
     } else if (multiscales && Array.isArray(multiscales.layout)) {
       for (const entry of multiscales.layout) {
+        // The declared `spatial:transform` is deliberately ignored here: its
+        // resolution is rounded in real stores (e.g. 720 where the extent and
+        // shape give 722.37), which leaves a sliver of a tile beyond the last
+        // full one. All layout levels share the group origin, so deriving the
+        // resolution from the extent and shape is both exact and sufficient.
         rawLevels.push({
           path: String(entry.asset),
           transform: undefined,
@@ -1208,43 +1190,60 @@ export default class GeoZarr extends DataTileSource {
       });
     }
 
-    /** @type {Array<{path: string, arrayPath: string, meta: any, transform: Array<number>|undefined, shape: Array<number>|undefined}>} */
+    // Keep only the levels that hold at least one of the wanted arrays. Without
+    // consolidated metadata their presence cannot be checked up front.
+    /** @type {Array<{path: string, bands: Array<string>, meta: any, transform: Array<number>|undefined, shape: Array<number>|undefined}>} */
     const levels = [];
     for (const raw of rawLevels) {
-      const arrayPath = raw.path ? `${raw.path}/${variable}` : variable;
-      const meta = consolidatedMetadata
-        ? consolidatedMetadata[arrayPath]
-        : undefined;
-      if (consolidatedMetadata && !meta) {
-        warn(`Variable "${variable}" not found at level "${raw.path || '.'}"`);
+      const bands = consolidatedMetadata
+        ? arrayNames.filter(
+            (name) => consolidatedMetadata[arrayPathOf(raw.path, name)],
+          )
+        : arrayNames.slice();
+      if (bands.length === 0) {
+        warn(`No ${what} found at level "${raw.path || '.'}"`);
         continue;
       }
-      levels.push({...raw, arrayPath, meta});
+      levels.push({
+        ...raw,
+        bands,
+        meta: consolidatedMetadata
+          ? consolidatedMetadata[arrayPathOf(raw.path, bands[0])]
+          : undefined,
+      });
     }
     if (levels.length === 0) {
-      throw new Error(`Variable "${variable}" not found in any level`);
+      throw new Error(`No level found holding ${what}`);
     }
 
-    // The dimension layout is the same for all levels
+    // The dimension layout is the same for all levels. It is only needed when
+    // the levels do not declare their shape, or to slice a `variable`.
     let meta = levels.find((level) => level.meta)?.meta;
-    if (!meta) {
-      meta = await getArrayMeta(store, levels[0].arrayPath);
+    if (!meta && (variable || !levels.every((l) => Array.isArray(l.shape)))) {
+      meta = await getArrayMeta(
+        store,
+        arrayPathOf(levels[0].path, levels[0].bands[0]),
+        this.openFn_ === open.v2,
+      );
       levels[0].meta = meta;
     }
-    if (!meta || !Array.isArray(meta.shape)) {
+    const hasMeta = !!meta && Array.isArray(meta.shape);
+    if (variable && !hasMeta) {
       throw new Error(`Could not read metadata for variable "${variable}"`);
     }
-    const ndim = meta.shape.length;
-    let dimensionNames = meta['dimension_names'];
+    const ndim = hasMeta ? meta.shape.length : 2;
+    let dimensionNames = hasMeta ? meta['dimension_names'] : undefined;
     if (!dimensionNames && ndim === 2) {
       dimensionNames = ['y', 'x'];
     }
-    if (!dimensionNames) {
+    if (variable && !dimensionNames) {
       throw new Error(
         `Cannot determine dimension names for variable "${variable}"`,
       );
     }
-    const {row, col} = getSpatialAxes(attributes['spatial:dimensions'], meta);
+    const {row, col} = hasMeta
+      ? getSpatialAxes(attributes['spatial:dimensions'], meta)
+      : {row: 0, col: 1};
 
     // Determine the extent and y axis orientation: declared metadata is
     // authoritative, otherwise both are inferred from the coordinate arrays.
@@ -1259,6 +1258,11 @@ export default class GeoZarr extends DataTileSource {
       transform0[4] !== 0
     ) {
       flipY = transform0[4] > 0;
+      orientationKnown = true;
+    } else if (extent && levels.every((l) => Array.isArray(l.shape))) {
+      // Levels that declare their `spatial:shape` alongside a declared extent
+      // follow the spatial: convention, which stores rasters north-up. Reading
+      // coordinate arrays would only confirm that, at the cost of two requests.
       orientationKnown = true;
     } else {
       // All levels share the extent; the smallest level is cheapest to read
@@ -1319,7 +1323,7 @@ export default class GeoZarr extends DataTileSource {
 
     const extentWidth = extent[2] - extent[0];
     const extentHeight = extent[3] - extent[1];
-    /** @type {Array<{path: string, arrayPath: string, meta: any, resolution: number, rowResolution: number, origin: import("ol/coordinate.js").Coordinate}>} */
+    /** @type {Array<{path: string, bands: Array<string>, meta: any, shape: Array<number>|undefined, resolution: number, rowResolution: number, origin: import("ol/coordinate.js").Coordinate}>} */
     const configured = [];
     for (const level of levels) {
       let resolution;
@@ -1349,15 +1353,16 @@ export default class GeoZarr extends DataTileSource {
       }
       configured.push({
         path: level.path,
-        arrayPath: level.arrayPath,
+        bands: level.bands,
         meta: level.meta,
+        shape: level.shape,
         resolution,
         rowResolution,
         origin,
       });
     }
     if (configured.length === 0) {
-      throw new Error(`No usable level found for variable "${variable}"`);
+      throw new Error(`No usable level found for ${what}`);
     }
     configured.sort((a, b) => b.resolution - a.resolution);
 
@@ -1365,89 +1370,92 @@ export default class GeoZarr extends DataTileSource {
       this.projection = this.inferProjection_(attributes, crsHint, extent);
     }
 
-    // Resolve the selector to per-axis indices; labels are resolved against
-    // the finest level's coordinate arrays
-    const finestPath = configured[configured.length - 1].path;
-    /** @type {Array<{axis: number, indices: Array<number>}>} */
-    const slots = [];
-    this.multiAxis_ = -1;
-    this.extraDimensions_ = [];
-    for (let axis = 0; axis < ndim; ++axis) {
-      if (axis === row || axis === col) {
-        continue;
-      }
-      const dimName = dimensionNames[axis];
-      this.extraDimensions_.push({name: dimName, size: meta.shape[axis]});
-      // `dimensions` (also merged by updateDimensions) takes precedence
-      // over the initial `selector` for scalar values
-      let value =
-        dimName in this.dimensions_
-          ? this.dimensions_[dimName]
-          : this.selector_[dimName];
-      if (value === undefined) {
-        warn(
-          `No selector value given for dimension "${dimName}", using index 0.`,
-        );
-        value = 0;
-      }
-      /** @type {Array<number|string>} */
-      let values;
-      if (Array.isArray(value)) {
-        values = value;
-        this.multiAxis_ = axis;
-      } else {
-        values = [value];
-      }
-      const indices = [];
-      for (const v of values) {
-        if (typeof v === 'number') {
-          indices.push(v);
+    if (variable) {
+      // Resolve the selection to per-axis indices; labels are resolved against
+      // the finest level's coordinate arrays
+      const finestPath = configured[configured.length - 1].path;
+      /** @type {Array<{axis: number, indices: Array<number>}>} */
+      const slots = [];
+      this.multiAxis_ = -1;
+      this.extraDimensions_ = [];
+      for (let axis = 0; axis < ndim; ++axis) {
+        if (axis === row || axis === col) {
+          continue;
+        }
+        const dimName = dimensionNames[axis];
+        this.extraDimensions_.push({name: dimName, size: meta.shape[axis]});
+        let value = this.dimensions_[dimName];
+        if (value === undefined) {
+          warn(`No value given for dimension "${dimName}", using index 0.`);
+          value = 0;
+        }
+        /** @type {Array<number|string>} */
+        let values;
+        if (Array.isArray(value)) {
+          values = value;
+          this.multiAxis_ = axis;
         } else {
-          indices.push(
-            await this.resolveCoordinateLabel_(dimName, v, finestPath),
-          );
+          values = [value];
         }
-      }
-      for (const index of indices) {
-        if (
-          !Number.isInteger(index) ||
-          index < 0 ||
-          index >= meta.shape[axis]
-        ) {
-          throw new Error(
-            `GeoZarr: invalid index ${index} for dimension "${dimName}" ` +
-              `(size ${meta.shape[axis]}).`,
-          );
+        const indices = [];
+        for (const v of values) {
+          if (typeof v === 'number') {
+            indices.push(v);
+          } else {
+            indices.push(
+              await this.resolveCoordinateLabel_(
+                dimName,
+                v,
+                arrayPathOf(finestPath, dimName),
+              ),
+            );
+          }
         }
+        for (const index of indices) {
+          if (
+            !Number.isInteger(index) ||
+            index < 0 ||
+            index >= meta.shape[axis]
+          ) {
+            throw new Error(
+              `GeoZarr: invalid index ${index} for dimension "${dimName}" ` +
+                `(size ${meta.shape[axis]}).`,
+            );
+          }
+        }
+        slots.push({axis, indices});
       }
-      slots.push({axis, indices});
+
+      // Materialize the datacube as the per-band state that loadTile_
+      // consumes: each rendered band is the variable array with fixed indices
+      // at the non-spatial axes.
+      const multiSlot = slots.find((slot) => slot.axis === this.multiAxis_);
+      const count = multiSlot ? multiSlot.indices.length : 1;
+      this.bandCount = count;
+      this.bands_ = new Array(count).fill(variable);
+      this.bandGroupIndex_ = new Array(count).fill(0);
+      this.bandSingleScaleResolution_ = new Array(count).fill(undefined);
+      this.bandSpatialAxes_ = new Array(count).fill({row, col});
+      this.bandExtraSelection_ = new Array(count)
+        .fill(undefined)
+        .map((_, bandIndex) => {
+          if (slots.length === 0) {
+            return undefined;
+          }
+          const selection = new Array(ndim).fill(null);
+          for (const slot of slots) {
+            selection[slot.axis] =
+              slot.axis === this.multiAxis_
+                ? slot.indices[bandIndex]
+                : slot.indices[0];
+          }
+          return selection;
+        });
     }
 
-    // Materialize the datacube as the per-band state that loadTile_
-    // consumes: each rendered band is the variable array with fixed indices
-    // at the non-spatial axes.
-    const count = this.bandCount;
-    this.bands_ = new Array(count).fill(variable);
-    this.bandGroupIndex_ = new Array(count).fill(0);
-    this.bandSingleScaleResolution_ = new Array(count).fill(undefined);
-    this.bandSpatialAxes_ = new Array(count).fill({row, col});
-    this.bandExtraSelection_ = new Array(count)
-      .fill(undefined)
-      .map((_, bandIndex) => {
-        if (slots.length === 0) {
-          return undefined;
-        }
-        const selection = new Array(ndim).fill(null);
-        for (const slot of slots) {
-          selection[slot.axis] =
-            slot.axis === this.multiAxis_
-              ? slot.indices[bandIndex]
-              : slot.indices[0];
-        }
-        return selection;
-      });
-
-    this.fillValue_ = parseFillValue(meta['fill_value']);
+    if (meta) {
+      this.fillValue_ = parseFillValue(meta['fill_value']);
+    }
 
     // Align tiles to shards or chunks: every tile decodes all chunks it
     // touches, so tiles much smaller than a chunk would decode the same
@@ -1469,8 +1477,13 @@ export default class GeoZarr extends DataTileSource {
           ),
         ]);
       }
+      // Unsharded chunks only need alignment when they are larger than a
+      // default tile, which would decode the same chunk for every tile it spans.
       const chunkShape = level.meta['chunk_grid']?.configuration?.chunk_shape;
-      if (Array.isArray(chunkShape)) {
+      if (
+        Array.isArray(chunkShape) &&
+        Math.max(chunkShape[row], chunkShape[col]) > DEFAULT_TILE_SIZE
+      ) {
         return /** @type {import("ol/size.js").Size} */ ([
           getTileSizeForChunk(chunkShape[col], level.meta.shape[col]),
           getTileSizeForChunk(chunkShape[row], level.meta.shape[row]),
@@ -1486,14 +1499,17 @@ export default class GeoZarr extends DataTileSource {
     const matrixIds = configured.map((level, i) => level.path || String(i));
     for (let i = 0; i < configured.length; ++i) {
       const level = configured[i];
-      this.bandsByLevel_[matrixIds[i]] = this.bands_;
+      this.bandsByLevel_[matrixIds[i]] = level.bands;
       this.levelPaths_[matrixIds[i]] = level.path;
+      let shapeY;
+      if (level.meta && Array.isArray(level.meta.shape)) {
+        shapeY = level.meta.shape[row];
+      } else if (Array.isArray(level.shape)) {
+        shapeY = level.shape[0];
+      }
       this.levelRowInfo_[matrixIds[i]] = {
         rowResolution: level.rowResolution,
-        shapeY:
-          level.meta && Array.isArray(level.meta.shape)
-            ? level.meta.shape[row]
-            : undefined,
+        shapeY,
         flip: flipY,
       };
     }
@@ -1506,6 +1522,7 @@ export default class GeoZarr extends DataTileSource {
         ? {tileSizes: tileSizes.map((s) => s || [256, 256])}
         : {}),
     });
+    return hasTileSizes;
   }
 
   /**
@@ -1594,13 +1611,12 @@ export default class GeoZarr extends DataTileSource {
    * coordinate array.
    * @param {string} dimName The dimension name.
    * @param {string} label The label to resolve.
-   * @param {string} [levelPath] The level group path ('' for the root).
+   * @param {string} path The coordinate array path, relative to the group.
    * @return {Promise<number>} The index of the label.
    * @private
    */
-  async resolveCoordinateLabel_(dimName, label, levelPath = '') {
+  async resolveCoordinateLabel_(dimName, label, path) {
     try {
-      const path = levelPath ? `${levelPath}/${dimName}` : dimName;
       const array = await this.openArray_(0, path);
       const chunk = await get(array, [null]);
       const values = Array.from(chunk.data, (v) => String(v));
@@ -1704,9 +1720,6 @@ function createCachedStore(store, groupBytes, consolidatedMetadata) {
  * @typedef {Object} TileGridInfo
  * @property {WMTSTileGrid} tileGrid The tile grid.
  * @property {import("ol/proj/Projection.js").default} projection The projection.
- * @property {Object<string, Array<string>>} [bandsByLevel] Available bands by level.
- * @property {number} [fillValue] The fill value.
- * @property {Array<import("ol/size.js").Size>|undefined} [tileSizes] The tile sizes for each level, if available.
  */
 
 /**
@@ -1726,6 +1739,16 @@ const MIN_TILE_SIZE = 64;
  * @property {Array<number>} shardShape The shard (outer chunk) shape [rows, cols].
  * @property {Array<number>} innerChunkShape The inner chunk shape [rows, cols].
  */
+
+/**
+ * The path of a band array within its group.
+ * @param {string} levelPath The level group path (empty for the group root).
+ * @param {string} name The array name.
+ * @return {string} The path, relative to the group.
+ */
+function arrayPathOf(levelPath, name) {
+  return levelPath ? `${levelPath}/${name}` : name;
+}
 
 /**
  * Locate the row (y) and column (x) axis positions of an array by matching the
@@ -1825,109 +1848,6 @@ function getTileSizeForShard(shardSize, innerChunkSize) {
     return MIN_TILE_SIZE;
   }
   return Math.max(maxChunks * innerChunkSize, MIN_TILE_SIZE);
-}
-
-/**
- * @param {DatasetAttributes} attributes The dataset attributes.
- * @param {Object<string, *>|null|undefined} consolidatedMetadata The consolidated metadata.
- * @param {Array<string>} wantedBands The wanted bands.
- * @return {TileGridInfo} The tile grid info.
- */
-function getTileGridInfoFromAttributes(
-  attributes,
-  consolidatedMetadata,
-  wantedBands,
-) {
-  const multiscales = attributes.multiscales;
-  const extent = attributes['spatial:bbox'];
-  const projection = getProjectionFromAttributes(attributes);
-  const extentWidth = extent[2] - extent[0];
-  const origin = [extent[0], extent[3]];
-  /** @type {Array<{matrixId: string, resolution: number, origin: import("ol/coordinate.js").Coordinate, tileSize: import("ol/size.js").Size|undefined}>} */
-  const groupInfo = [];
-  /** @type {Object<string, Array<string>>|undefined} */
-  const bandsByLevel = consolidatedMetadata ? {} : undefined;
-  let fillValue;
-  for (const groupMetadata of multiscales.layout) {
-    const matrixId = /** @type {string} */ (groupMetadata['asset']);
-    const spatialShape = /** @type {Array<number>} */ (
-      groupMetadata['spatial:shape']
-    );
-    const resolution = extentWidth / spatialShape[1];
-    /** @type {import("ol/size.js").Size|undefined} */
-    let tileSize;
-    if (consolidatedMetadata && bandsByLevel) {
-      const availableBands = [];
-      for (const band of wantedBands) {
-        const bandArray = /** @type {Object<string, *>|undefined} */ (
-          consolidatedMetadata[`${matrixId}/${band}`]
-        );
-        if (bandArray) {
-          availableBands.push(band);
-          if (fillValue === undefined) {
-            fillValue = Number(bandArray['fill_value']);
-          }
-          //FIXME Remove this when GeoZarr datasets provide correct TileMatrixSet info or similar
-          if (!tileSize) {
-            const {row, col} = getSpatialAxes(
-              attributes['spatial:dimensions'],
-              bandArray,
-            );
-            const shardInfo = getShardInfo(bandArray, row, col);
-            if (shardInfo) {
-              tileSize = [
-                getTileSizeForShard(
-                  shardInfo.shardShape[1],
-                  shardInfo.innerChunkShape[1],
-                ),
-                getTileSizeForShard(
-                  shardInfo.shardShape[0],
-                  shardInfo.innerChunkShape[0],
-                ),
-              ];
-            }
-          }
-        }
-      }
-      bandsByLevel[matrixId] = availableBands;
-    }
-    groupInfo.push({
-      matrixId,
-      resolution,
-      origin,
-      tileSize,
-    });
-  }
-  groupInfo.sort((a, b) => b.resolution - a.resolution);
-
-  const tileSizes = groupInfo.map((g) => g.tileSize);
-  const hasTileSizes = tileSizes.some((s) => s !== undefined);
-
-  const tileGrid = new WMTSTileGrid({
-    extent: extent,
-    origins: groupInfo.map((g) => g.origin),
-    resolutions: groupInfo.map((g) => g.resolution),
-    matrixIds: groupInfo.map((g) => g.matrixId),
-    ...(hasTileSizes
-      ? {
-          tileSizes: /** @type {Array<import("ol/size.js").Size>} */ (
-            tileSizes.map((s) => s || [256, 256])
-          ),
-        }
-      : {}),
-  });
-
-  return {
-    tileGrid,
-    projection,
-    bandsByLevel,
-    fillValue,
-    tileSizes: hasTileSizes
-      ? /** @type {Array<import("ol/size.js").Size>} */ (
-          tileSizes.map((s) => s || [256, 256])
-        )
-      : undefined,
-  };
 }
 
 /**
@@ -2246,15 +2166,28 @@ function normalizeV2Metadata(v2Metadata) {
 }
 
 /**
- * Probe the store for an optional metadata document. Absence is an expected
- * outcome (version probing), and some servers answer 403 instead of 404 for
- * missing keys, which zarrita treats as an error.
+ * Probe the store for an optional metadata document. Absence yields
+ * `undefined`; any other failure is thrown, so that a server error is not
+ * mistaken for a missing document.
  * @param {FetchStore} store The store.
  * @param {string} key The key to probe.
  * @return {Promise<Uint8Array|undefined>} The document, if present.
  */
 function probe(store, key) {
-  return store.get(/** @type {`/${string}`} */ (key)).catch(() => undefined);
+  return store.get(/** @type {`/${string}`} */ (key));
+}
+
+/**
+ * Fetch for the Zarr store, reporting a 403 as a missing key. S3 answers 403
+ * for a key that is not there whenever the caller lacks `s3:ListBucket`, the
+ * usual setup for publicly readable objects.
+ * @param {Request} request The request.
+ * @return {Promise<Response>} The response.
+ */
+function storeFetch(request) {
+  return fetch(request).then((response) =>
+    response.status === 403 ? new Response(null, {status: 404}) : response,
+  );
 }
 
 /**
@@ -2262,31 +2195,32 @@ function probe(store, key) {
  * without consolidated metadata (Zarr v3 zarr.json or v2 .zarray/.zattrs).
  * @param {FetchStore} store The store.
  * @param {string} path The array path.
+ * @param {boolean} v2 Whether the store is Zarr v2.
  * @return {Promise<Object|undefined>} The array metadata (v3 shape).
  */
-async function getArrayMeta(store, path) {
+async function getArrayMeta(store, path, v2) {
   const decoder = new TextDecoder();
-  let bytes = await probe(store, `/${path}/zarr.json`);
-  if (bytes) {
-    return JSON.parse(decoder.decode(bytes));
+  if (!v2) {
+    const bytes = await probe(store, `/${path}/zarr.json`);
+    return bytes ? JSON.parse(decoder.decode(bytes)) : undefined;
   }
-  bytes = await probe(store, `/${path}/.zarray`);
-  if (bytes) {
-    const zarray = JSON.parse(decoder.decode(bytes));
-    const attrBytes = await probe(store, `/${path}/.zattrs`);
-    const attributes = attrBytes ? JSON.parse(decoder.decode(attrBytes)) : {};
-    return {
-      shape: zarray['shape'],
-      fill_value: zarray['fill_value'],
-      dimension_names: attributes['_ARRAY_DIMENSIONS'],
-      chunk_grid: {
-        name: 'regular',
-        configuration: {chunk_shape: zarray['chunks']},
-      },
-      attributes,
-    };
+  const bytes = await probe(store, `/${path}/.zarray`);
+  if (!bytes) {
+    return undefined;
   }
-  return undefined;
+  const zarray = JSON.parse(decoder.decode(bytes));
+  const attrBytes = await probe(store, `/${path}/.zattrs`);
+  const attributes = attrBytes ? JSON.parse(decoder.decode(attrBytes)) : {};
+  return {
+    shape: zarray['shape'],
+    fill_value: zarray['fill_value'],
+    dimension_names: attributes['_ARRAY_DIMENSIONS'],
+    chunk_grid: {
+      name: 'regular',
+      configuration: {chunk_shape: zarray['chunks']},
+    },
+    attributes,
+  };
 }
 
 /**
