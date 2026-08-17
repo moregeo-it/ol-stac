@@ -23,7 +23,6 @@ const map = new Map({
 
 const select = document.getElementById('url-select');
 const input = document.getElementById('custom-url');
-const button = document.getElementById('load-url');
 const min = document.getElementById('min');
 const max = document.getElementById('max');
 
@@ -88,16 +87,18 @@ function updateLayer() {
   return layer;
 }
 
-button.addEventListener('click', updateLayer);
-
 select.addEventListener('change', () => {
   if (select.value === 'custom') {
     input.style.display = '';
     input.focus();
   } else {
     input.style.display = 'none';
+    updateLayer();
   }
 });
+
+// A text input fires `change` on blur (and on Enter) once its value changed.
+input.addEventListener('change', updateLayer);
 
 min.addEventListener('change', () => {
   layer.setStyle(getStyle());

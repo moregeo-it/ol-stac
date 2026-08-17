@@ -77,11 +77,13 @@ const ZARR_V3_MULTISCALES =
 const presets = {
   'ftw-rgb': {
     url: FTW_URL,
+    colormap: false, // RGB, so a colormap does not apply
   },
   'ftw-field-2024': {
     url: FTW_URL,
     bands: ['field'],
     sourceOptions: {selector: {time: 0}}, // 2024 instead of the latest year
+    colormap: false, // no STAC statistics, so there is no range to color over
   },
   'usgs-dem': {
     data: zarrCollection(
@@ -277,8 +279,8 @@ const presets = {
 };
 
 const select = document.getElementById('preset-select');
-const button = document.getElementById('load-preset');
 const colormapSelect = document.getElementById('colormap-select');
+const colormapGroup = document.getElementById('colormap-group');
 
 // Colormaps for continuous single-band data (grayscale if not set),
 // evenly distributed over the value range from the STAC statistics
@@ -297,6 +299,7 @@ function updateLayer() {
     map.removeLayer(layer);
   }
   const preset = presets[select.value];
+  colormapGroup.style.display = preset.colormap === false ? 'none' : '';
   layer = new STAC({
     url: preset.url,
     data: preset.data,
@@ -324,7 +327,6 @@ function updateLayer() {
   map.addLayer(layer);
 }
 
-button.addEventListener('click', updateLayer);
 select.addEventListener('change', updateLayer);
 colormapSelect.addEventListener('change', () => {
   layer.setDefaultColormap(colormaps[colormapSelect.value]);
