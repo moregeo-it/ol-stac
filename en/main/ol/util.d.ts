@@ -146,6 +146,16 @@ export function getGeoZarrStyleFromAsset(asset: Asset, sourceOptions: any, defau
  */
 export function getSpecificWebMapUrl(link: import("./layer/STAC.js").Link): string | null;
 /**
+ * Returns all potential web map links for the given STAC entity,
+ * based on the given value for `displayWebMapLink`.
+ * See the STACLayer option of the same name for details.
+ * @param {import('stac-js').STACObject} data The STAC entity to get the links from.
+ * @param {string|boolean|Array<import('./layer/STAC.js').Link|string>} [displayWebMapLink] The value of the `displayWebMapLink` option of the STACLayer.
+ * @return {Array<import('./layer/STAC.js').Link>} An array of links.
+ * @api
+ */
+export function getWebMapLinks(data: any, displayWebMapLink?: string | boolean | Array<import("./layer/STAC.js").Link | string>): Array<import("./layer/STAC.js").Link>;
+/**
  * Checks whether the given value is a scalar (string, number, boolean).
  * @param {*} value The value to check
  * @return {boolean} `true` is the value is a scalar, `false` otherwise

@@ -71209,6 +71209,40 @@ function getSpecificWebMapUrl(link) {
 	return url;
 }
 /**
+* Returns all potential web map links for the given STAC entity,
+* based on the given value for `displayWebMapLink`.
+* See the STACLayer option of the same name for details.
+* @param {import('stac-js').STACObject} data The STAC entity to get the links from.
+* @param {string|boolean|Array<import('./layer/STAC.js').Link|string>} [displayWebMapLink] The value of the `displayWebMapLink` option of the STACLayer.
+* @return {Array<import('./layer/STAC.js').Link>} An array of links.
+* @api
+*/
+function getWebMapLinks(data, displayWebMapLink = true) {
+	if (displayWebMapLink === false) return [];
+	if (!data || data.isAsset) return [];
+	let types = [
+		"xyz",
+		"tilejson",
+		"pmtiles",
+		"wmts",
+		"wms"
+	];
+	if (typeof displayWebMapLink === "string") types = [displayWebMapLink];
+	let mapLinks = data.getLinksWithRels(types);
+	if (Array.isArray(displayWebMapLink)) mapLinks = displayWebMapLink.map((link) => {
+		if (typeof link === "string") {
+			const match = mapLinks.find((candidate) => candidate.id === link);
+			if (match) return match;
+			return null;
+		}
+		return link;
+	}).filter((link) => !!link);
+	else mapLinks.sort((a, b) => {
+		return types.indexOf(a.rel) - types.indexOf(b.rel);
+	});
+	return mapLinks;
+}
+/**
 * Checks whether the given value is a scalar (string, number, boolean).
 * @param {*} value The value to check
 * @return {boolean} `true` is the value is a scalar, `false` otherwise
@@ -72468,30 +72502,7 @@ var STACLayer = class STACLayer extends LayerGroup {
 	* @api
 	*/
 	getWebMapLinks() {
-		if (this.displayWebMapLink_ === false) return [];
-		const data = this.getData();
-		if (!data || data.isAsset) return [];
-		let types = [
-			"xyz",
-			"tilejson",
-			"pmtiles",
-			"wmts",
-			"wms"
-		];
-		if (typeof this.displayWebMapLink_ === "string") types = [this.displayWebMapLink_];
-		let mapLinks = data.getLinksWithRels(types);
-		if (Array.isArray(this.displayWebMapLink_)) mapLinks = this.displayWebMapLink_.map((link) => {
-			if (typeof link === "string") {
-				const match = mapLinks.find((candidate) => candidate.id === link);
-				if (match) return match;
-				return null;
-			}
-			return link;
-		}).filter((link) => !!link);
-		else mapLinks.sort((a, b) => {
-			return types.indexOf(a.rel) - types.indexOf(b.rel);
-		});
-		return mapLinks;
+		return getWebMapLinks(this.getData(), this.displayWebMapLink_);
 	}
 	/**
 	* Set the style for GeoTIFF and GeoZarr layers (WebGLTileLayer style).
