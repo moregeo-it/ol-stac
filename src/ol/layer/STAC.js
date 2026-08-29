@@ -47,7 +47,6 @@ import {
   getSpecificWebMapUrl,
   getWebMapLinks,
   isScalar,
-  restoreUrlTemplateParams,
   toContinuousBBox,
   toOlExtent,
 } from '../util.js';
@@ -198,8 +197,8 @@ import LayerType from './type.js';
  * STAC Asset or Link that is shown (if available) and the URL, and returns the new URL or
  * `null` to keep the URL unchanged. The rewrite is applied before `getSourceOptions` is called.
  * For tiled sources the tile URL template is rewritten, not the individual tile URLs.
- * Template placeholders such as `{z}` that get percent-encoded by the function
- * (e.g. through URL normalization) are restored afterwards.
+ * The returned URL must keep template placeholders such as `{z}` unchanged,
+ * i.e. they must not be percent-encoded (e.g. through URL normalization).
  */
 
 /**
@@ -429,7 +428,7 @@ class STACLayer extends LayerGroup {
     if (typeof this.getRequestUrl_ === 'function' && typeof url === 'string') {
       const newUrl = this.getRequestUrl_(ref, url);
       if (typeof newUrl === 'string' && newUrl.length > 0) {
-        return restoreUrlTemplateParams(newUrl, url);
+        return newUrl;
       }
     }
     return url;

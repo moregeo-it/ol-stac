@@ -217,20 +217,6 @@ describe('ol/layer/STAC', function () {
       return `${url}${url.includes('?') ? '&' : '?'}token=1`;
     }
 
-    /**
-     * Appends a token like consumers that run URLs through a URL normalizer
-     * (e.g. URI.js), which percent-encodes template placeholders.
-     * @param {Object} ref The STAC Asset or Link.
-     * @param {string} url The URL.
-     * @return {string} The normalized URL with the token appended.
-     */
-    function normalizeAndAppendToken(ref, url) {
-      return appendToken(
-        ref,
-        url.replaceAll('{', '%7B').replaceAll('}', '%7D'),
-      );
-    }
-
     it('rewrites the GeoTIFF source URLs', async function () {
       const group = new STAC({
         data: createItem({cog: COG_ASSET}),
@@ -309,13 +295,7 @@ describe('ol/layer/STAC', function () {
       expect(options.sources[0].url).to.equal(COG_ASSET.href);
     });
 
-    /**
-     * Creates a STAC layer for a WMTS link with a URI template and waits
-     * for the WMTS source to be created.
-     * @param {function(Object, string):string} getRequestUrl The getRequestUrl option.
-     * @return {Promise<Object>} Resolves with the WMTS source.
-     */
-    async function createWmtsSource(getRequestUrl) {
+    it('rewrites the WMTS URI template', async function () {
       const capabilities = `<?xml version="1.0" encoding="UTF-8"?>
 <Capabilities xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1" version="1.0.0">
   <Contents>
@@ -358,7 +338,7 @@ describe('ol/layer/STAC', function () {
           },
         ]),
         displayWebMapLink: true,
-        getRequestUrl,
+        getRequestUrl: appendToken,
       });
       group.on('error', () => {});
       await waitFor(() =>
@@ -372,7 +352,7 @@ describe('ol/layer/STAC', function () {
               (layer.getSource().getUrls() || []).length > 0,
           ),
       );
-      return group
+      const source = group
         .getLayersArray()
         .map(
           (layer) => typeof layer.getSource === 'function' && layer.getSource(),
@@ -383,49 +363,17 @@ describe('ol/layer/STAC', function () {
             typeof s.getUrls === 'function' &&
             (s.getUrls() || []).length > 0,
         );
-    }
-
-    it('rewrites the WMTS URI template', async function () {
-      const source = await createWmtsSource(appendToken);
       expect(source.getUrls()[0]).to.equal(
         'https://example.com/tiles/{TileMatrix}/{TileRow}/{TileCol}.png?token=1',
       );
     });
 
-    it('restores WMTS URI template placeholders escaped by getRequestUrl', async function () {
-      const source = await createWmtsSource(normalizeAndAppendToken);
-      expect(source.getUrls()[0]).to.equal(
-        'https://example.com/tiles/{TileMatrix}/{TileRow}/{TileCol}.png?token=1',
-      );
-    });
-
-    it('restores web map link placeholders escaped by getRequestUrl', async function () {
-      const group = new STAC({
-        data: createItem({}, [
-          {
-            rel: 'xyz',
-            href: 'https://example.com/{z}/{x}/{-y}.png',
-            type: 'image/png',
-          },
-        ]),
-        displayWebMapLink: true,
-        getRequestUrl: normalizeAndAppendToken,
-        getSourceOptions: captureSourceOptions,
-      });
-      group.on('error', () => {});
-      await waitFor(() => getCaptured(SourceType.XYZ));
-      const options = getCaptured(SourceType.XYZ);
-      expect(options.url).to.equal(
-        'https://example.com/{z}/{x}/{-y}.png?token=1',
-      );
-    });
-
-    it('restores tile URL template placeholders escaped by getRequestUrl', async function () {
+    it('rewrites the tile URL template from buildTileUrlTemplate', async function () {
       const group = new STAC({
         data: createItem({cog: COG_ASSET}),
         buildTileUrlTemplate: (asset) =>
           `https://tiles.example.com/{z}/{x}/{y}.png?url=${encodeURIComponent(asset.getAbsoluteUrl())}`,
-        getRequestUrl: normalizeAndAppendToken,
+        getRequestUrl: appendToken,
         getSourceOptions: captureSourceOptions,
       });
       group.on('error', () => {});
@@ -534,38 +482,6 @@ describe('ol/layer/STAC', function () {
         );
       expect(source.getTileJSON().tiles[0]).to.equal(
         'https://example.com/tiles/{z}/{x}/{y}.png?token=1',
-      );
-    });
-
-    it('restores tile template placeholders escaped by getRequestUrl', async function () {
-      const group = new STAC({
-        data: createItem({}, [TILEJSON_LINK]),
-        displayWebMapLink: true,
-        getRequestUrl: (ref, url) =>
-          url.replaceAll('{', '%7B').replaceAll('}', '%7D'),
-      });
-      group.on('error', () => {});
-      await waitFor(() =>
-        group
-          .getLayersArray()
-          .some(
-            (layer) =>
-              typeof layer.getSource === 'function' &&
-              layer.getSource() &&
-              typeof layer.getSource().getTileJSON === 'function' &&
-              layer.getSource().getTileJSON(),
-          ),
-      );
-      const source = group
-        .getLayersArray()
-        .map(
-          (layer) => typeof layer.getSource === 'function' && layer.getSource(),
-        )
-        .find(
-          (s) => s && typeof s.getTileJSON === 'function' && s.getTileJSON(),
-        );
-      expect(source.getTileJSON().tiles[0]).to.equal(
-        'https://example.com/tiles/{z}/{x}/{y}.png',
       );
     });
   });
