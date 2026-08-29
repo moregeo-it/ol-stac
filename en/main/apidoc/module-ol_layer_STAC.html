@@ -1577,7 +1577,9 @@ to preview images and XYZ, TileJSON, WMS and WMTS tiles.</p>
 parameters for authentication (signed URLs, API keys). The function is called with the
 STAC Asset or Link that is shown (if available) and the URL, and returns the new URL or
 <code>null</code> to keep the URL unchanged. The rewrite is applied before <code>getSourceOptions</code> is called.
-For tiled sources the tile URL template is rewritten, not the individual tile URLs.</p>
+For tiled sources the tile URL template is rewritten, not the individual tile URLs.
+The returned URL must keep template placeholders such as <code>{z}</code> unchanged,
+i.e. they must not be percent-encoded (e.g. through URL normalization).</p>
                 
             </td>
         </tr>

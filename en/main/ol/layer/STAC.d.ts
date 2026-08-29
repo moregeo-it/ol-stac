@@ -219,6 +219,8 @@ export type Options = {
      * STAC Asset or Link that is shown (if available) and the URL, and returns the new URL or
      * `null` to keep the URL unchanged. The rewrite is applied before `getSourceOptions` is called.
      * For tiled sources the tile URL template is rewritten, not the individual tile URLs.
+     * The returned URL must keep template placeholders such as `{z}` unchanged,
+     * i.e. they must not be percent-encoded (e.g. through URL normalization).
      */
     getRequestUrl?: ((arg0: (Asset | Link | STACObject | null), arg1: string) => (string | null)) | undefined;
 };
@@ -367,6 +369,8 @@ export type Options = {
  * STAC Asset or Link that is shown (if available) and the URL, and returns the new URL or
  * `null` to keep the URL unchanged. The rewrite is applied before `getSourceOptions` is called.
  * For tiled sources the tile URL template is rewritten, not the individual tile URLs.
+ * The returned URL must keep template placeholders such as `{z}` unchanged,
+ * i.e. they must not be percent-encoded (e.g. through URL normalization).
  */
 /**
  * @classdesc
