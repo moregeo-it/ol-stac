@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- URL template placeholders such as `{z}/{x}/{y}` that get percent-encoded by a `getRequestUrl` function
+  (e.g. through URL normalization) are restored, so that XYZ, TileJSON and WMTS tiles load again.
+  Affected stac-browser, see <https://github.com/radiantearth/stac-browser/issues/996>
 - A footprint that can't be converted to GeoJSON no longer breaks the whole layer; an `error` event is dispatched instead.
 
 ## [1.6.0] - 2026-08-13
