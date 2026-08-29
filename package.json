@@ -35,7 +35,7 @@
   "dependencies": {
     "ol-pmtiles": "^2.0.0",
     "proj4": "^2.16.1",
-    "stac-js": "^0.5.5",
+    "stac-js": "^0.5.6",
     "zarrita": "^0.7.3"
   },
   "peerDependencies": {
