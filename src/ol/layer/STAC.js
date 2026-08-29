@@ -47,6 +47,7 @@ import {
   getSpecificWebMapUrl,
   getWebMapLinks,
   isScalar,
+  restoreUrlTemplateParams,
   toContinuousBBox,
   toOlExtent,
 } from '../util.js';
@@ -197,6 +198,8 @@ import LayerType from './type.js';
  * STAC Asset or Link that is shown (if available) and the URL, and returns the new URL or
  * `null` to keep the URL unchanged. The rewrite is applied before `getSourceOptions` is called.
  * For tiled sources the tile URL template is rewritten, not the individual tile URLs.
+ * Template placeholders such as `{z}` that get percent-encoded by the function
+ * (e.g. through URL normalization) are restored afterwards.
  */
 
 /**
@@ -426,7 +429,7 @@ class STACLayer extends LayerGroup {
     if (typeof this.getRequestUrl_ === 'function' && typeof url === 'string') {
       const newUrl = this.getRequestUrl_(ref, url);
       if (typeof newUrl === 'string' && newUrl.length > 0) {
-        return newUrl;
+        return restoreUrlTemplateParams(newUrl, url);
       }
     }
     return url;
@@ -563,7 +566,13 @@ class STACLayer extends LayerGroup {
     this.set('stac', stac);
     this.bands_ = bands;
 
-    this.boundsLayer_ = this.addFootprint_();
+    try {
+      this.boundsLayer_ = this.addFootprint_();
+    } catch (error) {
+      // Don't fail the whole layer if the footprint can't be shown,
+      // the map can still zoom to the bounding box of the STAC entity
+      this.handleError_(error);
+    }
     const updateBoundsStyle = () => {
       if (this.boundsLayer_) {
         this.boundsLayer_.setStyle(getBoundsStyle(this.boundsStyle_, this));

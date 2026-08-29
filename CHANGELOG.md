@@ -15,6 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Modernized the development tooling to match OpenLayers: vite (examples) instead of webpack, vitest with Playwright (tests) instead of karma/mocha, and upgraded eslint 10, TypeScript 6 and related dev dependencies. No changes to the published package.
 
+### Fixed
+
+- URL template placeholders such as `{z}/{x}/{y}` that get percent-encoded by a `getRequestUrl` function
+  (e.g. through URL normalization) are restored, so that XYZ, TileJSON and WMTS tiles load again.
+  Affected stac-browser, see <https://github.com/radiantearth/stac-browser/issues/996>
+- A footprint that can't be converted to GeoJSON no longer breaks the whole layer;
+  an `error` event is dispatched and the map can still zoom to the bounding box.
+  Updated stac-js to 0.5.6, which fixes very small footprints being collapsed
+  by the antimeridian handling, see <https://github.com/radiantearth/stac-browser/issues/1002>
+
 ## [1.6.0] - 2026-08-13
 
 ### Added

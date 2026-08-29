@@ -1195,6 +1195,23 @@ export function getWebMapLinks(data, displayWebMapLink = true) {
 }
 
 /**
+ * Restores URL template placeholders such as `{z}` or `{TileRow}` that were
+ * percent-encoded while the URL was rewritten, e.g. by a URL normalizer.
+ * Only placeholders that occur in the original URL are restored.
+ * @param {string} url The rewritten URL.
+ * @param {string} originalUrl The original URL containing the placeholders.
+ * @return {string} The rewritten URL with the placeholders restored.
+ */
+export function restoreUrlTemplateParams(url, originalUrl) {
+  const placeholders = originalUrl.match(/\{[\w-]+\}/g) || [];
+  for (const placeholder of new Set(placeholders)) {
+    const name = placeholder.slice(1, -1);
+    url = url.replace(new RegExp(`%7B${name}%7D`, 'gi'), placeholder);
+  }
+  return url;
+}
+
+/**
  * Checks whether the given value is a scalar (string, number, boolean).
  * @param {*} value The value to check
  * @return {boolean} `true` is the value is a scalar, `false` otherwise
