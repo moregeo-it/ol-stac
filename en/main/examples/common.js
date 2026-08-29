@@ -62001,7 +62001,7 @@ var import_migrate = /* @__PURE__ */ __toESM((/* @__PURE__ */ __commonJSMin(((ex
 					obj["eo:bands"][i] = band;
 				}
 			}
-			if (V.before("1.1.0-beta.1") && (Array.isArray(obj["raster:bands"]) || Array.isArray(obj["eo:bands"]))) {
+			if ((Array.isArray(obj["raster:bands"]) || Array.isArray(obj["eo:bands"])) && (V.before("1.1.0-beta.1") || V.before("2.0.0-beta.1", "raster") || V.before("2.0.0-beta.1", "eo"))) {
 				_.ensure(obj, "bands", []);
 				const raster = obj["raster:bands"] || [];
 				const eo = obj["eo:bands"] || [];
@@ -64675,7 +64675,7 @@ function rewindPolygon(coords, reverse) {
 * which itself is a port of the Python antimeridian package by Pete Gadomski
 * (https://github.com/gadomski/antimeridian).
 *
-* Deviations from antimeridian-ts (all in favor of the Python implementation):
+* Deviations from antimeridian-ts (mostly in favor of the Python implementation):
 * - Rings of polygons that were split at the antimeridian are properly closed
 *   (first position === last position) as required by the GeoJSON specification.
 * - Geometry types that can't cross the antimeridian (e.g. Point and MultiPoint)
@@ -64688,6 +64688,9 @@ function rewindPolygon(coords, reverse) {
 * - The centroid is area-weighted (as in shapely) instead of a mean of the vertices.
 * - Multiple holes in the same polygon are all preserved (the Python implementation
 *   in fact drops all but the last hole per polygon).
+* - Near-duplicate positions are detected with an absolute tolerance instead of
+*   numpy's default relative tolerance, which collapses small geometries far from
+*   the null island (https://github.com/gadomski/antimeridian/issues/230).
 *
 * @module antimeridian
 */
@@ -64743,6 +64746,12 @@ function closeRing(ring) {
 /**
 * Removes consecutive near-duplicate positions from a list of positions.
 *
+* Uses an absolute tolerance (`numpy.allclose` with `rtol=0, atol=1e-8`) instead of
+* numpy's default relative tolerance: a tolerance that scales with the coordinate
+* values collapses small geometries far from the null island to degenerate rings,
+* e.g. ~1 mm precision at the equator vs. ~50 m at 50° latitude.
+* See https://github.com/gadomski/antimeridian/issues/230
+*
 * @private
 * @param {Array.<Array.<number>>} coords A list of positions.
 * @returns {Array.<Array.<number>>} The list of positions without consecutive near-duplicates.
@@ -64752,7 +64761,7 @@ function removeConsecutiveDuplicates(coords) {
 	const result = [coords[0]];
 	for (let i = 1; i < coords.length; i++) {
 		const prev = result[result.length - 1];
-		if (!isCloseLoose(coords[i][0], prev[0]) || !isCloseLoose(coords[i][1], prev[1])) result.push(coords[i]);
+		if (Math.abs(coords[i][0] - prev[0]) > 1e-8 || Math.abs(coords[i][1] - prev[1]) > 1e-8) result.push(coords[i]);
 	}
 	return result;
 }
