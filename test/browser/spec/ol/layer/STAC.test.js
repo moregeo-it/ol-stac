@@ -367,6 +367,22 @@ describe('ol/layer/STAC', function () {
         'https://example.com/tiles/{TileMatrix}/{TileRow}/{TileCol}.png?token=1',
       );
     });
+
+    it('rewrites the tile URL template from buildTileUrlTemplate', async function () {
+      const group = new STAC({
+        data: createItem({cog: COG_ASSET}),
+        buildTileUrlTemplate: (asset) =>
+          `https://tiles.example.com/{z}/{x}/{y}.png?url=${encodeURIComponent(asset.getAbsoluteUrl())}`,
+        getRequestUrl: appendToken,
+        getSourceOptions: captureSourceOptions,
+      });
+      group.on('error', () => {});
+      await waitFor(() => getCaptured(SourceType.XYZ));
+      const options = getCaptured(SourceType.XYZ);
+      expect(options.url).to.equal(
+        `https://tiles.example.com/{z}/{x}/{y}.png?url=${encodeURIComponent(COG_ASSET.href)}&token=1`,
+      );
+    });
   });
 
   describe('TileJSON manifest', function () {

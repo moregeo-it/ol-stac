@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Modernized the development tooling to match OpenLayers: vite (examples) instead of webpack, vitest with Playwright (tests) instead of karma/mocha, and upgraded eslint 10, TypeScript 6 and related dev dependencies. No changes to the published package.
+- Documented that a `getRequestUrl` function must not percent-encode URL template placeholders such as `{z}/{x}/{y}`.
+
+### Fixed
+
+- A footprint that can't be converted to GeoJSON no longer breaks the whole layer; an `error` event is dispatched instead.
 
 ## [1.6.0] - 2026-08-13
 

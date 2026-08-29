@@ -197,6 +197,8 @@ import LayerType from './type.js';
  * STAC Asset or Link that is shown (if available) and the URL, and returns the new URL or
  * `null` to keep the URL unchanged. The rewrite is applied before `getSourceOptions` is called.
  * For tiled sources the tile URL template is rewritten, not the individual tile URLs.
+ * The returned URL must keep template placeholders such as `{z}` unchanged,
+ * i.e. they must not be percent-encoded (e.g. through URL normalization).
  */
 
 /**
@@ -563,7 +565,13 @@ class STACLayer extends LayerGroup {
     this.set('stac', stac);
     this.bands_ = bands;
 
-    this.boundsLayer_ = this.addFootprint_();
+    try {
+      this.boundsLayer_ = this.addFootprint_();
+    } catch (error) {
+      // Don't fail the whole layer if the footprint can't be shown,
+      // the map can still zoom to the bounding box of the STAC entity
+      this.handleError_(error);
+    }
     const updateBoundsStyle = () => {
       if (this.boundsLayer_) {
         this.boundsLayer_.setStyle(getBoundsStyle(this.boundsStyle_, this));
