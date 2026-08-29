@@ -1148,6 +1148,53 @@ export function getSpecificWebMapUrl(link) {
 }
 
 /**
+ * Returns all potential web map links for the given STAC entity,
+ * based on the given value for `displayWebMapLink`.
+ * See the STACLayer option of the same name for details.
+ * @param {import('stac-js').STACObject} data The STAC entity to get the links from.
+ * @param {string|boolean|Array<import('./layer/STAC.js').Link|string>} [displayWebMapLink] The value of the `displayWebMapLink` option of the STACLayer.
+ * @return {Array<import('./layer/STAC.js').Link>} An array of links.
+ * @api
+ */
+export function getWebMapLinks(data, displayWebMapLink = true) {
+  if (displayWebMapLink === false) {
+    return [];
+  }
+
+  if (!data || data.isAsset) {
+    return [];
+  }
+
+  let types = ['xyz', 'tilejson', 'pmtiles', 'wmts', 'wms']; // This also defines the priority
+  if (typeof displayWebMapLink === 'string') {
+    types = [displayWebMapLink];
+  }
+  let mapLinks = data.getLinksWithRels(types);
+
+  if (Array.isArray(displayWebMapLink)) {
+    mapLinks = displayWebMapLink
+      .map((link) => {
+        if (typeof link === 'string') {
+          const match = mapLinks.find((candidate) => candidate.id === link);
+          if (match) {
+            return match;
+          }
+          return null;
+        }
+        return link;
+      })
+      .filter((link) => !!link);
+  } else {
+    mapLinks.sort((a, b) => {
+      const prioA = types.indexOf(a.rel);
+      const prioB = types.indexOf(b.rel);
+      return prioA - prioB;
+    });
+  }
+  return mapLinks;
+}
+
+/**
  * Checks whether the given value is a scalar (string, number, boolean).
  * @param {*} value The value to check
  * @return {boolean} `true` is the value is a scalar, `false` otherwise

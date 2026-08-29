@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- New `getWebMapLinks` utility function
+
 ### Changed
 
 - Modernized the development tooling to match OpenLayers: vite (examples) instead of webpack, vitest with Playwright (tests) instead of karma/mocha, and upgraded eslint 10, TypeScript 6 and related dev dependencies. No changes to the published package.

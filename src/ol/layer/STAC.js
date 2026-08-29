@@ -45,6 +45,7 @@ import {
   getGeoZarrSourceOptionsFromAsset,
   getGeoZarrStyleFromAsset,
   getSpecificWebMapUrl,
+  getWebMapLinks,
   isScalar,
   toContinuousBBox,
   toOlExtent,
@@ -1560,42 +1561,7 @@ class STACLayer extends LayerGroup {
    * @api
    */
   getWebMapLinks() {
-    if (this.displayWebMapLink_ === false) {
-      return [];
-    }
-
-    const data = this.getData();
-    if (!data || data.isAsset) {
-      return [];
-    }
-
-    let types = ['xyz', 'tilejson', 'pmtiles', 'wmts', 'wms']; // This also defines the priority
-    if (typeof this.displayWebMapLink_ === 'string') {
-      types = [this.displayWebMapLink_];
-    }
-    let mapLinks = data.getLinksWithRels(types);
-
-    if (Array.isArray(this.displayWebMapLink_)) {
-      mapLinks = this.displayWebMapLink_
-        .map((link) => {
-          if (typeof link === 'string') {
-            const match = mapLinks.find((candidate) => candidate.id === link);
-            if (match) {
-              return match;
-            }
-            return null;
-          }
-          return link;
-        })
-        .filter((link) => !!link);
-    } else {
-      mapLinks.sort((a, b) => {
-        const prioA = types.indexOf(a.rel);
-        const prioB = types.indexOf(b.rel);
-        return prioA - prioB;
-      });
-    }
-    return mapLinks;
+    return getWebMapLinks(this.getData(), this.displayWebMapLink_);
   }
 
   /**
