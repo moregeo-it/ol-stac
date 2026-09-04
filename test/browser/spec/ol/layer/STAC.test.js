@@ -171,9 +171,11 @@ describe('ol/layer/STAC', function () {
   describe('getRequestUrl', function () {
     let fetchStub;
     let captured;
+    let urlCalls;
 
     beforeEach(function () {
       captured = [];
+      urlCalls = [];
       fetchStub = vi
         .spyOn(window, 'fetch')
         .mockImplementation(() =>
@@ -208,12 +210,14 @@ describe('ol/layer/STAC', function () {
     }
 
     /**
-     * Appends a token query parameter to the given URL.
+     * Appends a token query parameter to the given URL, records the call.
      * @param {Object} ref The STAC Asset or Link.
      * @param {string} url The URL.
+     * @param {boolean} isTemplate Whether the URL is a tile URL template.
      * @return {string} The URL with the token appended.
      */
-    function appendToken(ref, url) {
+    function appendToken(ref, url, isTemplate) {
+      urlCalls.push({url, isTemplate});
       return `${url}${url.includes('?') ? '&' : '?'}token=1`;
     }
 
@@ -227,6 +231,10 @@ describe('ol/layer/STAC', function () {
       await waitFor(() => getCaptured(SourceType.GeoTIFF));
       const options = getCaptured(SourceType.GeoTIFF);
       expect(options.sources[0].url).to.equal(`${COG_ASSET.href}?token=1`);
+      expect(urlCalls).to.deep.include({
+        url: COG_ASSET.href,
+        isTemplate: false,
+      });
     });
 
     it('rewrites the preview image URL', async function () {
@@ -261,6 +269,78 @@ describe('ol/layer/STAC', function () {
       expect(options.url).to.equal(
         'https://example.com/{z}/{x}/{y}.png?token=1',
       );
+      expect(urlCalls).to.deep.include({
+        url: 'https://example.com/{z}/{x}/{y}.png',
+        isTemplate: true,
+      });
+    });
+
+    it('replaces {s} before the XYZ URL template is rewritten', async function () {
+      const group = new STAC({
+        data: createItem({}, [
+          {
+            rel: 'xyz',
+            href: 'https://{s}.example.com/{z}/{x}/{y}.png',
+            'href:servers': ['a'],
+            type: 'image/png',
+          },
+        ]),
+        displayWebMapLink: true,
+        getRequestUrl: appendToken,
+        getSourceOptions: captureSourceOptions,
+      });
+      group.on('error', () => {});
+      await waitFor(() => getCaptured(SourceType.XYZ));
+      expect(getCaptured(SourceType.XYZ).url).to.equal(
+        'https://a.example.com/{z}/{x}/{y}.png?token=1',
+      );
+      expect(urlCalls).to.deep.include({
+        url: 'https://a.example.com/{z}/{x}/{y}.png',
+        isTemplate: true,
+      });
+    });
+
+    it('rewrites WMS web map link URLs', async function () {
+      const group = new STAC({
+        data: createItem({}, [
+          {
+            rel: 'wms',
+            href: 'https://example.com/wms',
+            type: 'image/png',
+            'wms:layers': ['test'],
+          },
+        ]),
+        displayWebMapLink: true,
+        getRequestUrl: appendToken,
+        getSourceOptions: captureSourceOptions,
+      });
+      group.on('error', () => {});
+      await waitFor(() => getCaptured(SourceType.TileWMS));
+      const options = getCaptured(SourceType.TileWMS);
+      expect(options.url).to.equal('https://example.com/wms?token=1');
+      expect(urlCalls).to.deep.include({
+        url: 'https://example.com/wms',
+        isTemplate: false,
+      });
+    });
+
+    it('rewrites PMTiles web map link URLs', async function () {
+      const group = new STAC({
+        data: createItem({}, [
+          {
+            rel: 'pmtiles',
+            href: 'https://example.com/tiles.pmtiles',
+          },
+        ]),
+        displayWebMapLink: true,
+        getRequestUrl: appendToken,
+      });
+      group.on('error', () => {});
+      await waitFor(() => urlCalls.length > 0);
+      expect(urlCalls).to.deep.include({
+        url: 'https://example.com/tiles.pmtiles',
+        isTemplate: false,
+      });
     });
 
     it('rewrites the URL for the default fetch function', async function () {
@@ -295,8 +375,7 @@ describe('ol/layer/STAC', function () {
       expect(options.sources[0].url).to.equal(COG_ASSET.href);
     });
 
-    it('rewrites the WMTS URI template', async function () {
-      const capabilities = `<?xml version="1.0" encoding="UTF-8"?>
+    const WMTS_CAPABILITIES = `<?xml version="1.0" encoding="UTF-8"?>
 <Capabilities xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1" version="1.0.0">
   <Contents>
     <Layer>
@@ -322,23 +401,33 @@ describe('ol/layer/STAC', function () {
     </TileMatrixSet>
   </Contents>
 </Capabilities>`;
+
+    /**
+     * Creates a STAC layer for a WMTS link and waits for the WMTS source.
+     * @param {Object} linkProps Additional properties for the WMTS link.
+     * @param {Object} [layerOptions] Additional options for the STAC layer.
+     * @return {Promise<Object>} Resolves with the WMTS source.
+     */
+    async function createWmtsSource(linkProps, layerOptions = {}) {
       fetchStub.mockImplementation(() =>
-        Promise.resolve(new Response(capabilities, {status: 200})),
+        Promise.resolve(new Response(WMTS_CAPABILITIES, {status: 200})),
       );
       const group = new STAC({
         data: createItem({}, [
-          {
-            rel: 'wmts',
-            href: 'https://example.com/wmts',
-            type: 'application/xml',
-            'wmts:layer': 'test',
-            'wmts:encoding': 'rest',
-            uriTemplate:
-              'https://example.com/tiles/{TileMatrix}/{TileRow}/{TileCol}.png',
-          },
+          Object.assign(
+            {
+              rel: 'wmts',
+              href: 'https://example.com/wmts',
+              type: 'application/xml',
+              'wmts:layer': 'test',
+              'wmts:encoding': 'rest',
+            },
+            linkProps,
+          ),
         ]),
         displayWebMapLink: true,
         getRequestUrl: appendToken,
+        ...layerOptions,
       });
       group.on('error', () => {});
       await waitFor(() =>
@@ -352,7 +441,7 @@ describe('ol/layer/STAC', function () {
               (layer.getSource().getUrls() || []).length > 0,
           ),
       );
-      const source = group
+      return group
         .getLayersArray()
         .map(
           (layer) => typeof layer.getSource === 'function' && layer.getSource(),
@@ -363,9 +452,79 @@ describe('ol/layer/STAC', function () {
             typeof s.getUrls === 'function' &&
             (s.getUrls() || []).length > 0,
         );
+    }
+
+    it('rewrites the WMTS URI template', async function () {
+      const source = await createWmtsSource({
+        uriTemplate:
+          'https://example.com/tiles/{TileMatrix}/{TileRow}/{TileCol}.png',
+      });
       expect(source.getUrls()[0]).to.equal(
         'https://example.com/tiles/{TileMatrix}/{TileRow}/{TileCol}.png?token=1',
       );
+      expect(urlCalls).to.deep.include({
+        url: 'https://example.com/wmts',
+        isTemplate: false,
+      });
+      expect(urlCalls).to.deep.include({
+        url: 'https://example.com/tiles/{TileMatrix}/{TileRow}/{TileCol}.png',
+        isTemplate: true,
+      });
+    });
+
+    it('rewrites the WMTS URL templates from the capabilities', async function () {
+      const source = await createWmtsSource({});
+      expect(source.getUrls()[0]).to.equal(
+        'https://example.com/wmts/{TileMatrix}/{TileRow}/{TileCol}.png?token=1',
+      );
+      expect(urlCalls).to.deep.include({
+        url: 'https://example.com/wmts/{TileMatrix}/{TileRow}/{TileCol}.png',
+        isTemplate: true,
+      });
+    });
+
+    it('skips WMTS layers with unresolvable uriTemplate variables', async function () {
+      fetchStub.mockImplementation(() =>
+        Promise.resolve(new Response(WMTS_CAPABILITIES, {status: 200})),
+      );
+      const group = new STAC({
+        data: createItem({}, [
+          {
+            rel: 'wmts',
+            href: 'https://example.com/wmts',
+            type: 'application/xml',
+            'wmts:layer': 'test',
+            'wmts:encoding': 'rest',
+            uriTemplate:
+              'https://example.com/tiles/{custom}/{TileMatrix}/{TileRow}/{TileCol}.png',
+            variables: {custom: {type: 'string'}},
+          },
+        ]),
+        getRequestUrl: appendToken,
+      });
+      group.on('error', () => {});
+      const link = group.getData().getLinksWithRels(['wmts'])[0];
+      const layers = await group.addLayerForLink(link);
+      expect(layers).to.eql([]);
+    });
+
+    it('flags WMTS capability templates when getSourceOptions drops the encoding', async function () {
+      const source = await createWmtsSource(
+        {},
+        {
+          getSourceOptions: (type, options) => {
+            delete options.requestEncoding;
+            return options;
+          },
+        },
+      );
+      expect(source.getUrls()[0]).to.equal(
+        'https://example.com/wmts/{TileMatrix}/{TileRow}/{TileCol}.png?token=1',
+      );
+      expect(urlCalls).to.deep.include({
+        url: 'https://example.com/wmts/{TileMatrix}/{TileRow}/{TileCol}.png',
+        isTemplate: true,
+      });
     });
 
     it('rewrites the tile URL template from buildTileUrlTemplate', async function () {
@@ -382,6 +541,10 @@ describe('ol/layer/STAC', function () {
       expect(options.url).to.equal(
         `https://tiles.example.com/{z}/{x}/{y}.png?url=${encodeURIComponent(COG_ASSET.href)}&token=1`,
       );
+      expect(urlCalls).to.deep.include({
+        url: `https://tiles.example.com/{z}/{x}/{y}.png?url=${encodeURIComponent(COG_ASSET.href)}`,
+        isTemplate: true,
+      });
     });
   });
 
@@ -454,11 +617,14 @@ describe('ol/layer/STAC', function () {
     });
 
     it('rewrites the tile templates with getRequestUrl', async function () {
+      const urlCalls = [];
       const group = new STAC({
         data: createItem({}, [TILEJSON_LINK]),
         displayWebMapLink: true,
-        getRequestUrl: (ref, url) =>
-          `${url}${url.includes('?') ? '&' : '?'}token=1`,
+        getRequestUrl: (ref, url, isTemplate) => {
+          urlCalls.push({url, isTemplate});
+          return `${url}${url.includes('?') ? '&' : '?'}token=1`;
+        },
       });
       group.on('error', () => {});
       await waitFor(() =>
@@ -483,6 +649,14 @@ describe('ol/layer/STAC', function () {
       expect(source.getTileJSON().tiles[0]).to.equal(
         'https://example.com/tiles/{z}/{x}/{y}.png?token=1',
       );
+      expect(urlCalls).to.deep.include({
+        url: TILEJSON_LINK.href,
+        isTemplate: false,
+      });
+      expect(urlCalls).to.deep.include({
+        url: TILEJSON_DOC.tiles[0],
+        isTemplate: true,
+      });
     });
   });
 

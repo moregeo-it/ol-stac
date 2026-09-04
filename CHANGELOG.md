@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - New `getWebMapLinks` utility function
+- The `getRequestUrl` function receives a third argument `isTemplate` that indicates whether
+  the given URL is a tile URL template (from XYZ web map links, TileJSON manifests,
+  WMTS links (`uriTemplate`) and capabilities, or `buildTileUrlTemplate`), so that consumers
+  can preserve the placeholders such as `{z}/{x}/{y}` when rewriting the URL.
 
 ### Changed
 
@@ -19,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - A footprint that can't be converted to GeoJSON no longer breaks the whole layer; an `error` event is dispatched instead.
+- WMTS tile URLs derived from the capabilities document (when the link has no `uriTemplate`) are also rewritten via `getRequestUrl`
+- WMTS layers are skipped as intended when a `uriTemplate` variable has no usable value, instead of requesting tiles with the placeholder left in the URL
 
 ## [1.6.0] - 2026-08-13
 
