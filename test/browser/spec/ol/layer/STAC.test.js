@@ -375,8 +375,7 @@ describe('ol/layer/STAC', function () {
       expect(options.sources[0].url).to.equal(COG_ASSET.href);
     });
 
-    it('rewrites the WMTS URI template', async function () {
-      const capabilities = `<?xml version="1.0" encoding="UTF-8"?>
+    const WMTS_CAPABILITIES = `<?xml version="1.0" encoding="UTF-8"?>
 <Capabilities xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1" version="1.0.0">
   <Contents>
     <Layer>
@@ -402,23 +401,33 @@ describe('ol/layer/STAC', function () {
     </TileMatrixSet>
   </Contents>
 </Capabilities>`;
+
+    /**
+     * Creates a STAC layer for a WMTS link and waits for the WMTS source.
+     * @param {Object} linkProps Additional properties for the WMTS link.
+     * @param {Object} [layerOptions] Additional options for the STAC layer.
+     * @return {Promise<Object>} Resolves with the WMTS source.
+     */
+    async function createWmtsSource(linkProps, layerOptions = {}) {
       fetchStub.mockImplementation(() =>
-        Promise.resolve(new Response(capabilities, {status: 200})),
+        Promise.resolve(new Response(WMTS_CAPABILITIES, {status: 200})),
       );
       const group = new STAC({
         data: createItem({}, [
-          {
-            rel: 'wmts',
-            href: 'https://example.com/wmts',
-            type: 'application/xml',
-            'wmts:layer': 'test',
-            'wmts:encoding': 'rest',
-            uriTemplate:
-              'https://example.com/tiles/{TileMatrix}/{TileRow}/{TileCol}.png',
-          },
+          Object.assign(
+            {
+              rel: 'wmts',
+              href: 'https://example.com/wmts',
+              type: 'application/xml',
+              'wmts:layer': 'test',
+              'wmts:encoding': 'rest',
+            },
+            linkProps,
+          ),
         ]),
         displayWebMapLink: true,
         getRequestUrl: appendToken,
+        ...layerOptions,
       });
       group.on('error', () => {});
       await waitFor(() =>
@@ -432,7 +441,7 @@ describe('ol/layer/STAC', function () {
               (layer.getSource().getUrls() || []).length > 0,
           ),
       );
-      const source = group
+      return group
         .getLayersArray()
         .map(
           (layer) => typeof layer.getSource === 'function' && layer.getSource(),
@@ -443,6 +452,13 @@ describe('ol/layer/STAC', function () {
             typeof s.getUrls === 'function' &&
             (s.getUrls() || []).length > 0,
         );
+    }
+
+    it('rewrites the WMTS URI template', async function () {
+      const source = await createWmtsSource({
+        uriTemplate:
+          'https://example.com/tiles/{TileMatrix}/{TileRow}/{TileCol}.png',
+      });
       expect(source.getUrls()[0]).to.equal(
         'https://example.com/tiles/{TileMatrix}/{TileRow}/{TileCol}.png?token=1',
       );
@@ -452,6 +468,36 @@ describe('ol/layer/STAC', function () {
       });
       expect(urlCalls).to.deep.include({
         url: 'https://example.com/tiles/{TileMatrix}/{TileRow}/{TileCol}.png',
+        isTemplate: true,
+      });
+    });
+
+    it('rewrites the WMTS URL templates from the capabilities', async function () {
+      const source = await createWmtsSource({});
+      expect(source.getUrls()[0]).to.equal(
+        'https://example.com/wmts/{TileMatrix}/{TileRow}/{TileCol}.png?token=1',
+      );
+      expect(urlCalls).to.deep.include({
+        url: 'https://example.com/wmts/{TileMatrix}/{TileRow}/{TileCol}.png',
+        isTemplate: true,
+      });
+    });
+
+    it('flags WMTS capability templates when getSourceOptions drops the encoding', async function () {
+      const source = await createWmtsSource(
+        {},
+        {
+          getSourceOptions: (type, options) => {
+            delete options.requestEncoding;
+            return options;
+          },
+        },
+      );
+      expect(source.getUrls()[0]).to.equal(
+        'https://example.com/wmts/{TileMatrix}/{TileRow}/{TileCol}.png?token=1',
+      );
+      expect(urlCalls).to.deep.include({
+        url: 'https://example.com/wmts/{TileMatrix}/{TileRow}/{TileCol}.png',
         isTemplate: true,
       });
     });

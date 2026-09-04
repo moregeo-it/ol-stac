@@ -196,11 +196,14 @@ import LayerType from './type.js';
  * parameters for authentication (signed URLs, API keys). The function is called with the
  * STAC Asset or Link that is shown (if available), the URL, and whether the URL is a
  * tile URL template. It returns the new URL or `null` to keep the URL unchanged.
- * The rewrite is applied before `getSourceOptions` is called.
+ * The rewrite is applied to the initial source URL before `getSourceOptions` is called;
+ * templates discovered in fetched documents (TileJSON manifests, WMTS capabilities) are
+ * rewritten afterwards and are not passed to `getSourceOptions`.
  * For tiled sources the tile URL template is rewritten, not the individual tile URLs.
- * URL templates originate from XYZ web map links, TileJSON manifests, WMTS capabilities
- * and `buildTileUrlTemplate`. The returned URL must keep the template placeholders such as
- * `{z}` unchanged, i.e. they must not be percent-encoded (e.g. through URL normalization).
+ * URL templates originate from XYZ web map links, TileJSON manifests, WMTS links
+ * (`uriTemplate`) and capabilities, and `buildTileUrlTemplate`. The returned URL must keep
+ * the template placeholders such as `{z}` unchanged, i.e. they must not be percent-encoded
+ * (e.g. through URL normalization).
  */
 
 /**
@@ -937,6 +940,10 @@ class STACLayer extends LayerGroup {
             }
             delete opts.urls;
             opts.url = this.getRequestUrlFor_(uriTemplate, link, true);
+          } else if (Array.isArray(opts.urls)) {
+            opts.urls = opts.urls.map((u) =>
+              this.getRequestUrlFor_(u, link, opts.requestEncoding === 'REST'),
+            );
           }
 
           sources.push(new WMTS(opts));
