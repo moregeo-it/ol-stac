@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-09-04
+
 ### Added
 
 - New `getWebMapLinks` utility function
@@ -278,40 +280,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release
 
-[Unreleased]: <https://github.com/stac-extensions/contacts/compare/v1.6.0...HEAD>
-[1.6.0]: <https://github.com/stac-extensions/contacts/compare/v1.5.1...v1.6.0>
-[1.5.1]: <https://github.com/stac-extensions/contacts/compare/v1.5.0...v1.5.1>
-[1.5.0]: <https://github.com/stac-extensions/contacts/compare/v1.4.0...v1.5.0>
-[1.4.0]: <https://github.com/stac-extensions/contacts/compare/v1.3.0...v1.4.0>
-[1.3.0]: <https://github.com/stac-extensions/contacts/compare/v1.2.0...v1.3.0>
-[1.2.0]: <https://github.com/stac-extensions/contacts/compare/v1.1.1...v1.2.0>
-[1.1.1]: <https://github.com/stac-extensions/contacts/compare/v1.1.0...v1.1.1>
-[1.1.0]: <https://github.com/stac-extensions/contacts/compare/v1.0.5...v1.1.0>
-[1.0.5]: <https://github.com/stac-extensions/contacts/compare/v1.0.4...v1.0.5>
-[1.0.4]: <https://github.com/stac-extensions/contacts/compare/v1.0.3...v1.0.4>
-[1.0.3]: <https://github.com/stac-extensions/contacts/compare/v1.0.2...v1.0.3>
-[1.0.2]: <https://github.com/stac-extensions/contacts/compare/v1.0.1...v1.0.2>
-[1.0.1]: <https://github.com/stac-extensions/contacts/compare/v1.0.0...v1.0.1>
-[1.0.0]: <https://github.com/stac-extensions/contacts/compare/v1.0.0-rc.10...v1.0.0>
-[1.0.0-rc.10]: <https://github.com/stac-extensions/contacts/compare/v1.0.0-rc.9...v1.0.0-rc.10>
-[1.0.0-rc.9]: <https://github.com/stac-extensions/contacts/compare/v1.0.0-rc.8...v1.0.0-rc.9>
-[1.0.0-rc.8]: <https://github.com/stac-extensions/contacts/compare/v1.0.0-rc.7...v1.0.0-rc.8>
-[1.0.0-rc.7]: <https://github.com/stac-extensions/contacts/compare/v1.0.0-rc.6...v1.0.0-rc.7>
-[1.0.0-rc.6]: <https://github.com/stac-extensions/contacts/compare/v1.0.0-rc.5...v1.0.0-rc.6>
-[1.0.0-rc.5]: <https://github.com/stac-extensions/contacts/compare/v1.0.0-rc.4...v1.0.0-rc.5>
-[1.0.0-rc.4]: <https://github.com/stac-extensions/contacts/compare/v1.0.0-rc.3...v1.0.0-rc.4>
-[1.0.0-rc.3]: <https://github.com/stac-extensions/contacts/compare/v1.0.0-rc.2...v1.0.0-rc.3>
-[1.0.0-rc.2]: <https://github.com/stac-extensions/contacts/compare/v1.0.0-rc.1...v1.0.0-rc.2>
-[1.0.0-rc.1]: <https://github.com/stac-extensions/contacts/compare/v1.0.0-beta.12...v1.0.0-rc.1>
-[1.0.0-beta.12]: <https://github.com/stac-extensions/contacts/compare/v1.0.0-beta.11...v1.0.0-beta.12>
-[1.0.0-beta.11]: <https://github.com/stac-extensions/contacts/compare/v1.0.0-beta.10...v1.0.0-beta.11>
-[1.0.0-beta.10]: <https://github.com/stac-extensions/contacts/compare/v1.0.0-beta.9...v1.0.0-beta.10>
-[1.0.0-beta.9]: <https://github.com/stac-extensions/contacts/compare/v1.0.0-beta.8...v1.0.0-beta.9>
-[1.0.0-beta.8]: <https://github.com/stac-extensions/contacts/compare/v1.0.0-beta.7...v1.0.0-beta.8>
-[1.0.0-beta.7]: <https://github.com/stac-extensions/contacts/compare/v1.0.0-beta.6...v1.0.0-beta.7>
-[1.0.0-beta.6]: <https://github.com/stac-extensions/contacts/compare/v1.0.0-beta.5...v1.0.0-beta.6>
-[1.0.0-beta.5]: <https://github.com/stac-extensions/contacts/compare/v1.0.0-beta.4...v1.0.0-beta.5>
-[1.0.0-beta.4]: <https://github.com/stac-extensions/contacts/compare/v1.0.0-beta.3...v1.0.0-beta.4>
-[1.0.0-beta.3]: <https://github.com/stac-extensions/contacts/compare/v1.0.0-beta.2...v1.0.0-beta.3>
-[1.0.0-beta.2]: <https://github.com/stac-extensions/contacts/compare/v1.0.0-beta.1...v1.0.0-beta.2>
-[1.0.0-beta.1]: <https://github.com/stac-extensions/contacts/tree/v1.0.0-beta.1>
+[Unreleased]: <https://github.com/moregeo-it/ol-stac/compare/v1.7.0...HEAD>
+[1.7.0]: <https://github.com/moregeo-it/ol-stac/compare/v1.6.0...v1.7.0>
+[1.6.0]: <https://github.com/moregeo-it/ol-stac/compare/v1.5.1...v1.6.0>
+[1.5.1]: <https://github.com/moregeo-it/ol-stac/compare/v1.5.0...v1.5.1>
+[1.5.0]: <https://github.com/moregeo-it/ol-stac/compare/v1.4.0...v1.5.0>
+[1.4.0]: <https://github.com/moregeo-it/ol-stac/compare/v1.3.0...v1.4.0>
+[1.3.0]: <https://github.com/moregeo-it/ol-stac/compare/v1.2.0...v1.3.0>
+[1.2.0]: <https://github.com/moregeo-it/ol-stac/compare/v1.1.1...v1.2.0>
+[1.1.1]: <https://github.com/moregeo-it/ol-stac/compare/v1.1.0...v1.1.1>
+[1.1.0]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.5...v1.1.0>
+[1.0.5]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.4...v1.0.5>
+[1.0.4]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.3...v1.0.4>
+[1.0.3]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.2...v1.0.3>
+[1.0.2]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.1...v1.0.2>
+[1.0.1]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0...v1.0.1>
+[1.0.0]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0-rc.10...v1.0.0>
+[1.0.0-rc.10]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0-rc.9...v1.0.0-rc.10>
+[1.0.0-rc.9]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0-rc.8...v1.0.0-rc.9>
+[1.0.0-rc.8]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0-rc.7...v1.0.0-rc.8>
+[1.0.0-rc.7]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0-rc.6...v1.0.0-rc.7>
+[1.0.0-rc.6]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0-rc.5...v1.0.0-rc.6>
+[1.0.0-rc.5]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0-rc.4...v1.0.0-rc.5>
+[1.0.0-rc.4]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0-rc.3...v1.0.0-rc.4>
+[1.0.0-rc.3]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0-rc.2...v1.0.0-rc.3>
+[1.0.0-rc.2]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0-rc.1...v1.0.0-rc.2>
+[1.0.0-rc.1]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0-beta.12...v1.0.0-rc.1>
+[1.0.0-beta.12]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0-beta.11...v1.0.0-beta.12>
+[1.0.0-beta.11]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0-beta.10...v1.0.0-beta.11>
+[1.0.0-beta.10]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0-beta.9...v1.0.0-beta.10>
+[1.0.0-beta.9]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0-beta.8...v1.0.0-beta.9>
+[1.0.0-beta.8]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0-beta.7...v1.0.0-beta.8>
+[1.0.0-beta.7]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0-beta.6...v1.0.0-beta.7>
+[1.0.0-beta.6]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0-beta.5...v1.0.0-beta.6>
+[1.0.0-beta.5]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0-beta.4...v1.0.0-beta.5>
+[1.0.0-beta.4]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0-beta.3...v1.0.0-beta.4>
+[1.0.0-beta.3]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0-beta.2...v1.0.0-beta.3>
+[1.0.0-beta.2]: <https://github.com/moregeo-it/ol-stac/compare/v1.0.0-beta.1...v1.0.0-beta.2>
+[1.0.0-beta.1]: <https://github.com/moregeo-it/ol-stac/tree/v1.0.0-beta.1>
