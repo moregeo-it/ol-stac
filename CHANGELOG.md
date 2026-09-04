@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - New `getWebMapLinks` utility function
+- The `getRequestUrl` function receives a third argument `isTemplate` that indicates whether
+  the given URL is a tile URL template (from XYZ web map links, TileJSON manifests,
+  WMTS capabilities or `buildTileUrlTemplate`), so that consumers can preserve the
+  placeholders such as `{z}/{x}/{y}` when rewriting the URL.
 
 ### Changed
 

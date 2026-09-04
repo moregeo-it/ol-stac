@@ -191,14 +191,16 @@ import LayerType from './type.js';
  * The headers are attached to requests made by the default `httpRequestFn`, to GeoTIFF, GeoZarr
  * and PMTiles requests, and via image/tile load functions (through the Fetch API and object URLs)
  * to preview images and XYZ, TileJSON, WMS and WMTS tiles.
- * @property {function((Asset|Link|STACObject|null), string):(string|null)} [getRequestUrl=null]
+ * @property {function((Asset|Link|STACObject|null), string, boolean):(string|null)} [getRequestUrl=null]
  * Rewrites a URL before a request is made or a source is created, e.g. to append query
  * parameters for authentication (signed URLs, API keys). The function is called with the
- * STAC Asset or Link that is shown (if available) and the URL, and returns the new URL or
- * `null` to keep the URL unchanged. The rewrite is applied before `getSourceOptions` is called.
+ * STAC Asset or Link that is shown (if available), the URL, and whether the URL is a
+ * tile URL template. It returns the new URL or `null` to keep the URL unchanged.
+ * The rewrite is applied before `getSourceOptions` is called.
  * For tiled sources the tile URL template is rewritten, not the individual tile URLs.
- * The returned URL must keep template placeholders such as `{z}` unchanged,
- * i.e. they must not be percent-encoded (e.g. through URL normalization).
+ * URL templates originate from XYZ web map links, TileJSON manifests, WMTS capabilities
+ * and `buildTileUrlTemplate`. The returned URL must keep the template placeholders such as
+ * `{z}` unchanged, i.e. they must not be percent-encoded (e.g. through URL normalization).
  */
 
 /**
@@ -251,7 +253,7 @@ class STACLayer extends LayerGroup {
     this.getRequestHeaders_ = options.getRequestHeaders || null;
 
     /**
-     * @type {function((Asset|Link|STACObject|null), string):(string|null)|null}
+     * @type {function((Asset|Link|STACObject|null), string, boolean):(string|null)|null}
      * @private
      */
     this.getRequestUrl_ = options.getRequestUrl || null;
@@ -422,11 +424,12 @@ class STACLayer extends LayerGroup {
    *
    * @param {string} url The URL that is requested.
    * @param {Asset|Link|STACObject|null} [ref] The STAC Asset or Link that is shown, if available.
+   * @param {boolean} [isTemplate] Whether the URL is a tile URL template with placeholders such as `{z}`.
    * @return {string} The rewritten URL, or the given URL if it is not rewritten.
    */
-  getRequestUrlFor_(url, ref = null) {
+  getRequestUrlFor_(url, ref = null, isTemplate = false) {
     if (typeof this.getRequestUrl_ === 'function' && typeof url === 'string') {
-      const newUrl = this.getRequestUrl_(ref, url);
+      const newUrl = this.getRequestUrl_(ref, url, isTemplate);
       if (typeof newUrl === 'string' && newUrl.length > 0) {
         return newUrl;
       }
@@ -743,7 +746,7 @@ class STACLayer extends LayerGroup {
     if (!url) {
       return;
     }
-    url = this.getRequestUrlFor_(url, link);
+    url = this.getRequestUrlFor_(url, link, link.rel === 'xyz');
 
     const options = {
       attributions:
@@ -839,7 +842,7 @@ class STACLayer extends LayerGroup {
         if (isObject(tileJSON) && Array.isArray(tileJSON.tiles)) {
           // The tile templates from the manifest must be rewritten as well
           tileJSON.tiles = tileJSON.tiles.map((template) =>
-            this.getRequestUrlFor_(template, link),
+            this.getRequestUrlFor_(template, link, true),
           );
         }
         delete tjOptions.url;
@@ -933,7 +936,7 @@ class STACLayer extends LayerGroup {
               }
             }
             delete opts.urls;
-            opts.url = this.getRequestUrlFor_(uriTemplate, link);
+            opts.url = this.getRequestUrlFor_(uriTemplate, link, true);
           }
 
           sources.push(new WMTS(opts));
@@ -1095,7 +1098,7 @@ class STACLayer extends LayerGroup {
     if (!url) {
       return;
     }
-    url = this.getRequestUrlFor_(url, data);
+    url = this.getRequestUrlFor_(url, data, true);
     /**
      * @type {import("ol/source/XYZ.js").Options}
      */
