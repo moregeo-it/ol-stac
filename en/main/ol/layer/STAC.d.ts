@@ -216,13 +216,18 @@ export type Options = {
     /**
      * Rewrites a URL before a request is made or a source is created, e.g. to append query
      * parameters for authentication (signed URLs, API keys). The function is called with the
-     * STAC Asset or Link that is shown (if available) and the URL, and returns the new URL or
-     * `null` to keep the URL unchanged. The rewrite is applied before `getSourceOptions` is called.
+     * STAC Asset or Link that is shown (if available), the URL, and whether the URL is a
+     * tile URL template. It returns the new URL or `null` to keep the URL unchanged.
+     * The rewrite is applied to the initial source URL before `getSourceOptions` is called;
+     * templates discovered in fetched documents (TileJSON manifests, WMTS capabilities) are
+     * rewritten afterwards and are not passed to `getSourceOptions`.
      * For tiled sources the tile URL template is rewritten, not the individual tile URLs.
-     * The returned URL must keep template placeholders such as `{z}` unchanged,
-     * i.e. they must not be percent-encoded (e.g. through URL normalization).
+     * URL templates originate from XYZ web map links, TileJSON manifests, WMTS links
+     * (`uriTemplate`) and capabilities, and `buildTileUrlTemplate`. The returned URL must keep
+     * the template placeholders such as `{z}` unchanged, i.e. they must not be percent-encoded
+     * (e.g. through URL normalization).
      */
-    getRequestUrl?: ((arg0: (Asset | Link | STACObject | null), arg1: string) => (string | null)) | undefined;
+    getRequestUrl?: ((arg0: (Asset | Link | STACObject | null), arg1: string, arg2: boolean) => (string | null)) | undefined;
 };
 /**
  * @typedef {import("ol/extent.js").Extent} Extent
@@ -363,14 +368,19 @@ export type Options = {
  * The headers are attached to requests made by the default `httpRequestFn`, to GeoTIFF, GeoZarr
  * and PMTiles requests, and via image/tile load functions (through the Fetch API and object URLs)
  * to preview images and XYZ, TileJSON, WMS and WMTS tiles.
- * @property {function((Asset|Link|STACObject|null), string):(string|null)} [getRequestUrl=null]
+ * @property {function((Asset|Link|STACObject|null), string, boolean):(string|null)} [getRequestUrl=null]
  * Rewrites a URL before a request is made or a source is created, e.g. to append query
  * parameters for authentication (signed URLs, API keys). The function is called with the
- * STAC Asset or Link that is shown (if available) and the URL, and returns the new URL or
- * `null` to keep the URL unchanged. The rewrite is applied before `getSourceOptions` is called.
+ * STAC Asset or Link that is shown (if available), the URL, and whether the URL is a
+ * tile URL template. It returns the new URL or `null` to keep the URL unchanged.
+ * The rewrite is applied to the initial source URL before `getSourceOptions` is called;
+ * templates discovered in fetched documents (TileJSON manifests, WMTS capabilities) are
+ * rewritten afterwards and are not passed to `getSourceOptions`.
  * For tiled sources the tile URL template is rewritten, not the individual tile URLs.
- * The returned URL must keep template placeholders such as `{z}` unchanged,
- * i.e. they must not be percent-encoded (e.g. through URL normalization).
+ * URL templates originate from XYZ web map links, TileJSON manifests, WMTS links
+ * (`uriTemplate`) and capabilities, and `buildTileUrlTemplate`. The returned URL must keep
+ * the template placeholders such as `{z}` unchanged, i.e. they must not be percent-encoded
+ * (e.g. through URL normalization).
  */
 /**
  * @classdesc
@@ -405,7 +415,7 @@ declare class STACLayer extends LayerGroup {
      */
     private getRequestHeaders_;
     /**
-     * @type {function((Asset|Link|STACObject|null), string):(string|null)|null}
+     * @type {function((Asset|Link|STACObject|null), string, boolean):(string|null)|null}
      * @private
      */
     private getRequestUrl_;
@@ -527,9 +537,10 @@ declare class STACLayer extends LayerGroup {
      *
      * @param {string} url The URL that is requested.
      * @param {Asset|Link|STACObject|null} [ref] The STAC Asset or Link that is shown, if available.
+     * @param {boolean} [isTemplate] Whether the URL is a tile URL template with placeholders such as `{z}`.
      * @return {string} The rewritten URL, or the given URL if it is not rewritten.
      */
-    getRequestUrlFor_(url: string, ref?: Asset | Link | STACObject | null): string;
+    getRequestUrlFor_(url: string, ref?: Asset | Link | STACObject | null, isTemplate?: boolean): string;
     /**
      * Returns the HTTP headers to send for the given URL, based on the
      * `getRequestHeaders` option.
