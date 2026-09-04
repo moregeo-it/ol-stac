@@ -72122,7 +72122,7 @@ var STACLayer = class STACLayer extends LayerGroup {
 				let layers = [];
 				if (Array.isArray(link["wmts:layer"])) layers = link["wmts:layer"];
 				else if (typeof link["wmts:layer"] === "string") layers = [link["wmts:layer"]];
-				for (const layer of layers) {
+				layers: for (const layer of layers) {
 					let wmtsOptions = Object.assign({}, options, {
 						layer,
 						requestEncoding: link["wmts:encoding"] === "rest" ? "REST" : "KVP"
@@ -72142,7 +72142,7 @@ var STACLayer = class STACLayer extends LayerGroup {
 							else if (isScalar(schema.default)) value = schema.default;
 							else if (Array.isArray(schema.enum) && schema.enum.length > 0) value = schema.enum[0];
 							if (typeof value !== "undefined") uriTemplate = uriTemplate.replaceAll(`{${key}}`, String(value));
-							else continue;
+							else continue layers;
 						}
 						delete opts.urls;
 						opts.url = this.getRequestUrlFor_(uriTemplate, link, true);

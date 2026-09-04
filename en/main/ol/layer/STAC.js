@@ -784,7 +784,7 @@ class STACLayer extends LayerGroup {
                 else if (typeof link['wmts:layer'] === 'string') {
                     layers = [link['wmts:layer']];
                 }
-                for (const layer of layers) {
+                layers: for (const layer of layers) {
                     let wmtsOptions = Object.assign({}, options, {
                         layer,
                         requestEncoding: link['wmts:encoding'] === 'rest' ? 'REST' : 'KVP',
@@ -820,7 +820,8 @@ class STACLayer extends LayerGroup {
                                 uriTemplate = uriTemplate.replaceAll(`{${key}}`, String(value));
                             }
                             else {
-                                continue; // We don't know which value to use, so we can't visualize the layer
+                                // We don't know which value to use, so we can't visualize the layer
+                                continue layers;
                             }
                         }
                         delete opts.urls;
