@@ -30165,7 +30165,13 @@ function projString_default(defData) {
 	}, {});
 	var paramName, paramVal, paramOutname;
 	var params = {
-		proj: "projName",
+		proj: function(v) {
+			self.projName = [
+				"lonlat",
+				"latlon",
+				"latlong"
+			].includes(v) ? "longlat" : v;
+		},
 		datum: "datumCode",
 		rf: function(v) {
 			self.rf = parseFloat(v);
@@ -31378,7 +31384,13 @@ function init$39() {}
 function identity(pt) {
 	return pt;
 }
-var names$35 = ["longlat", "identity"];
+var names$35 = [
+	"longlat",
+	"identity",
+	"lonlat",
+	"latlon",
+	"latlong"
+];
 //#endregion
 //#region node_modules/proj4/lib/projections.js
 /** @type {Array<Partial<import('./Proj').default>>} */
@@ -34754,6 +34766,8 @@ function forward$25(p) {
 	}
 	coords.x = this.a * coords.x + this.x0;
 	coords.y = this.a * coords.y + this.y0;
+	if (p.z !== void 0) coords.z = p.z;
+	if (p.m !== void 0) coords.m = p.m;
 	return coords;
 }
 function inverse$25(p) {
@@ -34783,6 +34797,8 @@ function inverse$25(p) {
 		coords.x = -this.rB * Math.atan2(Sp * this.cosgam - Vp * this.singam, Math.cos(this.BrA * u));
 	}
 	coords.x += this.lam0;
+	if (p.z !== void 0) coords.z = p.z;
+	if (p.m !== void 0) coords.m = p.m;
 	return coords;
 }
 var omerc_default = {
@@ -36598,7 +36614,7 @@ function forward$7(p) {
 	g = this.sin_p14 * sinphi + this.cos_p14 * cosphi * coslon;
 	ksp = 1;
 	if (g > 0 || Math.abs(g) <= 1e-10) {
-		x = this.a * ksp * cosphi * Math.sin(dlon);
+		x = (this.x0 || 0) + this.a * ksp * cosphi * Math.sin(dlon);
 		y = (this.y0 || 0) + this.a * ksp * (this.cos_p14 * sinphi - this.sin_p14 * cosphi * coslon);
 	}
 	p.x = x;
@@ -37187,6 +37203,8 @@ function forward$5(ll) {
 	if (ll.y < 0) xy.y = -xy.y;
 	xy.x = xy.x * this.a * FXC + this.x0;
 	xy.y = xy.y * this.a * FYC + this.y0;
+	if (ll.z !== void 0) xy.z = ll.z;
+	if (ll.m !== void 0) xy.m = ll.m;
 	return xy;
 }
 function inverse$5(xy) {
@@ -37214,6 +37232,8 @@ function inverse$5(xy) {
 		if (xy.y < 0) ll.y = -ll.y;
 	}
 	ll.x = adjust_lon_default(ll.x + this.long0, this.over);
+	if (xy.z !== void 0) ll.z = xy.z;
+	if (xy.m !== void 0) ll.m = xy.m;
 	return ll;
 }
 var robin_default = {
@@ -37639,8 +37659,8 @@ function inverse$1(p) {
 		p.x /= this.rqda;
 		p.y /= this.rqda;
 	}
-	var EPS = 1e-9, NITER = 12, paramLat = p.y, paramLatSq, paramLatPow6, fy, fpy, dlat, i;
-	for (i = 0; i < NITER; ++i) {
+	var EPS = 1e-9, NITER = 12, paramLat = p.y, paramLatSq, paramLatPow6, fy, fpy, dlat, i = 0;
+	for (; i < NITER; ++i) {
 		paramLatSq = paramLat * paramLat;
 		paramLatPow6 = paramLatSq * paramLatSq * paramLatSq;
 		fy = paramLat * (A1 + A2 * paramLatSq + paramLatPow6 * (A3 + A4 * paramLatSq)) - p.y;
@@ -65609,8 +65629,8 @@ var require_IPv6 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			else if (segments[length - 1] === "" && segments[length - 2] === "") segments.pop();
 			length = segments.length;
 			if (segments[length - 1].indexOf(".") !== -1) total = 7;
-			var pos;
-			for (pos = 0; pos < length; pos++) if (segments[pos] === "") break;
+			var pos = 0;
+			for (; pos < length; pos++) if (segments[pos] === "") break;
 			if (pos < total) {
 				segments.splice(pos, 1, "0000");
 				while (segments.length < total) segments.splice(pos, 0, "0000");
@@ -66433,8 +66453,8 @@ var import_URI = /* @__PURE__ */ __toESM((/* @__PURE__ */ __commonJSMin(((export
 		};
 		URI.commonPath = function(one, two) {
 			var length = Math.min(one.length, two.length);
-			var pos;
-			for (pos = 0; pos < length; pos++) if (one.charAt(pos) !== two.charAt(pos)) {
+			var pos = 0;
+			for (; pos < length; pos++) if (one.charAt(pos) !== two.charAt(pos)) {
 				pos--;
 				break;
 			}
@@ -73013,8 +73033,8 @@ var tr_static_init = () => {
 	static_bl_desc = new StaticTreeDesc(new Array(0), extra_blbits, 0, BL_CODES$1, MAX_BL_BITS);
 };
 var init_block = (s) => {
-	let n;
-	for (n = 0; n < L_CODES$1; n++) s.dyn_ltree[n * 2] = 0;
+	let n = 0;
+	for (; n < L_CODES$1; n++) s.dyn_ltree[n * 2] = 0;
 	for (n = 0; n < D_CODES$1; n++) s.dyn_dtree[n * 2] = 0;
 	for (n = 0; n < BL_CODES$1; n++) s.bl_tree[n * 2] = 0;
 	s.dyn_ltree[END_BLOCK * 2] = 1;
@@ -73221,8 +73241,8 @@ var send_all_trees = (s, lcodes, dcodes, blcodes) => {
 };
 var detect_data_type = (s) => {
 	let block_mask = 4093624447;
-	let n;
-	for (n = 0; n <= 31; n++, block_mask >>>= 1) if (block_mask & 1 && s.dyn_ltree[n * 2] !== 0) return Z_BINARY;
+	let n = 0;
+	for (; n <= 31; n++, block_mask >>>= 1) if (block_mask & 1 && s.dyn_ltree[n * 2] !== 0) return Z_BINARY;
 	if (s.dyn_ltree[18] !== 0 || s.dyn_ltree[20] !== 0 || s.dyn_ltree[26] !== 0) return Z_TEXT;
 	for (n = 32; n < LITERALS$1; n++) if (s.dyn_ltree[n * 2] !== 0) return Z_TEXT;
 	return Z_BINARY;
@@ -77014,8 +77034,8 @@ function buildComponentData(component) {
 		let v7;
 		let t;
 		const p = dataIn;
-		let i;
-		for (i = 0; i < 64; i++) p[i] = zz[i] * qt[i];
+		let i = 0;
+		for (; i < 64; i++) p[i] = zz[i] * qt[i];
 		for (i = 0; i < 8; ++i) {
 			const row = 8 * i;
 			if (p[1 + row] === 0 && p[2 + row] === 0 && p[3 + row] === 0 && p[4 + row] === 0 && p[5 + row] === 0 && p[6 + row] === 0 && p[7 + row] === 0) {
@@ -78164,8 +78184,8 @@ var import_LercDecode = /* @__PURE__ */ __toESM((/* @__PURE__ */ __commonJSMin((
 					var blockDataBuffer = new Uint32Array(i1 - i0);
 					Lerc2Helpers.decodeBits(input, data, blockDataBuffer);
 					var codeTable = [];
-					var i, j, k, len;
-					for (i = i0; i < i1; i++) {
+					var i = i0, j, k, len;
+					for (; i < i1; i++) {
 						j = i - (i < size ? 0 : size);
 						codeTable[j] = {
 							first: blockDataBuffer[i - i0],
@@ -82752,6 +82772,7 @@ var BytesCodec = class BytesCodec {
 			bytes = bytes.slice();
 			byteswapInplace(bytes, bytesPerElement(this.#TypedArray));
 		}
+		if (bytes.byteOffset % this.#BYTES_PER_ELEMENT !== 0) bytes = bytes.slice();
 		return {
 			data: new this.#TypedArray(bytes.buffer, bytes.byteOffset, bytes.byteLength / this.#BYTES_PER_ELEMENT),
 			shape: this.#shape,
