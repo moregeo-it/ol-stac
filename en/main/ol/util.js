@@ -1046,12 +1046,16 @@ export function getSpecificWebMapUrl(link) {
  * Returns all potential web map links for the given STAC entity,
  * based on the given value for `displayWebMapLink`.
  * See the STACLayer option of the same name for details.
+ * If `httpOnly` is enabled, links that are not accessible via HTTP(S)
+ * (e.g. `s3://`) are excluded, unless they are provided explicitly
+ * through `displayWebMapLink`.
  * @param {import('stac-js').STACObject} data The STAC entity to get the links from.
  * @param {string|boolean|Array<import('./layer/STAC.js').Link|string>} [displayWebMapLink] The value of the `displayWebMapLink` option of the STACLayer.
+ * @param {boolean} [httpOnly] Return only links that can be accessed via HTTP(S).
  * @return {Array<import('./layer/STAC.js').Link>} An array of links.
  * @api
  */
-export function getWebMapLinks(data, displayWebMapLink = true) {
+export function getWebMapLinks(data, displayWebMapLink = true, httpOnly = true) {
     if (displayWebMapLink === false) {
         return [];
     }
@@ -1062,7 +1066,9 @@ export function getWebMapLinks(data, displayWebMapLink = true) {
     if (typeof displayWebMapLink === 'string') {
         types = [displayWebMapLink];
     }
-    let mapLinks = data.getLinksWithRels(types);
+    let mapLinks = data
+        .getLinksWithRels(types)
+        .filter((link) => !httpOnly || link.isHTTP !== false);
     if (Array.isArray(displayWebMapLink)) {
         mapLinks = displayWebMapLink
             .map((link) => {
