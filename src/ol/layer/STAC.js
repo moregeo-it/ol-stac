@@ -487,6 +487,10 @@ class STACLayer extends LayerGroup {
    * @return {Promise<*>} The (parsed) response body.
    */
   async fetch_(url, responseType = 'json', ref = null) {
+    const protocol = new URL(url, window.location.href).protocol;
+    if (protocol !== 'http:' && protocol !== 'https:') {
+      throw new Error(`Unsupported protocol for ${url}`);
+    }
     const headers = this.getRequestHeadersFor_(url, ref);
     const response = await fetch(url, headers ? {headers} : undefined);
     if (!response.ok) {
