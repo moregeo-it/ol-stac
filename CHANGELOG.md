@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `getWebMapLinks` (and thus the automatic web map link selection) excludes links that are not accessible through HTTP(S).
+  - Can be disabled through the new `httpOnly` parameter
+  - Links provided explicitly through `displayWebMapLink` are not affected.
+
 ## [1.7.0] - 2026-09-04
 
 ### Added

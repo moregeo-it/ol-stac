@@ -3,6 +3,7 @@ import XYZ from 'ol/source/XYZ.js';
 import STAC from '../../../../../src/ol/layer/STAC.js';
 import LayerType from '../../../../../src/ol/layer/type.js';
 import SourceType from '../../../../../src/ol/source/type.js';
+import {getWebMapLinks} from '../../../../../src/ol/util.js';
 
 function getItem() {
   return {
@@ -165,6 +166,43 @@ describe('ol/layer/STAC', function () {
       const [layer] = await group.addLayerForLink(link);
 
       expect(layer.getOpacity()).to.equal(0.25);
+    });
+  });
+
+  describe('getWebMapLinks', function () {
+    const S3_XYZ_LINK = {
+      rel: 'xyz',
+      href: 's3://bucket/tiles/{z}/{x}/{y}.png',
+      type: 'image/png',
+    };
+    const HTTPS_XYZ_LINK = {
+      rel: 'xyz',
+      href: 'https://example.com/{z}/{x}/{y}.png',
+      type: 'image/png',
+    };
+
+    /**
+     * Creates a STAC layer for an item with an s3 and an https XYZ link.
+     * @return {STAC} The STAC layer.
+     */
+    function createGroup() {
+      const group = new STAC({
+        data: createItem({}, [S3_XYZ_LINK, HTTPS_XYZ_LINK]),
+        displayWebMapLink: true,
+      });
+      group.on('error', () => {});
+      return group;
+    }
+
+    it('excludes links that are not accessible via HTTP(S)', function () {
+      const links = createGroup().getWebMapLinks();
+      expect(links.length).to.equal(1);
+      expect(links[0].href).to.equal(HTTPS_XYZ_LINK.href);
+    });
+
+    it('keeps non-HTTP links when httpOnly is disabled', function () {
+      const links = getWebMapLinks(createGroup().getData(), true, false);
+      expect(links.length).to.equal(2);
     });
   });
 
