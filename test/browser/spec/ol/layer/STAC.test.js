@@ -91,6 +91,25 @@ function createItem(assets = {}, links = []) {
   };
 }
 
+/**
+ * Creates a minimal STAC Collection.
+ * @return {Object} The STAC Collection.
+ */
+function createCollection() {
+  return {
+    type: 'Collection',
+    stac_version: '1.0.0',
+    id: 'test-collection',
+    description: 'Test',
+    license: 'proprietary',
+    extent: {
+      spatial: {bbox: [[0, 0, 1, 1]]},
+      temporal: {interval: [['2024-01-01T00:00:00Z', null]]},
+    },
+    links: [],
+  };
+}
+
 const COG_ASSET = {
   href: 'https://example.com/asset.tif',
   type: 'image/tiff; application=geotiff; profile=cloud-optimized',
@@ -273,6 +292,19 @@ describe('ol/layer/STAC', function () {
         url: COG_ASSET.href,
         isTemplate: false,
       });
+    });
+
+    it('rewrites the GeoTIFF source URLs of children', async function () {
+      const group = new STAC({
+        data: createCollection(),
+        children: [createItem({cog: COG_ASSET})],
+        getRequestUrl: appendToken,
+        getSourceOptions: captureSourceOptions,
+      });
+      group.on('error', () => {});
+      await waitFor(() => getCaptured(SourceType.GeoTIFF));
+      const options = getCaptured(SourceType.GeoTIFF);
+      expect(options.sources[0].url).to.equal(`${COG_ASSET.href}?token=1`);
     });
 
     it('rewrites the preview image URL', async function () {
@@ -784,6 +816,19 @@ describe('ol/layer/STAC', function () {
       await waitFor(() => getCaptured(SourceType.GeoTIFF));
       const options = getCaptured(SourceType.GeoTIFF);
       expect(options.sourceOptions).to.equal(undefined);
+    });
+
+    it('passes headers to the GeoTIFF source options of children', async function () {
+      const group = new STAC({
+        data: createCollection(),
+        children: [createItem({cog: COG_ASSET})],
+        getRequestHeaders: () => AUTH_HEADERS,
+        getSourceOptions: captureSourceOptions,
+      });
+      group.on('error', () => {});
+      await waitFor(() => getCaptured(SourceType.GeoTIFF));
+      const options = getCaptured(SourceType.GeoTIFF);
+      expect(options.sourceOptions.headers).to.eql(AUTH_HEADERS);
     });
 
     it('passes headers to the GeoZarr store options', async function () {

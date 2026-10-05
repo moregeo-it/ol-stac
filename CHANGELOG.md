@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `getWebMapLinks` (and thus the automatic web map link selection) excludes links that are not accessible through HTTP(S).
   - Can be disabled through the new `httpOnly` parameter
   - Links provided explicitly through `displayWebMapLink` are not affected.
+- Children inherit the options `maxDisplayPixels`, `getSourceOptions`, `getLayerOptions`, `getRequestHeaders`,
+  `getRequestUrl` and `httpRequestFn` from their parent layer (can be overridden through `childrenOptions`),
+  so that e.g. authentication also applies to children.
 
 ## [1.7.0] - 2026-09-04
 
