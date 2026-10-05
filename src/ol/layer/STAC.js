@@ -102,6 +102,10 @@ import LayerType from './type.js';
  * @property {APICollection|Object|Array<STAC|Object>|null} [children=null] For STAC Catalogs and Collections, any child entites
  * to show. Can be STAC ItemCollections (as ItemCollection or GeoJSON FeatureCollection) or a list of STAC entities.
  * @property {Options} [childrenOptions={}] The the given children, apply the given options.
+ * By default, the children inherit the following options from this layer: `crossOrigin`, `collectionStyle` (as `boundsStyle`),
+ * `displayGeoTiffByDefault`, `displayOverview`, `displayPreview`, `displayFootprint`, `useTileLayerAsFallback`,
+ * `buildTileUrlTemplate`, `maxDisplayPixels`, `getSourceOptions`, `getLayerOptions`, `getRequestHeaders`,
+ * `getRequestUrl` and `httpRequestFn`.
  * @property {Array<string|Asset>|null} [assets=null] The selector for the assets to be rendered,
  * only for STAC Items and Collections.
  * This can be an array of strings corresponding to asset keys or Asset objects.
@@ -386,8 +390,13 @@ class STACLayer extends LayerGroup {
      */
     this.eventQueue_ = [];
 
-    if (options.httpRequestFn) {
-      this.fetch_ = options.httpRequestFn;
+    /**
+     * @type {function(string,string):(*)|null}
+     * @private
+     */
+    this.httpRequestFn_ = options.httpRequestFn || null;
+    if (this.httpRequestFn_) {
+      this.fetch_ = this.httpRequestFn_;
     }
 
     if (options.data) {
@@ -666,6 +675,12 @@ class STACLayer extends LayerGroup {
         displayFootprint: this.displayFootprint_,
         useTileLayerAsFallback: this.useTileLayerAsFallback_,
         buildTileUrlTemplate: this.buildTileUrlTemplate_,
+        maxDisplayPixels: this.maxDisplayPixels_,
+        getSourceOptions: this.getSourceOptions_,
+        getLayerOptions: this.getLayerOptions_,
+        getRequestHeaders: this.getRequestHeaders_,
+        getRequestUrl: this.getRequestUrl_,
+        httpRequestFn: this.httpRequestFn_,
       };
       const subgroup = new STACLayer(Object.assign(defaultOptions, options));
       // If no data is given, but items are provided, then we don't get a map from the
