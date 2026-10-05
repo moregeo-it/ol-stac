@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.1] - 2026-10-05
+
 ### Fixed
 
 - `getWebMapLinks` (and thus the automatic web map link selection) excludes links that are not accessible through HTTP(S).
@@ -289,7 +291,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release
 
-[Unreleased]: <https://github.com/moregeo-it/ol-stac/compare/v1.7.0...HEAD>
+[Unreleased]: <https://github.com/moregeo-it/ol-stac/compare/v1.7.1...HEAD>
+[1.7.1]: <https://github.com/moregeo-it/ol-stac/compare/v1.7.0...v1.7.1>
 [1.7.0]: <https://github.com/moregeo-it/ol-stac/compare/v1.6.0...v1.7.0>
 [1.6.0]: <https://github.com/moregeo-it/ol-stac/compare/v1.5.1...v1.6.0>
 [1.5.1]: <https://github.com/moregeo-it/ol-stac/compare/v1.5.0...v1.5.1>
