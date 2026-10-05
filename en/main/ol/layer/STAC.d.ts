@@ -32,6 +32,10 @@ export type Options = {
     children?: APICollection | any | Array<STAC | any> | null;
     /**
      * The the given children, apply the given options.
+     * By default, the children inherit the following options from this layer: `crossOrigin`, `collectionStyle` (as `boundsStyle`),
+     * `displayGeoTiffByDefault`, `displayOverview`, `displayPreview`, `displayFootprint`, `useTileLayerAsFallback`,
+     * `buildTileUrlTemplate`, `maxDisplayPixels`, `getSourceOptions`, `getLayerOptions`, `getRequestHeaders`,
+     * `getRequestUrl` and `httpRequestFn`.
      */
     childrenOptions?: Options | undefined;
     /**
@@ -279,6 +283,10 @@ export type Options = {
  * @property {APICollection|Object|Array<STAC|Object>|null} [children=null] For STAC Catalogs and Collections, any child entites
  * to show. Can be STAC ItemCollections (as ItemCollection or GeoJSON FeatureCollection) or a list of STAC entities.
  * @property {Options} [childrenOptions={}] The the given children, apply the given options.
+ * By default, the children inherit the following options from this layer: `crossOrigin`, `collectionStyle` (as `boundsStyle`),
+ * `displayGeoTiffByDefault`, `displayOverview`, `displayPreview`, `displayFootprint`, `useTileLayerAsFallback`,
+ * `buildTileUrlTemplate`, `maxDisplayPixels`, `getSourceOptions`, `getLayerOptions`, `getRequestHeaders`,
+ * `getRequestUrl` and `httpRequestFn`.
  * @property {Array<string|Asset>|null} [assets=null] The selector for the assets to be rendered,
  * only for STAC Items and Collections.
  * This can be an array of strings corresponding to asset keys or Asset objects.
@@ -523,6 +531,11 @@ declare class STACLayer extends LayerGroup {
      * @private
      */
     private eventQueue_;
+    /**
+     * @type {function(string,string):(*)|null}
+     * @private
+     */
+    private httpRequestFn_;
     /**
      * Default function make HTTP requests with.
      *
