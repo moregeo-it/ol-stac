@@ -1,5 +1,5 @@
 import { c as register, l as WebGLTileLayer, m as View, o as proj4, s as OSM, t as STACLayer, u as Map } from "./common.js";
-//#region examples/geozarr-datacube.js
+// examples/geozarr-datacube.js
 register(proj4);
 var background = new WebGLTileLayer({ source: new OSM() });
 var map = new Map({
@@ -441,6 +441,5 @@ select.addEventListener("change", updateLayer);
 colormapSelect.addEventListener("change", () => {
 	layer.setDefaultColormap(colormaps[colormapSelect.value]);
 });
-//#endregion
 
 //# sourceMappingURL=geozarr-datacube.js.map

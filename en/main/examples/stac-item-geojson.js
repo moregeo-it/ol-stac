@@ -1,5 +1,5 @@
 import { c as register, l as WebGLTileLayer, m as View, o as proj4, s as OSM, t as STACLayer, u as Map } from "./common.js";
-//#region examples/stac-item-geojson.js
+// examples/stac-item-geojson.js
 register(proj4);
 var layer = new STACLayer({
 	url: "https://transfer.data.aad.gov.au/aadc-aerial-photography/casc8916/collection.json",
@@ -17,6 +17,5 @@ var map = new Map({
 layer.on("sourceready", () => {
 	map.getView().fit(layer.getExtent());
 });
-//#endregion
 
 //# sourceMappingURL=stac-item-geojson.js.map

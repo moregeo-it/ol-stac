@@ -1,5 +1,5 @@
 import { c as register, i as getStacObjectsForEvent, l as WebGLTileLayer, m as View, o as proj4, s as OSM, t as STACLayer, u as Map } from "./common.js";
-//#region examples/stac-collection-with-items.js
+// examples/stac-collection-with-items.js
 register(proj4);
 var layer = new STACLayer({
 	url: "https://planetarycomputer.microsoft.com/api/stac/v1/collections/esa-cci-lc",
@@ -30,6 +30,5 @@ fetch("https://planetarycomputer.microsoft.com/api/stac/v1/collections/esa-cci-l
 }).catch((error) => {
 	alert("Error fetching items:" + error.message);
 });
-//#endregion
 
 //# sourceMappingURL=stac-collection-with-items.js.map

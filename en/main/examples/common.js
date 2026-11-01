@@ -1,11 +1,11 @@
-//#region \0rolldown/runtime.js
+// \0rolldown/runtime.js
 var __create = Object.create;
 var __defProp$2 = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp$2 = Object.prototype.hasOwnProperty;
-var __commonJSMin = (cb, mod) => () => (mod || (cb((mod = { exports: {} }).exports, mod), cb = null), mod.exports);
+var __commonJSMin = (cb, mod) => () => (mod || (cb((mod = { exports: {} }).exports, mod, mod.exports), cb = null), mod.exports);
 var __exportAll = (all, no_symbols) => {
 	let target = {};
 	for (var name in all) __defProp$2(target, name, {
@@ -29,8 +29,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 	value: mod,
 	enumerable: true
 }) : target, mod));
-//#endregion
-//#region node_modules/ol/CollectionEventType.js
+// node_modules/ol/CollectionEventType.js
 /**
 * @module ol/CollectionEventType
 */
@@ -51,8 +50,7 @@ var CollectionEventType_default = {
 	*/
 	REMOVE: "remove"
 };
-//#endregion
-//#region node_modules/ol/ObjectEventType.js
+// node_modules/ol/ObjectEventType.js
 /**
 * @module ol/ObjectEventType
 */
@@ -69,8 +67,7 @@ PROPERTYCHANGE: "propertychange" };
 /**
 * @typedef {'propertychange'} Types
 */
-//#endregion
-//#region node_modules/ol/obj.js
+// node_modules/ol/obj.js
 /**
 * @module ol/obj
 */
@@ -91,8 +88,7 @@ function isEmpty$1(object) {
 	for (property in object) return false;
 	return !property;
 }
-//#endregion
-//#region node_modules/ol/events.js
+// node_modules/ol/events.js
 /**
 * @module ol/events
 */
@@ -192,8 +188,7 @@ function unlistenByKey(key) {
 		clear(key);
 	}
 }
-//#endregion
-//#region node_modules/ol/events/EventType.js
+// node_modules/ol/events/EventType.js
 /**
 * @module ol/events/EventType
 */
@@ -225,13 +220,13 @@ var EventType_default$2 = {
 	FOCUS: "focus",
 	KEYDOWN: "keydown",
 	KEYPRESS: "keypress",
+	KEYUP: "keyup",
 	LOAD: "load",
 	RESIZE: "resize",
 	TOUCHMOVE: "touchmove",
 	WHEEL: "wheel"
 };
-//#endregion
-//#region node_modules/ol/Disposable.js
+// node_modules/ol/Disposable.js
 /**
 * @module ol/Disposable
 */
@@ -263,8 +258,7 @@ var Disposable = class {
 	*/
 	disposeInternal() {}
 };
-//#endregion
-//#region node_modules/ol/array.js
+// node_modules/ol/array.js
 /**
 * @module ol/array
 */
@@ -417,8 +411,49 @@ function isSorted(arr, func, strict) {
 		return !(res > 0 || strict && res === 0);
 	});
 }
-//#endregion
-//#region node_modules/ol/functions.js
+// node_modules/ol/util.js
+/**
+* @module ol/util
+*/
+/**
+* @return {never} Any return.
+*/
+function abstract() {
+	throw new Error("Unimplemented abstract method.");
+}
+/**
+* Counter for getUid.
+* @type {number}
+* @private
+*/
+var uidCounter_ = 0;
+/**
+* Gets a unique ID for an object. This mutates the object so that further calls
+* with the same object as a parameter returns the same value. Unique IDs are generated
+* as a strictly increasing sequence. Adapted from goog.getUid.
+*
+* @param {Object} obj The object to get the unique ID for.
+* @return {string} The unique ID for the object.
+* @api
+*/
+function getUid(obj) {
+	const uidObj = obj;
+	return uidObj.ol_uid || (uidObj.ol_uid = String(++uidCounter_));
+}
+/**
+* OpenLayers version.
+* @type {string}
+*/
+var VERSION = "10.11.0";
+/***
+* Determine whether a value is thenable, i.e. it has `then` and `catch` methods.
+* @param {*} value The value to check.
+* @return {value is Promise<any>} The value is thenable.
+*/
+function isThenable(value) {
+	return !!value && typeof value.then === "function" && typeof value.catch === "function";
+}
+// node_modules/ol/functions.js
 /**
 * @module ol/functions
 */
@@ -456,6 +491,7 @@ function memoizeOne(fn) {
 	let lastResult;
 	/** @type {Array<any>|undefined} */
 	let lastArgs;
+	/** @type {*} */
 	let lastThis;
 	/**
 	* @this {*} Only need to know if `this` changed, don't care what type
@@ -466,7 +502,7 @@ function memoizeOne(fn) {
 		if (!lastArgs || this !== lastThis || !equals$2(nextArgs, lastArgs)) {
 			lastThis = this;
 			lastArgs = nextArgs;
-			lastResult = fn.apply(this, arguments);
+			lastResult = fn.apply(this, nextArgs);
 		}
 		return lastResult;
 	};
@@ -484,13 +520,12 @@ function toPromise(getter) {
 		} catch (err) {
 			return Promise.reject(err);
 		}
-		if (value instanceof Promise) return value;
+		if (isThenable(value)) return value;
 		return Promise.resolve(value);
 	}
 	return promiseGetter();
 }
-//#endregion
-//#region node_modules/ol/events/Event.js
+// node_modules/ol/events/Event.js
 /**
 * @module ol/events/Event
 */
@@ -525,7 +560,7 @@ var BaseEvent = class {
 		this.type = type;
 		/**
 		* The event target.
-		* @type {Object}
+		* @type {Object|null}
 		* @api
 		*/
 		this.target = null;
@@ -546,8 +581,7 @@ var BaseEvent = class {
 		this.propagationStopped = true;
 	}
 };
-//#endregion
-//#region node_modules/ol/events/Target.js
+// node_modules/ol/events/Target.js
 /**
 * @module ol/events/Target
 */
@@ -693,8 +727,7 @@ var Target = class extends Disposable {
 		}
 	}
 };
-//#endregion
-//#region node_modules/ol/Observable.js
+// node_modules/ol/Observable.js
 /**
 * @module ol/Observable
 */
@@ -715,6 +748,9 @@ var Target = class extends Disposable {
 /***
 * @template Return
 * @typedef {OnSignature<EventTypes, import("./events/Event.js").default, Return> & CombinedOnSignature<EventTypes, Return>} ObservableOnSignature
+*/
+/***
+* @typedef {Object & {ol_key?: import("./events.js").EventsKey|Array<import("./events.js").EventsKey>}} ListenerWithKey
 */
 /**
 * @classdesc
@@ -784,7 +820,7 @@ var Observable = class extends Target {
 			key = new Array(len);
 			for (let i = 0; i < len; ++i) key[i] = listenOnce(this, type[i], listener);
 		} else key = listenOnce(this, type, listener);
-		/** @type {Object} */ listener.ol_key = key;
+		/** @type {ListenerWithKey} */ listener.ol_key = key;
 		return key;
 	}
 	/**
@@ -840,42 +876,7 @@ function unByKey(key) {
 	if (Array.isArray(key)) for (let i = 0, ii = key.length; i < ii; ++i) unlistenByKey(key[i]);
 	else unlistenByKey(key);
 }
-//#endregion
-//#region node_modules/ol/util.js
-/**
-* @module ol/util
-*/
-/**
-* @return {never} Any return.
-*/
-function abstract() {
-	throw new Error("Unimplemented abstract method.");
-}
-/**
-* Counter for getUid.
-* @type {number}
-* @private
-*/
-var uidCounter_ = 0;
-/**
-* Gets a unique ID for an object. This mutates the object so that further calls
-* with the same object as a parameter returns the same value. Unique IDs are generated
-* as a strictly increasing sequence. Adapted from goog.getUid.
-*
-* @param {Object} obj The object to get the unique ID for.
-* @return {string} The unique ID for the object.
-* @api
-*/
-function getUid(obj) {
-	return obj.ol_uid || (obj.ol_uid = String(++uidCounter_));
-}
-/**
-* OpenLayers version.
-* @type {string}
-*/
-var VERSION = "10.10.0";
-//#endregion
-//#region node_modules/ol/Object.js
+// node_modules/ol/Object.js
 /**
 * @module ol/Object
 */
@@ -1097,8 +1098,7 @@ var BaseObject = class extends Observable {
 		}
 	}
 };
-//#endregion
-//#region node_modules/ol/Collection.js
+// node_modules/ol/Collection.js
 /**
 * @module ol/Collection
 */
@@ -1345,8 +1345,7 @@ var Collection$1 = class extends BaseObject {
 		for (let i = 0, ii = array.length; i < ii; ++i) if (array[i] === elem && i !== except) throw new Error("Duplicate item added to a unique collection");
 	}
 };
-//#endregion
-//#region node_modules/ol/MapEvent.js
+// node_modules/ol/MapEvent.js
 /**
 * @module ol/MapEvent
 */
@@ -1377,8 +1376,7 @@ var MapEvent = class extends BaseEvent {
 		this.frameState = frameState !== void 0 ? frameState : null;
 	}
 };
-//#endregion
-//#region node_modules/ol/MapBrowserEvent.js
+// node_modules/ol/MapBrowserEvent.js
 /**
 * @module ol/MapBrowserEvent
 */
@@ -1430,6 +1428,13 @@ var MapBrowserEvent = class extends MapEvent {
 		* @type {Array<PointerEvent>|undefined}
 		*/
 		this.activePointers = activePointers;
+		/**
+		* The Control key is physically held down. Unlike `originalEvent.ctrlKey`,
+		* this is `false` for the wheel events that browsers synthesize with
+		* `ctrlKey: true` for trackpad pinch-to-zoom.
+		* @type {boolean}
+		*/
+		this.ctrlKey = false;
 	}
 	/**
 	* The map pixel relative to the viewport corresponding to the original event.
@@ -1479,8 +1484,7 @@ var MapBrowserEvent = class extends MapEvent {
  /** @type {UIEvent} */ this.originalEvent.stopPropagation();
 	}
 };
-//#endregion
-//#region node_modules/ol/MapBrowserEventType.js
+// node_modules/ol/MapBrowserEventType.js
 /**
 * @module ol/MapBrowserEventType
 */
@@ -1532,8 +1536,7 @@ var MapBrowserEventType_default = {
 /***
 * @typedef {'singleclick'|'click'|'dblclick'|'pointerdrag'|'pointermove'} Types
 */
-//#endregion
-//#region node_modules/ol/has.js
+// node_modules/ol/has.js
 /**
 * @module ol/has
 */
@@ -1591,8 +1594,7 @@ var PASSIVE_EVENT_LISTENERS = (function() {
 	} catch {}
 	return passive;
 })();
-//#endregion
-//#region node_modules/ol/pointer/EventType.js
+// node_modules/ol/pointer/EventType.js
 /**
 * @module ol/pointer/EventType
 */
@@ -1610,8 +1612,7 @@ var EventType_default$1 = {
 	POINTERLEAVE: "pointerleave",
 	POINTERCANCEL: "pointercancel"
 };
-//#endregion
-//#region node_modules/ol/MapBrowserEventHandler.js
+// node_modules/ol/MapBrowserEventHandler.js
 /**
 * @module ol/MapBrowserEventHandler
 */
@@ -1629,7 +1630,7 @@ var MapBrowserEventHandler = class extends Target {
 		*/
 		this.map_ = map;
 		/**
-		* @type {ReturnType<typeof setTimeout>}
+		* @type {ReturnType<typeof setTimeout>|undefined}
 		* @private
 		*/
 		this.clickTimeoutId_;
@@ -1661,6 +1662,7 @@ var MapBrowserEventHandler = class extends Target {
 		*/
 		this.down_ = null;
 		const element = this.map_.getViewport();
+		if (!element) throw new Error("Map viewport is required");
 		/**
 		* @type {Array<PointerEvent>}
 		* @private
@@ -1673,10 +1675,11 @@ var MapBrowserEventHandler = class extends Target {
 		this.trackedTouches_ = {};
 		/**
 		* @private
+		* @type {HTMLElement|undefined}
 		*/
 		this.element_ = element;
 		/**
-		* @type {?import("./events.js").EventsKey}
+		* @type {?import("./events.js").EventsKey|undefined}
 		* @private
 		*/
 		this.pointerdownListenerKey_ = listen(element, EventType_default$1.POINTERDOWN, this.handlePointerDown_, this);
@@ -1686,7 +1689,7 @@ var MapBrowserEventHandler = class extends Target {
 		*/
 		this.originalPointerMoveEvent_;
 		/**
-		* @type {?import("./events.js").EventsKey}
+		* @type {?import("./events.js").EventsKey|undefined}
 		* @private
 		*/
 		this.relayedListenerKey_ = listen(element, EventType_default$1.POINTERMOVE, this.relayMoveEvent_, this);
@@ -1743,7 +1746,9 @@ var MapBrowserEventHandler = class extends Target {
 		this.updateActivePointers_(pointerEvent);
 		const newEvent = new MapBrowserEvent(MapBrowserEventType_default.POINTERUP, this.map_, pointerEvent, void 0, void 0, this.activePointers_);
 		this.dispatchEvent(newEvent);
-		if (this.emulateClicks_ && !newEvent.defaultPrevented && !this.dragging_ && this.isMouseActionButton_(pointerEvent)) this.emulateClick_(this.down_);
+		if (this.emulateClicks_ && !newEvent.defaultPrevented && !this.dragging_ && this.isMouseActionButton_(pointerEvent)) {
+			if (this.down_) this.emulateClick_(this.down_);
+		}
 		if (this.activePointers_.length === 0) {
 			this.dragListenerKeys_.forEach(unlistenByKey);
 			this.dragListenerKeys_.length = 0;
@@ -1777,8 +1782,13 @@ var MapBrowserEventHandler = class extends Target {
 		});
 		if (this.dragListenerKeys_.length === 0) {
 			const doc = this.map_.getOwnerDocument();
-			this.dragListenerKeys_.push(listen(doc, MapBrowserEventType_default.POINTERMOVE, this.handlePointerMove_, this), listen(doc, MapBrowserEventType_default.POINTERUP, this.handlePointerUp_, this), listen(this.element_, MapBrowserEventType_default.POINTERCANCEL, this.handlePointerUp_, this));
-			if (this.element_.getRootNode && this.element_.getRootNode() !== doc) this.dragListenerKeys_.push(listen(this.element_.getRootNode(), MapBrowserEventType_default.POINTERUP, this.handlePointerUp_, this));
+			const element = this.element_;
+			if (!element) return;
+			this.dragListenerKeys_.push(listen(doc, MapBrowserEventType_default.POINTERMOVE, this.handlePointerMove_, this), listen(doc, MapBrowserEventType_default.POINTERUP, this.handlePointerUp_, this), listen(element, MapBrowserEventType_default.POINTERCANCEL, this.handlePointerUp_, this));
+			if (element.getRootNode && element.getRootNode() !== doc) {
+				const rootNode = element.getRootNode();
+				this.dragListenerKeys_.push(listen(rootNode, MapBrowserEventType_default.POINTERUP, this.handlePointerUp_, this));
+			}
 		}
 	}
 	/**
@@ -1824,30 +1834,31 @@ var MapBrowserEventHandler = class extends Target {
 	* @private
 	*/
 	isMoving_(pointerEvent) {
-		return this.dragging_ || Math.abs(pointerEvent.clientX - this.down_.clientX) > this.moveTolerance_ || Math.abs(pointerEvent.clientY - this.down_.clientY) > this.moveTolerance_;
+		const down = this.down_;
+		return this.dragging_ || down !== null && (Math.abs(pointerEvent.clientX - down.clientX) > this.moveTolerance_ || Math.abs(pointerEvent.clientY - down.clientY) > this.moveTolerance_);
 	}
 	/**
 	* Clean up.
 	* @override
 	*/
 	disposeInternal() {
+		const element = this.element_;
 		if (this.relayedListenerKey_) {
 			unlistenByKey(this.relayedListenerKey_);
-			this.relayedListenerKey_ = null;
+			this.relayedListenerKey_ = void 0;
 		}
-		this.element_.removeEventListener(EventType_default$2.TOUCHMOVE, this.boundHandleTouchMove_);
+		if (element) element.removeEventListener(EventType_default$2.TOUCHMOVE, this.boundHandleTouchMove_);
 		if (this.pointerdownListenerKey_) {
 			unlistenByKey(this.pointerdownListenerKey_);
-			this.pointerdownListenerKey_ = null;
+			this.pointerdownListenerKey_ = void 0;
 		}
 		this.dragListenerKeys_.forEach(unlistenByKey);
 		this.dragListenerKeys_.length = 0;
-		this.element_ = null;
+		this.element_ = void 0;
 		super.disposeInternal();
 	}
 };
-//#endregion
-//#region node_modules/ol/MapEventType.js
+// node_modules/ol/MapEventType.js
 /**
 * @module ol/MapEventType
 */
@@ -1889,8 +1900,7 @@ var MapEventType_default = {
 /***
 * @typedef {'postrender'|'movestart'|'moveend'|'loadstart'|'loadend'} Types
 */
-//#endregion
-//#region node_modules/ol/MapProperty.js
+// node_modules/ol/MapProperty.js
 /**
 * @module ol/MapProperty
 */
@@ -1903,8 +1913,7 @@ var MapProperty_default = {
 	TARGET: "target",
 	VIEW: "view"
 };
-//#endregion
-//#region node_modules/ol/TileState.js
+// node_modules/ol/TileState.js
 /**
 * @module ol/TileState
 */
@@ -1922,8 +1931,7 @@ var TileState_default = {
 	ERROR: 3,
 	EMPTY: 4
 };
-//#endregion
-//#region node_modules/ol/asserts.js
+// node_modules/ol/asserts.js
 /**
 * @module ol/asserts
 */
@@ -1934,8 +1942,7 @@ var TileState_default = {
 function assert$1(assertion, errorMessage) {
 	if (!assertion) throw new Error(errorMessage);
 }
-//#endregion
-//#region node_modules/ol/structs/PriorityQueue.js
+// node_modules/ol/structs/PriorityQueue.js
 /**
 * @module ol/structs/PriorityQueue
 */
@@ -2161,8 +2168,7 @@ var PriorityQueue = class {
 		this.heapify_();
 	}
 };
-//#endregion
-//#region node_modules/ol/TileQueue.js
+// node_modules/ol/TileQueue.js
 /**
 * @module ol/TileQueue
 */
@@ -2267,8 +2273,7 @@ function getTilePriority(frameState, tile, tileSourceKey, tileCenter, tileResolu
 	const deltaY = tileCenter[1] - center[1];
 	return 65536 * Math.log(tileResolution) + Math.sqrt(deltaX * deltaX + deltaY * deltaY) / tileResolution;
 }
-//#endregion
-//#region node_modules/ol/ViewHint.js
+// node_modules/ol/ViewHint.js
 /**
 * @module ol/ViewHint
 */
@@ -2279,8 +2284,7 @@ var ViewHint_default = {
 	ANIMATING: 0,
 	INTERACTING: 1
 };
-//#endregion
-//#region node_modules/ol/ViewProperty.js
+// node_modules/ol/ViewProperty.js
 /**
 * @module ol/ViewProperty
 */
@@ -2292,8 +2296,7 @@ var ViewProperty_default = {
 	RESOLUTION: "resolution",
 	ROTATION: "rotation"
 };
-//#endregion
-//#region node_modules/ol/math.js
+// node_modules/ol/math.js
 /**
 * @module ol/math
 */
@@ -2475,8 +2478,7 @@ function wrap(n, min, max) {
 	const range = max - min;
 	return ((n - min) % range + range) % range + min;
 }
-//#endregion
-//#region node_modules/ol/centerconstraint.js
+// node_modules/ol/centerconstraint.js
 /**
 * @module ol/centerconstraint
 */
@@ -2503,8 +2505,8 @@ function createExtent(extent, onlyCenter, smooth) {
 	function(center, resolution, size, isMoving, centerShift) {
 		if (!center) return;
 		if (!resolution && !onlyCenter) return center;
-		const viewWidth = onlyCenter ? 0 : size[0] * resolution;
-		const viewHeight = onlyCenter ? 0 : size[1] * resolution;
+		const viewWidth = onlyCenter ? 0 : size[0] * (resolution ?? 0);
+		const viewHeight = onlyCenter ? 0 : size[1] * (resolution ?? 0);
 		const shiftX = centerShift ? centerShift[0] : 0;
 		const shiftY = centerShift ? centerShift[1] : 0;
 		let minX = extent[0] + viewWidth / 2 + shiftX;
@@ -2536,8 +2538,7 @@ function createExtent(extent, onlyCenter, smooth) {
 function none$1(center) {
 	return center;
 }
-//#endregion
-//#region node_modules/ol/extent/Relationship.js
+// node_modules/ol/extent/Relationship.js
 /**
 * @module ol/extent/Relationship
 */
@@ -2553,8 +2554,7 @@ var Relationship_default = {
 	BELOW: 8,
 	LEFT: 16
 };
-//#endregion
-//#region node_modules/ol/extent.js
+// node_modules/ol/extent.js
 /**
 * @module ol/extent
 */
@@ -3160,7 +3160,7 @@ function intersectsSegment(extent, start, end) {
 function applyTransform(extent, transformFn, dest, stops) {
 	if (isEmpty(extent)) return createOrUpdateEmpty(dest);
 	let coordinates = [];
-	if (stops > 1) {
+	if (stops !== void 0 && stops > 1) {
 		const width = extent[2] - extent[0];
 		const height = extent[3] - extent[1];
 		for (let i = 0; i < stops; ++i) coordinates.push(extent[0] + width * i / stops, extent[1], extent[2], extent[1] + height * i / stops, extent[2] - width * i / stops, extent[3], extent[0], extent[3] - height * i / stops);
@@ -3275,8 +3275,7 @@ function subtractExtents(base, subtract) {
 	}
 	return remainder;
 }
-//#endregion
-//#region node_modules/ol/string.js
+// node_modules/ol/string.js
 /**
 * Adapted from https://github.com/omichelsen/compare-versions/blob/master/index.js
 * @param {string|number} v1 First version
@@ -3294,8 +3293,7 @@ function compareVersions(v1, v2) {
 	}
 	return 0;
 }
-//#endregion
-//#region node_modules/ol/coordinate.js
+// node_modules/ol/coordinate.js
 /**
 * @module ol/coordinate
 */
@@ -3415,6 +3413,24 @@ function wrapX$1(coordinate, projection) {
 	return coordinate;
 }
 /**
+* Modifies the provided coordinate in-place to be the world copy nearest to
+* the given reference X position. Useful for getting the screen pixel of a
+* coordinate when the map has been panned past the antimeridian.
+*
+* @param {Coordinate} coordinate Coordinate (modified in place).
+* @param {import("./proj/Projection.js").default} projection Projection.
+* @param {number} referenceX Reference X position to find the nearest world to.
+* @return {Coordinate} The coordinate in the nearest world copy.
+*/
+function wrapXNearest(coordinate, projection, referenceX) {
+	if (projection.canWrapX()) {
+		const worldWidth = getWidth(projection.getExtent());
+		const n = Math.round((referenceX - coordinate[0]) / worldWidth);
+		if (n !== 0) coordinate[0] += n * worldWidth;
+	}
+	return coordinate;
+}
+/**
 * @param {Coordinate} coordinate Coordinate.
 * @param {import("./proj/Projection.js").default} projection Projection.
 * @param {number} [sourceExtentWidth] Width of the source extent.
@@ -3446,8 +3462,7 @@ function angleBetween(p0, pA, pB) {
 	angle = Math.max(angle, 1e-5);
 	return !(tangentB[0] * orthoA[0] + tangentB[1] * orthoA[1] > 0) ? Math.PI * 2 - angle : angle;
 }
-//#endregion
-//#region node_modules/ol/easing.js
+// node_modules/ol/easing.js
 /**
 * @module ol/easing
 */
@@ -3489,8 +3504,8 @@ function linear(t) {
 }
 /**
 * Get the great circle distance (in meters) between two geographic coordinates.
-* @param {Array} c1 Starting coordinate.
-* @param {Array} c2 Ending coordinate.
+* @param {import("./coordinate.js").Coordinate} c1 Starting coordinate.
+* @param {import("./coordinate.js").Coordinate} c2 Ending coordinate.
 * @param {number} [radius] The sphere radius to use.  Defaults to the Earth's
 *     mean radius using the WGS84 ellipsoid.
 * @return {number} The great circle distance between the points (in meters).
@@ -3505,8 +3520,7 @@ function getDistance(c1, c2, radius) {
 	const a = Math.sin(deltaLatBy2) * Math.sin(deltaLatBy2) + Math.sin(deltaLonBy2) * Math.sin(deltaLonBy2) * Math.cos(lat1) * Math.cos(lat2);
 	return 2 * radius * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
-//#endregion
-//#region node_modules/ol/console.js
+// node_modules/ol/console.js
 /**
 * @module ol/console
 */
@@ -3540,8 +3554,7 @@ function error(...args) {
 	if (level > levels.error) return;
 	console.error(...args);
 }
-//#endregion
-//#region node_modules/ol/proj/Units.js
+// node_modules/ol/proj/Units.js
 /**
 * @module ol/proj/Units
 */
@@ -3568,7 +3581,7 @@ function fromCode(code) {
 	return unitByCode[code];
 }
 /**
-* @typedef {Object} MetersPerUnitLookup
+* @typedef {Object<string, number|undefined>} MetersPerUnitLookup
 * @property {number} radians Radians
 * @property {number} degrees Degrees
 * @property {number} ft  Feet
@@ -3588,8 +3601,7 @@ var METERS_PER_UNIT$1 = {
 	"m": 1,
 	"us-ft": 1200 / 3937
 };
-//#endregion
-//#region node_modules/ol/proj/Projection.js
+// node_modules/ol/proj/Projection.js
 /**
 * @module ol/proj/Projection
 */
@@ -3670,7 +3682,7 @@ var Projection$1 = class {
 		* with `TILE_PIXELS` units, this is the extent of the tile in
 		* tile pixel space.
 		* @private
-		* @type {import("../extent.js").Extent}
+		* @type {import("../extent.js").Extent|null}
 		*/
 		this.extent_ = options.extent !== void 0 ? options.extent : null;
 		/**
@@ -3678,7 +3690,7 @@ var Projection$1 = class {
 		* `TILE_PIXELS` units, this is the extent of the tile in
 		* projected coordinate space.
 		* @private
-		* @type {import("../extent.js").Extent}
+		* @type {import("../extent.js").Extent|null}
 		*/
 		this.worldExtent_ = options.worldExtent !== void 0 ? options.worldExtent : null;
 		/**
@@ -3703,7 +3715,7 @@ var Projection$1 = class {
 		this.getPointResolutionFunc_ = options.getPointResolution;
 		/**
 		* @private
-		* @type {import("../tilegrid/TileGrid.js").default}
+		* @type {import("../tilegrid/TileGrid.js").default|null}
 		*/
 		this.defaultTileGrid_ = null;
 		/**
@@ -3792,7 +3804,7 @@ var Projection$1 = class {
 		this.canWrapX_ = !!(global && this.extent_);
 	}
 	/**
-	* @return {import("../tilegrid/TileGrid.js").default} The default tile grid.
+	* @return {import("../tilegrid/TileGrid.js").default|null} The default tile grid.
 	*/
 	getDefaultTileGrid() {
 		return this.defaultTileGrid_;
@@ -3839,8 +3851,7 @@ var Projection$1 = class {
 		return this.getPointResolutionFunc_;
 	}
 };
-//#endregion
-//#region node_modules/ol/proj/epsg3857.js
+// node_modules/ol/proj/epsg3857.js
 /**
 * @module ol/proj/epsg3857
 */
@@ -3928,7 +3939,7 @@ var PROJECTIONS$1 = [
 */
 function fromEPSG4326(input, output, dimension, stride) {
 	const length = input.length;
-	dimension = dimension > 1 ? dimension : 2;
+	dimension = dimension !== void 0 && dimension > 1 ? dimension : 2;
 	stride = stride ?? dimension;
 	if (output === void 0) {
 		if (dimension > 2) output = input.slice();
@@ -3954,7 +3965,7 @@ function fromEPSG4326(input, output, dimension, stride) {
 */
 function toEPSG4326(input, output, dimension, stride) {
 	const length = input.length;
-	dimension = dimension > 1 ? dimension : 2;
+	dimension = dimension !== void 0 && dimension > 1 ? dimension : 2;
 	stride = stride ?? dimension;
 	if (output === void 0) {
 		if (dimension > 2) output = input.slice();
@@ -3966,8 +3977,7 @@ function toEPSG4326(input, output, dimension, stride) {
 	}
 	return output;
 }
-//#endregion
-//#region node_modules/ol/proj/epsg4326.js
+// node_modules/ol/proj/epsg4326.js
 /**
 * @module ol/proj/epsg4326
 */
@@ -4035,8 +4045,7 @@ var PROJECTIONS = [
 	new EPSG4326Projection("http://www.opengis.net/gml/srs/epsg.xml#4326", "neu"),
 	new EPSG4326Projection("http://www.opengis.net/def/crs/EPSG/0/4326", "neu")
 ];
-//#endregion
-//#region node_modules/ol/proj/projections.js
+// node_modules/ol/proj/projections.js
 /**
 * @module ol/proj/projections
 */
@@ -4060,8 +4069,7 @@ function get$6(code) {
 function add$2(code, projection) {
 	cache$1[code] = projection;
 }
-//#endregion
-//#region node_modules/ol/proj/transforms.js
+// node_modules/ol/proj/transforms.js
 /**
 * @private
 * @type {!Object<string, Object<string, import("../proj.js").TransformFunction>>}
@@ -4091,8 +4099,7 @@ function get$5(sourceCode, destinationCode) {
 	if (sourceCode in transforms && destinationCode in transforms[sourceCode]) return transforms[sourceCode][destinationCode];
 	return null;
 }
-//#endregion
-//#region node_modules/ol/proj/utm.js
+// node_modules/ol/proj/utm.js
 /**
 * @module ol/proj/utm
 */
@@ -4248,7 +4255,7 @@ function zoneFromCode(code) {
 function makeTransformFunction(transformer, zone) {
 	return function(input, output, dimension, stride) {
 		const length = input.length;
-		dimension = dimension > 1 ? dimension : 2;
+		dimension = dimension !== void 0 && dimension > 1 ? dimension : 2;
 		stride = stride ?? dimension;
 		if (!output) {
 			if (dimension > 2) output = input.slice();
@@ -4287,8 +4294,7 @@ function makeTransforms(projection) {
 		inverse: makeTransformFunction(toLonLat, zone)
 	};
 }
-//#endregion
-//#region node_modules/ol/proj.js
+// node_modules/ol/proj.js
 /**
 * @module ol/proj
 */
@@ -4409,7 +4415,7 @@ function addProjections(projections) {
 * @api
 */
 function get$4(projectionLike) {
-	if (!(typeof projectionLike === "string")) return projectionLike;
+	if (!(typeof projectionLike === "string")) return projectionLike !== void 0 ? projectionLike : null;
 	const projection = get$6(projectionLike);
 	if (projection) return projection;
 	for (const makeProjection of projectionFactories) {
@@ -4439,21 +4445,22 @@ function get$4(projectionLike) {
 * @api
 */
 function getPointResolution(projection, resolution, point, units) {
-	projection = get$4(projection);
+	const projectionObj = get$4(projection);
+	if (!projectionObj) return resolution;
 	let pointResolution;
-	const getter = projection.getPointResolutionFunc();
+	const getter = projectionObj.getPointResolutionFunc();
 	if (getter) {
 		pointResolution = getter(resolution, point);
-		if (units && units !== projection.getUnits()) {
-			const metersPerUnit = projection.getMetersPerUnit();
+		if (units && units !== projectionObj.getUnits()) {
+			const metersPerUnit = projectionObj.getMetersPerUnit();
 			if (metersPerUnit) pointResolution = pointResolution * metersPerUnit / METERS_PER_UNIT$1[units];
 		}
 	} else {
-		const projUnits = projection.getUnits();
+		const projUnits = projectionObj.getUnits();
 		if (projUnits == "degrees" && !units || units == "degrees") pointResolution = resolution;
 		else {
-			const toEPSG4326 = getTransformFromProjections(projection, get$4("EPSG:4326"));
-			if (!toEPSG4326 && projUnits !== "degrees") pointResolution = resolution * projection.getMetersPerUnit();
+			const toEPSG4326 = getTransformFromProjections(projectionObj, get$4("EPSG:4326"));
+			if (!toEPSG4326 && projUnits !== "degrees") pointResolution = resolution * (projectionObj.getMetersPerUnit() ?? 1);
 			else {
 				let vertices = [
 					point[0] - resolution / 2,
@@ -4465,10 +4472,10 @@ function getPointResolution(projection, resolution, point, units) {
 					point[0],
 					point[1] + resolution / 2
 				];
-				vertices = toEPSG4326(vertices, vertices, 2);
+				if (toEPSG4326) vertices = toEPSG4326(vertices, vertices, 2);
 				pointResolution = (getDistance(vertices.slice(0, 2), vertices.slice(2, 4)) + getDistance(vertices.slice(4, 6), vertices.slice(6, 8))) / 2;
 			}
-			const metersPerUnit = units ? METERS_PER_UNIT$1[units] : projection.getMetersPerUnit();
+			const metersPerUnit = units ? METERS_PER_UNIT$1[units] : projectionObj.getMetersPerUnit();
 			if (metersPerUnit !== void 0) pointResolution /= metersPerUnit;
 		}
 	}
@@ -4513,7 +4520,7 @@ function addEquivalentTransforms(projections1, projections2, forwardTransform, i
 /**
 * @param {Projection|string|undefined} projection Projection.
 * @param {string} defaultCode Default code.
-* @return {Projection} Projection.
+* @return {Projection|null} Projection.
 */
 function createProjection(projection, defaultCode) {
 	if (!projection) return get$4(defaultCode);
@@ -4574,6 +4581,7 @@ function createTransformFromCoordinateTransform(coordTransform) {
 function addCoordinateTransforms(source, destination, forward, inverse) {
 	const sourceProj = get$4(source);
 	const destProj = get$4(destination);
+	if (!sourceProj || !destProj) return;
 	add$1(sourceProj, destProj, createTransformFromCoordinateTransform(forward));
 	add$1(destProj, sourceProj, createTransformFromCoordinateTransform(inverse));
 }
@@ -4610,12 +4618,13 @@ function equivalent$1(projection1, projection2) {
 * Searches in the list of transform functions for the function for converting
 * coordinates from the source projection to the destination projection.
 *
-* @param {Projection} source Source Projection object.
-* @param {Projection} destination Destination Projection
+* @param {Projection|null} source Source Projection object.
+* @param {Projection|null} destination Destination Projection
 *     object.
 * @return {TransformFunction|null} Transform function.
 */
 function getTransformFromProjections(source, destination) {
+	if (!source || !destination) return null;
 	const sourceCode = source.getCode();
 	const destinationCode = destination.getCode();
 	let transformFunc = get$5(sourceCode, destinationCode);
@@ -4634,13 +4643,13 @@ function getTransformFromProjections(source, destination) {
 	}
 	if (!sourceTransforms && !destinationTransforms) return null;
 	const intermediateCode = "EPSG:4326";
-	if (!destinationTransforms) {
+	if (!destinationTransforms && sourceTransforms) {
 		const toDestination = get$5(intermediateCode, destinationCode);
 		if (toDestination) transformFunc = composeTransformFuncs(sourceTransforms.inverse, toDestination);
-	} else if (!sourceTransforms) {
+	} else if (!sourceTransforms && destinationTransforms) {
 		const fromSource = get$5(sourceCode, intermediateCode);
 		if (fromSource) transformFunc = composeTransformFuncs(fromSource, destinationTransforms.forward);
-	} else transformFunc = composeTransformFuncs(sourceTransforms.inverse, destinationTransforms.forward);
+	} else if (sourceTransforms && destinationTransforms) transformFunc = composeTransformFuncs(sourceTransforms.inverse, destinationTransforms.forward);
 	if (transformFunc) {
 		addProjection(source);
 		addProjection(destination);
@@ -4666,7 +4675,7 @@ function composeTransformFuncs(t1, t2) {
 *
 * @param {ProjectionLike} source Source.
 * @param {ProjectionLike} destination Destination.
-* @return {TransformFunction} Transform function.
+* @return {TransformFunction|null} Transform function.
 * @api
 */
 function getTransform(source, destination) {
@@ -4691,8 +4700,8 @@ function getTransform(source, destination) {
 function transform$1(coordinate, source, destination) {
 	const transformFunc = getTransform(source, destination);
 	if (!transformFunc) {
-		const sourceCode = get$4(source).getCode();
-		const destinationCode = get$4(destination).getCode();
+		const sourceCode = get$4(source)?.getCode() ?? String(source);
+		const destinationCode = get$4(destination)?.getCode() ?? String(destination);
 		throw new Error(`No transform available between ${sourceCode} and ${destinationCode}`);
 	}
 	return transformFunc(coordinate, void 0, coordinate.length);
@@ -4710,7 +4719,9 @@ function transform$1(coordinate, source, destination) {
 * @api
 */
 function transformExtent(extent, source, destination, stops) {
-	return applyTransform(extent, getTransform(source, destination), void 0, stops);
+	const transformFunc = getTransform(source, destination);
+	if (!transformFunc) return extent.slice();
+	return applyTransform(extent, transformFunc, void 0, stops);
 }
 /**
 * @type {Projection|null}
@@ -4784,7 +4795,7 @@ function fromUserExtent(extent, destProjection) {
 */
 function toUserResolution(resolution, sourceProjection) {
 	if (!userProjection) return resolution;
-	const sourceMetersPerUnit = get$4(sourceProjection).getMetersPerUnit();
+	const sourceMetersPerUnit = get$4(sourceProjection)?.getMetersPerUnit();
 	const userMetersPerUnit = userProjection.getMetersPerUnit();
 	return sourceMetersPerUnit && userMetersPerUnit ? resolution * sourceMetersPerUnit / userMetersPerUnit : resolution;
 }
@@ -4826,8 +4837,7 @@ function addCommon() {
 	addEquivalentTransforms(PROJECTIONS, PROJECTIONS$1, fromEPSG4326, toEPSG4326);
 }
 addCommon();
-//#endregion
-//#region node_modules/ol/transform.js
+// node_modules/ol/transform.js
 /**
 * @module ol/transform
 */
@@ -5044,7 +5054,7 @@ function determinant(mat) {
 	return mat[0] * mat[3] - mat[1] * mat[2];
 }
 /**
-* @type {Array}
+* @type {Array<number>}
 */
 var matrixPrecision = [
 	1e5,
@@ -5083,8 +5093,7 @@ function equivalent(cssTransform1, cssTransform2) {
 	for (let i = 0; i < 6; ++i) if (Math.round((mat1[i] - mat2[i]) * matrixPrecision[i]) !== 0) return false;
 	return true;
 }
-//#endregion
-//#region node_modules/ol/geom/flat/transform.js
+// node_modules/ol/geom/flat/transform.js
 /**
 * @module ol/geom/flat/transform
 */
@@ -5187,8 +5196,7 @@ function translate$1(flatCoordinates, offset, end, stride, deltaX, deltaY, dest)
 	if (dest && dest.length != i) dest.length = i;
 	return dest;
 }
-//#endregion
-//#region node_modules/ol/geom/Geometry.js
+// node_modules/ol/geom/Geometry.js
 /**
 * @module ol/geom/Geometry
 */
@@ -5445,8 +5453,8 @@ var Geometry = class extends BaseObject {
 	* @api
 	*/
 	transform(source, destination) {
-		/** @type {import("../proj/Projection.js").default} */
 		const sourceProj = get$4(source);
+		if (!sourceProj) return this;
 		const transformFn = sourceProj.getUnits() == "tile-pixels" ? function(inCoordinates, outCoordinates, stride) {
 			const pixelExtent = sourceProj.getExtent();
 			const projectedExtent = sourceProj.getWorldExtent();
@@ -5457,12 +5465,11 @@ var Geometry = class extends BaseObject {
 			if (projTransform) return projTransform(transformed, transformed, stride);
 			return transformed;
 		} : getTransform(sourceProj, destination);
-		this.applyTransform(transformFn);
+		if (transformFn) this.applyTransform(transformFn);
 		return this;
 	}
 };
-//#endregion
-//#region node_modules/ol/geom/SimpleGeometry.js
+// node_modules/ol/geom/SimpleGeometry.js
 /**
 * @module ol/geom/SimpleGeometry
 */
@@ -5706,7 +5713,7 @@ function getStrideForLayout(layout) {
 * @param {SimpleGeometry} simpleGeometry Simple geometry.
 * @param {import("../transform.js").Transform} transform Transform.
 * @param {Array<number>} [dest] Destination.
-* @return {Array<number>} Transformed flat coordinates.
+* @return {Array<number>|null} Transformed flat coordinates.
 */
 function transformGeom2D(simpleGeometry, transform, dest) {
 	const flatCoordinates = simpleGeometry.getFlatCoordinates();
@@ -5714,8 +5721,7 @@ function transformGeom2D(simpleGeometry, transform, dest) {
 	const stride = simpleGeometry.getStride();
 	return transform2D(flatCoordinates, 0, flatCoordinates.length, stride, transform, dest);
 }
-//#endregion
-//#region node_modules/ol/geom/flat/area.js
+// node_modules/ol/geom/flat/area.js
 /**
 * @module ol/geom/flat/area
 */
@@ -5773,8 +5779,7 @@ function linearRingss$1(flatCoordinates, offset, endss, stride) {
 	}
 	return area;
 }
-//#endregion
-//#region node_modules/ol/geom/flat/closest.js
+// node_modules/ol/geom/flat/closest.js
 /**
 * @module ol/geom/flat/closest
 */
@@ -5959,8 +5964,7 @@ function assignClosestMultiArrayPoint(flatCoordinates, offset, endss, stride, ma
 	}
 	return minSquaredDistance;
 }
-//#endregion
-//#region node_modules/ol/geom/flat/deflate.js
+// node_modules/ol/geom/flat/deflate.js
 /**
 * @module ol/geom/flat/deflate
 */
@@ -5972,7 +5976,7 @@ function assignClosestMultiArrayPoint(flatCoordinates, offset, endss, stride, ma
 * @return {number} offset Offset.
 */
 function deflateCoordinate(flatCoordinates, offset, coordinate, stride) {
-	for (let i = 0, ii = coordinate.length; i < ii; ++i) flatCoordinates[offset++] = coordinate[i];
+	for (let i = 0; i < stride; ++i) flatCoordinates[offset++] = coordinate[i];
 	return offset;
 }
 /**
@@ -6028,8 +6032,7 @@ function deflateMultiCoordinatesArray(flatCoordinates, offset, coordinatesss, st
 	endss.length = i;
 	return endss;
 }
-//#endregion
-//#region node_modules/ol/geom/flat/inflate.js
+// node_modules/ol/geom/flat/inflate.js
 /**
 * @module ol/geom/flat/inflate
 */
@@ -6087,8 +6090,7 @@ function inflateMultiCoordinatesArray(flatCoordinates, offset, endss, stride, co
 	coordinatesss.length = i;
 	return coordinatesss;
 }
-//#endregion
-//#region node_modules/ol/geom/flat/contains.js
+// node_modules/ol/geom/flat/contains.js
 /**
 * @module ol/geom/flat/contains
 */
@@ -6169,8 +6171,7 @@ function linearRingssContainsXY(flatCoordinates, offset, endss, stride, x, y) {
 	}
 	return false;
 }
-//#endregion
-//#region node_modules/ol/geom/flat/segments.js
+// node_modules/ol/geom/flat/segments.js
 /**
 * @module ol/geom/flat/segments
 */
@@ -6196,8 +6197,7 @@ function forEach(flatCoordinates, offset, end, stride, callback) {
 	}
 	return false;
 }
-//#endregion
-//#region node_modules/ol/geom/flat/intersectsextent.js
+// node_modules/ol/geom/flat/intersectsextent.js
 /**
 * @module ol/geom/flat/intersectsextent
 */
@@ -6293,8 +6293,7 @@ function intersectsLinearRingMultiArray(flatCoordinates, offset, endss, stride, 
 	}
 	return false;
 }
-//#endregion
-//#region node_modules/ol/geom/flat/simplify.js
+// node_modules/ol/geom/flat/simplify.js
 /**
 * @module ol/geom/flat/simplify
 */
@@ -6489,8 +6488,7 @@ function quantizeMultiArray(flatCoordinates, offset, endss, stride, tolerance, s
 	}
 	return simplifiedOffset;
 }
-//#endregion
-//#region node_modules/ol/geom/LinearRing.js
+// node_modules/ol/geom/LinearRing.js
 /**
 * @module ol/geom/LinearRing
 */
@@ -6610,8 +6608,7 @@ var LinearRing = class LinearRing extends SimpleGeometry {
 		this.changed();
 	}
 };
-//#endregion
-//#region node_modules/ol/geom/Point.js
+// node_modules/ol/geom/Point.js
 /**
 * @module ol/geom/Point
 */
@@ -6710,8 +6707,7 @@ var Point$1 = class Point$1 extends SimpleGeometry {
 		this.changed();
 	}
 };
-//#endregion
-//#region node_modules/ol/geom/flat/interiorpoint.js
+// node_modules/ol/geom/flat/interiorpoint.js
 /**
 * @module ol/geom/flat/interiorpoint
 */
@@ -6794,8 +6790,7 @@ function getInteriorPointsOfMultiArray(flatCoordinates, offset, endss, stride, f
 	}
 	return interiorPoints;
 }
-//#endregion
-//#region node_modules/ol/geom/flat/reverse.js
+// node_modules/ol/geom/flat/reverse.js
 /**
 * @module ol/geom/flat/reverse
 */
@@ -6816,8 +6811,7 @@ function coordinates(flatCoordinates, offset, end, stride) {
 		end -= stride;
 	}
 }
-//#endregion
-//#region node_modules/ol/geom/flat/orient.js
+// node_modules/ol/geom/flat/orient.js
 /**
 * @module ol/geom/flat/orient
 */
@@ -6956,8 +6950,7 @@ function inflateEnds(flatCoordinates, ends) {
 	}
 	return endss;
 }
-//#endregion
-//#region node_modules/ol/geom/Polygon.js
+// node_modules/ol/geom/Polygon.js
 /**
 * @module ol/geom/Polygon
 */
@@ -7256,8 +7249,7 @@ function fromExtent(extent) {
 	];
 	return new Polygon(flatCoordinates, "XY", [flatCoordinates.length]);
 }
-//#endregion
-//#region node_modules/ol/resolutionconstraint.js
+// node_modules/ol/resolutionconstraint.js
 /**
 * @module ol/resolutionconstraint
 */
@@ -7322,7 +7314,7 @@ function createSnapToResolutions(resolutions, smooth, maxExtent, showFullExtent)
 		if (resolution !== void 0) {
 			const maxResolution = resolutions[0];
 			const minResolution = resolutions[resolutions.length - 1];
-			const cappedMaxRes = maxExtent ? getViewportClampedResolution(maxResolution, maxExtent, size, showFullExtent) : maxResolution;
+			const cappedMaxRes = maxExtent ? getViewportClampedResolution(maxResolution, maxExtent, size, !!showFullExtent) : maxResolution;
 			if (isMoving) {
 				if (!smooth) return clamp(resolution, minResolution, cappedMaxRes);
 				return getSmoothClampedResolution(resolution, cappedMaxRes, minResolution);
@@ -7355,7 +7347,7 @@ function createSnapToPower(power, maxResolution, minResolution, smooth, maxExten
 	*/
 	function(resolution, direction, size, isMoving) {
 		if (resolution !== void 0) {
-			const cappedMaxRes = maxExtent ? getViewportClampedResolution(maxResolution, maxExtent, size, showFullExtent) : maxResolution;
+			const cappedMaxRes = maxExtent ? getViewportClampedResolution(maxResolution, maxExtent, size, !!showFullExtent) : maxResolution;
 			if (isMoving) {
 				if (!smooth) return clamp(resolution, minResolution, cappedMaxRes);
 				return getSmoothClampedResolution(resolution, cappedMaxRes, minResolution);
@@ -7387,14 +7379,13 @@ function createMinMaxResolution(maxResolution, minResolution, smooth, maxExtent,
 	*/
 	function(resolution, direction, size, isMoving) {
 		if (resolution !== void 0) {
-			const cappedMaxRes = maxExtent ? getViewportClampedResolution(maxResolution, maxExtent, size, showFullExtent) : maxResolution;
+			const cappedMaxRes = maxExtent ? getViewportClampedResolution(maxResolution, maxExtent, size, !!showFullExtent) : maxResolution;
 			if (!smooth || !isMoving) return clamp(resolution, minResolution, cappedMaxRes);
 			return getSmoothClampedResolution(resolution, cappedMaxRes, minResolution);
 		}
 	});
 }
-//#endregion
-//#region node_modules/ol/rotationconstraint.js
+// node_modules/ol/rotationconstraint.js
 /**
 * @module ol/rotationconstraint
 */
@@ -7453,8 +7444,7 @@ function createSnapToZero(tolerance) {
 		return rotation;
 	});
 }
-//#endregion
-//#region node_modules/ol/View.js
+// node_modules/ol/View.js
 /**
 * @module ol/View
 */
@@ -7473,7 +7463,7 @@ function createSnapToZero(tolerance) {
 * @property {number} duration Duration.
 * @property {boolean} complete Complete.
 * @property {function(number):number} easing Easing.
-* @property {function(boolean):void} callback Callback.
+* @property {function(boolean):void} [callback] Callback.
 */
 /**
 * @typedef {Object} Constraints
@@ -7738,7 +7728,7 @@ var View = class extends BaseObject {
 		this.hints_ = [0, 0];
 		/**
 		* @private
-		* @type {Array<Array<Animation>>}
+		* @type {Array<Array<Animation>|null>}
 		*/
 		this.animations_ = [];
 		/**
@@ -7749,7 +7739,7 @@ var View = class extends BaseObject {
 		/**
 		* @private
 		* @const
-		* @type {import("./proj/Projection.js").default}
+		* @type {import("./proj/Projection.js").default|null}
 		*/
 		this.projection_ = createProjection(options.projection, "EPSG:3857");
 		/**
@@ -7759,7 +7749,7 @@ var View = class extends BaseObject {
 		this.viewportSize_ = [100, 100];
 		/**
 		* @private
-		* @type {import("./coordinate.js").Coordinate|undefined}
+		* @type {import("./coordinate.js").Coordinate|null|undefined}
 		*/
 		this.targetCenter_ = null;
 		/**
@@ -7774,7 +7764,7 @@ var View = class extends BaseObject {
 		this.targetRotation_;
 		/**
 		* @private
-		* @type {import("./coordinate.js").Coordinate}
+		* @type {import("./coordinate.js").Coordinate|null}
 		*/
 		this.nextCenter_ = null;
 		/**
@@ -8044,7 +8034,11 @@ var View = class extends BaseObject {
 		let anchor;
 		for (let i = 0, ii = this.animations_.length; i < ii; ++i) {
 			const series = this.animations_[i];
-			if (series[0].callback) animationCallback(series[0].callback, false);
+			if (series[0].callback) animationCallback(
+				/** @type {Animation} */
+				series[0].callback,
+				false
+			);
 			if (!anchor) for (let j = 0, jj = series.length; j < jj; ++j) {
 				const animation = series[j];
 				if (!animation.complete) {
@@ -8485,7 +8479,10 @@ var View = class extends BaseObject {
 			max = this.maxResolution_;
 			zoomFactor = this.zoomFactor_;
 		}
-		return offset + Math.log(max / resolution) / Math.log(zoomFactor);
+		return offset + Math.log(
+			/** @type {number} */
+			max / resolution
+		) / Math.log(zoomFactor);
 	}
 	/**
 	* Get the resolution for a zoom level.
@@ -8685,9 +8682,15 @@ var View = class extends BaseObject {
 	adjustResolutionInternal(ratio, anchor) {
 		const isMoving = this.getAnimating() || this.getInteracting();
 		const size = this.getViewportSize_(this.getRotation());
-		const newResolution = this.constraints_.resolution(this.targetResolution_ * ratio, 0, size, isMoving);
+		const newResolution = this.constraints_.resolution(
+			/** @type {number} */
+			this.targetResolution_ * ratio,
+			0,
+			size,
+			isMoving
+		);
 		if (anchor) this.targetCenter_ = this.calculateCenterZoom(newResolution, anchor);
-		this.targetResolution_ *= ratio;
+		this.targetResolution_ = this.targetResolution_ * ratio;
 		this.applyTargetState_();
 	}
 	/**
@@ -8717,9 +8720,13 @@ var View = class extends BaseObject {
 	*/
 	adjustRotationInternal(delta, anchor) {
 		const isMoving = this.getAnimating() || this.getInteracting();
-		const newRotation = this.constraints_.rotation(this.targetRotation_ + delta, isMoving);
+		const newRotation = this.constraints_.rotation(
+			/** @type {number} */
+			this.targetRotation_ + delta,
+			isMoving
+		);
 		if (anchor) this.targetCenter_ = this.calculateCenterRotate(newRotation, anchor);
-		this.targetRotation_ += delta;
+		this.targetRotation_ = this.targetRotation_ + delta;
 		this.applyTargetState_();
 	}
 	/**
@@ -8733,7 +8740,7 @@ var View = class extends BaseObject {
 	}
 	/**
 	* Set the center using the view projection (not the user projection).
-	* @param {import("./coordinate.js").Coordinate|undefined} center The center of the view.
+	* @param {import("./coordinate.js").Coordinate|null|undefined} center The center of the view.
 	*/
 	setCenterInternal(center) {
 		this.targetCenter_ = center;
@@ -9039,8 +9046,7 @@ function calculateCenterOn(coordinate, size, position, resolution, rotation) {
 	sinAngle = -sinAngle;
 	return [rotX * cosAngle - rotY * sinAngle, rotY * cosAngle + rotX * sinAngle];
 }
-//#endregion
-//#region node_modules/ol/css.js
+// node_modules/ol/css.js
 /**
 * @module ol/css
 */
@@ -9134,8 +9140,7 @@ var getFontParameters = function(fontSpec) {
 	style.families = style.family.split(/,\s?/).map((f) => f.trim().replace(/^['"]|['"]$/g, ""));
 	return style;
 };
-//#endregion
-//#region node_modules/ol/dom.js
+// node_modules/ol/dom.js
 /**
 * @module ol/dom
 */
@@ -9284,8 +9289,7 @@ function createMockDiv() {
 function isCanvas(obj) {
 	return typeof HTMLCanvasElement !== "undefined" && obj instanceof HTMLCanvasElement || typeof OffscreenCanvas !== "undefined" && obj instanceof OffscreenCanvas;
 }
-//#endregion
-//#region node_modules/ol/control/Control.js
+// node_modules/ol/control/Control.js
 /**
 * @module ol/control/Control
 */
@@ -9334,12 +9338,12 @@ var Control = class extends BaseObject {
 		if (element && !options.target && !element.style.pointerEvents) element.style.pointerEvents = "auto";
 		/**
 		* @protected
-		* @type {HTMLElement}
+		* @type {HTMLElement|null}
 		*/
 		this.element = element ? element : null;
 		/**
 		* @private
-		* @type {HTMLElement}
+		* @type {HTMLElement|null}
 		*/
 		this.target_ = null;
 		/**
@@ -9386,7 +9390,7 @@ var Control = class extends BaseObject {
 		this.map_ = map;
 		if (map) {
 			const target = this.target_ ?? map.getOverlayContainerStopEvent();
-			if (this.element) target.appendChild(this.element);
+			if (this.element && target) target.appendChild(this.element);
 			if (this.render !== VOID) this.listenerKeys.push(listen(map, MapEventType_default.POSTRENDER, this.render, this));
 			map.render();
 		}
@@ -9410,8 +9414,7 @@ var Control = class extends BaseObject {
 		this.target_ = typeof target === "string" ? document.getElementById(target) : target;
 	}
 };
-//#endregion
-//#region node_modules/ol/control/Attribution.js
+// node_modules/ol/control/Attribution.js
 /**
 * @module ol/control/Attribution
 */
@@ -9557,7 +9560,9 @@ var Attribution = class extends Control {
 	* @private
 	*/
 	collectSourceAttributions_(frameState) {
-		const layers = this.getMap().getAllLayers();
+		const map = this.getMap();
+		if (!map) return [];
+		const layers = map.getAllLayers();
 		const visibleAttributions = new Set(layers.flatMap((layer) => layer.getAttributions(frameState)));
 		if (this.attributions_ !== void 0) Array.isArray(this.attributions_) ? this.attributions_.forEach((item) => visibleAttributions.add(item)) : visibleAttributions.add(this.attributions_);
 		if (!this.overrideCollapsible_) {
@@ -9571,9 +9576,11 @@ var Attribution = class extends Control {
 	* @param {?import("../Map.js").FrameState} frameState Frame state.
 	*/
 	async updateElement_(frameState) {
+		const element = this.element;
+		if (!element) return;
 		if (!frameState) {
 			if (this.renderedVisible_) {
-				this.element.style.display = "none";
+				element.style.display = "none";
 				this.renderedVisible_ = false;
 			}
 			return;
@@ -9581,15 +9588,15 @@ var Attribution = class extends Control {
 		const attributions = await Promise.all(this.collectSourceAttributions_(frameState).map((attribution) => toPromise(() => attribution)));
 		const visible = attributions.length > 0;
 		if (this.renderedVisible_ != visible) {
-			this.element.style.display = visible ? "" : "none";
+			element.style.display = visible ? "" : "none";
 			this.renderedVisible_ = visible;
 		}
 		if (equals$2(attributions, this.renderedAttributions_)) return;
 		removeChildren(this.ulElement_);
 		for (let i = 0, ii = attributions.length; i < ii; ++i) {
-			const element = document.createElement("li");
-			element.innerHTML = attributions[i];
-			this.ulElement_.appendChild(element);
+			const listItem = document.createElement("li");
+			listItem.innerHTML = attributions[i];
+			this.ulElement_.appendChild(listItem);
 		}
 		this.renderedAttributions_ = attributions;
 	}
@@ -9606,7 +9613,9 @@ var Attribution = class extends Control {
 	* @private
 	*/
 	handleToggle_() {
-		this.element.classList.toggle(CLASS_COLLAPSED);
+		const element = this.element;
+		if (!element) return;
+		element.classList.toggle(CLASS_COLLAPSED);
 		if (this.collapsed_) replaceNode(this.collapseLabel_, this.label_);
 		else replaceNode(this.label_, this.collapseLabel_);
 		this.collapsed_ = !this.collapsed_;
@@ -9628,7 +9637,9 @@ var Attribution = class extends Control {
 	setCollapsible(collapsible) {
 		if (this.collapsible_ === collapsible) return;
 		this.collapsible_ = collapsible;
-		this.element.classList.toggle("ol-uncollapsible");
+		const element = this.element;
+		if (!element) return;
+		element.classList.toggle("ol-uncollapsible");
 		if (this.userCollapsed_) this.handleToggle_();
 	}
 	/**
@@ -9661,8 +9672,7 @@ var Attribution = class extends Control {
 		this.updateElement_(mapEvent.frameState);
 	}
 };
-//#endregion
-//#region node_modules/ol/control/Rotate.js
+// node_modules/ol/control/Rotate.js
 /**
 * @module ol/control/Rotate
 */
@@ -9708,7 +9718,7 @@ var Rotate = class extends Control {
 		* @type {HTMLElement}
 		* @private
 		*/
-		this.label_ = null;
+		this.label_;
 		if (typeof label === "string") {
 			this.label_ = document.createElement("span");
 			this.label_.className = compassClassName;
@@ -9747,7 +9757,8 @@ var Rotate = class extends Control {
 		* @type {number|undefined}
 		*/
 		this.rotation_ = void 0;
-		if (this.autoHide_) this.element.classList.add(CLASS_HIDDEN);
+		if (this.autoHide_)
+ /** @type {!HTMLElement} */ this.element.classList.add(CLASS_HIDDEN);
 	}
 	/**
 	* @param {MouseEvent} event The event to handle
@@ -9762,7 +9773,9 @@ var Rotate = class extends Control {
 	* @private
 	*/
 	resetNorth_() {
-		const view = this.getMap().getView();
+		const map = this.getMap();
+		if (!map) return;
+		const view = map.getView();
 		if (!view) return;
 		const rotation = view.getRotation();
 		if (rotation !== void 0) {
@@ -9785,18 +9798,18 @@ var Rotate = class extends Control {
 		const rotation = frameState.viewState.rotation;
 		if (rotation != this.rotation_) {
 			const transform = "rotate(" + rotation + "rad)";
-			if (this.autoHide_) {
-				const contains = this.element.classList.contains(CLASS_HIDDEN);
-				if (!contains && rotation === 0) this.element.classList.add(CLASS_HIDDEN);
-				else if (contains && rotation !== 0) this.element.classList.remove(CLASS_HIDDEN);
+			const element = this.element;
+			if (this.autoHide_ && element) {
+				const contains = element.classList.contains(CLASS_HIDDEN);
+				if (!contains && rotation === 0) element.classList.add(CLASS_HIDDEN);
+				else if (contains && rotation !== 0) element.classList.remove(CLASS_HIDDEN);
 			}
 			this.label_.style.transform = transform;
 		}
 		this.rotation_ = rotation;
 	}
 };
-//#endregion
-//#region node_modules/ol/control/Zoom.js
+// node_modules/ol/control/Zoom.js
 /**
 * @module ol/control/Zoom
 */
@@ -9879,11 +9892,14 @@ var Zoom = class extends Control {
 	* @private
 	*/
 	zoomByDelta_(delta) {
-		const view = this.getMap().getView();
+		const map = this.getMap();
+		if (!map) return;
+		const view = map.getView();
 		if (!view) return;
 		const currentZoom = view.getZoom();
 		if (currentZoom !== void 0) {
 			const newZoom = view.getConstrainedZoom(currentZoom + delta);
+			if (newZoom === void 0) return;
 			if (this.duration_ > 0) {
 				if (view.getAnimating()) view.cancelAnimations();
 				view.animate({
@@ -9895,8 +9911,7 @@ var Zoom = class extends Control {
 		}
 	}
 };
-//#endregion
-//#region node_modules/ol/control/defaults.js
+// node_modules/ol/control/defaults.js
 /**
 * @module ol/control/defaults
 */
@@ -9936,8 +9951,7 @@ function defaults$1(options) {
 	if (options.attribution !== void 0 ? options.attribution : true) controls.push(new Attribution(options.attributionOptions));
 	return controls;
 }
-//#endregion
-//#region node_modules/ol/Kinetic.js
+// node_modules/ol/Kinetic.js
 /**
 * @module ol/Kinetic
 */
@@ -10032,8 +10046,7 @@ var Kinetic = class {
 		return this.angle_;
 	}
 };
-//#endregion
-//#region node_modules/ol/interaction/Property.js
+// node_modules/ol/interaction/Property.js
 /**
 * @module ol/interaction/Property
 */
@@ -10041,8 +10054,7 @@ var Kinetic = class {
 * @enum {string}
 */
 var Property_default$1 = { ACTIVE: "active" };
-//#endregion
-//#region node_modules/ol/interaction/Interaction.js
+// node_modules/ol/interaction/Interaction.js
 /**
 * @module ol/interaction/Interaction
 */
@@ -10174,7 +10186,9 @@ function zoomByDelta(view, delta, anchor, duration) {
 	const currentZoom = view.getZoom();
 	if (currentZoom === void 0) return;
 	const newZoom = view.getConstrainedZoom(currentZoom + delta);
+	if (newZoom === void 0) return;
 	const newResolution = view.getResolutionForZoom(newZoom);
+	if (newResolution === void 0) return;
 	if (view.getAnimating()) view.cancelAnimations();
 	view.animate({
 		resolution: newResolution,
@@ -10183,8 +10197,7 @@ function zoomByDelta(view, delta, anchor, duration) {
 		easing: easeOut
 	});
 }
-//#endregion
-//#region node_modules/ol/interaction/DoubleClickZoom.js
+// node_modules/ol/interaction/DoubleClickZoom.js
 /**
 * @module ol/interaction/DoubleClickZoom
 */
@@ -10237,8 +10250,7 @@ var DoubleClickZoom = class extends Interaction {
 		return !stopEvent;
 	}
 };
-//#endregion
-//#region node_modules/ol/events/condition.js
+// node_modules/ol/events/condition.js
 /**
 * A function that takes a {@link module:ol/MapBrowserEvent~MapBrowserEvent} and returns a
 * `{boolean}`. If the condition is met, true should be returned.
@@ -10287,6 +10299,7 @@ var altShiftKeysOnly = function(mapBrowserEvent) {
 */
 var focus = function(event) {
 	const targetElement = event.map.getTargetElement();
+	if (!targetElement) return false;
 	const rootNode = targetElement.getRootNode();
 	const activeElement = event.map.getOwnerDocument().activeElement;
 	return rootNode instanceof ShadowRoot ? rootNode.host.contains(activeElement) : targetElement.contains(activeElement);
@@ -10299,6 +10312,7 @@ var focus = function(event) {
 */
 var focusWithTabindex = function(event) {
 	const targetElement = event.map.getTargetElement();
+	if (!targetElement) return true;
 	const rootNode = targetElement.getRootNode();
 	return (rootNode instanceof ShadowRoot ? rootNode.host : targetElement).hasAttribute("tabindex") ? focus(event) : true;
 };
@@ -10397,8 +10411,7 @@ var primaryAction = function(mapBrowserEvent) {
 	const pointerEvent = mapBrowserEvent.originalEvent;
 	return "pointerId" in pointerEvent && pointerEvent.isPrimary && pointerEvent.button === 0;
 };
-//#endregion
-//#region node_modules/ol/interaction/Pointer.js
+// node_modules/ol/interaction/Pointer.js
 /**
 * @module ol/interaction/Pointer
 */
@@ -10563,8 +10576,7 @@ function centroid(pointerEvents) {
 		clientY: clientY / length
 	};
 }
-//#endregion
-//#region node_modules/ol/interaction/DragPan.js
+// node_modules/ol/interaction/DragPan.js
 /**
 * @module ol/interaction/DragPan
 */
@@ -10595,7 +10607,7 @@ var DragPan = class extends PointerInteraction {
 		*/
 		this.kinetic_ = options.kinetic;
 		/**
-		* @type {import("../pixel.js").Pixel}
+		* @type {import("../pixel.js").Pixel|null}
 		*/
 		this.lastCentroid = null;
 		/**
@@ -10638,9 +10650,12 @@ var DragPan = class extends PointerInteraction {
 			if (this.lastCentroid) {
 				const delta = [this.lastCentroid[0] - centroid$1[0], centroid$1[1] - this.lastCentroid[1]];
 				const view = mapBrowserEvent.map.getView();
-				scale$4(delta, view.getResolution());
-				rotate$2(delta, view.getRotation());
-				view.adjustCenterInternal(delta);
+				const resolution = view.getResolution();
+				if (resolution !== void 0) {
+					scale$4(delta, resolution);
+					rotate$2(delta, view.getRotation());
+					view.adjustCenterInternal(delta);
+				}
 			}
 		} else if (this.kinetic_) this.kinetic_.begin();
 		this.lastCentroid = centroid$1;
@@ -10661,13 +10676,15 @@ var DragPan = class extends PointerInteraction {
 				const distance = this.kinetic_.getDistance();
 				const angle = this.kinetic_.getAngle();
 				const center = view.getCenterInternal();
-				const centerpx = map.getPixelFromCoordinateInternal(center);
-				const dest = map.getCoordinateFromPixelInternal([centerpx[0] - distance * Math.cos(angle), centerpx[1] - distance * Math.sin(angle)]);
-				view.animateInternal({
-					center: view.getConstrainedCenter(dest),
-					duration: 500,
-					easing: easeOut
-				});
+				if (center) {
+					const centerpx = map.getPixelFromCoordinateInternal(center);
+					const dest = map.getCoordinateFromPixelInternal([centerpx[0] - distance * Math.cos(angle), centerpx[1] - distance * Math.sin(angle)]);
+					view.animateInternal({
+						center: view.getConstrainedCenter(dest),
+						duration: 500,
+						easing: easeOut
+					});
+				}
 			}
 			if (this.panning_) {
 				this.panning_ = false;
@@ -10697,8 +10714,7 @@ var DragPan = class extends PointerInteraction {
 		return false;
 	}
 };
-//#endregion
-//#region node_modules/ol/interaction/DragRotate.js
+// node_modules/ol/interaction/DragRotate.js
 /**
 * @module ol/interaction/DragRotate
 */
@@ -10753,6 +10769,7 @@ var DragRotate = class extends PointerInteraction {
 		const view = map.getView();
 		if (view.getConstraints().rotation === disable) return;
 		const size = map.getSize();
+		if (!size) return;
 		const offset = mapBrowserEvent.pixel;
 		const theta = Math.atan2(size[1] / 2 - offset[1], offset[0] - size[0] / 2);
 		if (this.lastAngle_ !== void 0) {
@@ -10788,8 +10805,7 @@ var DragRotate = class extends PointerInteraction {
 		return false;
 	}
 };
-//#endregion
-//#region node_modules/ol/render/Box.js
+// node_modules/ol/render/Box.js
 /**
 * @module ol/render/Box
 */
@@ -10800,7 +10816,7 @@ var RenderBox = class extends Disposable {
 	constructor(className) {
 		super();
 		/**
-		* @type {import("../geom/Polygon.js").default}
+		* @type {import("../geom/Polygon.js").default|null}
 		* @private
 		*/
 		this.geometry_ = null;
@@ -10819,12 +10835,12 @@ var RenderBox = class extends Disposable {
 		this.map_ = null;
 		/**
 		* @private
-		* @type {import("../pixel.js").Pixel}
+		* @type {import("../pixel.js").Pixel|null}
 		*/
 		this.startPixel_ = null;
 		/**
 		* @private
-		* @type {import("../pixel.js").Pixel}
+		* @type {import("../pixel.js").Pixel|null}
 		*/
 		this.endPixel_ = null;
 	}
@@ -10841,6 +10857,7 @@ var RenderBox = class extends Disposable {
 	render_() {
 		const startPixel = this.startPixel_;
 		const endPixel = this.endPixel_;
+		if (!startPixel || !endPixel) return;
 		const px = "px";
 		const style = this.element_.style;
 		style.left = Math.min(startPixel[0], endPixel[0]) + px;
@@ -10853,7 +10870,8 @@ var RenderBox = class extends Disposable {
 	*/
 	setMap(map) {
 		if (this.map_) {
-			this.map_.getOverlayContainer().removeChild(this.element_);
+			const container = this.map_.getOverlayContainer();
+			if (container) container.removeChild(this.element_);
 			const style = this.element_.style;
 			style.left = "inherit";
 			style.top = "inherit";
@@ -10861,7 +10879,10 @@ var RenderBox = class extends Disposable {
 			style.height = "inherit";
 		}
 		this.map_ = map;
-		if (this.map_) this.map_.getOverlayContainer().appendChild(this.element_);
+		if (this.map_) {
+			const container = this.map_.getOverlayContainer();
+			if (container) container.appendChild(this.element_);
+		}
 	}
 	/**
 	* @param {import("../pixel.js").Pixel} startPixel Start pixel.
@@ -10880,15 +10901,21 @@ var RenderBox = class extends Disposable {
 		if (!this.map_) return;
 		const startPixel = this.startPixel_;
 		const endPixel = this.endPixel_;
-		const coordinates = [
+		if (!startPixel || !endPixel) return;
+		const pixels = [
 			startPixel,
 			[startPixel[0], endPixel[1]],
 			endPixel,
 			[endPixel[0], startPixel[1]]
-		].map(this.map_.getCoordinateFromPixelInternal, this.map_);
-		coordinates[4] = coordinates[0].slice();
-		if (!this.geometry_) this.geometry_ = new Polygon([coordinates]);
-		else this.geometry_.setCoordinates([coordinates]);
+		];
+		const map = this.map_;
+		const coordinates = pixels.map((pixel) => map.getCoordinateFromPixelInternal(pixel));
+		const first = coordinates[0];
+		if (!first) return;
+		coordinates[4] = first.slice();
+		const ring = coordinates;
+		if (!this.geometry_) this.geometry_ = new Polygon([ring]);
+		else this.geometry_.setCoordinates([ring]);
 	}
 	/**
 	* @return {import("../geom/Polygon.js").default} Geometry.
@@ -10897,8 +10924,7 @@ var RenderBox = class extends Disposable {
 		return this.geometry_;
 	}
 };
-//#endregion
-//#region node_modules/ol/interaction/DragBox.js
+// node_modules/ol/interaction/DragBox.js
 /**
 * @module ol/interaction/DragBox
 */
@@ -10960,7 +10986,7 @@ var DragBoxEvent = class extends BaseEvent {
 	/**
 	* @param {string} type The event type.
 	* @param {import("../coordinate.js").Coordinate} coordinate The event coordinate.
-	* @param {import("../MapBrowserEvent.js").default} mapBrowserEvent Originating event.
+	* @param {import("../MapBrowserEvent.js").default|null} mapBrowserEvent Originating event.
 	*/
 	constructor(type, coordinate, mapBrowserEvent) {
 		super(type);
@@ -10973,7 +10999,7 @@ var DragBoxEvent = class extends BaseEvent {
 		this.coordinate = coordinate;
 		/**
 		* @const
-		* @type {import("../MapBrowserEvent.js").default}
+		* @type {import("../MapBrowserEvent.js").default|null}
 		* @api
 		*/
 		this.mapBrowserEvent = mapBrowserEvent;
@@ -11031,7 +11057,7 @@ var DragBox = class extends PointerInteraction {
 		this.minArea_ = options.minArea ?? 64;
 		if (options.onBoxEnd) this.onBoxEnd = options.onBoxEnd;
 		/**
-		* @type {import("../pixel.js").Pixel}
+		* @type {import("../pixel.js").Pixel|null}
 		* @private
 		*/
 		this.startPixel_ = null;
@@ -11146,8 +11172,7 @@ var DragBox = class extends PointerInteraction {
 		super.setMap(map);
 	}
 };
-//#endregion
-//#region node_modules/ol/interaction/DragZoom.js
+// node_modules/ol/interaction/DragZoom.js
 /**
 * @module ol/interaction/DragZoom
 */
@@ -11203,12 +11228,16 @@ var DragZoom = class extends DragBox {
 	* @override
 	*/
 	onBoxEnd(event) {
-		const view = this.getMap().getView();
+		const map = this.getMap();
+		if (!map) return;
+		const view = map.getView();
 		let geometry = this.getGeometry();
 		if (this.out_) {
 			const rotatedExtent = view.rotatedExtentForGeometry(geometry);
 			const resolution = view.getResolutionForExtentInternal(rotatedExtent);
-			const factor = view.getResolution() / resolution;
+			const currentResolution = view.getResolution();
+			if (resolution === void 0 || currentResolution === void 0) return;
+			const factor = currentResolution / resolution;
 			geometry = geometry.clone();
 			geometry.scale(factor * factor);
 		}
@@ -11218,8 +11247,7 @@ var DragZoom = class extends DragBox {
 		});
 	}
 };
-//#endregion
-//#region node_modules/ol/events/Key.js
+// node_modules/ol/events/Key.js
 /**
 * @module ol/events/Key
 */
@@ -11233,8 +11261,7 @@ var Key_default = {
 	RIGHT: "ArrowRight",
 	DOWN: "ArrowDown"
 };
-//#endregion
-//#region node_modules/ol/interaction/KeyboardPan.js
+// node_modules/ol/interaction/KeyboardPan.js
 /**
 * @module ol/interaction/KeyboardPan
 */
@@ -11308,7 +11335,9 @@ var KeyboardPan = class extends Interaction {
 			const key = keyEvent.key;
 			if (this.condition_(mapBrowserEvent) && (key == Key_default.DOWN || key == Key_default.LEFT || key == Key_default.RIGHT || key == Key_default.UP)) {
 				const view = mapBrowserEvent.map.getView();
-				const mapUnitsDelta = view.getResolution() * this.pixelDelta_;
+				const resolution = view.getResolution();
+				if (resolution === void 0) return true;
+				const mapUnitsDelta = resolution * this.pixelDelta_;
 				let deltaX = 0, deltaY = 0;
 				if (key == Key_default.DOWN) deltaY = -mapUnitsDelta;
 				else if (key == Key_default.LEFT) deltaX = -mapUnitsDelta;
@@ -11324,8 +11353,7 @@ var KeyboardPan = class extends Interaction {
 		return !stopEvent;
 	}
 };
-//#endregion
-//#region node_modules/ol/interaction/KeyboardZoom.js
+// node_modules/ol/interaction/KeyboardZoom.js
 /**
 * @module ol/interaction/KeyboardZoom
 */
@@ -11402,8 +11430,7 @@ var KeyboardZoom = class extends Interaction {
 		return !stopEvent;
 	}
 };
-//#endregion
-//#region node_modules/ol/interaction/MouseWheelZoom.js
+// node_modules/ol/interaction/MouseWheelZoom.js
 /**
 * @module ol/interaction/MouseWheelZoom
 */
@@ -11508,7 +11535,7 @@ var MouseWheelZoom = class extends Interaction {
 		this.startTime_ = void 0;
 		/**
 		* @private
-		* @type {ReturnType<typeof setTimeout>}
+		* @type {ReturnType<typeof setTimeout>|undefined}
 		*/
 		this.timeoutId_;
 		/**
@@ -11525,7 +11552,7 @@ var MouseWheelZoom = class extends Interaction {
 		this.trackpadEventGap_ = 400;
 		/**
 		* @private
-		* @type {ReturnType<typeof setTimeout>}
+		* @type {ReturnType<typeof setTimeout>|undefined}
 		*/
 		this.trackpadTimeoutId_;
 		/**
@@ -11534,36 +11561,6 @@ var MouseWheelZoom = class extends Interaction {
 		* @type {number}
 		*/
 		this.deltaPerZoom_ = 300;
-		/**
-		* Tracks whether the Ctrl key is physically held down (as opposed to the
-		* browser synthesizing ctrlKey=true for pinch-to-zoom trackpad gestures).
-		* @private
-		* @type {boolean}
-		*/
-		this.ctrlKeyPressed_ = false;
-		/**
-		* @private
-		* @type {Array<import('../events.js').EventsKey>}
-		*/
-		this.ctrlKeyListenerKeys_ = [];
-	}
-	/**
-	* @param {import('../Map.js').default|null} map Map.
-	* @override
-	*/
-	setMap(map) {
-		this.ctrlKeyListenerKeys_.forEach(unlistenByKey);
-		this.ctrlKeyListenerKeys_.length = 0;
-		this.ctrlKeyPressed_ = false;
-		super.setMap(map);
-		if (map) {
-			const doc = map.getOwnerDocument();
-			this.ctrlKeyListenerKeys_.push(listen(doc, "keydown", (e) => {
-				if (e.key === "Control") this.ctrlKeyPressed_ = true;
-			}), listen(doc, "keyup", (e) => {
-				if (e.key === "Control") this.ctrlKeyPressed_ = false;
-			}));
-		}
 	}
 	/**
 	* @private
@@ -11574,7 +11571,7 @@ var MouseWheelZoom = class extends Interaction {
 		if (!map) return;
 		const view = map.getView();
 		const direction = this.lastDelta_ ? this.lastDelta_ > 0 ? 1 : -1 : 0;
-		view.endInteraction(this.constrainResolution_ || view.getConstrainResolution() ? 100 : void 0, direction, this.lastAnchor_ ? map.getCoordinateFromPixel(this.lastAnchor_) : null);
+		view.endInteraction(this.constrainResolution_ || view.getConstrainResolution() ? 100 : void 0, direction, this.lastAnchor_ ? map.getCoordinateFromPixel(this.lastAnchor_) : void 0);
 	}
 	/**
 	* Handles the {@link module:ol/MapBrowserEvent~MapBrowserEvent map browser event} (if it was a mousewheel-event) and eventually
@@ -11589,8 +11586,7 @@ var MouseWheelZoom = class extends Interaction {
 		const map = mapBrowserEvent.map;
 		const wheelEvent = mapBrowserEvent.originalEvent;
 		wheelEvent.preventDefault();
-		const isPinchToZoom = wheelEvent.ctrlKey && !this.ctrlKeyPressed_;
-		if (!wheelEvent.ctrlKey) this.ctrlKeyPressed_ = false;
+		const isPinchToZoom = wheelEvent.ctrlKey && !mapBrowserEvent.ctrlKey;
 		if (this.useAnchor_) this.lastAnchor_ = mapBrowserEvent.pixel;
 		let delta = wheelEvent.deltaY;
 		switch (wheelEvent.deltaMode) {
@@ -11613,7 +11609,7 @@ var MouseWheelZoom = class extends Interaction {
 			}
 			this.trackpadTimeoutId_ = setTimeout(this.endInteraction_.bind(this), this.timeout_);
 			if (isPinchToZoom) delta = delta * DELTA_TRACKPAD_PINCH_TO_ZOOM_MULTIPLIER;
-			view.adjustZoom(-delta / this.deltaPerZoom_, this.lastAnchor_ ? map.getCoordinateFromPixel(this.lastAnchor_) : null);
+			view.adjustZoom(-delta / this.deltaPerZoom_, this.lastAnchor_ ? map.getCoordinateFromPixel(this.lastAnchor_) : void 0);
 			this.startTime_ = now;
 			return false;
 		}
@@ -11632,7 +11628,7 @@ var MouseWheelZoom = class extends Interaction {
 		if (view.getAnimating()) view.cancelAnimations();
 		let delta = -clamp(this.totalDelta_, -this.maxDelta_ * this.deltaPerZoom_, this.maxDelta_ * this.deltaPerZoom_) / this.deltaPerZoom_;
 		if (view.getConstrainResolution() || this.constrainResolution_) delta = delta ? delta > 0 ? 1 : -1 : 0;
-		zoomByDelta(view, delta, this.lastAnchor_ ? map.getCoordinateFromPixel(this.lastAnchor_) : null, this.duration_);
+		zoomByDelta(view, delta, this.lastAnchor_ ? map.getCoordinateFromPixel(this.lastAnchor_) : void 0, this.duration_);
 		this.mode_ = void 0;
 		this.totalDelta_ = 0;
 		this.lastAnchor_ = null;
@@ -11650,8 +11646,7 @@ var MouseWheelZoom = class extends Interaction {
 		if (!useAnchor) this.lastAnchor_ = null;
 	}
 };
-//#endregion
-//#region node_modules/ol/interaction/PinchRotate.js
+// node_modules/ol/interaction/PinchRotate.js
 /**
 * @module ol/interaction/PinchRotate
 */
@@ -11678,7 +11673,7 @@ var PinchRotate = class extends PointerInteraction {
 		super(pointerOptions);
 		/**
 		* @private
-		* @type {import("../coordinate.js").Coordinate}
+		* @type {import("../coordinate.js").Coordinate|null}
 		*/
 		this.anchor_ = null;
 		/**
@@ -11727,10 +11722,10 @@ var PinchRotate = class extends PointerInteraction {
 		const map = mapBrowserEvent.map;
 		const view = map.getView();
 		if (view.getConstraints().rotation === disable) return;
-		this.anchor_ = map.getCoordinateFromPixelInternal(map.getEventPixel(centroid(this.targetPointers)));
+		this.anchor_ = map.getCoordinateFromPixelInternal(map.getEventPixel(centroid(this.targetPointers))) ?? null;
 		if (this.rotating_) {
 			map.render();
-			view.adjustRotationInternal(rotationDelta, this.anchor_);
+			view.adjustRotationInternal(rotationDelta, this.anchor_ ?? void 0);
 		}
 	}
 	/**
@@ -11765,8 +11760,7 @@ var PinchRotate = class extends PointerInteraction {
 		return false;
 	}
 };
-//#endregion
-//#region node_modules/ol/interaction/PinchZoom.js
+// node_modules/ol/interaction/PinchZoom.js
 /**
 * @module ol/interaction/PinchZoom
 */
@@ -11791,7 +11785,7 @@ var PinchZoom = class extends PointerInteraction {
 		super(pointerOptions);
 		/**
 		* @private
-		* @type {import("../coordinate.js").Coordinate}
+		* @type {import("../coordinate.js").Coordinate|null}
 		*/
 		this.anchor_ = null;
 		/**
@@ -11827,9 +11821,9 @@ var PinchZoom = class extends PointerInteraction {
 		const map = mapBrowserEvent.map;
 		const view = map.getView();
 		if (scaleDelta != 1) this.lastScaleDelta_ = scaleDelta;
-		this.anchor_ = map.getCoordinateFromPixelInternal(map.getEventPixel(centroid(this.targetPointers)));
+		this.anchor_ = map.getCoordinateFromPixelInternal(map.getEventPixel(centroid(this.targetPointers))) ?? null;
 		map.render();
-		view.adjustResolutionInternal(scaleDelta, this.anchor_);
+		view.adjustResolutionInternal(scaleDelta, this.anchor_ ?? void 0);
 	}
 	/**
 	* Handle pointer up events.
@@ -11864,8 +11858,7 @@ var PinchZoom = class extends PointerInteraction {
 		return false;
 	}
 };
-//#endregion
-//#region node_modules/ol/interaction/defaults.js
+// node_modules/ol/interaction/defaults.js
 /**
 * @module ol/interaction/defaults
 */
@@ -11945,8 +11938,7 @@ function defaults(options) {
 	if (options.shiftDragZoom !== void 0 ? options.shiftDragZoom : true) interactions.push(new DragZoom({ duration: options.zoomDuration }));
 	return interactions;
 }
-//#endregion
-//#region node_modules/ol/layer/Property.js
+// node_modules/ol/layer/Property.js
 /**
 * @module ol/layer/Property
 */
@@ -11965,8 +11957,7 @@ var Property_default = {
 	SOURCE: "source",
 	MAP: "map"
 };
-//#endregion
-//#region node_modules/ol/layer/Base.js
+// node_modules/ol/layer/Base.js
 /**
 * @module ol/layer/Base
 */
@@ -12041,7 +12032,7 @@ var BaseLayer = class extends BaseObject {
 		*/
 		this.un;
 		/**
-		* @type {BackgroundColor|false}
+		* @type {BackgroundColor|false|undefined}
 		* @private
 		*/
 		this.background_ = options.background;
@@ -12069,14 +12060,14 @@ var BaseLayer = class extends BaseObject {
 		delete properties.className;
 		this.setProperties(properties);
 		/**
-		* @type {import("./Layer.js").State}
+		* @type {import("./Layer.js").State|null}
 		* @private
 		*/
 		this.state_ = null;
 	}
 	/**
 	* Get the background for this layer.
-	* @return {BackgroundColor|false} Layer background.
+	* @return {BackgroundColor|false|undefined} Layer background.
 	*/
 	getBackground() {
 		return this.background_;
@@ -12218,7 +12209,7 @@ var BaseLayer = class extends BaseObject {
 	}
 	/**
 	* Sets the background color.
-	* @param {BackgroundColor} [background] Background color.
+	* @param {BackgroundColor|undefined} [background] Background color.
 	*/
 	setBackground(background) {
 		this.background_ = background;
@@ -12315,8 +12306,7 @@ var BaseLayer = class extends BaseObject {
 		super.disposeInternal();
 	}
 };
-//#endregion
-//#region node_modules/ol/layer/Group.js
+// node_modules/ol/layer/Group.js
 /**
 * @module ol/layer/Group
 */
@@ -12588,8 +12578,7 @@ var LayerGroup = class LayerGroup extends BaseLayer {
 		return "ready";
 	}
 };
-//#endregion
-//#region node_modules/ol/render/EventType.js
+// node_modules/ol/render/EventType.js
 /**
 * @module ol/render/EventType
 */
@@ -12640,8 +12629,7 @@ var EventType_default = {
 /**
 * @typedef {'postrender'|'prerender'} LayerRenderEventTypes
 */
-//#endregion
-//#region node_modules/ol/layer/Layer.js
+// node_modules/ol/layer/Layer.js
 /**
 * @module ol/layer/Layer
 */
@@ -12698,7 +12686,7 @@ var EventType_default = {
 * @property {boolean} visible Visible.
 * @property {boolean} managed Managed.
 * @property {import("../extent.js").Extent} [extent] Extent.
-* @property {number} zIndex ZIndex.
+* @property {number|undefined} zIndex ZIndex.
 * @property {number} maxResolution Maximum resolution.
 * @property {number} minResolution Minimum resolution.
 * @property {number} minZoom Minimum zoom.
@@ -12727,7 +12715,7 @@ var EventType_default = {
 * @fires import("../events/Event.js").BaseEvent#sourceready
 *
 * @template {import("../source/Source.js").default} [SourceType=import("../source/Source.js").default]
-* @template {import("../renderer/Layer.js").default} [RendererType=import("../renderer/Layer.js").default]
+* @template {import("../renderer/Layer.js").default<*>} [RendererType=import("../renderer/Layer.js").default<*>]
 * @template {Object<string, *>} [Properties=Object<string, *>]
 * @extends {BaseLayer<NoInfer<Properties>>}
 * @api
@@ -12769,7 +12757,7 @@ var Layer = class extends BaseLayer {
 		this.sourceChangeKey_ = null;
 		/**
 		* @private
-		* @type {RendererType}
+		* @type {RendererType|null|undefined}
 		*/
 		this.renderer_ = null;
 		/**
@@ -12836,7 +12824,8 @@ var Layer = class extends BaseLayer {
 	*/
 	handleSourceChange_() {
 		this.changed();
-		if (this.sourceReady_ || this.getSource().getState() !== "ready") return;
+		const source = this.getSource();
+		if (!source || this.sourceReady_ || source.getState() !== "ready") return;
 		this.sourceReady_ = true;
 		this.dispatchEvent("sourceready");
 	}
@@ -12896,14 +12885,15 @@ var Layer = class extends BaseLayer {
 			extent: view.calculateExtent()
 		};
 		else frameState = view;
-		if (!frameState.layerStatesArray && map) frameState.layerStatesArray = map.getLayerGroup().getLayerStatesArray();
+		const state = frameState;
+		if (!state.layerStatesArray && map) state.layerStatesArray = map.getLayerGroup().getLayerStatesArray();
 		let layerState;
-		if (frameState.layerStatesArray) {
-			layerState = frameState.layerStatesArray.find((layerState) => layerState.layer === this);
+		if (state.layerStatesArray) {
+			layerState = state.layerStatesArray.find((layerState) => layerState.layer === this);
 			if (!layerState) return false;
 		} else layerState = this.getLayerState();
 		const layerExtent = this.getExtent();
-		return inView(layerState, frameState.viewState) && (!layerExtent || intersects$1(layerExtent, frameState.extent));
+		return inView(layerState, state.viewState) && (!layerExtent || intersects$1(layerExtent, state.extent));
 	}
 	/**
 	* Get the attributions of the source of this layer for the given view.
@@ -12942,7 +12932,7 @@ var Layer = class extends BaseLayer {
 	unrender() {
 		this.rendered = false;
 	}
-	/** @return {string} Declutter */
+	/** @return {string|undefined} Declutter */
 	getDeclutter() {}
 	/**
 	* @param {import("../Map.js").FrameState} frameState Frame state.
@@ -13005,7 +12995,8 @@ var Layer = class extends BaseLayer {
 	* @private
 	*/
 	handlePrecompose_(renderEvent) {
-		const layerStatesArray = renderEvent.frameState.layerStatesArray;
+		const layerStatesArray = renderEvent.frameState?.layerStatesArray;
+		if (!layerStatesArray) return;
 		const layerState = this.getLayerState(false);
 		assert$1(!layerStatesArray.some((arrayLayerState) => arrayLayerState.layer === layerState.layer), "A layer can only be added to the map once. Use either `layer.setMap()` or `map.addLayer()`, not both.");
 		layerStatesArray.push(layerState);
@@ -13074,8 +13065,7 @@ function inView(layerState, viewState) {
 	const zoom = viewState.zoom;
 	return zoom > layerState.minZoom && zoom <= layerState.maxZoom;
 }
-//#endregion
-//#region node_modules/quickselect/index.js
+// node_modules/quickselect/index.js
 /**
 * Rearranges items so that all items in the [left, k] are the smallest.
 * The k-th element will have the (k - left + 1)-th smallest value in [left, right].
@@ -13139,8 +13129,7 @@ function swap(arr, i, j) {
 function defaultCompare$1(a, b) {
 	return a < b ? -1 : a > b ? 1 : 0;
 }
-//#endregion
-//#region node_modules/rbush/index.js
+// node_modules/rbush/index.js
 var RBush$2 = class {
 	constructor(maxEntries = 9) {
 		this._maxEntries = Math.max(4, maxEntries);
@@ -13498,8 +13487,7 @@ function multiSelect(arr, left, right, n, compare) {
 		stack.push(left, mid, mid, right);
 	}
 }
-//#endregion
-//#region node_modules/ol/color.js
+// node_modules/ol/color.js
 /**
 * @module ol/color
 */
@@ -13522,9 +13510,12 @@ var NO_COLOR = [
 	NaN,
 	0
 ];
+/**
+* @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D|undefined}
+*/
 var colorParseContext;
 /**
-* @return {CanvasRenderingContext2D} The color parse context
+* @return {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D} The color parse context
 */
 function getColorParseContext() {
 	if (!colorParseContext) colorParseContext = createCanvasContext2D(1, 1, void 0, {
@@ -13759,8 +13750,7 @@ function toString$2(color) {
 	const a = color[3] === void 0 ? 1 : Math.round(color[3] * 1e3) / 1e3;
 	return "rgba(" + r + "," + g + "," + b + "," + a + ")";
 }
-//#endregion
-//#region node_modules/ol/size.js
+// node_modules/ol/size.js
 /**
 * Determines if a size has a positive area.
 * @param {Size} size The size to test.
@@ -13800,8 +13790,7 @@ function toSize(size, dest) {
 	}
 	return dest;
 }
-//#endregion
-//#region node_modules/ol/expr/expression.js
+// node_modules/ol/expr/expression.js
 /**
 * @module ol/expr/expression
 */
@@ -13871,8 +13860,12 @@ function toSize(size, dest) {
 *     the rate of increase from stop A to stop B (i.e. power to which the interpolation ratio is raised); a value
 *     of 1 is equivalent to `['linear']`.
 *     `input` and `stopX` values must all be of type `number`. `outputX` values can be `number` or `color` values.
+*     Colors are interpolated component-wise in sRGB.
 *     Note: `input` will be clamped between `stop1` and `stopN`, meaning that all output values will be comprised
 *     between `output1` and `outputN`.
+*   * `['interpolate-hcl', interpolation, input, stop1, output1, ...stopN, outputN]` works like `interpolate`, but
+*     the `outputX` values must be colors, and they are interpolated in the Hue-Chroma-Luminance color space.
+*     This keeps gradients bright where sRGB interpolation would take them through a muddy midpoint (Canvas only).
 *   * `['string', value1, value2, ...]` returns the first value in the list that evaluates to a string.
 *     An example would be to provide a default value for get: `['string', ['get', 'propertyname'], 'default value']]`
 *     (Canvas only).
@@ -13909,9 +13902,9 @@ function toSize(size, dest) {
 *
 * * Conversion operators:
 *   * `['array', value1, ...valueN]` creates a numerical array from `number` values; please note that the amount of
-*     values can currently only be 2, 3 or 4 (WebGL only).
+*     values can currently only be 2, 3 or 4.
 *   * `['color', red, green, blue, alpha]` or `['color', shade, alpha]` creates a `color` value from `number` values;
-*     the `alpha` parameter is optional; if not specified, it will be set to 1 (WebGL only).
+*     the `alpha` parameter is optional; if not specified, it will be set to 1.
 *     Note: `red`, `green` and `blue` or `shade` components must be values between 0 and 255; `alpha` between 0 and 1.
 *   * `['palette', index, colors]` picks a `color` value from an array of colors using the given index; the `index`
 *     expression must evaluate to a number; the items in the `colors` array must be strings with hex colors
@@ -13997,6 +13990,13 @@ function isType(type, expected) {
 	return type === expected;
 }
 /**
+* @param {unknown} err The caught error.
+* @return {string} The error message.
+*/
+function getErrorMessage(err) {
+	return err instanceof Error ? err.message : String(err);
+}
+/**
 * @typedef {boolean|number|string|Array<number>} LiteralValue
 */
 var LiteralExpression = class {
@@ -14051,7 +14051,7 @@ function newParsingContext(inputVariables) {
 	};
 }
 /**
-* @typedef {LiteralValue|Array} EncodedExpression
+* @typedef {LiteralValue|Array<*>} EncodedExpression
 */
 /**
 * @param {EncodedExpression} encoded The encoded expression.
@@ -14132,6 +14132,7 @@ var Ops = {
 	Match: "match",
 	Between: "between",
 	Interpolate: "interpolate",
+	InterpolateHcl: "interpolate-hcl",
 	Coalesce: "coalesce",
 	Case: "case",
 	In: "in",
@@ -14146,7 +14147,7 @@ var Ops = {
 	Has: "has"
 };
 /**
-* @typedef {function(Array, number, ParsingContext):Expression} Parser
+* @typedef {function(Array<*>, number, ParsingContext):Expression} Parser
 *
 * Second argument is the expected type.
 */
@@ -14192,6 +14193,7 @@ var parsers = {
 	[Ops.Match]: createCallExpressionParser(hasArgsCount(4, Infinity), hasEvenArgs, withMatchArgs),
 	[Ops.Between]: createCallExpressionParser(hasArgsCount(3, 3), withArgsOfType(NumberType)),
 	[Ops.Interpolate]: createCallExpressionParser(hasArgsCount(6, Infinity), hasEvenArgs, withInterpolateArgs),
+	[Ops.InterpolateHcl]: createCallExpressionParser(hasArgsCount(6, Infinity), hasEvenArgs, returnsColor, withInterpolateArgs),
 	[Ops.Case]: createCallExpressionParser(hasArgsCount(3, Infinity), hasOddArgs, withCaseArgs),
 	[Ops.In]: createCallExpressionParser(hasArgsCount(2, 2), withInArgs),
 	[Ops.Number]: createCallExpressionParser(hasArgsCount(1, Infinity), withArgsOfType(AnyType)),
@@ -14393,7 +14395,8 @@ function withMatchArgs(encoded, returnType, context) {
 			const match = parse$3(encoded[i + 2], inputType, context);
 			inputType &= match.type;
 		} catch (err) {
-			throw new Error(`failed to parse argument ${i + 1} of match expression: ${err.message}`);
+			const message = getErrorMessage(err);
+			throw new Error(`failed to parse argument ${i + 1} of match expression: ${message}`);
 		}
 		if (inputType === 0) throw new Error(`no common type was found among the arguments of match expression`);
 	}
@@ -14402,13 +14405,14 @@ function withMatchArgs(encoded, returnType, context) {
 			const match = parse$3(encoded[i + 2], inputType, context);
 			args[i] = match;
 		} catch (err) {
-			throw new Error(`failed to parse argument ${i + 1} of match expression: ${err.message}`);
+			const message = getErrorMessage(err);
+			throw new Error(`failed to parse argument ${i + 1} of match expression: ${message}`);
 		}
 		try {
 			const output = parse$3(encoded[i + 3], fallback.type, context);
 			args[i + 1] = output;
 		} catch (err) {
-			throw new Error(`failed to parse argument ${i + 2} of match expression: ${err.message}`);
+			throw new Error(`failed to parse argument ${i + 2} of match expression: ${getErrorMessage(err)}`);
 		}
 	}
 	return [
@@ -14416,6 +14420,13 @@ function withMatchArgs(encoded, returnType, context) {
 		...args,
 		fallback
 	];
+}
+/**
+* Assert that the call is being used where a color is expected.
+* @type {ArgValidator}
+*/
+function returnsColor(encoded, returnType, context) {
+	if (!includesType(returnType, ColorType)) throw new Error(`the ${encoded[0]} operator can only return a color, got ${typeName(returnType)}`);
 }
 /**
 * @type {ArgValidator}
@@ -14442,7 +14453,7 @@ function withInterpolateArgs(encoded, returnType, context) {
 	try {
 		input = parse$3(encoded[2], NumberType, context);
 	} catch (err) {
-		throw new Error(`failed to parse argument 1 in interpolate expression: ${err.message}`);
+		throw new Error(`failed to parse argument 1 in interpolate expression: ${getErrorMessage(err)}`);
 	}
 	const args = new Array(encoded.length - 3);
 	for (let i = 0; i < args.length; i += 2) {
@@ -14450,13 +14461,13 @@ function withInterpolateArgs(encoded, returnType, context) {
 			const stop = parse$3(encoded[i + 3], NumberType, context);
 			args[i] = stop;
 		} catch (err) {
-			throw new Error(`failed to parse argument ${i + 2} for interpolate expression: ${err.message}`);
+			throw new Error(`failed to parse argument ${i + 2} for interpolate expression: ${getErrorMessage(err)}`);
 		}
 		try {
 			const output = parse$3(encoded[i + 4], returnType, context);
 			args[i + 1] = output;
 		} catch (err) {
-			throw new Error(`failed to parse argument ${i + 3} for interpolate expression: ${err.message}`);
+			throw new Error(`failed to parse argument ${i + 3} for interpolate expression: ${getErrorMessage(err)}`);
 		}
 	}
 	return [
@@ -14476,13 +14487,13 @@ function withCaseArgs(encoded, returnType, context) {
 			const condition = parse$3(encoded[i + 1], BooleanType, context);
 			args[i] = condition;
 		} catch (err) {
-			throw new Error(`failed to parse argument ${i} of case expression: ${err.message}`);
+			throw new Error(`failed to parse argument ${i} of case expression: ${getErrorMessage(err)}`);
 		}
 		try {
 			const output = parse$3(encoded[i + 2], fallback.type, context);
 			args[i + 1] = output;
 		} catch (err) {
-			throw new Error(`failed to parse argument ${i + 1} of case expression: ${err.message}`);
+			throw new Error(`failed to parse argument ${i + 1} of case expression: ${getErrorMessage(err)}`);
 		}
 	}
 	args[args.length - 1] = fallback;
@@ -14509,7 +14520,7 @@ function withInArgs(encoded, returnType, context) {
 		const arg = parse$3(haystack[i], needleType, context);
 		args[i] = arg;
 	} catch (err) {
-		throw new Error(`failed to parse haystack item ${i} for "in" expression: ${err.message}`);
+		throw new Error(`failed to parse haystack item ${i} for "in" expression: ${getErrorMessage(err)}`);
 	}
 	return [parse$3(encoded[1], needleType, context), ...args];
 }
@@ -14521,7 +14532,7 @@ function withPaletteArgs(encoded, returnType, context) {
 	try {
 		index = parse$3(encoded[1], NumberType, context);
 	} catch (err) {
-		throw new Error(`failed to parse first argument in palette expression: ${err.message}`);
+		throw new Error(`failed to parse first argument in palette expression: ${getErrorMessage(err)}`);
 	}
 	const colors = encoded[2];
 	if (!Array.isArray(colors)) throw new Error("the second argument of palette must be an array");
@@ -14531,7 +14542,7 @@ function withPaletteArgs(encoded, returnType, context) {
 		try {
 			color = parse$3(colors[i], ColorType, context);
 		} catch (err) {
-			throw new Error(`failed to parse color at index ${i} in palette expression: ${err.message}`);
+			throw new Error(`failed to parse color at index ${i} in palette expression: ${getErrorMessage(err)}`);
 		}
 		if (!(color instanceof LiteralExpression)) throw new Error(`the palette color at index ${i} must be a literal value`);
 		parsedColors[i] = color;
@@ -14549,7 +14560,7 @@ function createCallExpressionParser(...validators) {
 		/**
 		* @type {Array<Expression>}
 		*/
-		let args;
+		let args = [];
 		for (let i = 0; i < validators.length; i++) {
 			const parsed = validators[i](encoded, returnType, context);
 			if (i == validators.length - 1) {
@@ -14561,7 +14572,7 @@ function createCallExpressionParser(...validators) {
 	};
 }
 /**
-* @param {Array} encoded The encoded expression.
+* @param {Array<*>} encoded The encoded expression.
 * @param {ValueType} returnType The expected return type of the call expression.
 * @param {ParsingContext} context The parsing context.
 * @return {Expression} The parsed expression.
@@ -14595,8 +14606,7 @@ function computeGeometryType(geometry) {
 		default: return "";
 	}
 }
-//#endregion
-//#region node_modules/ol/expr/cpu.js
+// node_modules/ol/expr/cpu.js
 /**
 * @module ol/expr/cpu
 */
@@ -14612,8 +14622,8 @@ function computeGeometryType(geometry) {
 */
 /**
 * @typedef {Object} EvaluationContext
-* @property {Object} properties The values for properties used in 'get' expressions.
-* @property {Object} variables The values for variables used in 'var' expressions.
+* @property {Object<string, *>} properties The values for properties used in 'get' expressions.
+* @property {Object<string, *>} variables The values for variables used in 'var' expressions.
 * @property {number} resolution The map resolution.
 * @property {string|number|null} featureId The feature id.
 * @property {string} geometryType Geometry type of the current object.
@@ -14691,11 +14701,11 @@ function compileExpression(expression, context) {
 		case Ops.Get:
 		case Ops.Var:
 		case Ops.Has: return compileAccessorExpression(expression, context);
-		case Ops.Id: return (context) => context.featureId;
+		case Ops.Id: return (context) => context.featureId ?? "";
 		case Ops.GeometryType: return (context) => context.geometryType;
 		case Ops.Concat: {
 			const args = expression.args.map((e) => compileExpression(e, context));
-			return (context) => "".concat(...args.map((arg) => arg(context).toString()));
+			return (context) => "".concat(...args.map((arg) => (arg(context) ?? "").toString()));
 		}
 		case Ops.Resolution: return (context) => context.resolution;
 		case Ops.Any:
@@ -14726,10 +14736,70 @@ function compileExpression(expression, context) {
 		case Ops.Sqrt: return compileNumericExpression(expression, context);
 		case Ops.Case: return compileCaseExpression(expression, context);
 		case Ops.Match: return compileMatchExpression(expression, context);
-		case Ops.Interpolate: return compileInterpolateExpression(expression, context);
+		case Ops.Interpolate:
+		case Ops.InterpolateHcl: return compileInterpolateExpression(expression, context);
 		case Ops.ToString: return compileConvertExpression(expression, context);
+		case Ops.Array: return compileArrayExpression(expression, context);
+		case Ops.Color: return compileColorExpression(expression, context);
 		default: throw new Error(`Unsupported operator ${operator}`);
 	}
+}
+/**
+* @param {import('./expression.js').CallExpression} expression The call expression.
+* @param {import('./expression.js').ParsingContext} context The parsing context.
+* @return {NumberArrayEvaluator} The evaluator function.
+*/
+function compileArrayExpression(expression, context) {
+	const length = expression.args.length;
+	const args = new Array(length);
+	for (let i = 0; i < length; ++i) args[i] = compileExpression(expression.args[i], context);
+	if (expression.type === ColorType && (length === 3 || length === 4)) {
+		const alpha = length === 4 ? args[3] : null;
+		return (context) => [
+			args[0](context) * 255,
+			args[1](context) * 255,
+			args[2](context) * 255,
+			alpha ? alpha(context) : 1
+		];
+	}
+	return (context) => {
+		const values = new Array(length);
+		for (let i = 0; i < length; ++i) values[i] = args[i](context);
+		return values;
+	};
+}
+/**
+* Assemble a color from numbers.  One or two arguments give a gray value and an optional
+* alpha; three or four give red, green, blue and an optional alpha.  Channels are in the
+* 0 to 255 range and alpha in the 0 to 1 range.
+*
+* @param {import('./expression.js').CallExpression} expression The call expression.
+* @param {import('./expression.js').ParsingContext} context The parsing context.
+* @return {ColorLikeEvaluator} The evaluator function.
+*/
+function compileColorExpression(expression, context) {
+	const length = expression.args.length;
+	const args = new Array(length);
+	for (let i = 0; i < length; ++i) args[i] = compileExpression(expression.args[i], context);
+	if (length < 3) {
+		const alpha = length === 2 ? args[1] : null;
+		return (context) => {
+			const gray = args[0](context);
+			return [
+				gray,
+				gray,
+				gray,
+				alpha ? alpha(context) : 1
+			];
+		};
+	}
+	const alpha = length === 4 ? args[3] : null;
+	return (context) => [
+		args[0](context),
+		args[1](context),
+		args[2](context),
+		alpha ? alpha(context) : 1
+	];
 }
 /**
 * @param {import('./expression.js').CallExpression} expression The call expression.
@@ -14929,6 +14999,7 @@ function compileInterpolateExpression(expression, context) {
 	const length = expression.args.length;
 	const args = new Array(length);
 	for (let i = 0; i < length; ++i) args[i] = compileExpression(expression.args[i], context);
+	const interpolateColorFn = expression.operator === Ops.InterpolateHcl ? interpolateHclColor : interpolateRgbColor;
 	return (context) => {
 		const base = args[0](context);
 		const value = args[1](context);
@@ -14941,7 +15012,7 @@ function compileInterpolateExpression(expression, context) {
 			if (isColor) output = withAlpha(output);
 			if (input >= value) {
 				if (i === 2) return output;
-				if (isColor) return interpolateColor(base, value, previousInput, previousOutput, input, output);
+				if (isColor) return interpolateColorFn(base, value, previousInput, previousOutput, input, output);
 				return interpolateNumber(base, value, previousInput, previousOutput, input, output);
 			}
 			previousInput = input;
@@ -14985,6 +15056,7 @@ function interpolateNumber(base, value, input1, output1, input2, output2) {
 	return output1 + (base === 1 ? along / delta : (Math.pow(base, along) - 1) / (Math.pow(base, delta) - 1)) * (output2 - output1);
 }
 /**
+* Interpolate two colors component-wise in sRGB
 * @param {number} base The base.
 * @param {number} value The value.
 * @param {number} input1 The first input value.
@@ -14993,7 +15065,27 @@ function interpolateNumber(base, value, input1, output1, input2, output2) {
 * @param {import('../color.js').Color} rgba2 The second output value.
 * @return {import('../color.js').Color} The interpolated color.
 */
-function interpolateColor(base, value, input1, rgba1, input2, rgba2) {
+function interpolateRgbColor(base, value, input1, rgba1, input2, rgba2) {
+	if (input2 - input1 === 0) return rgba1;
+	return [
+		interpolateNumber(base, value, input1, rgba1[0], input2, rgba2[0]),
+		interpolateNumber(base, value, input1, rgba1[1], input2, rgba2[1]),
+		interpolateNumber(base, value, input1, rgba1[2], input2, rgba2[2]),
+		interpolateNumber(base, value, input1, rgba1[3], input2, rgba2[3])
+	];
+}
+/**
+* Interpolate two colors in the Hue-Chroma-Luminance space, for the
+* `interpolate-hcl` operator.
+* @param {number} base The base.
+* @param {number} value The value.
+* @param {number} input1 The first input value.
+* @param {import('../color.js').Color} rgba1 The first output value.
+* @param {number} input2 The second input value.
+* @param {import('../color.js').Color} rgba2 The second output value.
+* @return {import('../color.js').Color} The interpolated color.
+*/
+function interpolateHclColor(base, value, input1, rgba1, input2, rgba2) {
 	if (input2 - input1 === 0) return rgba1;
 	const lcha1 = rgbaToLcha(rgba1);
 	const lcha2 = rgbaToLcha(rgba2);
@@ -15007,8 +15099,7 @@ function interpolateColor(base, value, input1, rgba1, input2, rgba2) {
 		interpolateNumber(base, value, input1, rgba1[3], input2, rgba2[3])
 	]);
 }
-//#endregion
-//#region node_modules/ol/ImageState.js
+// node_modules/ol/ImageState.js
 /**
 * @module ol/ImageState
 */
@@ -15022,8 +15113,7 @@ var ImageState_default = {
 	ERROR: 3,
 	EMPTY: 4
 };
-//#endregion
-//#region node_modules/ol/Image.js
+// node_modules/ol/Image.js
 /**
 * @module ol/Image
 */
@@ -15125,7 +15215,7 @@ var ImageWrapper = class extends Target {
 		return this.extent;
 	}
 	/**
-	* @return {import('./DataTile.js').ImageLike} Image.
+	* @return {import('./DataTile.js').ImageLike|null} Image.
 	*/
 	getImage() {
 		return this.image_;
@@ -15153,16 +15243,17 @@ var ImageWrapper = class extends Target {
 	*/
 	load() {
 		if (this.state == ImageState_default.IDLE) {
-			if (this.loader) {
+			const loader = this.loader;
+			if (loader) {
 				this.state = ImageState_default.LOADING;
 				this.changed();
 				const resolution = this.getResolution();
 				const requestResolution = Array.isArray(resolution) ? resolution[0] : resolution;
-				toPromise(() => this.loader(this.getExtent(), requestResolution, this.getPixelRatio())).then((image) => {
+				toPromise(() => loader(this.getExtent(), requestResolution, this.getPixelRatio())).then((image) => {
 					if ("image" in image) this.image_ = image.image;
-					if ("extent" in image) this.extent = image.extent;
-					if ("resolution" in image) this.resolution = image.resolution;
-					if ("pixelRatio" in image) this.pixelRatio_ = image.pixelRatio;
+					if ("extent" in image && image.extent) this.extent = image.extent;
+					if ("resolution" in image && image.resolution !== void 0) this.resolution = image.resolution;
+					if ("pixelRatio" in image && image.pixelRatio !== void 0) this.pixelRatio_ = image.pixelRatio;
 					if (image instanceof HTMLImageElement || CREATE_IMAGE_BITMAP && image instanceof ImageBitmap || image instanceof HTMLCanvasElement || image instanceof HTMLVideoElement) this.image_ = image;
 					this.state = ImageState_default.LOADED;
 				}).catch((error) => {
@@ -15267,8 +15358,7 @@ function decode$1(image, src) {
 		throw e;
 	}) : decodeFallback(image);
 }
-//#endregion
-//#region node_modules/ol/style/IconImageCache.js
+// node_modules/ol/style/IconImageCache.js
 /**
 * @module ol/style/IconImageCache
 */
@@ -15284,7 +15374,7 @@ var IconImageCache = class {
 		*/
 		this.cache_ = {};
 		/**
-		* @type {!Object<string, CanvasPattern>}
+		* @type {!Object<string, CanvasPattern|null>}
 		* @private
 		*/
 		this.patternCache_ = {};
@@ -15332,7 +15422,7 @@ var IconImageCache = class {
 	/**
 	* @param {string} src Src.
 	* @param {import("../color.js").Color|string|null} color Color.
-	* @return {import("./IconImage.js").default} Icon image.
+	* @return {import("./IconImage.js").default|null} Icon image.
 	*/
 	get(src, color) {
 		const key = getCacheKey$2(src, color);
@@ -15341,7 +15431,7 @@ var IconImageCache = class {
 	/**
 	* @param {string} src Src.
 	* @param {import("../color.js").Color|string|null} color Color.
-	* @return {CanvasPattern} Icon image.
+	* @return {CanvasPattern|null} Icon image.
 	*/
 	getPattern(src, color) {
 		const key = getCacheKey$2(src, color);
@@ -15356,13 +15446,17 @@ var IconImageCache = class {
 	set(src, color, iconImage, pattern) {
 		const key = getCacheKey$2(src, color);
 		const update = key in this.cache_;
-		this.cache_[key] = iconImage;
-		if (pattern) {
+		if (iconImage) this.cache_[key] = iconImage;
+		if (pattern && iconImage) {
 			if (iconImage.getImageState() === ImageState_default.IDLE) iconImage.load();
 			if (iconImage.getImageState() === ImageState_default.LOADING) iconImage.ready().then(() => {
-				this.patternCache_[key] = getSharedCanvasContext2D().createPattern(iconImage.getImage(1), "repeat");
+				const patternFill = getSharedCanvasContext2D().createPattern(iconImage.getImage(1), "repeat");
+				if (patternFill) this.patternCache_[key] = patternFill;
 			});
-			else this.patternCache_[key] = getSharedCanvasContext2D().createPattern(iconImage.getImage(1), "repeat");
+			else {
+				const patternFill = getSharedCanvasContext2D().createPattern(iconImage.getImage(1), "repeat");
+				if (patternFill) this.patternCache_[key] = patternFill;
+			}
 		}
 		if (!update) ++this.cacheSize_;
 	}
@@ -15393,13 +15487,12 @@ function getCacheKey$2(src, color) {
 * @api
 */
 var shared = new IconImageCache();
-//#endregion
-//#region node_modules/ol/style/IconImage.js
+// node_modules/ol/style/IconImage.js
 /**
 * @module ol/style/IconImage
 */
 /**
-* @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D}
+* @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D|null}
 */
 var taintedTestContext = null;
 var IconImage = class extends Target {
@@ -15414,7 +15507,7 @@ var IconImage = class extends Target {
 		super();
 		/**
 		* @private
-		* @type {HTMLImageElement|OffscreenCanvas|HTMLCanvasElement|ImageBitmap}
+		* @type {HTMLImageElement|OffscreenCanvas|HTMLCanvasElement|ImageBitmap|null}
 		*/
 		this.hitDetectionImage_ = null;
 		/**
@@ -15426,10 +15519,10 @@ var IconImage = class extends Target {
 		* @private
 		* @type {string|null}
 		*/
-		this.crossOrigin_ = imageAttributes?.crossOrigin;
+		this.crossOrigin_ = imageAttributes?.crossOrigin ?? null;
 		/**
 		* @private
-		* @type {ReferrerPolicy}
+		* @type {ReferrerPolicy|undefined}
 		*/
 		this.referrerPolicy_ = imageAttributes?.referrerPolicy;
 		/**
@@ -15481,8 +15574,10 @@ var IconImage = class extends Target {
 	*/
 	isTainted_() {
 		if (this.tainted_ === void 0 && this.imageState_ === ImageState_default.LOADED) {
+			const image = this.image_;
+			if (!image) return false;
 			if (!taintedTestContext) taintedTestContext = createCanvasContext2D(1, 1, void 0, { willReadFrequently: true });
-			taintedTestContext.drawImage(this.image_, 0, 0);
+			taintedTestContext.drawImage(image, 0, 0);
 			try {
 				taintedTestContext.getImageData(0, 0, 1, 1);
 				this.tainted_ = false;
@@ -15511,7 +15606,8 @@ var IconImage = class extends Target {
 	*/
 	handleImageLoad_() {
 		this.imageState_ = ImageState_default.LOADED;
-		this.size_ = [this.image_.width, this.image_.height];
+		const image = this.image_;
+		if (image && "width" in image && "height" in image) this.size_ = [image.width, image.height];
 		this.dispatchChangeEvent_();
 	}
 	/**
@@ -15521,7 +15617,8 @@ var IconImage = class extends Target {
 	getImage(pixelRatio) {
 		if (!this.image_) this.initializeImage_();
 		this.replaceColor_(pixelRatio);
-		return this.canvas_[pixelRatio] ? this.canvas_[pixelRatio] : this.image_;
+		const image = this.image_;
+		return this.canvas_[pixelRatio] ? this.canvas_[pixelRatio] : image;
 	}
 	/**
 	* @param {HTMLImageElement|HTMLCanvasElement|OffscreenCanvas|ImageBitmap} image Image.
@@ -15550,8 +15647,10 @@ var IconImage = class extends Target {
 		if (!this.image_) this.initializeImage_();
 		if (!this.hitDetectionImage_) {
 			if (this.isTainted_()) {
-				const width = this.size_[0];
-				const height = this.size_[1];
+				const size = this.size_;
+				if (!size) return this.image_;
+				const width = size[0];
+				const height = size[1];
 				const context = createCanvasContext2D(width, height);
 				context.fillRect(0, 0, width, height);
 				this.hitDetectionImage_ = context.canvas;
@@ -15561,7 +15660,7 @@ var IconImage = class extends Target {
 	}
 	/**
 	* Get the size of the icon (in pixels).
-	* @return {import("../size.js").Size} Image size.
+	* @return {import("../size.js").Size|null} Image size.
 	*/
 	getSize() {
 		return this.size_;
@@ -15597,6 +15696,7 @@ var IconImage = class extends Target {
 	replaceColor_(pixelRatio) {
 		if (!this.color_ || this.canvas_[pixelRatio] || this.imageState_ !== ImageState_default.LOADED) return;
 		const image = this.image_;
+		if (!image) return;
 		const ctx = createCanvasContext2D(Math.ceil(image.width * pixelRatio), Math.ceil(image.height * pixelRatio));
 		const canvas = ctx.canvas;
 		ctx.scale(pixelRatio, pixelRatio);
@@ -15640,13 +15740,12 @@ function get$3(image, src, imageAttributes, imageState, color, pattern) {
 	let iconImage = src === void 0 ? void 0 : shared.get(src, color);
 	if (!iconImage) {
 		iconImage = new IconImage(image, image && "src" in image ? image.src || void 0 : src, imageAttributes, imageState, color);
-		shared.set(src, color, iconImage, pattern);
+		if (src !== void 0) shared.set(src, color, iconImage, pattern);
 	}
-	if (pattern && iconImage && !shared.getPattern(src, color)) shared.set(src, color, iconImage, pattern);
+	if (pattern && iconImage && src !== void 0 && !shared.getPattern(src, color)) shared.set(src, color, iconImage, pattern);
 	return iconImage;
 }
-//#endregion
-//#region node_modules/ol/colorlike.js
+// node_modules/ol/colorlike.js
 /**
 * @module ol/colorlike
 */
@@ -15688,19 +15787,18 @@ function asColorLike(color) {
 * PatternDescriptor was not found in the icon image cache.
 */
 function asCanvasPattern(pattern) {
-	if (!pattern.offset || !pattern.size) return shared.getPattern(pattern.src, pattern.color);
+	if (!pattern.offset || !pattern.size) return shared.getPattern(pattern.src, pattern.color ?? null);
 	const cacheKey = pattern.src + ":" + pattern.offset;
-	const canvasPattern = shared.getPattern(cacheKey, pattern.color);
+	const canvasPattern = shared.getPattern(cacheKey, pattern.color ?? null);
 	if (canvasPattern) return canvasPattern;
 	const iconImage = shared.get(pattern.src, null);
-	if (iconImage.getImageState() !== ImageState_default.LOADED) return null;
+	if (!iconImage || iconImage.getImageState() !== ImageState_default.LOADED) return null;
 	const patternCanvasContext = createCanvasContext2D(pattern.size[0], pattern.size[1]);
 	patternCanvasContext.drawImage(iconImage.getImage(1), pattern.offset[0], pattern.offset[1], pattern.size[0], pattern.size[1], 0, 0, pattern.size[0], pattern.size[1]);
-	get$3(patternCanvasContext.canvas, cacheKey, void 0, ImageState_default.LOADED, pattern.color, true);
-	return shared.getPattern(cacheKey, pattern.color);
+	get$3(patternCanvasContext.canvas, cacheKey, {}, ImageState_default.LOADED, pattern.color ?? null, true);
+	return shared.getPattern(cacheKey, pattern.color ?? null);
 }
-//#endregion
-//#region node_modules/ol/render/canvas.js
+// node_modules/ol/render/canvas.js
 /**
 * @module ol/render/canvas
 */
@@ -15715,14 +15813,14 @@ function asCanvasPattern(pattern) {
 * @typedef Label
 * @property {number} width Width.
 * @property {number} height Height.
-* @property {Array<string|number>} contextInstructions ContextInstructions.
+* @property {Array<*>} contextInstructions ContextInstructions.
 */
 /**
 * @typedef {Object} FillStrokeState
 * @property {import("../colorlike.js").ColorLike} [currentFillStyle] Current FillStyle.
 * @property {import("../colorlike.js").ColorLike} [currentStrokeStyle] Current StrokeStyle.
 * @property {CanvasLineCap} [currentLineCap] Current LineCap.
-* @property {Array<number>} currentLineDash Current LineDash.
+* @property {Array<number>|null} currentLineDash Current LineDash.
 * @property {number} [currentLineDashOffset] Current LineDashOffset.
 * @property {CanvasLineJoin} [currentLineJoin] Current LineJoin.
 * @property {number} [currentLineWidth] Current LineWidth.
@@ -15732,7 +15830,7 @@ function asCanvasPattern(pattern) {
 * @property {import("../colorlike.js").ColorLike} [fillStyle] FillStyle.
 * @property {import("../colorlike.js").ColorLike} [strokeStyle] StrokeStyle.
 * @property {CanvasLineCap} [lineCap] LineCap.
-* @property {Array<number>} lineDash LineDash.
+* @property {Array<number>|null} lineDash LineDash.
 * @property {number} [lineDashOffset] LineDashOffset.
 * @property {CanvasLineJoin} [lineJoin] LineJoin.
 * @property {number} [lineWidth] LineWidth.
@@ -15833,7 +15931,7 @@ var defaultPadding = [
 */
 var checkedFonts = new BaseObject();
 /**
-* @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D}
+* @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D|null}
 */
 var measureContext = null;
 /**
@@ -15874,16 +15972,20 @@ function getFontKey(style, weight, family) {
 */
 var registerFont = (function() {
 	const retries = 100;
-	let timeout, fontFaceSet;
+	/** @type {ReturnType<typeof setTimeout>|undefined} */
+	let timeout;
+	/** @type {FontFaceSet} */
+	let fontFaceSet;
 	/**
 	* @param {string} fontSpec Css font spec
 	* @return {Promise<boolean>} Font with style and weight is available
 	*/
 	async function isAvailable(fontSpec) {
 		await fontFaceSet.ready;
-		const font = getFontParameters(fontSpec);
-		const checkFamily = font.families[0].toLowerCase();
-		const checkWeight = font.weight;
+		const fontParams = getFontParameters(fontSpec);
+		if (!fontParams) return false;
+		const checkFamily = fontParams.families[0].toLowerCase();
+		const checkWeight = fontParams.weight;
 		/** @type {Array<FontFace>} */
 		const matching = [];
 		fontFaceSet.forEach(
@@ -15893,7 +15995,7 @@ var registerFont = (function() {
 			(f) => {
 				const family = f.family.replace(/^['"]|['"]$/g, "").toLowerCase();
 				const weight = fontWeights[f.weight] || f.weight;
-				if (family === checkFamily && f.style === font.style && weight == checkWeight) matching.push(f);
+				if (family === checkFamily && f.style === fontParams.style && weight == checkWeight) matching.push(f);
 			}
 		);
 		if (matching.length === 0) return false;
@@ -15923,13 +16025,13 @@ var registerFont = (function() {
 	}
 	return async function(fontSpec) {
 		if (!fontFaceSet) fontFaceSet = WORKER_OFFSCREEN_CANVAS ? self.fonts : document.fonts;
-		const font = getFontParameters(fontSpec);
-		if (!font) return;
-		const families = font.families;
+		const fontParams = getFontParameters(fontSpec);
+		if (!fontParams) return;
+		const families = fontParams.families;
 		let needCheck = false;
 		for (const family of families) {
 			if (genericFontFamilies.has(family)) continue;
-			const key = getFontKey(font.style, font.weight, family);
+			const key = getFontKey(fontParams.style, fontParams.weight, family);
 			if (checkedFonts.get(key) !== void 0) continue;
 			checkedFonts.set(key, 0, true);
 			needCheck = true;
@@ -15953,9 +16055,9 @@ var measureTextHeight = (function() {
 		let height = textHeights[fontSpec];
 		if (height == void 0) {
 			if (WORKER_OFFSCREEN_CANVAS) {
-				const font = getFontParameters(fontSpec);
+				const fontParams = getFontParameters(fontSpec);
 				const metrics = measureText(fontSpec, "Žg");
-				height = (isNaN(Number(font.lineHeight)) ? 1.2 : Number(font.lineHeight)) * (metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent);
+				height = (!fontParams || isNaN(Number(fontParams.lineHeight)) ? 1.2 : Number(fontParams.lineHeight)) * (metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent);
 			} else {
 				if (!measureElement) {
 					measureElement = document.createElement("div");
@@ -16068,8 +16170,11 @@ function getTextDimensions(baseStyle, chunks) {
 function drawImageOrLabel(context, transform, opacity, labelOrImage, originX, originY, w, h, x, y, scale) {
 	context.save();
 	if (opacity !== 1) {
-		if (context.globalAlpha === void 0) context.globalAlpha = (context) => context.globalAlpha *= opacity;
-		else context.globalAlpha *= opacity;
+		if (context.globalAlpha === void 0) context.globalAlpha = function(ctx) {
+			return ctx.globalAlpha *= opacity;
+		};
+		else
+ /** @type {CanvasRenderingContext2D} */ context.globalAlpha *= opacity;
 	}
 	if (transform) context.transform.apply(context, transform);
 	if (labelOrImage.contextInstructions) {
@@ -16088,12 +16193,16 @@ function drawImageOrLabel(context, transform, opacity, labelOrImage, originX, or
 * @param {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D} context Context.
 */
 function executeLabelInstructions(label, context) {
+	const ctx = context;
 	const contextInstructions = label.contextInstructions;
-	for (let i = 0, ii = contextInstructions.length; i < ii; i += 2) if (Array.isArray(contextInstructions[i + 1])) context[contextInstructions[i]].apply(context, contextInstructions[i + 1]);
-	else context[contextInstructions[i]] = contextInstructions[i + 1];
+	for (let i = 0, ii = contextInstructions.length; i < ii; i += 2) if (Array.isArray(contextInstructions[i + 1]))
+ /** @type {Function} */ ctx[contextInstructions[i]].apply(ctx, contextInstructions[i + 1]);
+	else {
+		const property = contextInstructions[i];
+		/** @type {Object<string, *>} */ ctx[property] = contextInstructions[i + 1];
+	}
 }
-//#endregion
-//#region node_modules/ol/style/Image.js
+// node_modules/ol/style/Image.js
 /**
 * @module ol/style/Image
 */
@@ -16104,7 +16213,7 @@ function executeLabelInstructions(label, context) {
 * @property {number} rotation Rotation.
 * @property {number|import("../size.js").Size} scale Scale.
 * @property {Array<number>} displacement Displacement.
-* @property {import('../style/Style.js').DeclutterMode} declutterMode Declutter mode: `declutter`, `obstacle`, `none`.
+* @property {import('../style/Style.js').DeclutterMode} [declutterMode] Declutter mode: `declutter`, `obstacle`, `none`.
 */
 /**
 * @classdesc
@@ -16151,7 +16260,7 @@ var ImageStyle = class ImageStyle {
 		this.displacement_ = options.displacement;
 		/**
 		* @private
-		* @type {import('../style/Style.js').DeclutterMode}
+		* @type {import('../style/Style.js').DeclutterMode|undefined}
 		*/
 		this.declutterMode_ = options.declutterMode;
 	}
@@ -16220,7 +16329,7 @@ var ImageStyle = class ImageStyle {
 	}
 	/**
 	* Get the declutter mode of the shape
-	* @return {import("./Style.js").DeclutterMode} Shape's declutter mode
+	* @return {import("./Style.js").DeclutterMode|undefined} Shape's declutter mode
 	* @api
 	*/
 	getDeclutterMode() {
@@ -16230,7 +16339,7 @@ var ImageStyle = class ImageStyle {
 	* Get the anchor point in pixels. The anchor determines the center point for the
 	* symbolizer.
 	* @abstract
-	* @return {Array<number>} Anchor.
+	* @return {Array<number>|null} Anchor.
 	*/
 	getAnchor() {
 		return abstract();
@@ -16268,7 +16377,7 @@ var ImageStyle = class ImageStyle {
 	}
 	/**
 	* @abstract
-	* @return {import("../size.js").Size} Image size.
+	* @return {import("../size.js").Size|null} Image size.
 	*/
 	getImageSize() {
 		return abstract();
@@ -16276,7 +16385,7 @@ var ImageStyle = class ImageStyle {
 	/**
 	* Get the origin of the symbolizer.
 	* @abstract
-	* @return {Array<number>} Origin.
+	* @return {Array<number>|null} Origin.
 	*/
 	getOrigin() {
 		return abstract();
@@ -16284,7 +16393,7 @@ var ImageStyle = class ImageStyle {
 	/**
 	* Get the size of the symbolizer (in pixels).
 	* @abstract
-	* @return {import("../size.js").Size} Size.
+	* @return {import("../size.js").Size|null} Size.
 	*/
 	getSize() {
 		return abstract();
@@ -16363,8 +16472,7 @@ var ImageStyle = class ImageStyle {
 		return Promise.resolve();
 	}
 };
-//#endregion
-//#region node_modules/ol/style/RegularShape.js
+// node_modules/ol/style/RegularShape.js
 /**
 * @module ol/style/RegularShape
 */
@@ -16388,7 +16496,7 @@ var ImageStyle = class ImageStyle {
 */
 /**
 * @typedef {Object} RenderOptions
-* @property {import("../colorlike.js").ColorLike|undefined} strokeStyle StrokeStyle.
+* @property {import("../colorlike.js").ColorLike|null|undefined} strokeStyle StrokeStyle.
 * @property {number} strokeWidth StrokeWidth.
 * @property {number} size Size.
 * @property {CanvasLineCap} lineCap LineCap.
@@ -16483,12 +16591,12 @@ var RegularShape = class RegularShape extends ImageStyle {
 	clone() {
 		const scale = this.getScale();
 		const style = new RegularShape({
-			fill: this.getFill() ? this.getFill().clone() : void 0,
+			fill: this.getFill()?.clone(),
 			points: this.getPoints(),
 			radius: this.getRadius(),
 			radius2: this.getRadius2(),
 			angle: this.getAngle(),
-			stroke: this.getStroke() ? this.getStroke().clone() : void 0,
+			stroke: this.getStroke()?.clone(),
 			rotation: this.getRotation(),
 			rotateWithView: this.getRotateWithView(),
 			scale: Array.isArray(scale) ? scale.slice() : scale,
@@ -16561,7 +16669,7 @@ var RegularShape = class RegularShape extends ImageStyle {
 			const context = createCanvasContext2D(size, size);
 			this.draw_(renderOptions, context, pixelRatio);
 			image = context.canvas;
-			const iconImage = new IconImage(image, void 0, null, ImageState_default.LOADED, null);
+			const iconImage = new IconImage(image, void 0, {}, ImageState_default.LOADED, null);
 			shared.set(cacheKey, null, iconImage);
 			createImageBitmap(image).then((imageBitmap) => {
 				iconImage.setImage(imageBitmap);
@@ -16868,8 +16976,7 @@ var RegularShape = class RegularShape extends ImageStyle {
 		return this.fill_ ? this.fill_.ready() : Promise.resolve();
 	}
 };
-//#endregion
-//#region node_modules/ol/style/Circle.js
+// node_modules/ol/style/Circle.js
 /**
 * @module ol/style/Circle
 */
@@ -16919,8 +17026,8 @@ var CircleStyle = class CircleStyle extends RegularShape {
 	clone() {
 		const scale = this.getScale();
 		const style = new CircleStyle({
-			fill: this.getFill() ? this.getFill().clone() : void 0,
-			stroke: this.getStroke() ? this.getStroke().clone() : void 0,
+			fill: this.getFill()?.clone(),
+			stroke: this.getStroke()?.clone(),
 			radius: this.getRadius(),
 			scale: Array.isArray(scale) ? scale.slice() : scale,
 			rotation: this.getRotation(),
@@ -16932,8 +17039,7 @@ var CircleStyle = class CircleStyle extends RegularShape {
 		return style;
 	}
 };
-//#endregion
-//#region node_modules/ol/style/Fill.js
+// node_modules/ol/style/Fill.js
 /**
 * @module ol/style/Fill
 */
@@ -17023,8 +17129,7 @@ var Fill = class Fill {
 		return this.patternImage_ ? this.patternImage_.ready() : Promise.resolve();
 	}
 };
-//#endregion
-//#region node_modules/ol/style/Icon.js
+// node_modules/ol/style/Icon.js
 /**
 * @module ol/style/Icon
 */
@@ -17126,7 +17231,7 @@ var Icon = class Icon extends ImageStyle {
 		this.anchor_ = options.anchor !== void 0 ? options.anchor : [.5, .5];
 		/**
 		* @private
-		* @type {Array<number>}
+		* @type {Array<number>|null}
 		*/
 		this.normalizedAnchor_ = null;
 		/**
@@ -17151,7 +17256,7 @@ var Icon = class Icon extends ImageStyle {
 		this.crossOrigin_ = options.crossOrigin !== void 0 ? options.crossOrigin : null;
 		/**
 		* @private
-		* @type {ReferrerPolicy}
+		* @type {ReferrerPolicy|undefined}
 		*/
 		this.referrerPolicy_ = options.referrerPolicy;
 		const image = options.img !== void 0 ? options.img : null;
@@ -17170,7 +17275,7 @@ var Icon = class Icon extends ImageStyle {
 		}
 		/**
 		* @private
-		* @type {import("../color.js").Color}
+		* @type {import("../color.js").Color|null}
 		*/
 		this.color_ = options.color !== void 0 ? asArray(options.color) : null;
 		/**
@@ -17193,12 +17298,12 @@ var Icon = class Icon extends ImageStyle {
 		this.offsetOrigin_ = options.offsetOrigin !== void 0 ? options.offsetOrigin : "top-left";
 		/**
 		* @private
-		* @type {Array<number>}
+		* @type {Array<number>|null}
 		*/
 		this.origin_ = null;
 		/**
 		* @private
-		* @type {import("../size.js").Size}
+		* @type {import("../size.js").Size|null}
 		*/
 		this.size_ = options.size !== void 0 ? options.size : null;
 		/**
@@ -17222,6 +17327,7 @@ var Icon = class Icon extends ImageStyle {
 						this.unlistenImageChange(onload);
 						if (!this.initialOptions_) return;
 						const imageSize = this.iconImage_.getSize();
+						if (!imageSize) return;
 						this.setScale(calculateScale(imageSize[0], imageSize[1], options.width, options.height));
 					};
 					this.listenImageChange(onload);
@@ -17271,7 +17377,7 @@ var Icon = class Icon extends ImageStyle {
 	/**
 	* Get the anchor point in pixels. The anchor determines the center point for the
 	* symbolizer.
-	* @return {Array<number>} Anchor.
+	* @return {Array<number>|null} Anchor.
 	* @api
 	* @override
 	*/
@@ -17311,7 +17417,7 @@ var Icon = class Icon extends ImageStyle {
 	}
 	/**
 	* Get the icon color.
-	* @return {import("../color.js").Color} Color.
+	* @return {import("../color.js").Color|null} Color.
 	* @api
 	*/
 	getColor() {
@@ -17360,7 +17466,7 @@ var Icon = class Icon extends ImageStyle {
 		return this.iconImage_.getPixelRatio(pixelRatio);
 	}
 	/**
-	* @return {import("../size.js").Size} Image size.
+	* @return {import("../size.js").Size|null} Image size.
 	* @override
 	*/
 	getImageSize() {
@@ -17382,7 +17488,7 @@ var Icon = class Icon extends ImageStyle {
 	}
 	/**
 	* Get the origin of the symbolizer.
-	* @return {Array<number>} Origin.
+	* @return {Array<number>|null} Origin.
 	* @api
 	* @override
 	*/
@@ -17421,7 +17527,7 @@ var Icon = class Icon extends ImageStyle {
 	}
 	/**
 	* Get the size of the icon (in pixels).
-	* @return {import("../size.js").Size} Image size.
+	* @return {import("../size.js").Size|null} Image size.
 	* @api
 	* @override
 	*/
@@ -17430,23 +17536,29 @@ var Icon = class Icon extends ImageStyle {
 	}
 	/**
 	* Get the width of the icon (in pixels). Will return undefined when the icon image is not yet loaded.
-	* @return {number} Icon width (in pixels).
+	* @return {number|undefined} Icon width (in pixels).
 	* @api
 	*/
 	getWidth() {
 		const scale = this.getScaleArray();
 		if (this.size_) return this.size_[0] * scale[0];
-		if (this.iconImage_.getImageState() == ImageState_default.LOADED) return this.iconImage_.getSize()[0] * scale[0];
+		if (this.iconImage_.getImageState() == ImageState_default.LOADED) {
+			const size = this.iconImage_.getSize();
+			if (size) return size[0] * scale[0];
+		}
 	}
 	/**
 	* Get the height of the icon (in pixels). Will return undefined when the icon image is not yet loaded.
-	* @return {number} Icon height (in pixels).
+	* @return {number|undefined} Icon height (in pixels).
 	* @api
 	*/
 	getHeight() {
 		const scale = this.getScaleArray();
 		if (this.size_) return this.size_[1] * scale[1];
-		if (this.iconImage_.getImageState() == ImageState_default.LOADED) return this.iconImage_.getSize()[1] * scale[1];
+		if (this.iconImage_.getImageState() == ImageState_default.LOADED) {
+			const size = this.iconImage_.getSize();
+			if (size) return size[1] * scale[1];
+		}
 	}
 	/**
 	* Set the scale.
@@ -17491,8 +17603,7 @@ var Icon = class Icon extends ImageStyle {
 		return this.iconImage_.ready();
 	}
 };
-//#endregion
-//#region node_modules/ol/style/Stroke.js
+// node_modules/ol/style/Stroke.js
 /**
 * @module ol/style/Stroke
 */
@@ -17526,7 +17637,7 @@ var Stroke = class Stroke {
 		options = options || {};
 		/**
 		* @private
-		* @type {import("../color.js").Color|import("../colorlike.js").ColorLike}
+		* @type {import("../color.js").Color|import("../colorlike.js").ColorLike|null}
 		*/
 		this.color_ = options.color !== void 0 ? options.color : null;
 		/**
@@ -17575,7 +17686,7 @@ var Stroke = class Stroke {
 		return new Stroke({
 			color: Array.isArray(color) ? color.slice() : color || void 0,
 			lineCap: this.getLineCap(),
-			lineDash: this.getLineDash() ? this.getLineDash().slice() : void 0,
+			lineDash: this.getLineDash()?.slice(),
 			lineDashOffset: this.getLineDashOffset(),
 			lineJoin: this.getLineJoin(),
 			miterLimit: this.getMiterLimit(),
@@ -17585,7 +17696,7 @@ var Stroke = class Stroke {
 	}
 	/**
 	* Get the stroke color.
-	* @return {import("../color.js").Color|import("../colorlike.js").ColorLike} Color.
+	* @return {import("../color.js").Color|import("../colorlike.js").ColorLike|null} Color.
 	* @api
 	*/
 	getColor() {
@@ -17720,8 +17831,7 @@ var Stroke = class Stroke {
 		this.width_ = width;
 	}
 };
-//#endregion
-//#region node_modules/ol/style/Style.js
+// node_modules/ol/style/Style.js
 /**
 * @module ol/style/Style
 */
@@ -17934,11 +18044,11 @@ var Style = class Style {
 		if (geometry && typeof geometry === "object") geometry = geometry.clone();
 		return new Style({
 			geometry: geometry ?? void 0,
-			fill: this.getFill() ? this.getFill().clone() : void 0,
-			image: this.getImage() ? this.getImage().clone() : void 0,
+			fill: this.getFill()?.clone(),
+			image: this.getImage()?.clone(),
 			renderer: this.getRenderer() ?? void 0,
-			stroke: this.getStroke() ? this.getStroke().clone() : void 0,
-			text: this.getText() ? this.getText().clone() : void 0,
+			stroke: this.getStroke()?.clone(),
+			text: this.getText()?.clone(),
 			zIndex: this.getZIndex()
 		});
 	}
@@ -18055,7 +18165,7 @@ var Style = class Style {
 	}
 	/**
 	* Set the text style.
-	* @param {import("./Text.js").default} text Text style.
+	* @param {import("./Text.js").default|null} text Text style.
 	* @api
 	*/
 	setText(text) {
@@ -18161,8 +18271,7 @@ function createDefaultStyle(feature, resolution) {
 function defaultGeometryFunction(feature) {
 	return feature.getGeometry();
 }
-//#endregion
-//#region node_modules/ol/style/Text.js
+// node_modules/ol/style/Text.js
 /**
 * @module ol/style/Text
 */
@@ -18342,7 +18451,7 @@ var Text = class Text {
 		this.padding_ = options.padding === void 0 ? null : options.padding;
 		/**
 		* @private
-		* @type {import('../style/Style.js').DeclutterMode}
+		* @type {import('../style/Style.js').DeclutterMode|undefined}
 		*/
 		this.declutterMode_ = options.declutterMode;
 	}
@@ -18368,11 +18477,11 @@ var Text = class Text {
 			justify: this.getJustify(),
 			textBaseline: this.getTextBaseline(),
 			fill: this.getFill() instanceof Fill ? this.getFill().clone() : this.getFill(),
-			stroke: this.getStroke() ? this.getStroke().clone() : void 0,
+			stroke: this.getStroke()?.clone(),
 			offsetX: this.getOffsetX(),
 			offsetY: this.getOffsetY(),
-			backgroundFill: this.getBackgroundFill() ? this.getBackgroundFill().clone() : void 0,
-			backgroundStroke: this.getBackgroundStroke() ? this.getBackgroundStroke().clone() : void 0,
+			backgroundFill: this.getBackgroundFill()?.clone(),
+			backgroundStroke: this.getBackgroundStroke()?.clone(),
 			padding: this.getPadding() || void 0,
 			declutterMode: this.getDeclutterMode()
 		});
@@ -18546,7 +18655,7 @@ var Text = class Text {
 	}
 	/**
 	* Get the declutter mode of the shape
-	* @return {import("./Style.js").DeclutterMode} Shape's declutter mode
+	* @return {import("./Style.js").DeclutterMode|undefined} Shape's declutter mode
 	* @api
 	*/
 	getDeclutterMode() {
@@ -18733,8 +18842,7 @@ var Text = class Text {
 		this.padding_ = padding;
 	}
 };
-//#endregion
-//#region node_modules/ol/render/canvas/style.js
+// node_modules/ol/render/canvas/style.js
 /**
 * @module ol/render/canvas/style
 */
@@ -18784,14 +18892,17 @@ function rulesToStyleFunction(rules, parsingContext) {
 	const evaluator = buildRuleSet(rules, parsingContext);
 	const evaluationContext = newEvaluationContext();
 	return function(feature, resolution) {
-		evaluationContext.properties = feature.getPropertiesInternal();
+		evaluationContext.properties = feature.getPropertiesInternal() ?? {};
 		evaluationContext.resolution = resolution;
 		if (parsingContext.featureId) {
 			const id = feature.getId();
 			if (id !== void 0) evaluationContext.featureId = id;
 			else evaluationContext.featureId = null;
 		}
-		if (parsingContext.geometryType) evaluationContext.geometryType = computeGeometryType(feature.getGeometry());
+		if (parsingContext.geometryType) {
+			const geometry = feature.getGeometry();
+			if (geometry) evaluationContext.geometryType = computeGeometryType(geometry);
+		}
 		return evaluator(evaluationContext);
 	};
 }
@@ -18818,14 +18929,17 @@ function flatStylesToStyleFunction(flatStyles, parsingContext) {
 	*/
 	const styles = new Array(length);
 	return function(feature, resolution) {
-		evaluationContext.properties = feature.getPropertiesInternal();
+		evaluationContext.properties = feature.getPropertiesInternal() ?? {};
 		evaluationContext.resolution = resolution;
 		if (parsingContext.featureId) {
 			const id = feature.getId();
 			if (id !== void 0) evaluationContext.featureId = id;
 			else evaluationContext.featureId = null;
 		}
-		if (parsingContext.geometryType) evaluationContext.geometryType = computeGeometryType(feature.getGeometry());
+		if (parsingContext.geometryType) {
+			const geometry = feature.getGeometry();
+			if (geometry) evaluationContext.geometryType = computeGeometryType(geometry);
+		}
 		let nonNullCount = 0;
 		for (let i = 0; i < length; ++i) {
 			const style = evaluators[i](evaluationContext);
@@ -18884,7 +18998,7 @@ function buildRuleSet(rules, context) {
 	const compiledRules = new Array(length);
 	for (let i = 0; i < length; ++i) {
 		const rule = rules[i];
-		const filter = "filter" in rule ? buildExpression$1(rule.filter, BooleanType, context) : always;
+		const filter = "filter" in rule && rule.filter !== void 0 ? buildExpression$1(rule.filter, BooleanType, context) : always;
 		/**
 		* @type {Array<StyleEvaluator>}
 		*/
@@ -18976,7 +19090,7 @@ function buildFill(flatStyle, prefix, context) {
 	let evaluateColor;
 	if (prefix + "fill-pattern-src" in flatStyle) evaluateColor = patternEvaluator(flatStyle, prefix + "fill-", context);
 	else {
-		if (flatStyle[prefix + "fill-color"] === "none") return (context) => null;
+		if (getExpressionValue(flatStyle, prefix + "fill-color") === "none") return (context) => null;
 		evaluateColor = colorLikeEvaluator(flatStyle, prefix + "fill-color", context);
 	}
 	if (!evaluateColor) return null;
@@ -19125,7 +19239,7 @@ function buildImage(flatStyle, context) {
 */
 function buildIcon(flatStyle, context) {
 	const srcName = "icon-src";
-	const src = requireString(flatStyle[srcName], srcName);
+	const src = requireString(getExpressionValue(flatStyle, srcName), srcName);
 	const evaluateAnchor = coordinateEvaluator(flatStyle, "icon-anchor", context);
 	const evaluateScale = sizeLikeEvaluator(flatStyle, "icon-scale", context);
 	const evaluateOpacity = numberEvaluator(flatStyle, "icon-opacity", context);
@@ -19136,7 +19250,9 @@ function buildIcon(flatStyle, context) {
 	const anchorXUnits = optionalIconAnchorUnits(flatStyle, "icon-anchor-x-units");
 	const anchorYUnits = optionalIconAnchorUnits(flatStyle, "icon-anchor-y-units");
 	const colorValue = getExpressionValue(flatStyle, "icon-color");
+	/** @type {import('../../colorlike.js').ColorLike|undefined} */
 	let color;
+	/** @type {import('../../expr/cpu.js').ColorLikeEvaluator|null} */
 	let evaluateColor = null;
 	if (colorValue !== void 0) {
 		if (Array.isArray(colorValue) && colorValue.length > 0 && typeof colorValue[0] === "string") evaluateColor = colorLikeEvaluator(flatStyle, "icon-color", context);
@@ -19159,6 +19275,7 @@ function buildIcon(flatStyle, context) {
 		size: optionalSize(flatStyle, "icon-size"),
 		declutterMode: optionalDeclutterMode(flatStyle, "icon-declutter-mode")
 	};
+	/** @type {import('../../style/Icon.js').default|null} */
 	let icon = null;
 	return function(context) {
 		if (!icon) {
@@ -19183,13 +19300,15 @@ function buildShape(flatStyle, context) {
 	const prefix = "shape-";
 	const pointsName = "shape-points";
 	const radiusName = "shape-radius";
-	const points = requireNumber(flatStyle[pointsName], pointsName);
+	const points = requireNumber(getExpressionValue(flatStyle, pointsName), pointsName);
 	if (!(radiusName in flatStyle)) throw new Error(`Expected a number for ${radiusName}`);
 	const evaluateRadius = numberEvaluator(flatStyle, radiusName, context);
-	const initialRadius = typeof flatStyle[radiusName] === "number" ? flatStyle[radiusName] : 5;
+	const radiusValue = getExpressionValue(flatStyle, radiusName);
+	const initialRadius = typeof radiusValue === "number" ? radiusValue : 5;
 	const radius2Name = "shape-radius2";
 	const evaluateRadius2 = numberEvaluator(flatStyle, radius2Name, context);
-	const initialRadius2 = typeof flatStyle[radius2Name] === "number" ? flatStyle[radius2Name] : void 0;
+	const radius2Value = getExpressionValue(flatStyle, radius2Name);
+	const initialRadius2 = typeof radius2Value === "number" ? radius2Value : void 0;
 	const evaluateFill = buildFill(flatStyle, prefix, context);
 	const evaluateStroke = buildStroke(flatStyle, prefix, context);
 	const evaluateScale = sizeLikeEvaluator(flatStyle, "shape-scale", context);
@@ -19282,17 +19401,24 @@ function stringEvaluator(flatStyle, name, context) {
 		return requireString(evaluator(context), name);
 	};
 }
+/**
+* @param {FlatStyle} flatStyle The flat style.
+* @param {string} prefix The property prefix.
+* @param {ParsingContext} context The parsing context.
+* @return {function(EvaluationContext): (Object|null)|null} Pattern evaluator function.
+*/
 function patternEvaluator(flatStyle, prefix, context) {
 	const srcEvaluator = stringEvaluator(flatStyle, prefix + "pattern-src", context);
 	const offsetEvaluator = sizeEvaluator(flatStyle, prefix + "pattern-offset", context);
 	const patternSizeEvaluator = sizeEvaluator(flatStyle, prefix + "pattern-size", context);
 	const colorEvaluator = colorLikeEvaluator(flatStyle, prefix + "color", context);
-	return function(context) {
+	return function(evalContext) {
+		if (!srcEvaluator) return null;
 		return {
-			src: srcEvaluator(context),
-			offset: offsetEvaluator && offsetEvaluator(context),
-			size: patternSizeEvaluator && patternSizeEvaluator(context),
-			color: colorEvaluator && colorEvaluator(context)
+			src: srcEvaluator(evalContext),
+			offset: offsetEvaluator ? offsetEvaluator(evalContext) : null,
+			size: patternSizeEvaluator ? patternSizeEvaluator(evalContext) : null,
+			color: colorEvaluator ? colorEvaluator(evalContext) : null
 		};
 	};
 }
@@ -19405,7 +19531,7 @@ function sizeLikeEvaluator(flatStyle, name, context) {
 * @return {number|undefined} A number or undefined.
 */
 function optionalNumber(flatStyle, property) {
-	const value = flatStyle[property];
+	const value = getExpressionValue(flatStyle, property);
 	if (value === void 0) return;
 	if (typeof value !== "number") throw new Error(`Expected a number for ${property}`);
 	return value;
@@ -19416,7 +19542,7 @@ function optionalNumber(flatStyle, property) {
 * @return {import("../../size.js").Size|undefined} A size or undefined.
 */
 function optionalSize(flatStyle, property) {
-	const encoded = flatStyle[property];
+	const encoded = getExpressionValue(flatStyle, property);
 	if (encoded === void 0) return;
 	if (typeof encoded === "number") return toSize(encoded);
 	if (!Array.isArray(encoded)) throw new Error(`Expected a number or size array for ${property}`);
@@ -19429,7 +19555,7 @@ function optionalSize(flatStyle, property) {
 * @return {string|undefined} A string or undefined.
 */
 function optionalString(flatStyle, property) {
-	const encoded = flatStyle[property];
+	const encoded = getExpressionValue(flatStyle, property);
 	if (encoded === void 0) return;
 	if (typeof encoded !== "string") throw new Error(`Expected a string for ${property}`);
 	return encoded;
@@ -19440,7 +19566,7 @@ function optionalString(flatStyle, property) {
 * @return {import("../../style/Icon.js").IconOrigin|undefined} An icon origin or undefined.
 */
 function optionalIconOrigin(flatStyle, property) {
-	const encoded = flatStyle[property];
+	const encoded = getExpressionValue(flatStyle, property);
 	if (encoded === void 0) return;
 	if (encoded !== "bottom-left" && encoded !== "bottom-right" && encoded !== "top-left" && encoded !== "top-right") throw new Error(`Expected bottom-left, bottom-right, top-left, or top-right for ${property}`);
 	return encoded;
@@ -19451,7 +19577,7 @@ function optionalIconOrigin(flatStyle, property) {
 * @return {import("../../style/Icon.js").IconAnchorUnits|undefined} Icon anchor units or undefined.
 */
 function optionalIconAnchorUnits(flatStyle, property) {
-	const encoded = flatStyle[property];
+	const encoded = getExpressionValue(flatStyle, property);
 	if (encoded === void 0) return;
 	if (encoded !== "pixels" && encoded !== "fraction") throw new Error(`Expected pixels or fraction for ${property}`);
 	return encoded;
@@ -19462,17 +19588,17 @@ function optionalIconAnchorUnits(flatStyle, property) {
 * @return {Array<number>|undefined} An array of numbers or undefined.
 */
 function optionalNumberArray(flatStyle, property) {
-	const encoded = flatStyle[property];
+	const encoded = getExpressionValue(flatStyle, property);
 	if (encoded === void 0) return;
 	return requireNumberArray(encoded, property);
 }
 /**
 * @param {FlatStyle} flatStyle The flat style.
 * @param {string} property The symbolizer property.
-* @return {import('../../style/Style.js').DeclutterMode} Icon declutter mode.
+* @return {import('../../style/Style.js').DeclutterMode|undefined} Icon declutter mode.
 */
 function optionalDeclutterMode(flatStyle, property) {
-	const encoded = flatStyle[property];
+	const encoded = getExpressionValue(flatStyle, property);
 	if (encoded === void 0) return;
 	if (typeof encoded !== "string") throw new Error(`Expected a string for ${property}`);
 	if (encoded !== "declutter" && encoded !== "obstacle" && encoded !== "none") throw new Error(`Expected declutter, obstacle, or none for ${property}`);
@@ -19538,8 +19664,7 @@ function requireSizeLike(value, property) {
 	if (typeof value === "number") return value;
 	return requireSize(value, property);
 }
-//#endregion
-//#region node_modules/ol/layer/BaseVector.js
+// node_modules/ol/layer/BaseVector.js
 /**
 * @module ol/layer/BaseVector
 */
@@ -19629,7 +19754,7 @@ var BaseVectorLayer = class extends Layer {
 		super(baseOptions);
 		/**
 		* @private
-		* @type {string}
+		* @type {string|undefined}
 		*/
 		this.declutter_ = options.declutter ? String(options.declutter) : void 0;
 		/**
@@ -19639,7 +19764,7 @@ var BaseVectorLayer = class extends Layer {
 		this.renderBuffer_ = options.renderBuffer !== void 0 ? options.renderBuffer : 100;
 		/**
 		* User provided style.
-		* @type {import("../style/Style.js").StyleLike|import("../style/flat.js").FlatStyleLike}
+		* @type {import("../style/Style.js").StyleLike|import("../style/flat.js").FlatStyleLike|null}
 		* @private
 		*/
 		this.style_ = null;
@@ -19662,7 +19787,7 @@ var BaseVectorLayer = class extends Layer {
 		this.updateWhileInteracting_ = options.updateWhileInteracting !== void 0 ? options.updateWhileInteracting : false;
 	}
 	/**
-	* @return {string} Declutter group.
+	* @return {string|undefined} Declutter group.
 	* @override
 	*/
 	getDeclutter() {
@@ -19737,8 +19862,11 @@ var BaseVectorLayer = class extends Layer {
 	*/
 	renderDeclutter(frameState, layerState) {
 		const declutterGroup = this.getDeclutter();
+		if (!declutterGroup) return;
+		if (!frameState.declutter) frameState.declutter = {};
 		if (declutterGroup in frameState.declutter === false) frameState.declutter[declutterGroup] = new RBush$2(9);
-		this.getRenderer().renderDeclutter(frameState, layerState);
+		const renderer = this.getRenderer();
+		if (renderer) renderer.renderDeclutter(frameState, layerState);
 	}
 	/**
 	* @param {import("../render.js").OrderFunction|null|undefined} renderOrder
@@ -19769,9 +19897,9 @@ var BaseVectorLayer = class extends Layer {
 	* @api
 	*/
 	setStyle(style) {
-		this.style_ = style === void 0 ? createDefaultStyle : style;
+		this.style_ = style === void 0 ? createDefaultStyle : style ?? null;
 		const styleLike = toStyleLike(style);
-		this.styleFunction_ = style === null ? void 0 : toFunction(styleLike);
+		this.styleFunction_ = style === null || styleLike === null ? void 0 : toFunction(styleLike);
 		this.changed();
 	}
 	/**
@@ -19808,8 +19936,7 @@ function toStyleLike(style) {
 	}
 	return flatStyleLikeToStyleFunction(style);
 }
-//#endregion
-//#region node_modules/ol/render/Event.js
+// node_modules/ol/render/Event.js
 /**
 * @module ol/render/Event
 */
@@ -19843,11 +19970,10 @@ var RenderEvent = class extends BaseEvent {
 		* @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D|WebGLRenderingContext|undefined}
 		* @api
 		*/
-		this.context = context;
+		this.context = context ?? void 0;
 	}
 };
-//#endregion
-//#region node_modules/ol/renderer/Map.js
+// node_modules/ol/renderer/Map.js
 /**
 * @module ol/renderer/Map
 */
@@ -20003,8 +20129,7 @@ var MapRenderer = class extends Disposable {
 function expireIconCache(map, frameState) {
 	shared.expire();
 }
-//#endregion
-//#region node_modules/ol/renderer/Composite.js
+// node_modules/ol/renderer/Composite.js
 /**
 * @module ol/renderer/Composite
 */
@@ -20116,7 +20241,7 @@ var CompositeMapRenderer = class extends MapRenderer {
 		}
 		this.declutter(frameState, renderedLayerStates);
 		replaceChildren(this.element_, this.children_);
-		for (const container of mapContext ? this.children_ : []) {
+		if (mapContext) for (const container of this.children_) {
 			const canvas = container.firstElementChild || container;
 			const backgroundColor = container.style.backgroundColor;
 			if (backgroundColor && (!isCanvas(canvas) || canvas.width > 0)) {
@@ -20155,11 +20280,10 @@ var CompositeMapRenderer = class extends MapRenderer {
 			const layer = layerState.layer;
 			if (layer.getDeclutter()) layer.renderDeclutter(frameState, layerState);
 		}
-		layerStates.forEach((layerState) => layerState.layer.renderDeferred(frameState));
+		layerStates.forEach((layerState) => layerState.layer?.renderDeferred(frameState));
 	}
 };
-//#endregion
-//#region node_modules/ol/Map.js
+// node_modules/ol/Map.js
 /**
 * @module ol/Map
 */
@@ -20206,10 +20330,23 @@ var CompositeMapRenderer = class extends MapRenderer {
 *   +/- 1 world width. Works only if a projection is used that can be wrapped.
 */
 /**
+* @typedef {Object} PixelToCoordinateOptions
+* @property {boolean} [wrapX=false] Whether to wrap the coordinate to the
+* projection extent. If `true`, the returned coordinate's longitude will be
+* within the extent of the projection (e.g. `-180` to `180` for EPSG:4326).
+*/
+/**
+* @typedef {Object} CoordinateToPixelOptions
+* @property {boolean} [wrapX=false] Whether to find the pixel for the
+* world copy of the coordinate nearest to the view center. If `true`, the
+* returned pixel will be within the map viewport even if the coordinate is
+* in a different world copy.
+*/
+/**
 * @typedef {Object} MapOptionsInternal
 * @property {Collection<import("./control/Control.js").default>} [controls] Controls.
 * @property {Collection<import("./interaction/Interaction.js").default>} [interactions] Interactions.
-* @property {HTMLElement|Document} keyboardEventTarget KeyboardEventTarget.
+* @property {HTMLElement|Document|null|undefined} keyboardEventTarget KeyboardEventTarget.
 * @property {Collection<import("./Overlay.js").default>} overlays Overlays.
 * @property {Object<string, *>} values Values.
 */
@@ -20382,6 +20519,14 @@ var Map$1 = class extends BaseObject {
 		/** @private */
 		this.boundHandleBrowserEvent_ = this.handleBrowserEvent.bind(this);
 		/**
+		* Whether the Control key is physically held down.
+		* @private
+		* @type {boolean}
+		*/
+		this.ctrlKey_ = false;
+		/** @private */
+		this.boundHandleCtrlKey_ = this.handleCtrlKey_.bind(this);
+		/**
 		* @type {number}
 		* @private
 		*/
@@ -20393,7 +20538,7 @@ var Map$1 = class extends BaseObject {
 		this.pixelRatio_ = options.pixelRatio !== void 0 ? options.pixelRatio : DEVICE_PIXEL_RATIO;
 		/**
 		* @private
-		* @type {ReturnType<typeof setTimeout>}
+		* @type {ReturnType<typeof setTimeout>|undefined}
 		*/
 		this.postRenderTimeoutHandle_;
 		/**
@@ -20428,7 +20573,7 @@ var Map$1 = class extends BaseObject {
 		/**
 		* The extent at the previous 'moveend' event.
 		* @private
-		* @type {import("./extent.js").Extent}
+		* @type {import("./extent.js").Extent|null}
 		*/
 		this.previousExtent_ = null;
 		/**
@@ -20448,8 +20593,19 @@ var Map$1 = class extends BaseObject {
 		this.layerGroupPropertyListenerKeys_ = null;
 		/**
 		* @private
-		* @type {!HTMLElement}
+		* @type {HTMLElement|undefined}
 		*/
+		this.viewport_;
+		/**
+		* @private
+		* @type {HTMLElement|undefined}
+		*/
+		this.overlayContainer_;
+		/**
+		* @private
+		* @type {HTMLElement|undefined}
+		*/
+		this.overlayContainerStopEvent_;
 		if (!WORKER_OFFSCREEN_CANVAS) {
 			this.viewport_ = document.createElement("div");
 			this.viewport_.className = "ol-viewport" + ("ontouchstart" in window ? " ol-touch" : "");
@@ -20457,10 +20613,6 @@ var Map$1 = class extends BaseObject {
 			this.viewport_.style.overflow = "hidden";
 			this.viewport_.style.width = "100%";
 			this.viewport_.style.height = "100%";
-			/**
-			* @private
-			* @type {!HTMLElement}
-			*/
 			this.overlayContainer_ = document.createElement("div");
 			this.overlayContainer_.style.position = "absolute";
 			this.overlayContainer_.style.zIndex = "0";
@@ -20469,10 +20621,6 @@ var Map$1 = class extends BaseObject {
 			this.overlayContainer_.style.pointerEvents = "none";
 			this.overlayContainer_.className = "ol-overlaycontainer";
 			this.viewport_.appendChild(this.overlayContainer_);
-			/**
-			* @private
-			* @type {!HTMLElement}
-			*/
 			this.overlayContainerStopEvent_ = document.createElement("div");
 			this.overlayContainerStopEvent_.style.position = "absolute";
 			this.overlayContainerStopEvent_.style.zIndex = "0";
@@ -20484,17 +20632,17 @@ var Map$1 = class extends BaseObject {
 		}
 		/**
 		* @private
-		* @type {MapBrowserEventHandler}
+		* @type {MapBrowserEventHandler|null}
 		*/
 		this.mapBrowserEventHandler_ = null;
 		/**
 		* @private
-		* @type {number}
+		* @type {number|undefined}
 		*/
 		this.moveTolerance_ = options.moveTolerance;
 		/**
 		* @private
-		* @type {HTMLElement|Document}
+		* @type {HTMLElement|Document|null|undefined}
 		*/
 		this.keyboardEventTarget_ = optionsInternal.keyboardEventTarget;
 		/**
@@ -20504,7 +20652,7 @@ var Map$1 = class extends BaseObject {
 		this.targetChangeHandlerKeys_ = null;
 		/**
 		* @private
-		* @type {HTMLElement|null}
+		* @type {HTMLElement|null|undefined}
 		*/
 		this.targetElement_ = null;
 		if (!WORKER_OFFSCREEN_CANVAS)
@@ -20558,62 +20706,26 @@ var Map$1 = class extends BaseObject {
 		if (options.view && !(options.view instanceof View)) options.view.then(function(viewOptions) {
 			map.setView(new View(viewOptions));
 		});
-		this.controls.addEventListener(
-			CollectionEventType_default.ADD,
-			/**
-			* @param {import("./Collection.js").CollectionEvent<import("./control/Control.js").default>} event CollectionEvent
-			*/
-			(event) => {
-				event.element.setMap(this);
-			}
-		);
-		this.controls.addEventListener(
-			CollectionEventType_default.REMOVE,
-			/**
-			* @param {import("./Collection.js").CollectionEvent<import("./control/Control.js").default>} event CollectionEvent.
-			*/
-			(event) => {
-				event.element.setMap(null);
-			}
-		);
-		this.interactions.addEventListener(
-			CollectionEventType_default.ADD,
-			/**
-			* @param {import("./Collection.js").CollectionEvent<import("./interaction/Interaction.js").default>} event CollectionEvent.
-			*/
-			(event) => {
-				event.element.setMap(this);
-			}
-		);
-		this.interactions.addEventListener(
-			CollectionEventType_default.REMOVE,
-			/**
-			* @param {import("./Collection.js").CollectionEvent<import("./interaction/Interaction.js").default>} event CollectionEvent.
-			*/
-			(event) => {
-				event.element.setMap(null);
-			}
-		);
-		this.overlays_.addEventListener(
-			CollectionEventType_default.ADD,
-			/**
-			* @param {import("./Collection.js").CollectionEvent<import("./Overlay.js").default>} event CollectionEvent.
-			*/
-			(event) => {
-				this.addOverlayInternal_(event.element);
-			}
-		);
-		this.overlays_.addEventListener(
-			CollectionEventType_default.REMOVE,
-			/**
-			* @param {import("./Collection.js").CollectionEvent<import("./Overlay.js").default>} event CollectionEvent.
-			*/
-			(event) => {
-				const id = event.element.getId();
-				if (id !== void 0) delete this.overlayIdIndex_[id.toString()];
-				event.element.setMap(null);
-			}
-		);
+		this.controls.addEventListener(CollectionEventType_default.ADD, ((event) => {
+			event.element.setMap(this);
+		}));
+		this.controls.addEventListener(CollectionEventType_default.REMOVE, ((event) => {
+			event.element.setMap(null);
+		}));
+		this.interactions.addEventListener(CollectionEventType_default.ADD, ((event) => {
+			event.element.setMap(this);
+		}));
+		this.interactions.addEventListener(CollectionEventType_default.REMOVE, ((event) => {
+			event.element.setMap(null);
+		}));
+		this.overlays_.addEventListener(CollectionEventType_default.ADD, ((event) => {
+			this.addOverlayInternal_(event.element);
+		}));
+		this.overlays_.addEventListener(CollectionEventType_default.REMOVE, ((event) => {
+			const id = event.element.getId();
+			if (id !== void 0) delete this.overlayIdIndex_[id.toString()];
+			event.element.setMap(null);
+		}));
 		this.controls.forEach(
 			/**
 			* @param {import("./control/Control.js").default} control Control.
@@ -20742,6 +20854,7 @@ var Map$1 = class extends BaseObject {
 	* @api
 	*/
 	getFeaturesAtPixel(pixel, options) {
+		/** @type {Array<import("./Feature.js").FeatureLike>} */
 		const features = [];
 		this.forEachFeatureAtPixel(pixel, function(feature) {
 			features.push(feature);
@@ -20754,7 +20867,11 @@ var Map$1 = class extends BaseObject {
 	* @api
 	*/
 	getAllLayers() {
+		/** @type {Array<import("./layer/Layer.js").default>} */
 		const layers = [];
+		/**
+		* @param {import("./Collection.js").default<import("./layer/Base.js").default>} layerGroup Layer group to collect layers from.
+		*/
 		function addLayersFrom(layerGroup) {
 			layerGroup.forEach(function(layer) {
 				if (layer instanceof LayerGroup) addLayersFrom(layer.getLayers());
@@ -20831,7 +20948,7 @@ var Map$1 = class extends BaseObject {
 	* Get the DOM element into which this map is rendered. In contrast to
 	* `getTarget` this method always return an `Element`, or `null` if the
 	* map has no target.
-	* @return {HTMLElement} The element that the map is rendered in.
+	* @return {HTMLElement|null|undefined} The element that the map is rendered in.
 	* @api
 	*/
 	getTargetElement() {
@@ -20841,17 +20958,20 @@ var Map$1 = class extends BaseObject {
 	* Get the coordinate for a given pixel.  This returns a coordinate in the
 	* user projection.
 	* @param {import("./pixel.js").Pixel} pixel Pixel position in the map viewport.
+	* @param {PixelToCoordinateOptions} [options] Options.
 	* @return {import("./coordinate.js").Coordinate} The coordinate for the pixel position.
 	* @api
 	*/
-	getCoordinateFromPixel(pixel) {
-		return toUserCoordinate(this.getCoordinateFromPixelInternal(pixel), this.getView().getProjection());
+	getCoordinateFromPixel(pixel, options) {
+		const coordinate = toUserCoordinate(this.getCoordinateFromPixelInternal(pixel), this.getView().getProjection());
+		if (options?.wrapX && coordinate) wrapX$1(coordinate, getUserProjection() || this.getView().getProjection());
+		return coordinate;
 	}
 	/**
 	* Get the coordinate for a given pixel.  This returns a coordinate in the
 	* map view projection.
 	* @param {import("./pixel.js").Pixel} pixel Pixel position in the map viewport.
-	* @return {import("./coordinate.js").Coordinate} The coordinate for the pixel position.
+	* @return {import("./coordinate.js").Coordinate|null} The coordinate for the pixel position.
 	*/
 	getCoordinateFromPixelInternal(pixel) {
 		const frameState = this.frameState_;
@@ -20932,6 +21052,15 @@ var Map$1 = class extends BaseObject {
 		return this.getLayerGroup().getLayers();
 	}
 	/**
+	* Determine whether the last rendered frame shows everything the map wants to
+	* show. Only relevant when something is listening for the map to finish
+	* loading, so the check is skipped otherwise.
+	* @private
+	*/
+	updateRenderComplete_() {
+		this.renderComplete_ = (this.hasListener(MapEventType_default.LOADSTART) || this.hasListener(MapEventType_default.LOADEND) || this.hasListener(EventType_default.RENDERCOMPLETE)) && !this.tileQueue_.getTilesLoading() && !this.tileQueue_.getCount() && !this.getLoadingOrNotReady();
+	}
+	/**
 	* @return {boolean} Layers have sources that are still loading.
 	*/
 	getLoadingOrNotReady() {
@@ -20950,18 +21079,21 @@ var Map$1 = class extends BaseObject {
 	* Get the pixel for a coordinate.  This takes a coordinate in the user
 	* projection and returns the corresponding pixel.
 	* @param {import("./coordinate.js").Coordinate} coordinate A map coordinate.
+	* @param {CoordinateToPixelOptions} [options] Options.
 	* @return {import("./pixel.js").Pixel} A pixel position in the map viewport.
 	* @api
 	*/
-	getPixelFromCoordinate(coordinate) {
-		const viewCoordinate = fromUserCoordinate(coordinate, this.getView().getProjection());
+	getPixelFromCoordinate(coordinate, options) {
+		const projection = this.getView().getProjection();
+		let viewCoordinate = fromUserCoordinate(coordinate, projection);
+		if (options?.wrapX && this.frameState_) viewCoordinate = wrapXNearest(viewCoordinate.slice(), projection, this.frameState_.viewState.center[0]);
 		return this.getPixelFromCoordinateInternal(viewCoordinate);
 	}
 	/**
 	* Get the pixel for a coordinate.  This takes a coordinate in the map view
 	* projection and returns the corresponding pixel.
 	* @param {import("./coordinate.js").Coordinate} coordinate A map coordinate.
-	* @return {import("./pixel.js").Pixel} A pixel position in the map viewport.
+	* @return {import("./pixel.js").Pixel|null} A pixel position in the map viewport.
 	*/
 	getPixelFromCoordinateInternal(coordinate) {
 		const frameState = this.frameState_;
@@ -21014,7 +21146,7 @@ var Map$1 = class extends BaseObject {
 	}
 	/**
 	* Get the element that serves as the map viewport.
-	* @return {HTMLElement} Viewport.
+	* @return {HTMLElement|undefined} Viewport.
 	* @api
 	*/
 	getViewport() {
@@ -21025,7 +21157,7 @@ var Map$1 = class extends BaseObject {
 	* this container will let mousedown and touchstart events through to the map,
 	* so clicks and gestures on an overlay will trigger {@link module:ol/MapBrowserEvent~MapBrowserEvent}
 	* events.
-	* @return {!HTMLElement} The map's overlay container.
+	* @return {HTMLElement|undefined} The map's overlay container.
 	*/
 	getOverlayContainer() {
 		return this.overlayContainer_;
@@ -21035,7 +21167,7 @@ var Map$1 = class extends BaseObject {
 	* event propagation. Elements added to this container won't let mousedown and
 	* touchstart events through to the map, so clicks and gestures on an overlay
 	* don't trigger any {@link module:ol/MapBrowserEvent~MapBrowserEvent}.
-	* @return {!HTMLElement} The map's overlay container that stops events.
+	* @return {HTMLElement|undefined} The map's overlay container that stops events.
 	*/
 	getOverlayContainerStopEvent() {
 		return this.overlayContainerStopEvent_;
@@ -21067,9 +21199,19 @@ var Map$1 = class extends BaseObject {
 		this.handleMapBrowserEvent(mapBrowserEvent);
 	}
 	/**
+	* @param {Event} event Key event.
+	* @private
+	*/
+	handleCtrlKey_(event) {
+		const keyEvent = event;
+		this.ctrlKey_ = keyEvent.key === "Control" ? keyEvent.type === EventType_default$2.KEYDOWN : keyEvent.ctrlKey;
+	}
+	/**
 	* @param {MapBrowserEvent} mapBrowserEvent The event to handle.
 	*/
 	handleMapBrowserEvent(mapBrowserEvent) {
+		if (mapBrowserEvent.originalEvent.ctrlKey === false) this.ctrlKey_ = false;
+		mapBrowserEvent.ctrlKey = this.ctrlKey_;
 		if (!this.frameState_) return;
 		const originalEvent = mapBrowserEvent.originalEvent;
 		const eventType = originalEvent.type;
@@ -21100,14 +21242,15 @@ var Map$1 = class extends BaseObject {
 			let maxTotalLoading = this.maxTilesLoading_;
 			let maxNewLoads = maxTotalLoading;
 			const hints = frameState ? frameState.viewHints : void 0;
-			const animatingOrInteracting = hints ? hints[ViewHint_default.ANIMATING] || hints[ViewHint_default.INTERACTING] : false;
-			if (animatingOrInteracting) {
+			if (hints ? hints[ViewHint_default.ANIMATING] || hints[ViewHint_default.INTERACTING] : false) {
 				const lowOnFrameBudget = Date.now() - frameState.time > 8;
 				maxTotalLoading = lowOnFrameBudget ? 0 : 8;
 				maxNewLoads = lowOnFrameBudget ? 0 : 2;
 			}
 			if (tileQueue.getTilesLoading() < maxTotalLoading) {
-				if (animatingOrInteracting) tileQueue.reprioritize();
+				const count = tileQueue.getCount();
+				tileQueue.reprioritize();
+				if (tileQueue.getCount() < count) this.updateRenderComplete_();
 				tileQueue.loadMoreTiles(maxTotalLoading, maxNewLoads);
 			}
 		}
@@ -21139,13 +21282,18 @@ var Map$1 = class extends BaseObject {
 	*/
 	handleTargetChanged_() {
 		if (this.mapBrowserEventHandler_) {
-			for (let i = 0, ii = this.targetChangeHandlerKeys_.length; i < ii; ++i) unlistenByKey(this.targetChangeHandlerKeys_[i]);
+			const targetChangeHandlerKeys = this.targetChangeHandlerKeys_;
+			for (let i = 0, ii = targetChangeHandlerKeys.length; i < ii; ++i) unlistenByKey(targetChangeHandlerKeys[i]);
 			this.targetChangeHandlerKeys_ = null;
-			this.viewport_.removeEventListener(EventType_default$2.CONTEXTMENU, this.boundHandleBrowserEvent_);
-			this.viewport_.removeEventListener(EventType_default$2.WHEEL, this.boundHandleBrowserEvent_);
+			const doc = this.getOwnerDocument();
+			doc.removeEventListener(EventType_default$2.KEYDOWN, this.boundHandleCtrlKey_, true);
+			doc.removeEventListener(EventType_default$2.KEYUP, this.boundHandleCtrlKey_, true);
+			this.ctrlKey_ = false;
+			/** @type {!HTMLElement} */ this.viewport_.removeEventListener(EventType_default$2.CONTEXTMENU, this.boundHandleBrowserEvent_);
+			/** @type {!HTMLElement} */ this.viewport_.removeEventListener(EventType_default$2.WHEEL, this.boundHandleBrowserEvent_);
 			this.mapBrowserEventHandler_.dispose();
 			this.mapBrowserEventHandler_ = null;
-			this.viewport_.remove();
+			/** @type {!HTMLElement} */ this.viewport_.remove();
 		}
 		if (this.targetElement_ && !isCanvas(this.targetElement_)) {
 			this.resizeObserver_?.unobserve(this.targetElement_);
@@ -21173,9 +21321,16 @@ var Map$1 = class extends BaseObject {
 			if (!this.renderer_) this.renderer_ = new CompositeMapRenderer(this);
 			if (!isCanvas(targetElement)) {
 				this.mapBrowserEventHandler_ = new MapBrowserEventHandler(this, this.moveTolerance_);
-				for (const key in MapBrowserEventType_default) this.mapBrowserEventHandler_.addEventListener(MapBrowserEventType_default[key], this.handleMapBrowserEvent.bind(this));
-				this.viewport_.addEventListener(EventType_default$2.CONTEXTMENU, this.boundHandleBrowserEvent_, false);
-				this.viewport_.addEventListener(EventType_default$2.WHEEL, this.boundHandleBrowserEvent_, PASSIVE_EVENT_LISTENERS ? { passive: false } : false);
+				for (const key in MapBrowserEventType_default) this.mapBrowserEventHandler_.addEventListener(
+					/** @type {Object<string, string>} */
+					MapBrowserEventType_default[key],
+					this.handleMapBrowserEvent.bind(this)
+				);
+				/** @type {!HTMLElement} */ this.viewport_.addEventListener(EventType_default$2.CONTEXTMENU, this.boundHandleBrowserEvent_, false);
+				/** @type {!HTMLElement} */ this.viewport_.addEventListener(EventType_default$2.WHEEL, this.boundHandleBrowserEvent_, PASSIVE_EVENT_LISTENERS ? { passive: false } : false);
+				const doc = this.getOwnerDocument();
+				doc.addEventListener(EventType_default$2.KEYDOWN, this.boundHandleCtrlKey_, true);
+				doc.addEventListener(EventType_default$2.KEYUP, this.boundHandleCtrlKey_, true);
 				let keyboardEventTarget;
 				if (!this.keyboardEventTarget_) {
 					const targetRoot = targetElement.getRootNode();
@@ -21273,7 +21428,8 @@ var Map$1 = class extends BaseObject {
 		const layerStates = this.frameState_.layerStatesArray;
 		for (let i = 0, ii = layerStates.length; i < ii; ++i) {
 			const layer = layerStates[i].layer;
-			if (layer.hasRenderer()) layer.getRenderer().handleFontsChanged();
+			if (layer.hasRenderer())
+ /** @type {{handleFontsChanged: function(): void}} */ layer.getRenderer().handleFontsChanged();
 		}
 	}
 	/**
@@ -21370,7 +21526,7 @@ var Map$1 = class extends BaseObject {
 			}
 		}
 		this.frameState_ = frameState;
-		this.renderer_.renderFrame(frameState);
+		/** @type {import("./renderer/Map.js").default} */ this.renderer_.renderFrame(frameState);
 		if (frameState) {
 			if (frameState.animate) this.render();
 			Array.prototype.push.apply(this.postRenderFunctions_, frameState.postRenderFunctions);
@@ -21386,7 +21542,7 @@ var Map$1 = class extends BaseObject {
 			}
 		}
 		this.dispatchEvent(new MapEvent(MapEventType_default.POSTRENDER, this, frameState));
-		this.renderComplete_ = (this.hasListener(MapEventType_default.LOADSTART) || this.hasListener(MapEventType_default.LOADEND) || this.hasListener(EventType_default.RENDERCOMPLETE)) && !this.tileQueue_.getTilesLoading() && !this.tileQueue_.getCount() && !this.getLoadingOrNotReady();
+		this.updateRenderComplete_();
 		if (!this.postRenderTimeoutHandle_) this.postRenderTimeoutHandle_ = setTimeout(() => {
 			this.postRenderTimeoutHandle_ = void 0;
 			this.handlePostRender();
@@ -21417,7 +21573,7 @@ var Map$1 = class extends BaseObject {
 	* For accessibility (focus and keyboard events for map navigation), the `target` element must have a
 	*  properly configured `tabindex` attribute. If the `target` element is inside a Shadow DOM, the
 	*  `tabindex` atribute must be set on the custom element's host element.
-	* @param {HTMLElement|string} [target] The Element or id of the Element
+	* @param {HTMLElement|string|null|undefined} [target] The Element or id of the Element
 	*     that the map is rendered in.
 	* @observable
 	* @api
@@ -21491,7 +21647,7 @@ var Map$1 = class extends BaseObject {
 */
 function createOptionsInternal(options) {
 	/**
-	* @type {HTMLElement|Document}
+	* @type {HTMLElement|Document|null|undefined}
 	*/
 	let keyboardEventTarget = null;
 	if (options.keyboardEventTarget !== void 0) keyboardEventTarget = typeof options.keyboardEventTarget === "string" ? document.getElementById(options.keyboardEventTarget) : options.keyboardEventTarget;
@@ -21503,7 +21659,7 @@ function createOptionsInternal(options) {
 	values[MapProperty_default.LAYERGROUP] = layerGroup;
 	values[MapProperty_default.TARGET] = options.target;
 	values[MapProperty_default.VIEW] = options.view instanceof View ? options.view : new View();
-	/** @type {Collection<import("./control/Control.js").default>} */
+	/** @type {Collection<import("./control/Control.js").default>|undefined} */
 	let controls;
 	if (options.controls !== void 0) {
 		if (Array.isArray(options.controls)) controls = new Collection$1(options.controls.slice());
@@ -21512,7 +21668,7 @@ function createOptionsInternal(options) {
 			controls = options.controls;
 		}
 	}
-	/** @type {Collection<import("./interaction/Interaction.js").default>} */
+	/** @type {Collection<import("./interaction/Interaction.js").default>|undefined} */
 	let interactions;
 	if (options.interactions !== void 0) {
 		if (Array.isArray(options.interactions)) interactions = new Collection$1(options.interactions.slice());
@@ -21538,8 +21694,7 @@ function createOptionsInternal(options) {
 		values
 	};
 }
-//#endregion
-//#region node_modules/ol/vec/mat4.js
+// node_modules/ol/vec/mat4.js
 /**
 * @module ol/vec/mat4
 */
@@ -21721,8 +21876,7 @@ function translation(x, y, z, out) {
 	out[15] = 1;
 	return out;
 }
-//#endregion
-//#region node_modules/ol/webgl.js
+// node_modules/ol/webgl.js
 /**
 * @module ol/webgl
 */
@@ -21818,8 +21972,7 @@ function getContext$1(canvas, attributes) {
 	} catch {}
 	return null;
 }
-//#endregion
-//#region node_modules/ol/webgl/Buffer.js
+// node_modules/ol/webgl/Buffer.js
 /**
 * @module ol/webgl/Buffer
 */
@@ -21947,8 +22100,7 @@ function getArrayClassForType(type) {
 		default: return Float32Array;
 	}
 }
-//#endregion
-//#region node_modules/ol/webgl/ContextEventType.js
+// node_modules/ol/webgl/ContextEventType.js
 /**
 * @module ol/webgl/ContextEventType
 */
@@ -21959,8 +22111,7 @@ var ContextEventType_default = {
 	LOST: "webglcontextlost",
 	RESTORED: "webglcontextrestored"
 };
-//#endregion
-//#region node_modules/ol/webgl/PostProcessingPass.js
+// node_modules/ol/webgl/PostProcessingPass.js
 /**
 * @module ol/webgl/PostProcessingPass
 */
@@ -22003,7 +22154,7 @@ var DEFAULT_FRAGMENT_SHADER = `
 /**
 * @typedef {Object} UniformInternalDescription
 * @property {import("./Helper.js").UniformValue} value Value
-* @property {WebGLUniformLocation} location Location
+* @property {WebGLUniformLocation|null} location Location
 * @property {WebGLTexture} [texture] Texture
 * @private
 */
@@ -22145,12 +22296,15 @@ var WebGLPostProcessingPass = class {
 		* @private
 		*/
 		this.uniforms_ = [];
-		options.uniforms && Object.keys(options.uniforms).forEach((name) => {
-			this.uniforms_.push({
-				value: options.uniforms[name],
-				location: gl.getUniformLocation(this.renderTargetProgram_, name)
+		if (options.uniforms) {
+			const uniforms = options.uniforms;
+			Object.keys(uniforms).forEach((name) => {
+				this.uniforms_.push({
+					value: uniforms[name],
+					location: gl.getUniformLocation(this.renderTargetProgram_, name)
+				});
 			});
-		});
+		}
 	}
 	getRenderTargetTexture() {
 		return this.renderTargetTexture_;
@@ -22259,7 +22413,7 @@ var WebGLPostProcessingPass = class {
 			value = typeof uniform.value === "function" ? uniform.value(frameState) : uniform.value;
 			if (value instanceof HTMLCanvasElement || value instanceof ImageData) {
 				if (!uniform.texture) uniform.texture = gl.createTexture();
-				gl.activeTexture(gl[`TEXTURE${textureSlot}`]);
+				gl.activeTexture(gl.TEXTURE0 + textureSlot);
 				gl.bindTexture(gl.TEXTURE_2D, uniform.texture);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -22286,8 +22440,7 @@ var WebGLPostProcessingPass = class {
 		});
 	}
 };
-//#endregion
-//#region node_modules/ol/webgl/Helper.js
+// node_modules/ol/webgl/Helper.js
 /**
 * @module ol/webgl/Helper
 */
@@ -22577,7 +22730,7 @@ var WebGLHelper = class extends Disposable {
 		this.extensionCache_ = {};
 		/**
 		* @private
-		* @type {WebGLProgram}
+		* @type {WebGLProgram|null}
 		*/
 		this.currentProgram_ = null;
 		/**
@@ -22595,7 +22748,7 @@ var WebGLHelper = class extends Disposable {
 		this.tmpMat4_ = create$2();
 		/**
 		* @private
-		* @type {Object<string, Object<string, WebGLUniformLocation>>}
+		* @type {Object<string, Object<string, WebGLUniformLocation|null>>}
 		*/
 		this.uniformLocationsByProgram_ = {};
 		/**
@@ -22730,7 +22883,6 @@ var WebGLHelper = class extends Disposable {
 		canvas.removeEventListener(ContextEventType_default.LOST, this.boundHandleWebGLContextLost_);
 		canvas.removeEventListener(ContextEventType_default.RESTORED, this.boundHandleWebGLContextRestored_);
 		releaseCanvas(this.canvasCacheKey_);
-		delete this.gl_;
 	}
 	/**
 	* Clear the buffer & set the viewport to draw.
@@ -22874,7 +23026,7 @@ var WebGLHelper = class extends Disposable {
 	* @param {function(WebGLRenderingContext, import("../Map.js").FrameState):void} [postCompose] Called before composing.
 	*/
 	finalizeDraw(frameState, preCompose, postCompose) {
-		for (let i = 0, ii = this.postProcessPasses_.length; i < ii; i++) if (i === ii - 1) this.postProcessPasses_[i].apply(frameState, null, preCompose, postCompose);
+		for (let i = 0, ii = this.postProcessPasses_.length; i < ii; i++) if (i === ii - 1) this.postProcessPasses_[i].apply(frameState, void 0, preCompose, postCompose);
 		else this.postProcessPasses_[i].apply(frameState, this.postProcessPasses_[i + 1]);
 	}
 	/**
@@ -22911,7 +23063,7 @@ var WebGLHelper = class extends Disposable {
 	*/
 	applyHitDetectionUniform(enabled) {
 		const loc = this.getUniformLocation(DefaultUniform.HIT_DETECTION);
-		this.getGL().uniform1i(loc, enabled ? 1 : 0);
+		if (loc) this.getGL().uniform1i(loc, enabled ? 1 : 0);
 		if (enabled) this.setUniformFloatValue(DefaultUniform.PIXEL_RATIO, .5);
 	}
 	/**
@@ -23022,12 +23174,12 @@ var WebGLHelper = class extends Disposable {
 	/**
 	* Will get the location from the shader or the cache
 	* @param {string} name Uniform name
-	* @return {WebGLUniformLocation} uniformLocation
+	* @return {WebGLUniformLocation|null} uniformLocation
 	*/
 	getUniformLocation(name) {
 		const programUid = getUid(this.currentProgram_);
 		if (this.uniformLocationsByProgram_[programUid] === void 0) this.uniformLocationsByProgram_[programUid] = {};
-		if (this.uniformLocationsByProgram_[programUid][name] === void 0) this.uniformLocationsByProgram_[programUid][name] = this.gl_.getUniformLocation(this.currentProgram_, name);
+		if (this.uniformLocationsByProgram_[programUid][name] === void 0) this.uniformLocationsByProgram_[programUid][name] = this.currentProgram_ && this.gl_.getUniformLocation(this.currentProgram_, name);
 		return this.uniformLocationsByProgram_[programUid][name];
 	}
 	/**
@@ -23038,7 +23190,7 @@ var WebGLHelper = class extends Disposable {
 	getAttributeLocation(name) {
 		const programUid = getUid(this.currentProgram_);
 		if (this.attribLocationsByProgram_[programUid] === void 0) this.attribLocationsByProgram_[programUid] = {};
-		if (this.attribLocationsByProgram_[programUid][name] === void 0) this.attribLocationsByProgram_[programUid][name] = this.gl_.getAttribLocation(this.currentProgram_, name);
+		if (this.attribLocationsByProgram_[programUid][name] === void 0) this.attribLocationsByProgram_[programUid][name] = this.currentProgram_ ? this.gl_.getAttribLocation(this.currentProgram_, name) : -1;
 		return this.attribLocationsByProgram_[programUid][name];
 	}
 	/**
@@ -23125,7 +23277,7 @@ var WebGLHelper = class extends Disposable {
 		for (let i = 0; i < attributes.length; i++) {
 			const attr = attributes[i];
 			if (attr.name) this.enableAttributeArray_(attr.name, attr.size, attr.type || 5126, stride, offset, instanced);
-			offset += attr.size * getByteSizeFromType(attr.type);
+			offset += attr.size * getByteSizeFromType(attr.type || 5126);
 		}
 	}
 	/**
@@ -23209,7 +23361,7 @@ function computeAttributesStride(attributes) {
 	let stride = 0;
 	for (let i = 0; i < attributes.length; i++) {
 		const attr = attributes[i];
-		stride += attr.size * getByteSizeFromType(attr.type);
+		stride += attr.size * getByteSizeFromType(attr.type || 5126);
 	}
 	return stride;
 }
@@ -23227,8 +23379,7 @@ function getByteSizeFromType(type) {
 		default: return Float32Array.BYTES_PER_ELEMENT;
 	}
 }
-//#endregion
-//#region node_modules/ol/Tile.js
+// node_modules/ol/Tile.js
 /**
 * @module ol/Tile
 */
@@ -23437,8 +23588,7 @@ var Tile = class extends Target {
 		super.disposeInternal();
 	}
 };
-//#endregion
-//#region node_modules/ol/DataTile.js
+// node_modules/ol/DataTile.js
 /**
 * @module ol/DataTile
 */
@@ -23492,7 +23642,7 @@ function toArray(image) {
 /**
 * @type {import('./size.js').Size}
 */
-var defaultSize = [256, 256];
+var defaultSize$1 = [256, 256];
 /**
 * @typedef {Object} Options
 * @property {import("./tilecoord.js").TileCoord} tileCoord Tile coordinate.
@@ -23522,12 +23672,12 @@ var DataTile = class extends Tile {
 		*/
 		this.loader_ = options.loader;
 		/**
-		* @type {Data}
+		* @type {Data|null}
 		* @private
 		*/
 		this.data_ = null;
 		/**
-		* @type {Error}
+		* @type {Error|null}
 		* @private
 		*/
 		this.error_ = null;
@@ -23550,11 +23700,11 @@ var DataTile = class extends Tile {
 		if (this.size_) return this.size_;
 		const imageData = asImageLike(this.data_);
 		if (imageData) return [imageData.width, imageData.height];
-		return defaultSize;
+		return defaultSize$1;
 	}
 	/**
 	* Get the data for the tile.
-	* @return {Data} Tile data.
+	* @return {Data|null} Tile data.
 	* @api
 	*/
 	getData() {
@@ -23562,7 +23712,7 @@ var DataTile = class extends Tile {
 	}
 	/**
 	* Get any loading error.
-	* @return {Error} Loading error.
+	* @return {Error|null} Loading error.
 	* @api
 	*/
 	getError() {
@@ -23600,8 +23750,7 @@ var DataTile = class extends Tile {
 		super.disposeInternal();
 	}
 };
-//#endregion
-//#region node_modules/ol/ImageTile.js
+// node_modules/ol/ImageTile.js
 /**
 * @module ol/ImageTile
 */
@@ -23618,12 +23767,12 @@ var ImageTile = class extends Tile {
 		super(tileCoord, state, options);
 		/**
 		* @private
-		* @type {?string}
+		* @type {string|null|undefined}
 		*/
 		this.crossOrigin_ = imageAttributes?.crossOrigin;
 		/**
 		* @private
-		* @type {ReferrerPolicy}
+		* @type {ReferrerPolicy|undefined}
 		*/
 		this.referrerPolicy_ = imageAttributes?.referrerPolicy;
 		/**
@@ -23636,13 +23785,13 @@ var ImageTile = class extends Tile {
 		this.key = src;
 		/**
 		* @private
-		* @type {HTMLImageElement|HTMLCanvasElement|OffscreenCanvas}
+		* @type {HTMLImageElement|HTMLCanvasElement|OffscreenCanvas|null}
 		*/
 		this.image_;
 		if (WORKER_OFFSCREEN_CANVAS) this.image_ = new OffscreenCanvas(1, 1);
 		else {
 			this.image_ = new Image();
-			if (this.crossOrigin_ !== null) this.image_.crossOrigin = this.crossOrigin_;
+			if (this.crossOrigin_ !== null && this.crossOrigin_ !== void 0) this.image_.crossOrigin = this.crossOrigin_;
 			if (this.referrerPolicy_ !== void 0) this.image_.referrerPolicy = this.referrerPolicy_;
 		}
 		/**
@@ -23658,7 +23807,7 @@ var ImageTile = class extends Tile {
 	}
 	/**
 	* Get the HTML image element for this tile (may be a Canvas, OffscreenCanvas, Image, or Video).
-	* @return {HTMLCanvasElement|OffscreenCanvas|HTMLImageElement|HTMLVideoElement} Image.
+	* @return {HTMLCanvasElement|OffscreenCanvas|HTMLImageElement|HTMLVideoElement|null} Image.
 	* @api
 	*/
 	getImage() {
@@ -23676,14 +23825,14 @@ var ImageTile = class extends Tile {
 	}
 	/**
 	* Get the cross origin of the ImageTile.
-	* @return {string} Cross origin.
+	* @return {string|null} Cross origin.
 	*/
 	getCrossOrigin() {
-		return this.crossOrigin_;
+		return this.crossOrigin_ ?? null;
 	}
 	/**
 	* Get the referrer policy of the ImageTile.
-	* @return {ReferrerPolicy} Referrer policy.
+	* @return {ReferrerPolicy|undefined} Referrer policy.
 	*/
 	getReferrerPolicy() {
 		return this.referrerPolicy_;
@@ -23755,14 +23904,15 @@ var ImageTile = class extends Tile {
 		if (this.state == TileState_default.ERROR) {
 			this.state = TileState_default.IDLE;
 			this.image_ = new Image();
-			if (this.crossOrigin_ !== null) this.image_.crossOrigin = this.crossOrigin_;
+			if (this.crossOrigin_ !== null && this.crossOrigin_ !== void 0) this.image_.crossOrigin = this.crossOrigin_;
 			if (this.referrerPolicy_ !== void 0) this.image_.referrerPolicy = this.referrerPolicy_;
 		}
 		if (this.state == TileState_default.IDLE) {
 			this.state = TileState_default.LOADING;
 			this.changed();
 			this.tileLoadFunction_(this, this.src_);
-			this.unlisten_ = listenImage(this.image_, this.handleImageLoad_.bind(this), this.handleImageError_.bind(this));
+			const image = this.image_;
+			if (image) this.unlisten_ = listenImage(image, this.handleImageLoad_.bind(this), this.handleImageError_.bind(this));
 		}
 	}
 	/**
@@ -23795,10 +23945,12 @@ function getBlankImage() {
 	ctx.fillRect(0, 0, 1, 1);
 	return ctx.canvas;
 }
-//#endregion
-//#region node_modules/ol/reproj.js
+// node_modules/ol/reproj.js
 /**
 * @module ol/reproj
+*/
+/**
+* @type {boolean|undefined}
 */
 var brokenDiagonalRendering_;
 /**
@@ -23937,6 +24089,10 @@ function render$1(width, height, pixelRatio, sourceResolution, sourceExtent, tar
 	if (!interpolate) context.imageSmoothingEnabled = false;
 	if (sources.length === 0) return context.canvas;
 	context.scale(pixelRatio, pixelRatio);
+	/**
+	* @param {number} value Value.
+	* @return {number} Rounded value.
+	*/
 	function pixelRound(value) {
 		return Math.round(value * pixelRatio) / pixelRatio;
 	}
@@ -23945,37 +24101,39 @@ function render$1(width, height, pixelRatio, sourceResolution, sourceExtent, tar
 	sources.forEach(function(src, i, arr) {
 		extend$1(sourceDataExtent, src.extent);
 	});
+	/** @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D|undefined} */
 	let stitchContext;
 	const stitchScale = pixelRatio / sourceResolution;
 	const inverseScale = (interpolate ? 1 : 1 + Math.pow(2, -24)) / stitchScale;
 	if (!drawSingle || sources.length !== 1 || gutter !== 0) {
-		stitchContext = createCanvasContext2D(Math.round(getWidth(sourceDataExtent) * stitchScale), Math.round(getHeight(sourceDataExtent) * stitchScale), canvasPool$2);
-		if (!interpolate) stitchContext.imageSmoothingEnabled = false;
+		const stitchCtx = createCanvasContext2D(Math.round(getWidth(sourceDataExtent) * stitchScale), Math.round(getHeight(sourceDataExtent) * stitchScale), canvasPool$2);
+		stitchContext = stitchCtx;
+		if (!interpolate) stitchCtx.imageSmoothingEnabled = false;
 		if (sourceExtent && clipExtent) {
 			const xPos = (sourceExtent[0] - sourceDataExtent[0]) * stitchScale;
 			const yPos = -(sourceExtent[3] - sourceDataExtent[3]) * stitchScale;
 			const width = getWidth(sourceExtent) * stitchScale;
 			const height = getHeight(sourceExtent) * stitchScale;
-			stitchContext.rect(xPos, yPos, width, height);
-			stitchContext.clip();
+			stitchCtx.rect(xPos, yPos, width, height);
+			stitchCtx.clip();
 		}
 		sources.forEach(function(src, i, arr) {
 			if (src.image.width > 0 && src.image.height > 0) {
 				if (src.clipExtent) {
-					stitchContext.save();
+					stitchCtx.save();
 					const xPos = (src.clipExtent[0] - sourceDataExtent[0]) * stitchScale;
 					const yPos = -(src.clipExtent[3] - sourceDataExtent[3]) * stitchScale;
 					const width = getWidth(src.clipExtent) * stitchScale;
 					const height = getHeight(src.clipExtent) * stitchScale;
-					stitchContext.rect(interpolate ? xPos : Math.round(xPos), interpolate ? yPos : Math.round(yPos), interpolate ? width : Math.round(xPos + width) - Math.round(xPos), interpolate ? height : Math.round(yPos + height) - Math.round(yPos));
-					stitchContext.clip();
+					stitchCtx.rect(interpolate ? xPos : Math.round(xPos), interpolate ? yPos : Math.round(yPos), interpolate ? width : Math.round(xPos + width) - Math.round(xPos), interpolate ? height : Math.round(yPos + height) - Math.round(yPos));
+					stitchCtx.clip();
 				}
 				const xPos = (src.extent[0] - sourceDataExtent[0]) * stitchScale;
 				const yPos = -(src.extent[3] - sourceDataExtent[3]) * stitchScale;
 				const srcWidth = getWidth(src.extent) * stitchScale;
 				const srcHeight = getHeight(src.extent) * stitchScale;
-				stitchContext.drawImage(src.image, gutter, gutter, src.image.width - 2 * gutter, src.image.height - 2 * gutter, interpolate ? xPos : Math.round(xPos), interpolate ? yPos : Math.round(yPos), interpolate ? srcWidth : Math.round(xPos + srcWidth) - Math.round(xPos), interpolate ? srcHeight : Math.round(yPos + srcHeight) - Math.round(yPos));
-				if (src.clipExtent) stitchContext.restore();
+				stitchCtx.drawImage(src.image, gutter, gutter, src.image.width - 2 * gutter, src.image.height - 2 * gutter, interpolate ? xPos : Math.round(xPos), interpolate ? yPos : Math.round(yPos), interpolate ? srcWidth : Math.round(xPos + srcWidth) - Math.round(xPos), interpolate ? srcHeight : Math.round(yPos + srcHeight) - Math.round(yPos));
+				if (src.clipExtent) stitchCtx.restore();
 			}
 		});
 	}
@@ -24092,8 +24250,7 @@ function render$1(width, height, pixelRatio, sourceResolution, sourceExtent, tar
 	}
 	return context.canvas;
 }
-//#endregion
-//#region node_modules/ol/reproj/Triangulation.js
+// node_modules/ol/reproj/Triangulation.js
 /**
 * @module ol/reproj/Triangulation
 */
@@ -24130,7 +24287,7 @@ var Triangulation = class {
 	* @param {import("../proj/Projection.js").default} sourceProj Source projection.
 	* @param {import("../proj/Projection.js").default} targetProj Target projection.
 	* @param {import("../extent.js").Extent} targetExtent Target extent to triangulate.
-	* @param {import("../extent.js").Extent} maxSourceExtent Maximal source extent that can be used.
+	* @param {import("../extent.js").Extent|undefined} maxSourceExtent Maximal source extent that can be used.
 	* @param {number} errorThreshold Acceptable error (in source units).
 	* @param {?number} destinationResolution The (optional) resolution of the destination.
 	* @param {import("../transform.js").Transform} [sourceMatrix] Source transform matrix.
@@ -24148,6 +24305,7 @@ var Triangulation = class {
 		this.targetProj_ = targetProj;
 		/** @type {!Object<string, import("../coordinate.js").Coordinate>} */
 		let transformInvCache = {};
+		/** @type {import("../proj.js").TransformFunction} */
 		const transformInv = sourceMatrix ? createTransformFromCoordinateTransform((input) => apply(sourceMatrix, transform$1(input, this.targetProj_, this.sourceProj_))) : getTransform(this.targetProj_, this.sourceProj_);
 		/**
 		* @param {import("../coordinate.js").Coordinate} c A coordinate.
@@ -24160,7 +24318,7 @@ var Triangulation = class {
 			return transformInvCache[key];
 		};
 		/**
-		* @type {import("../extent.js").Extent}
+		* @type {import("../extent.js").Extent|undefined}
 		* @private
 		*/
 		this.maxSourceExtent_ = maxSourceExtent;
@@ -24186,15 +24344,15 @@ var Triangulation = class {
 		*/
 		this.canWrapXInSource_ = this.sourceProj_.canWrapX() && !!maxSourceExtent && !!this.sourceProj_.getExtent() && getWidth(maxSourceExtent) >= getWidth(this.sourceProj_.getExtent());
 		/**
-		* @type {?number}
+		* @type {number|undefined}
 		* @private
 		*/
-		this.sourceWorldWidth_ = this.sourceProj_.getExtent() ? getWidth(this.sourceProj_.getExtent()) : null;
+		this.sourceWorldWidth_ = this.sourceProj_.getExtent() ? getWidth(this.sourceProj_.getExtent()) : void 0;
 		/**
-		* @type {?number}
+		* @type {number|undefined}
 		* @private
 		*/
-		this.targetWorldWidth_ = this.targetProj_.getExtent() ? getWidth(this.targetProj_.getExtent()) : null;
+		this.targetWorldWidth_ = this.targetProj_.getExtent() ? getWidth(this.targetProj_.getExtent()) : void 0;
 		const destinationTopLeft = getTopLeft(targetExtent);
 		const destinationTopRight = getTopRight(targetExtent);
 		const destinationBottomRight = getBottomRight(targetExtent);
@@ -24206,22 +24364,24 @@ var Triangulation = class {
 		const maxSubdivision = MAX_SUBDIVISION + (destinationResolution ? Math.max(0, Math.ceil(Math.log2(getArea(targetExtent) / (destinationResolution * destinationResolution * 256 * 256)))) : 0);
 		this.addQuad_(destinationTopLeft, destinationTopRight, destinationBottomRight, destinationBottomLeft, sourceTopLeft, sourceTopRight, sourceBottomRight, sourceBottomLeft, maxSubdivision);
 		if (this.wrapsXInSource_) {
+			const sourceWorldWidth = this.sourceWorldWidth_;
+			if (!sourceWorldWidth) return;
 			let leftBound = Infinity;
 			this.triangles_.forEach(function(triangle, i, arr) {
 				leftBound = Math.min(leftBound, triangle.source[0][0], triangle.source[1][0], triangle.source[2][0]);
 			});
 			this.triangles_.forEach((triangle) => {
-				if (Math.max(triangle.source[0][0], triangle.source[1][0], triangle.source[2][0]) - leftBound > this.sourceWorldWidth_ / 2) {
+				if (Math.max(triangle.source[0][0], triangle.source[1][0], triangle.source[2][0]) - leftBound > sourceWorldWidth / 2) {
 					const newTriangle = [
 						[triangle.source[0][0], triangle.source[0][1]],
 						[triangle.source[1][0], triangle.source[1][1]],
 						[triangle.source[2][0], triangle.source[2][1]]
 					];
-					if (newTriangle[0][0] - leftBound > this.sourceWorldWidth_ / 2) newTriangle[0][0] -= this.sourceWorldWidth_;
-					if (newTriangle[1][0] - leftBound > this.sourceWorldWidth_ / 2) newTriangle[1][0] -= this.sourceWorldWidth_;
-					if (newTriangle[2][0] - leftBound > this.sourceWorldWidth_ / 2) newTriangle[2][0] -= this.sourceWorldWidth_;
+					if (newTriangle[0][0] - leftBound > sourceWorldWidth / 2) newTriangle[0][0] -= sourceWorldWidth;
+					if (newTriangle[1][0] - leftBound > sourceWorldWidth / 2) newTriangle[1][0] -= sourceWorldWidth;
+					if (newTriangle[2][0] - leftBound > sourceWorldWidth / 2) newTriangle[2][0] -= sourceWorldWidth;
 					const minX = Math.min(newTriangle[0][0], newTriangle[1][0], newTriangle[2][0]);
-					if (Math.max(newTriangle[0][0], newTriangle[1][0], newTriangle[2][0]) - minX < this.sourceWorldWidth_ / 2) triangle.source = newTriangle;
+					if (Math.max(newTriangle[0][0], newTriangle[1][0], newTriangle[2][0]) - minX < sourceWorldWidth / 2) triangle.source = newTriangle;
 				}
 			});
 		}
@@ -24274,9 +24434,9 @@ var Triangulation = class {
 			cSrc,
 			dSrc
 		]);
-		const sourceCoverageX = this.sourceWorldWidth_ ? getWidth(sourceQuadExtent) / this.sourceWorldWidth_ : null;
 		const sourceWorldWidth = this.sourceWorldWidth_;
-		const wrapsX = this.sourceProj_.canWrapX() && sourceCoverageX > .5 && sourceCoverageX < 1;
+		const sourceCoverageX = sourceWorldWidth ? getWidth(sourceQuadExtent) / sourceWorldWidth : void 0;
+		const wrapsX = this.sourceProj_.canWrapX() && sourceCoverageX !== void 0 && sourceCoverageX > .5 && sourceCoverageX < 1;
 		let needsSubdivision = false;
 		if (maxSubdivision > 0) {
 			if (this.targetProj_.isGlobal() && this.targetWorldWidth_) needsSubdivision = getWidth(boundingExtent([
@@ -24307,8 +24467,10 @@ var Triangulation = class {
 				const center = [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2];
 				const centerSrc = this.transformInv_(center);
 				let dx;
-				if (wrapsX) dx = (modulo(aSrc[0], sourceWorldWidth) + modulo(cSrc[0], sourceWorldWidth)) / 2 - modulo(centerSrc[0], sourceWorldWidth);
-				else dx = (aSrc[0] + cSrc[0]) / 2 - centerSrc[0];
+				if (wrapsX) {
+					const worldWidth = sourceWorldWidth;
+					dx = (modulo(aSrc[0], worldWidth) + modulo(cSrc[0], worldWidth)) / 2 - modulo(centerSrc[0], worldWidth);
+				} else dx = (aSrc[0] + cSrc[0]) / 2 - centerSrc[0];
 				const dy = (aSrc[1] + cSrc[1]) / 2 - centerSrc[1];
 				needsSubdivision = dx * dx + dy * dy > this.errorThresholdSquared_;
 			}
@@ -24364,8 +24526,7 @@ var Triangulation = class {
 		return this.triangles_;
 	}
 };
-//#endregion
-//#region node_modules/ol/reproj/common.js
+// node_modules/ol/reproj/common.js
 /**
 * @module ol/reproj/common
 */
@@ -24375,13 +24536,18 @@ var Triangulation = class {
 * @type {number}
 */
 var ERROR_THRESHOLD = .5;
-//#endregion
-//#region node_modules/ol/reproj/Tile.js
+// node_modules/ol/reproj/Tile.js
 /**
 * @module ol/reproj/Tile
 */
 /**
-* @typedef {function(number, number, number, number) : (import("../ImageTile.js").default)} FunctionType
+* @typedef {function(number, number, number, number) : import("../ImageTile.js").default} FunctionType
+*/
+/**
+* @typedef {Object} ReprojTileSource
+* @property {import("../extent.js").Extent} extent Extent.
+* @property {import("../extent.js").Extent|undefined} clipExtent Clip extent.
+* @property {import("../DataTile.js").ImageLike} image Image.
 */
 /**
 * @typedef {Object} TileOffset
@@ -24430,7 +24596,7 @@ var ReprojTile = class extends Tile {
 		this.gutter_ = gutter;
 		/**
 		* @private
-		* @type {HTMLCanvasElement|OffscreenCanvas}
+		* @type {HTMLCanvasElement|OffscreenCanvas|null}
 		*/
 		this.canvas_ = null;
 		/**
@@ -24465,9 +24631,9 @@ var ReprojTile = class extends Tile {
 		this.sourceZ_ = 0;
 		/**
 		* @private
-		* @type {import("../extent.js").Extent}
+		* @type {import("../extent.js").Extent|undefined}
 		*/
-		this.clipExtent_ = sourceProj.canWrapX() ? sourceProj.getExtent() : void 0;
+		this.clipExtent_ = sourceProj.canWrapX() ? sourceProj.getExtent() || void 0 : void 0;
 		const targetExtent = targetTileGrid.getTileCoordExtent(this.wrappedTileCoord_);
 		const maxTargetExtent = this.targetTileGrid_.getExtent();
 		let maxSourceExtent = this.sourceTileGrid_.getExtent();
@@ -24492,7 +24658,7 @@ var ReprojTile = class extends Tile {
 		* @private
 		* @type {!import("./Triangulation.js").default}
 		*/
-		this.triangulation_ = new Triangulation(sourceProj, targetProj, limitedTargetExtent, maxSourceExtent, sourceResolution * errorThresholdInPixels, targetResolution);
+		this.triangulation_ = new Triangulation(sourceProj, targetProj, limitedTargetExtent, maxSourceExtent || void 0, sourceResolution * errorThresholdInPixels, targetResolution);
 		if (this.triangulation_.getTriangles().length === 0) {
 			this.state = TileState_default.EMPTY;
 			return;
@@ -24529,7 +24695,7 @@ var ReprojTile = class extends Tile {
 	}
 	/**
 	* Get the HTML Canvas element for this tile.
-	* @return {HTMLCanvasElement|OffscreenCanvas} Canvas.
+	* @return {HTMLCanvasElement|OffscreenCanvas|null} Canvas.
 	*/
 	getImage() {
 		return this.canvas_;
@@ -24538,6 +24704,7 @@ var ReprojTile = class extends Tile {
 	* @private
 	*/
 	reproject_() {
+		/** @type {Array<ReprojTileSource>} */
 		const sources = [];
 		this.sourceTiles_.forEach((source) => {
 			const tile = source.tile;
@@ -24550,10 +24717,12 @@ var ReprojTile = class extends Tile {
 					clipExtent[0] += source.offset;
 					clipExtent[2] += source.offset;
 				}
+				const image = tile.getImage();
+				if (!image) return;
 				sources.push({
 					extent,
 					clipExtent,
-					image: tile.getImage()
+					image
 				});
 			}
 		});
@@ -24567,7 +24736,7 @@ var ReprojTile = class extends Tile {
 			const targetResolution = this.targetTileGrid_.getResolution(z);
 			const sourceResolution = this.sourceTileGrid_.getResolution(this.sourceZ_);
 			const targetExtent = this.targetTileGrid_.getTileCoordExtent(this.wrappedTileCoord_);
-			this.canvas_ = render$1(width, height, this.pixelRatio_, sourceResolution, this.sourceTileGrid_.getExtent(), targetResolution, targetExtent, this.triangulation_, sources, this.gutter_, this.renderEdges_, this.interpolate);
+			this.canvas_ = render$1(width, height, this.pixelRatio_, sourceResolution, this.sourceTileGrid_.getExtent() ?? targetExtent, targetResolution, targetExtent, this.triangulation_, sources, this.gutter_, this.renderEdges_, this.interpolate);
 			this.state = TileState_default.LOADED;
 		}
 		this.changed();
@@ -24583,11 +24752,13 @@ var ReprojTile = class extends Tile {
 			this.changed();
 			let leftToLoad = 0;
 			this.sourcesListenerKeys_ = [];
-			this.sourceTiles_.forEach(({ tile }) => {
+			this.sourceTiles_.forEach((sourceTile) => {
+				const tile = sourceTile.tile;
+				if (!tile) return;
 				const state = tile.getState();
 				if (state == TileState_default.IDLE || state == TileState_default.LOADING) {
 					leftToLoad++;
-					const sourceListenKey = listen(tile, EventType_default$2.CHANGE, (e) => {
+					const sourceListenKey = listen(tile, EventType_default$2.CHANGE, () => {
 						const state = tile.getState();
 						if (state == TileState_default.LOADED || state == TileState_default.ERROR || state == TileState_default.EMPTY) {
 							unlistenByKey(sourceListenKey);
@@ -24598,11 +24769,13 @@ var ReprojTile = class extends Tile {
 							}
 						}
 					});
-					this.sourcesListenerKeys_.push(sourceListenKey);
+					/** @type {!Array<import("../events.js").EventsKey>} */ this.sourcesListenerKeys_.push(sourceListenKey);
 				}
 			});
 			if (leftToLoad === 0) setTimeout(this.reproject_.bind(this), 0);
-			else this.sourceTiles_.forEach(function({ tile }, i, arr) {
+			else this.sourceTiles_.forEach(function(sourceTile) {
+				const tile = sourceTile.tile;
+				if (!tile) return;
 				if (tile.getState() == TileState_default.IDLE) tile.load();
 			});
 		}
@@ -24611,8 +24784,10 @@ var ReprojTile = class extends Tile {
 	* @private
 	*/
 	unlistenSources_() {
-		this.sourcesListenerKeys_.forEach(unlistenByKey);
-		this.sourcesListenerKeys_ = null;
+		if (this.sourcesListenerKeys_) {
+			this.sourcesListenerKeys_.forEach(unlistenByKey);
+			this.sourcesListenerKeys_ = null;
+		}
 	}
 	/**
 	* Remove from the cache due to expiry
@@ -24628,8 +24803,7 @@ var ReprojTile = class extends Tile {
 		super.release();
 	}
 };
-//#endregion
-//#region node_modules/ol/webgl/BaseTileRepresentation.js
+// node_modules/ol/webgl/BaseTileRepresentation.js
 /**
 * @module ol/webgl/BaseTileRepresentation
 */
@@ -24670,7 +24844,7 @@ var BaseTileRepresentation = class extends Target {
 		*/
 		this.gutter = options.gutter || 0;
 		/**
-		* @type {import("../webgl/Helper.js").default}
+		* @type {import("./Helper.js").default|undefined}
 		* @protected
 		*/
 		this.helper = options.helper;
@@ -24713,7 +24887,7 @@ var BaseTileRepresentation = class extends Target {
 		}
 	}
 	/**
-	* @param {import("./Helper.js").default} helper The WebGL helper.
+	* @param {import("./Helper.js").default|null} helper The WebGL helper.
 	*/
 	setHelper(helper) {
 		this.helper = helper;
@@ -24727,8 +24901,7 @@ var BaseTileRepresentation = class extends Target {
 		this.tile.removeEventListener(EventType_default$2.CHANGE, this.handleTileChange_);
 	}
 };
-//#endregion
-//#region node_modules/ol/webgl/TileTexture.js
+// node_modules/ol/webgl/TileTexture.js
 /**
 * @module ol/webgl/TileTexture
 */
@@ -24803,7 +24976,7 @@ function uploadDataTexture(helper, texture, data, size, bandCount, interpolate) 
 	gl.pixelStorei(gl.UNPACK_ALIGNMENT, oldUnpackAlignment);
 }
 /**
-* @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D}
+* @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D|null}
 */
 var pixelContext$1 = null;
 function createPixelContext$1() {
@@ -24845,7 +25018,7 @@ var TileTexture = class extends BaseTileRepresentation {
 			0,
 			0
 		]);
-		this.helper.flushBufferData(coords);
+		options.helper.flushBufferData(coords);
 		/**
 		* @type {WebGLArrayBuffer}
 		*/
@@ -24859,7 +25032,7 @@ var TileTexture = class extends BaseTileRepresentation {
 	setHelper(helper) {
 		const gl = this.helper?.getGL();
 		if (gl) {
-			this.helper.deleteBuffer(this.coords);
+			this.helper?.deleteBuffer(this.coords);
 			for (let i = 0; i < this.textures.length; ++i) gl.deleteTexture(this.textures[i]);
 		}
 		super.setHelper(helper);
@@ -24870,15 +25043,17 @@ var TileTexture = class extends BaseTileRepresentation {
 	*/
 	uploadTile() {
 		const helper = this.helper;
+		if (!helper) return;
 		const gl = helper.getGL();
 		const tile = this.tile;
 		this.textures.length = 0;
 		/**
-		* @type {import("../DataTile.js").Data}
+		* @type {import("../DataTile.js").Data|import("../DataTile.js").ImageLike|null}
 		*/
 		let data;
 		if (tile instanceof ImageTile || tile instanceof ReprojTile) data = tile.getImage();
 		else data = tile.getData();
+		if (!data) return;
 		const image = asImageLike(data);
 		if (image) {
 			const texture = gl.createTexture();
@@ -24888,14 +25063,17 @@ var TileTexture = class extends BaseTileRepresentation {
 			this.setReady();
 			return;
 		}
-		data = asArrayLike(data);
+		const arrayData = asArrayLike(data);
+		if (!arrayData) return;
+		data = arrayData;
 		const sourceTileSize = tile.getSize();
 		const pixelSize = [sourceTileSize[0] + 2 * this.gutter, sourceTileSize[1] + 2 * this.gutter];
 		const isFloat = data instanceof Float32Array;
 		const pixelCount = pixelSize[0] * pixelSize[1];
 		const DataType = isFloat ? Float32Array : Uint8Array;
 		const bytesPerElement = DataType.BYTES_PER_ELEMENT;
-		const bytesPerRow = data.byteLength / pixelSize[1];
+		const arrayLike = data;
+		const bytesPerRow = arrayLike.byteLength / pixelSize[1];
 		this.bandCount = Math.floor(bytesPerRow / bytesPerElement / pixelSize[0]);
 		const textureCount = Math.ceil(this.bandCount / 4);
 		if (textureCount === 1) {
@@ -24917,7 +25095,7 @@ var TileTexture = class extends BaseTileRepresentation {
 		const colCount = pixelSize[0] * this.bandCount;
 		for (let rowIndex = 0; rowIndex < pixelSize[1]; ++rowIndex) {
 			for (let colIndex = 0; colIndex < colCount; ++colIndex) {
-				const dataValue = data[rowOffset + colIndex];
+				const dataValue = arrayLike[rowOffset + colIndex];
 				const pixelIndex = Math.floor(dataIndex / this.bandCount);
 				const bandIndex = colIndex % this.bandCount;
 				const textureData = textureDataArrays[Math.floor(bandIndex / 4)];
@@ -24947,7 +25125,8 @@ var TileTexture = class extends BaseTileRepresentation {
 		const renderWidth = this.renderSize_[0];
 		const renderHeight = this.renderSize_[1];
 		if (!pixelContext$1) createPixelContext$1();
-		pixelContext$1.clearRect(0, 0, 1, 1);
+		const context = pixelContext$1;
+		context.clearRect(0, 0, 1, 1);
 		const sourceWidth = image.width;
 		const sourceHeight = image.height;
 		const sourceWidthWithoutGutter = sourceWidth - 2 * gutter;
@@ -24956,8 +25135,8 @@ var TileTexture = class extends BaseTileRepresentation {
 		const sourceRow = gutter + Math.floor(sourceHeightWithoutGutter * (renderRow / renderHeight));
 		let data;
 		try {
-			pixelContext$1.drawImage(image, sourceCol, sourceRow, 1, 1, 0, 0, 1, 1);
-			data = pixelContext$1.getImageData(0, 0, 1, 1).data;
+			context.drawImage(image, sourceCol, sourceRow, 1, 1, 0, 0, 1, 1);
+			data = context.getImageData(0, 0, 1, 1).data;
 		} catch {
 			pixelContext$1 = null;
 			return null;
@@ -25000,19 +25179,23 @@ var TileTexture = class extends BaseTileRepresentation {
 	getPixelData(renderCol, renderRow) {
 		if (!this.loaded) return null;
 		if (this.tile instanceof DataTile) {
-			const data = this.tile.getData();
-			const arrayData = asArrayLike(data);
+			const tileData = this.tile.getData();
+			if (!tileData) return null;
+			const arrayData = asArrayLike(tileData);
 			if (arrayData) {
 				const sourceSize = this.tile.getSize();
 				return this.getArrayPixelData_(arrayData, sourceSize, renderCol, renderRow);
 			}
-			return this.getImagePixelData_(asImageLike(data), renderCol, renderRow);
+			const imageData = asImageLike(tileData);
+			if (!imageData) return null;
+			return this.getImagePixelData_(imageData, renderCol, renderRow);
 		}
-		return this.getImagePixelData_(this.tile.getImage(), renderCol, renderRow);
+		const image = this.tile.getImage();
+		if (!image) return null;
+		return this.getImagePixelData_(image, renderCol, renderRow);
 	}
 };
-//#endregion
-//#region node_modules/ol/TileRange.js
+// node_modules/ol/TileRange.js
 /**
 * @module ol/TileRange
 */
@@ -25127,8 +25310,7 @@ function createOrUpdate$1(minX, maxX, minY, maxY, tileRange) {
 	}
 	return new TileRange(minX, maxX, minY, maxY);
 }
-//#endregion
-//#region node_modules/ol/structs/LRUCache.js
+// node_modules/ol/structs/LRUCache.js
 /**
 * @module ol/structs/LRUCache
 */
@@ -25237,12 +25419,12 @@ var LRUCache = class {
 			this.oldest_ = this.oldest_.newer;
 			this.oldest_.older = null;
 		} else {
-			entry.newer.older = entry.older;
-			entry.older.newer = entry.newer;
+			/** @type {Entry} */ entry.newer.older = entry.older;
+			/** @type {Entry} */ entry.older.newer = entry.newer;
 		}
 		entry.newer = null;
 		entry.older = this.newest_;
-		this.newest_.newer = entry;
+		/** @type {Entry} */ this.newest_.newer = entry;
 		this.newest_ = entry;
 		return entry.value_;
 	}
@@ -25261,8 +25443,8 @@ var LRUCache = class {
 			this.oldest_ = entry.newer;
 			if (this.oldest_) this.oldest_.older = null;
 		} else {
-			entry.newer.older = entry.older;
-			entry.older.newer = entry.newer;
+			/** @type {Entry} */ entry.newer.older = entry.older;
+			/** @type {Entry} */ entry.older.newer = entry.newer;
 		}
 		delete this.entries_[key];
 		--this.count_;
@@ -25368,8 +25550,7 @@ var LRUCache = class {
 		this.highWaterMark = size;
 	}
 };
-//#endregion
-//#region node_modules/ol/tilecoord.js
+// node_modules/ol/tilecoord.js
 /**
 * @module ol/tilecoord
 */
@@ -25457,8 +25638,7 @@ function withinExtentAndZ(tileCoord, tileGrid) {
 	if (!tileRange) return true;
 	return tileRange.containsXY(x, y);
 }
-//#endregion
-//#region node_modules/ol/renderer/Layer.js
+// node_modules/ol/renderer/Layer.js
 /**
 * @module ol/renderer/Layer
 */
@@ -25481,7 +25661,7 @@ var LayerRenderer = class extends Observable {
 		this.boundHandleImageChange_ = this.handleImageChange_.bind(this);
 		/**
 		* @private
-		* @type {LayerType}
+		* @type {LayerType|undefined}
 		*/
 		this.layer_ = layer;
 		/**
@@ -25495,7 +25675,7 @@ var LayerRenderer = class extends Observable {
 		*/
 		this.maxStaleKeys = maxStaleKeys;
 		/**
-		* @type {string}
+		* @type {string|undefined}
 		* @protected
 		*/
 		this.renderedSourceKey_;
@@ -25623,12 +25803,11 @@ var LayerRenderer = class extends Observable {
 	* @override
 	*/
 	disposeInternal() {
-		delete this.layer_;
+		this.layer_ = void 0;
 		super.disposeInternal();
 	}
 };
-//#endregion
-//#region node_modules/ol/renderer/webgl/Layer.js
+// node_modules/ol/renderer/webgl/Layer.js
 /**
 * @module ol/renderer/webgl/Layer
 */
@@ -25676,7 +25855,7 @@ var WebGLLayerRenderer = class WebGLLayerRenderer extends LayerRenderer {
 		*/
 		this.uniforms_ = options.uniforms;
 		/**
-		* @type {WebGLHelper}
+		* @type {import("../../webgl/Helper.js").default}
 		* @protected
 		*/
 		this.helper;
@@ -25717,7 +25896,7 @@ var WebGLLayerRenderer = class WebGLLayerRenderer extends LayerRenderer {
 	* @param {Options} options Options.
 	*/
 	reset(options) {
-		this.uniforms_ = options.uniforms;
+		this.uniforms_ = options.uniforms ?? {};
 		if (this.helper) this.helper.setUniforms(this.uniforms_);
 	}
 	/**
@@ -25726,7 +25905,7 @@ var WebGLLayerRenderer = class WebGLLayerRenderer extends LayerRenderer {
 	removeHelper() {
 		if (this.helper) {
 			this.helper.dispose();
-			delete this.helper;
+			this.helper = void 0;
 		}
 	}
 	/**
@@ -25799,7 +25978,7 @@ var WebGLLayerRenderer = class WebGLLayerRenderer extends LayerRenderer {
 	* @return {Array<PostProcessesOptions>} Array of post processes
 	*/
 	getPostProcesses() {
-		return this.postProcesses_;
+		return this.postProcesses_ ?? [];
 	}
 	/**
 	* Clean up.
@@ -25842,8 +26021,7 @@ var WebGLLayerRenderer = class WebGLLayerRenderer extends LayerRenderer {
 		this.dispatchRenderEvent_(EventType_default.POSTRENDER, context, frameState);
 	}
 };
-//#endregion
-//#region node_modules/ol/renderer/webgl/TileLayerBase.js
+// node_modules/ol/renderer/webgl/TileLayerBase.js
 /**
 * @module ol/renderer/webgl/TileLayerBase
 */
@@ -25921,7 +26099,9 @@ function removeTileRepresentationFromLookup(tileRepresentationLookup, tileRepres
 function getRenderExtent$1(frameState, extent) {
 	const layerState = frameState.layerStatesArray[frameState.layerIndex];
 	if (layerState.extent) extent = getIntersection(extent, fromUserExtent(layerState.extent, frameState.viewState.projection));
-	const source = layerState.layer.getRenderSource();
+	const layer = layerState.layer;
+	if (!layer) return extent;
+	const source = layer.getRenderSource();
 	if (!source.getWrapX()) {
 		const gridExtent = source.getTileGridForProjection(frameState.viewState.projection).getExtent();
 		if (gridExtent) extent = getIntersection(extent, gridExtent);
@@ -25945,7 +26125,7 @@ function getCacheKey(source, tileCoord, key = source.getKey()) {
 * @property {Array<import('./Layer.js').PostProcessesOptions>} [postProcesses] Post-processes definitions.
 */
 /**
-* @typedef {import("../../layer/BaseTile.js").default} BaseLayerType
+* @typedef {import("../../layer/BaseTile.js").default<any, any>} BaseLayerType
 */
 /**
 * @classdesc
@@ -26030,7 +26210,7 @@ var WebGLBaseTileLayerRenderer = class extends WebGLLayerRenderer {
 		this.frameState = null;
 		/**
 		* @private
-		* @type {import("../../proj/Projection.js").default}
+		* @type {import("../../proj/Projection.js").default|undefined}
 		*/
 		this.renderedProjection_ = void 0;
 		/**
@@ -26060,7 +26240,8 @@ var WebGLBaseTileLayerRenderer = class extends WebGLLayerRenderer {
 		}
 		const source = this.getLayer().getRenderSource();
 		if (!source) return false;
-		if (isEmpty(getRenderExtent$1(frameState, frameState.extent))) return false;
+		const extent = frameState.extent;
+		if (!extent || isEmpty(getRenderExtent$1(frameState, extent))) return false;
 		return source.getState() === "ready";
 	}
 	/**
@@ -26104,9 +26285,9 @@ var WebGLBaseTileLayerRenderer = class extends WebGLLayerRenderer {
 				], viewport)) continue;
 				const tileCoord = createOrUpdate(z, x, y, this.tempTileCoord_);
 				const cacheKey = getCacheKey(tileSource, tileCoord);
-				/** @type {TileRepresentation} */
+				/** @type {TileRepresentation|undefined} */
 				let tileRepresentation;
-				/** @type {TileType} */
+				/** @type {TileType|undefined} */
 				let tile;
 				if (tileRepresentationCache.containsKey(cacheKey)) {
 					tileRepresentation = tileRepresentationCache.get(cacheKey);
@@ -26118,6 +26299,7 @@ var WebGLBaseTileLayerRenderer = class extends WebGLLayerRenderer {
 					tile = tileSource.getTile(z, x, y, frameState.pixelRatio, viewState.projection, sourceTileCache);
 					if (!tile) continue;
 				}
+				if (!tile) continue;
 				if (lookupHasTile(tileRepresentationLookup, tile)) continue;
 				if (!tileRepresentation) {
 					tileRepresentation = this.createTileRepresentation({
@@ -26148,7 +26330,8 @@ var WebGLBaseTileLayerRenderer = class extends WebGLLayerRenderer {
 	* @protected
 	*/
 	beforeTilesRender(frameState, tilesWithAlpha) {
-		this.helper.prepareDraw(this.frameState, !tilesWithAlpha, true);
+		const currentFrameState = this.frameState ?? frameState;
+		this.helper.prepareDraw(currentFrameState, !tilesWithAlpha, true);
 	}
 	/**
 	* @param {import("../../Map.js").FrameState} frameState Frame state.
@@ -26181,6 +26364,16 @@ var WebGLBaseTileLayerRenderer = class extends WebGLLayerRenderer {
 	* @protected
 	*/
 	renderTileMask(tileRepresentation, tileZ, extent, depth) {}
+	/**
+	* @param {import("../../Map.js").FrameState} frameState Frame state.
+	* @param {TileRepresentation} tileRepresentation Tile representation.
+	* @param {number} tileZ Tile Z.
+	* @param {number} gutter Gutter.
+	* @param {import("../../extent.js").Extent} extent Render extent.
+	* @param {Object<string, number>} alphaLookup Alpha lookup.
+	* @param {import("../../tilegrid/TileGrid.js").default} tileGrid Tile grid.
+	* @private
+	*/
 	drawTile_(frameState, tileRepresentation, tileZ, gutter, extent, alphaLookup, tileGrid) {
 		if (!tileRepresentation.ready) return;
 		const tileCoord = tileRepresentation.tile.tileCoord;
@@ -26226,7 +26419,9 @@ var WebGLBaseTileLayerRenderer = class extends WebGLLayerRenderer {
 		const tileSource = tileLayer.getRenderSource();
 		const tileGrid = tileSource.getTileGridForProjection(viewState.projection);
 		const gutter = tileSource.getGutterForProjection(viewState.projection);
-		const extent = getRenderExtent$1(frameState, frameState.extent);
+		const frameExtent = frameState.extent;
+		if (!frameExtent) return this.helper.getCanvas();
+		const extent = getRenderExtent$1(frameState, frameExtent);
 		const z = tileGrid.getZForResolution(viewState.resolution, tileSource.zDirection);
 		this.updateStaleKeys(tileSource.getKey());
 		/**
@@ -26412,7 +26607,7 @@ var WebGLBaseTileLayerRenderer = class extends WebGLLayerRenderer {
 	*/
 	disposeInternal() {
 		super.disposeInternal();
-		delete this.frameState;
+		this.frameState = null;
 	}
 	/**
 	* Apply the render extent as a uniform; the render extent uniform is expressed in the same coordinate space as the geometries in the render buffers,
@@ -26435,8 +26630,7 @@ var WebGLBaseTileLayerRenderer = class extends WebGLLayerRenderer {
 		this.helper.setUniformFloatVec4(Uniforms$1.RENDER_EXTENT, this.tmpExtent_);
 	}
 };
-//#endregion
-//#region node_modules/ol/renderer/webgl/TileLayer.js
+// node_modules/ol/renderer/webgl/TileLayer.js
 /**
 * @module ol/renderer/webgl/TileLayer
 */
@@ -26487,7 +26681,7 @@ var WebGLTileLayerRenderer = class extends WebGLBaseTileLayerRenderer {
 	constructor(tileLayer, options) {
 		super(tileLayer, options);
 		/**
-		* @type {WebGLProgram}
+		* @type {WebGLProgram|undefined}
 		* @private
 		*/
 		this.program_;
@@ -26500,21 +26694,8 @@ var WebGLTileLayerRenderer = class extends WebGLBaseTileLayerRenderer {
 		*/
 		this.fragmentShader_ = options.fragmentShader;
 		/**
-		* Tiles are rendered as a quad with the following structure:
-		*
-		*  [P3]---------[P2]
-		*   |`           |
-		*   |  `     B   |
-		*   |    `       |
-		*   |      `     |
-		*   |   A    `   |
-		*   |          ` |
-		*  [P0]---------[P1]
-		*
-		* Triangle A: P0, P1, P3
-		* Triangle B: P1, P2, P3
-		*
 		* @private
+		* @type {WebGLArrayBuffer|undefined}
 		*/
 		this.indices_ = new WebGLArrayBuffer(ELEMENT_ARRAY_BUFFER, STATIC_DRAW);
 		this.indices_.fromArray([
@@ -26558,7 +26739,8 @@ var WebGLTileLayerRenderer = class extends WebGLBaseTileLayerRenderer {
 		const gl = this.helper.getGL();
 		for (const paletteTexture of this.paletteTextures_) paletteTexture.getTexture(gl);
 		this.program_ = this.helper.getProgram(this.fragmentShader_, this.vertexShader_);
-		this.helper.flushBufferData(this.indices_);
+		const indices = this.indices_;
+		if (indices) this.helper.flushBufferData(indices);
 	}
 	/**
 	* @override
@@ -26571,25 +26753,41 @@ var WebGLTileLayerRenderer = class extends WebGLBaseTileLayerRenderer {
 		super.removeHelper();
 	}
 	/**
+	* @param {import("../../webgl/BaseTileRepresentation.js").TileRepresentationOptions<import("../../webgl/TileTexture.js").TileType>} options Tile representation options.
 	* @override
 	*/
 	createTileRepresentation(options) {
 		return new TileTexture(options);
 	}
 	/**
+	* @param {import("../../Map.js").FrameState} frameState Frame state.
+	* @param {boolean} tilesWithAlpha True if at least one of the rendered tiles has alpha.
 	* @override
 	*/
 	beforeTilesRender(frameState, tilesWithAlpha) {
 		super.beforeTilesRender(frameState, tilesWithAlpha);
-		this.helper.useProgram(this.program_, frameState);
+		const program = this.program_;
+		if (program) this.helper.useProgram(program, frameState);
 	}
 	/**
+	* @param {TileTextureRepresentation} tileTexture Tile texture.
+	* @param {import("../../transform.js").Transform} tileTransform Tile transform.
+	* @param {import("../../Map.js").FrameState} frameState Frame state.
+	* @param {import("../../extent.js").Extent} renderExtent Render extent.
+	* @param {number} tileResolution Tile resolution.
+	* @param {import("../../size.js").Size} tileSize Tile size.
+	* @param {import("../../coordinate.js").Coordinate} tileOrigin Tile origin.
+	* @param {import("../../extent.js").Extent} tileExtent Tile extent.
+	* @param {number} depth Depth.
+	* @param {number} gutter Gutter.
+	* @param {number} alpha Alpha.
 	* @override
 	*/
 	renderTile(tileTexture, tileTransform, frameState, renderExtent, tileResolution, tileSize, tileOrigin, tileExtent, depth, gutter, alpha) {
 		const gl = this.helper.getGL();
 		this.helper.bindBuffer(tileTexture.coords);
-		this.helper.bindBuffer(this.indices_);
+		const tileIndices = this.indices_;
+		if (tileIndices) this.helper.bindBuffer(tileIndices);
 		this.helper.enableAttributes(attributeDescriptions);
 		let textureSlot = 0;
 		while (textureSlot < tileTexture.textures.length) {
@@ -26626,11 +26824,12 @@ var WebGLTileLayerRenderer = class extends WebGLBaseTileLayerRenderer {
 		this.helper.setUniformFloatValue(Uniforms.TEXTURE_PIXEL_WIDTH, tileWidthWithGutter);
 		this.helper.setUniformFloatValue(Uniforms.TEXTURE_PIXEL_HEIGHT, tileHeightWithGutter);
 		this.helper.setUniformFloatValue(Uniforms.TEXTURE_RESOLUTION, tileResolution);
-		this.helper.drawElements(0, this.indices_.getSize());
+		const indices = this.indices_;
+		if (indices) this.helper.drawElements(0, indices.getSize());
 	}
 	/**
 	* @param {import("../../pixel.js").Pixel} pixel Pixel.
-	* @return {Uint8ClampedArray|Uint8Array|Float32Array|DataView} Data at the pixel location.
+	* @return {Uint8ClampedArray|Uint8Array|Float32Array|DataView|null} Data at the pixel location.
 	* @override
 	*/
 	getData(pixel) {
@@ -26655,7 +26854,7 @@ var WebGLTileLayerRenderer = class extends WebGLBaseTileLayerRenderer {
 				if (!gridExtent || containsCoordinate(gridExtent, coordinate)) break;
 			}
 		}
-		if (i < 0) return null;
+		if (i < 0 || !source || !tileGrid) return null;
 		const tileTextureCache = this.tileRepresentationCache;
 		for (let z = tileGrid.getZForResolution(viewState.resolution); z >= tileGrid.getMinZoom(); --z) {
 			const tileCoord = tileGrid.getTileCoordForCoordAndZ(coordinate, z);
@@ -26669,7 +26868,7 @@ var WebGLTileLayerRenderer = class extends WebGLBaseTileLayerRenderer {
 			const tileResolution = tileGrid.getResolution(z);
 			const col = (coordinate[0] - tileOrigin[0]) / tileResolution - tileCoord[1] * tileSize[0];
 			const row = (tileOrigin[1] - coordinate[1]) / tileResolution - tileCoord[2] * tileSize[1];
-			return tileTexture.getPixelData(col, row);
+			return tileTexture.getPixelData(col, row) ?? null;
 		}
 		return null;
 	}
@@ -26683,16 +26882,17 @@ var WebGLTileLayerRenderer = class extends WebGLBaseTileLayerRenderer {
 			const gl = helper.getGL();
 			for (const paletteTexture of this.paletteTextures_) paletteTexture.delete(gl);
 			this.paletteTextures_.length = 0;
-			gl.deleteProgram(this.program_);
-			delete this.program_;
-			helper.deleteBuffer(this.indices_);
+			const program = this.program_;
+			if (program) gl.deleteProgram(program);
+			this.program_ = void 0;
+			const indicesBuffer = this.indices_;
+			if (indicesBuffer) helper.deleteBuffer(indicesBuffer);
+			this.indices_ = void 0;
 		}
 		super.disposeInternal();
-		delete this.indices_;
 	}
 };
-//#endregion
-//#region node_modules/ol/webgl/PaletteTexture.js
+// node_modules/ol/webgl/PaletteTexture.js
 /**
 * @module ol/webgl/PaletteTexture
 */
@@ -26735,8 +26935,7 @@ var PaletteTexture = class {
 		this.texture_ = null;
 	}
 };
-//#endregion
-//#region node_modules/ol/expr/gpu.js
+// node_modules/ol/expr/gpu.js
 /**
 * @module ol/expr/gpu
 */
@@ -26957,9 +27156,8 @@ var compilers = {
 	[Ops.Sqrt]: createCompiler(([value]) => `sqrt(${value})`),
 	[Ops.Match]: createCompiler((compiledArgs) => {
 		const input = compiledArgs[0];
-		const fallback = compiledArgs[compiledArgs.length - 1];
-		let result = null;
-		for (let i = compiledArgs.length - 3; i >= 1; i -= 2) result = `(${input} == ${compiledArgs[i]} ? ${compiledArgs[i + 1]} : ${result || fallback})`;
+		let result = compiledArgs[compiledArgs.length - 1];
+		for (let i = compiledArgs.length - 3; i >= 1; i -= 2) result = `(${input} == ${compiledArgs[i]} ? ${compiledArgs[i + 1]} : ${result})`;
 		return result;
 	}),
 	[Ops.Between]: createCompiler(([value, min, max]) => `(${value} >= ${min} && ${value} <= ${max})`),
@@ -26978,9 +27176,8 @@ var compilers = {
 		return result;
 	}),
 	[Ops.Case]: createCompiler((compiledArgs) => {
-		const fallback = compiledArgs[compiledArgs.length - 1];
-		let result = null;
-		for (let i = compiledArgs.length - 3; i >= 0; i -= 2) result = `(${compiledArgs[i]} ? ${compiledArgs[i + 1]} : ${result || fallback})`;
+		let result = compiledArgs[compiledArgs.length - 1];
+		for (let i = compiledArgs.length - 3; i >= 0; i -= 2) result = `(${compiledArgs[i]} ? ${compiledArgs[i + 1]} : ${result})`;
 		return result;
 	}),
 	[Ops.In]: createCompiler(([needle, ...haystack], context) => {
@@ -27064,8 +27261,7 @@ function compile(expression, returnType, context) {
 	if ((expression.type & SizeType) > 0) return sizeToGlsl(expression.value);
 	throw new Error(`Unexpected expression ${expression.value} (expected type ${typeName(returnType)})`);
 }
-//#endregion
-//#region node_modules/ol/render/webgl/compileUtil.js
+// node_modules/ol/render/webgl/compileUtil.js
 /**
 * Recursively parses a style expression and outputs a GLSL-compatible string. Takes in a compilation context that
 * will be read and modified during the parsing operation.
@@ -27077,10 +27273,9 @@ function compile(expression, returnType, context) {
 * @return {string} GLSL-compatible output
 */
 function expressionToGlsl(compilationContext, value, expectedType, parsingContext) {
-	return buildExpression(value, expectedType, parsingContext ?? newParsingContext(compilationContext.inputVariables), compilationContext);
+	return buildExpression(value, expectedType ?? 0, parsingContext ?? newParsingContext(compilationContext.inputVariables), compilationContext);
 }
-//#endregion
-//#region node_modules/ol/layer/TileProperty.js
+// node_modules/ol/layer/TileProperty.js
 /**
 * @module ol/layer/TileProperty
 */
@@ -27091,8 +27286,7 @@ var TileProperty_default = {
 	PRELOAD: "preload",
 	USE_INTERIM_TILES_ON_ERROR: "useInterimTilesOnError"
 };
-//#endregion
-//#region node_modules/ol/layer/BaseTile.js
+// node_modules/ol/layer/BaseTile.js
 /**
 * @module ol/layer/BaseTile
 */
@@ -27148,7 +27342,7 @@ var TileProperty_default = {
 * options means that `title` is observable, and has get/set accessors.
 *
 * @template {import("../source/Tile.js").default} TileSourceType
-* @template {import("../renderer/Layer.js").default} RendererType
+* @template {import("../renderer/Layer.js").default<*>} RendererType
 * @extends {Layer<TileSourceType, RendererType>}
 * @api
 */
@@ -27248,8 +27442,7 @@ var BaseTileLayer = class extends Layer {
 		return super.getData(pixel);
 	}
 };
-//#endregion
-//#region node_modules/ol/layer/WebGLTile.js
+// node_modules/ol/layer/WebGLTile.js
 /**
 * @module ol/layer/WebGLTile
 */
@@ -27393,11 +27586,12 @@ function parseStyle(style, bandCount, nodataBandIndex) {
 	/** @type {Object<string,import("../webgl/Helper.js").UniformValue>} */
 	const uniforms = {};
 	if (context.variables.size > 1 && !style.variables) throw new Error(`Missing variables in style (expected ${Array.from(context.variables.keys())})`);
+	const styleVariables = style.variables || {};
 	for (const [variableName] of context.variables.entries()) {
-		if (!(variableName in style.variables)) throw new Error(`Missing '${variableName}' in style variables`);
+		if (!(variableName in styleVariables)) throw new Error(`Missing '${variableName}' in style variables`);
 		const uniformName = uniformNameForVariable(variableName);
 		uniforms[uniformName] = function() {
-			let value = style.variables[variableName];
+			let value = styleVariables[variableName];
 			if (typeof value === "string") value = getStringNumberEquivalent(value);
 			return value !== void 0 ? value : -9999999;
 		};
@@ -27405,15 +27599,16 @@ function parseStyle(style, bandCount, nodataBandIndex) {
 	const uniformDeclarations = Object.keys(uniforms).map(function(name) {
 		return `uniform float ${name};`;
 	});
-	const textureCount = Math.ceil(bandCount / 4);
+	const bandCountValue = bandCount !== void 0 ? bandCount : 4;
+	const textureCount = Math.ceil(bandCountValue / 4);
 	uniformDeclarations.push(`uniform sampler2D ${Uniforms.TILE_TEXTURE_ARRAY}[${textureCount}];`);
 	if (context.paletteTextures) uniformDeclarations.push(`uniform sampler2D ${PALETTE_TEXTURE_ARRAY}[${context.paletteTextures.length}];`);
-	if (nodataBandIndex > 0 && !("getBandValue" in context.functions)) {
+	if (nodataBandIndex && nodataBandIndex > 0 && !("getBandValue" in context.functions)) {
 		let ifBlocks = "";
-		for (let i = 0; i < bandCount; i++) {
+		for (let i = 0; i < bandCountValue; i++) {
 			const colorIndex = Math.floor(i / 4);
 			let bandIndex = i % 4;
-			if (i === bandCount - 1 && bandIndex === 1) bandIndex = 3;
+			if (i === bandCountValue - 1 && bandIndex === 1) bandIndex = 3;
 			const textureName = `${Uniforms.TILE_TEXTURE_ARRAY}[${colorIndex}]`;
 			ifBlocks += `  if (band == ${i + 1}.0) {\n    return texture2D(${textureName}, v_textureCoord + vec2(dx, dy))[${bandIndex}];\n  }\n`;
 		}
@@ -27467,7 +27662,7 @@ function parseStyle(style, bandCount, nodataBandIndex) {
       gl_FragColor *= ${Uniforms.TRANSITION_ALPHA};
     }`,
 		uniforms,
-		paletteTextures: context.paletteTextures
+		paletteTextures: context.paletteTextures || []
 	};
 }
 /**
@@ -27478,7 +27673,7 @@ function parseStyle(style, bandCount, nodataBandIndex) {
 * property on the layer object; for example, setting `title: 'My Title'` in the
 * options means that `title` is observable, and has get/set accessors.
 *
-* @extends BaseTileLayer<SourceType, WebGLTileLayerRenderer>
+* @extends BaseTileLayer<SourceType, WebGLTileLayerRenderer<WebGLTileLayer>>
 * @fires import("../render/Event.js").RenderEvent#prerender
 * @fires import("../render/Event.js").RenderEvent#postrender
 * @api
@@ -27493,7 +27688,7 @@ var WebGLTileLayer = class extends BaseTileLayer {
 		delete options.style;
 		super(options);
 		/**
-		* @type {Array<SourceType>|function(import("../extent.js").Extent, number):Array<SourceType>}
+		* @type {Array<SourceType>|function(import("../extent.js").Extent, number):Array<SourceType>|undefined}
 		* @private
 		*/
 		this.sources_ = options.sources;
@@ -27541,10 +27736,11 @@ var WebGLTileLayer = class extends BaseTileLayer {
 	*/
 	getSources(extent, resolution) {
 		const source = this.getSource();
-		return this.sources_ ? typeof this.sources_ === "function" ? this.sources_(extent, resolution) : this.sources_ : source ? [source] : [];
+		if (this.sources_) return typeof this.sources_ === "function" ? this.sources_(extent, resolution) || [] : this.sources_;
+		return source ? [source] : [];
 	}
 	/**
-	* @return {SourceType} The source being rendered.
+	* @return {SourceType|null} The source being rendered.
 	* @override
 	*/
 	getRenderSource() {
@@ -27562,7 +27758,7 @@ var WebGLTileLayer = class extends BaseTileLayer {
 	* @private
 	*/
 	handleSourceUpdate_() {
-		if (this.hasRenderer()) this.getRenderer().clearCache();
+		if (this.hasRenderer()) this.getRenderer()?.clearCache();
 		const source = this.getSource();
 		if (source) {
 			if (source.getState() === "loading") {
@@ -27578,7 +27774,7 @@ var WebGLTileLayer = class extends BaseTileLayer {
 	}
 	/**
 	* @private
-	* @return {SourceType} The first render source (or null).
+	* @return {SourceType|null} The first render source (or null).
 	*/
 	getFirstSource_() {
 		const max = Number.MAX_SAFE_INTEGER;
@@ -27647,7 +27843,7 @@ var WebGLTileLayer = class extends BaseTileLayer {
 	*/
 	applyShaders_(projection) {
 		const parsedStyle = this.parseStyleForRender_(projection);
-		this.getRenderer().reset({
+		this.getRenderer()?.reset({
 			vertexShader: parsedStyle.vertexShader,
 			fragmentShader: parsedStyle.fragmentShader,
 			uniforms: parsedStyle.uniforms,
@@ -27675,12 +27871,13 @@ var WebGLTileLayer = class extends BaseTileLayer {
 	*/
 	renderSources(frameState, sources) {
 		const layerRenderer = this.getRenderer();
+		if (!layerRenderer) return document.createElement("div");
 		let canvas;
 		for (let i = 0, ii = sources.length; i < ii; ++i) {
 			this.renderedSource_ = sources[i];
 			if (layerRenderer.prepareFrame(frameState)) canvas = layerRenderer.renderFrame(frameState);
 		}
-		return canvas;
+		return canvas || document.createElement("div");
 	}
 	/**
 	* @param {?import("../Map.js").FrameState} frameState Frame state.
@@ -27691,12 +27888,15 @@ var WebGLTileLayer = class extends BaseTileLayer {
 	*/
 	render(frameState, target) {
 		this.rendered = true;
+		if (!frameState) return document.createElement("div");
 		const viewState = frameState.viewState;
+		const extent = frameState.extent;
+		if (!extent) return document.createElement("div");
 		if (this.hasRenderer()) {
 			const projection = viewState.projection;
 			if (this.getSourceBandCount_(projection) !== this.styleBandCount_ || this.getSourceNodataBandIndex_(projection) !== this.styleNodataBandIndex_) this.applyShaders_(projection);
 		}
-		const sources = this.getSources(frameState.extent, viewState.resolution);
+		const sources = this.getSources(extent, viewState.resolution);
 		let ready = true;
 		for (let i = 0, ii = sources.length; i < ii; ++i) {
 			const source = sources[i];
@@ -27713,12 +27913,12 @@ var WebGLTileLayer = class extends BaseTileLayer {
 			ready = ready && sourceState == "ready";
 		}
 		const canvas = this.renderSources(frameState, sources);
-		if (this.getRenderer().renderComplete && ready) {
+		if (this.getRenderer()?.renderComplete && ready) {
 			this.renderedResolution_ = viewState.resolution;
 			return canvas;
 		}
 		if (this.renderedResolution_ > .5 * viewState.resolution) {
-			const altSources = this.getSources(frameState.extent, this.renderedResolution_).filter((source) => !sources.includes(source));
+			const altSources = this.getSources(extent, this.renderedResolution_).filter((source) => !sources.includes(source));
 			if (altSources.length > 0) return this.renderSources(frameState, altSources);
 		}
 		return canvas;
@@ -27756,8 +27956,7 @@ var WebGLTileLayer = class extends BaseTileLayer {
 * @api
 */
 WebGLTileLayer.prototype.dispose;
-//#endregion
-//#region node_modules/ol/proj/proj4.js
+// node_modules/ol/proj/proj4.js
 /**
 * @module ol/proj/proj4
 */
@@ -27826,8 +28025,9 @@ function register(proj4) {
 		for (j = 0; j < len; ++j) {
 			const code2 = projCodes[j];
 			const proj2 = get$6(code2);
+			if (!proj1 || !proj2) continue;
 			if (!get$5(code1, code2)) {
-				if (proj4.defs[code1] === proj4.defs[code2]) addEquivalentProjections([proj1, proj2]);
+				if (proj4.defs(code1) === proj4.defs(code2)) addEquivalentProjections([proj1, proj2]);
 				else {
 					const transform = proj4(code1, code2);
 					addCoordinateTransforms(proj1, proj2, createSafeCoordinateTransform(proj1, proj2, transform.forward), createSafeCoordinateTransform(proj2, proj1, transform.inverse));
@@ -27885,10 +28085,16 @@ function getProjectionCodeLookup() {
 async function fromProjectionCode(code) {
 	const proj4 = registered;
 	if (!proj4) throw new Error("Proj4 must be registered first with register(proj4)");
-	if (proj4.defs(code)) return get$6(code);
+	if (proj4.defs(code)) {
+		const projection = get$6(code);
+		if (!projection) throw new Error(`Projection ${code} not found after registration`);
+		return projection;
+	}
 	proj4.defs(code, await projLookup(code));
 	register(proj4);
-	return get$6(code);
+	const projection = get$6(code);
+	if (!projection) throw new Error(`Projection ${code} not found after registration`);
+	return projection;
 }
 /**
 * @param {*} def Projection definition.
@@ -27908,7 +28114,9 @@ function fromProjectionDefinition$1(def) {
 		proj4.defs(code, def);
 	}
 	register(proj4);
-	return get$6(code);
+	const projection = get$6(code);
+	if (!projection) throw new Error("Projection not found after registration");
+	return projection;
 }
 /**
 * @param {number} code The EPSG code.
@@ -27978,13 +28186,38 @@ function epsgLookupMapTiler(key) {
 		return response.json().then((json) => {
 			const results = json["results"];
 			if (results?.length > 0) {
-				const result = results.filter((r) => r["id"]?.["authority"] === "EPSG" && r["id"]?.["code"] === code)[0];
+				const result = results.filter(
+					/**
+					* @param {*} r Result item.
+					* @return {boolean} Whether the result matches.
+					*/
+					(r) => r["id"]?.["authority"] === "EPSG" && r["id"]?.["code"] === code
+				)[0];
 				if (result) {
 					const transforms = result["transformations"];
 					if (transforms?.length > 0) {
 						const defaultTransform = result["default_transformation"];
-						if (transforms.filter((t) => t["id"]?.["authority"] === defaultTransform?.["authority"] && t["id"]?.["code"] === defaultTransform?.["code"] && t["grids"]?.length === 0).length > 0) return result["exports"]?.["proj4"];
-						const transform = transforms.filter((t) => t["grids"]?.length === 0 && t["target_crs"]?.["authority"] === "EPSG" && t["target_crs"]?.["code"] === 4326 && t["deprecated"] === false && t["usable"] === true).sort((t1, t2) => t1["accuracy"] - t2["accuracy"])[0]?.["exports"]?.["proj4"];
+						if (transforms.filter(
+							/**
+							* @param {*} t Transform item.
+							* @return {boolean} Whether the transform matches.
+							*/
+							(t) => t["id"]?.["authority"] === defaultTransform?.["authority"] && t["id"]?.["code"] === defaultTransform?.["code"] && t["grids"]?.length === 0
+						).length > 0) return result["exports"]?.["proj4"];
+						const transform = transforms.filter(
+							/**
+							* @param {*} t Transform item.
+							* @return {boolean} Whether the transform matches.
+							*/
+							(t) => t["grids"]?.length === 0 && t["target_crs"]?.["authority"] === "EPSG" && t["target_crs"]?.["code"] === 4326 && t["deprecated"] === false && t["usable"] === true
+						).sort(
+							/**
+							* @param {*} t1 First transform.
+							* @param {*} t2 Second transform.
+							* @return {number} Sort order.
+							*/
+							(t1, t2) => t1["accuracy"] - t2["accuracy"]
+						)[0]?.["exports"]?.["proj4"];
 						if (transform) return transform;
 					}
 					return result["exports"]?.["proj4"];
@@ -27993,8 +28226,7 @@ function epsgLookupMapTiler(key) {
 		});
 	};
 }
-//#endregion
-//#region node_modules/ol/tilegrid/TileGrid.js
+// node_modules/ol/tilegrid/TileGrid.js
 /**
 * @module ol/tilegrid/TileGrid
 */
@@ -28104,7 +28336,7 @@ var TileGrid = class {
 		this.origin_ = options.origin !== void 0 ? options.origin : null;
 		/**
 		* @private
-		* @type {Array<import("../coordinate.js").Coordinate>}
+		* @type {Array<import("../coordinate.js").Coordinate>|null}
 		*/
 		this.origins_ = null;
 		if (options.origins !== void 0) {
@@ -28116,7 +28348,7 @@ var TileGrid = class {
 		assert$1(!this.origin_ && this.origins_ || this.origin_ && !this.origins_, "Either `origin` or `origins` must be configured, never both");
 		/**
 		* @private
-		* @type {Array<number|import("../size.js").Size>}
+		* @type {Array<number|import("../size.js").Size>|null}
 		*/
 		this.tileSizes_ = null;
 		if (options.tileSizes !== void 0) {
@@ -28125,18 +28357,18 @@ var TileGrid = class {
 		}
 		/**
 		* @private
-		* @type {number|import("../size.js").Size}
+		* @type {number|import("../size.js").Size|null}
 		*/
 		this.tileSize_ = options.tileSize !== void 0 ? options.tileSize : !this.tileSizes_ ? 256 : null;
 		assert$1(!this.tileSize_ && this.tileSizes_ || this.tileSize_ && !this.tileSizes_, "Either `tileSize` or `tileSizes` must be configured, never both");
 		/**
 		* @private
-		* @type {import("../extent.js").Extent}
+		* @type {import("../extent.js").Extent|null}
 		*/
 		this.extent_ = extent !== void 0 ? extent : null;
 		/**
 		* @private
-		* @type {Array<import("../TileRange.js").default>}
+		* @type {Array<import("../TileRange.js").default>|null}
 		*/
 		this.fullTileRanges_ = null;
 		/**
@@ -28212,7 +28444,7 @@ var TileGrid = class {
 	}
 	/**
 	* Get the extent for this tile grid, if it was configured.
-	* @return {import("../extent.js").Extent} Extent.
+	* @return {import("../extent.js").Extent|null} Extent.
 	* @api
 	*/
 	getExtent() {
@@ -28242,7 +28474,7 @@ var TileGrid = class {
 	*/
 	getOrigin(z) {
 		if (this.origin_) return this.origin_;
-		return this.origins_[z];
+		return this.origins_ ? this.origins_[z] : [0, 0];
 	}
 	/**
 	* Get the list of origins for the grid.
@@ -28297,7 +28529,7 @@ var TileGrid = class {
 		const tileCoordZ = tileCoord[0];
 		const tileCoordX = tileCoord[1];
 		const tileCoordY = tileCoord[2];
-		if (z === tileCoordZ) return createOrUpdate$1(tileCoordX, tileCoordY, tileCoordX, tileCoordY, tempTileRange);
+		if (z === tileCoordZ) return createOrUpdate$1(tileCoordX, tileCoordX, tileCoordY, tileCoordY, tempTileRange);
 		if (this.zoomFactor_) {
 			const factor = Math.pow(this.zoomFactor_, z - tileCoordZ);
 			const minX = Math.floor(tileCoordX * factor);
@@ -28451,7 +28683,7 @@ var TileGrid = class {
 	*/
 	getTileSize(z) {
 		if (this.tileSize_) return this.tileSize_;
-		return this.tileSizes_[z];
+		return this.tileSizes_ ? this.tileSizes_[z] : 256;
 	}
 	/**
 	* @param {number} z Zoom level.
@@ -28501,8 +28733,7 @@ var TileGrid = class {
 		this.fullTileRanges_ = fullTileRanges;
 	}
 };
-//#endregion
-//#region node_modules/ol/tilegrid/WMTS.js
+// node_modules/ol/tilegrid/WMTS.js
 /**
 * @module ol/tilegrid/WMTS
 */
@@ -28584,13 +28815,16 @@ var WMTSTileGrid = class extends TileGrid {
 	}
 };
 /**
+* @typedef {Object<string, *>} CapabilitiesMatrixSet
+*/
+/**
 * Create a tile grid from a WMTS capabilities matrix set and an
 * optional TileMatrixSetLimits.
-* @param {Object} matrixSet An object representing a matrixSet in the
+* @param {CapabilitiesMatrixSet} matrixSet An object representing a matrixSet in the
 *     capabilities document.
 * @param {import("../extent.js").Extent} [extent] An optional extent to restrict the tile
 *     ranges the server provides.
-* @param {Array<Object>} [matrixLimits] An optional object representing
+* @param {Array<CapabilitiesMatrixSet>} [matrixLimits] An optional object representing
 *     the available matrices for tileGrid.
 * @return {WMTSTileGrid} WMTS tileGrid instance.
 * @api
@@ -28618,12 +28852,16 @@ function createFromCapabilitiesMatrixSet(matrixSet, extent, matrixLimits) {
 	const tileHeightPropName = "TileHeight";
 	const code = matrixSet[supportedCRSPropName];
 	const projection = get$4(code);
+	if (!projection) throw new Error(`Unsupported projection: ${code}`);
 	const metersPerUnit = projection.getMetersPerUnit();
+	if (metersPerUnit === void 0) throw new Error(`Projection ${code} has no meters per unit`);
 	const switchOriginXY = projection.getAxisOrientation().startsWith("ne");
-	matrixSet[matrixIdsPropName].sort(function(a, b) {
+	/** @type {Array<CapabilitiesMatrixSet>} */
+	const tileMatrices = matrixSet[matrixIdsPropName];
+	tileMatrices.sort(function(a, b) {
 		return b[scaleDenominatorPropName] - a[scaleDenominatorPropName];
 	});
-	matrixSet[matrixIdsPropName].forEach(function(elt) {
+	tileMatrices.forEach(function(elt) {
 		let matrixAvailable;
 		if (matrixLimits.length > 0) matrixAvailable = matrixLimits.find(function(elt_ml) {
 			if (elt[identifierPropName] == elt_ml[matrixIdsPropName]) return true;
@@ -28641,7 +28879,10 @@ function createFromCapabilitiesMatrixSet(matrixSet, extent, matrixLimits) {
 			resolutions.push(resolution);
 			tileSizes.push(tileWidth == tileHeight ? tileWidth : [tileWidth, tileHeight]);
 			sizes.push([elt["MatrixWidth"], elt["MatrixHeight"]]);
-			if (matrixLimits.length > 0) tileRanges.push(new TileRange(matrixAvailable["MinTileCol"], matrixAvailable["MaxTileCol"], matrixAvailable["MinTileRow"], matrixAvailable["MaxTileRow"]));
+			if (matrixLimits.length > 0 && matrixAvailable !== true) {
+				const limits = matrixAvailable;
+				tileRanges.push(new TileRange(limits["MinTileCol"], limits["MaxTileCol"], limits["MinTileRow"], limits["MaxTileRow"]));
+			}
 		}
 	});
 	return new WMTSTileGrid({
@@ -28654,8 +28895,7 @@ function createFromCapabilitiesMatrixSet(matrixSet, extent, matrixLimits) {
 		tileRanges: tileRanges.length > 0 ? tileRanges : void 0
 	});
 }
-//#endregion
-//#region node_modules/ol/tilegrid.js
+// node_modules/ol/tilegrid.js
 /**
 * @module ol/tilegrid
 */
@@ -28728,7 +28968,8 @@ function createForExtent(extent, maxZoom, tileSize, corner) {
 */
 function createXYZ(options) {
 	const xyzOptions = options || {};
-	const extent = xyzOptions.extent || get$4("EPSG:3857").getExtent();
+	const extent = xyzOptions.extent || get$4("EPSG:3857")?.getExtent();
+	if (!extent) throw new Error("Unable to determine extent for XYZ tile grid");
 	return new TileGrid({
 		extent,
 		minZoom: xyzOptions.minZoom,
@@ -28751,7 +28992,7 @@ function resolutionsFromExtent(extent, maxZoom, tileSize, maxResolution) {
 	tileSize = toSize(tileSize !== void 0 ? tileSize : 256);
 	const height = getHeight(extent);
 	const width = getWidth(extent);
-	maxResolution = maxResolution > 0 ? maxResolution : Math.max(width / tileSize[0], height / tileSize[1]);
+	maxResolution = maxResolution !== void 0 && maxResolution > 0 ? maxResolution : Math.max(width / tileSize[0], height / tileSize[1]);
 	const length = maxZoom + 1;
 	const resolutions = new Array(length);
 	for (let z = 0; z < length; ++z) resolutions[z] = maxResolution / Math.pow(2, z);
@@ -28776,21 +29017,23 @@ function createForProjection(projection, maxZoom, tileSize, corner) {
 * @return {import("./extent.js").Extent} Extent.
 */
 function extentFromProjection(projection) {
-	projection = get$4(projection);
-	let extent = projection.getExtent();
+	const projectionObj = get$4(projection);
+	if (!projectionObj) throw new Error("Unable to determine extent from unknown projection");
+	let extent = projectionObj.getExtent();
 	if (!extent) {
-		const half = 180 * METERS_PER_UNIT$1.degrees / projection.getMetersPerUnit();
+		const metersPerUnit = projectionObj.getMetersPerUnit();
+		if (metersPerUnit === void 0) throw new Error("Unable to determine extent from projection without units");
+		const half = 180 * METERS_PER_UNIT$1.degrees / metersPerUnit;
 		extent = createOrUpdate$2(-half, -half, half, half);
 	}
 	return extent;
 }
-//#endregion
-//#region node_modules/ol/uri.js
+// node_modules/ol/uri.js
 /**
 * Appends query parameters to a URI.
 *
 * @param {string} uri The original URI, which may already have query data.
-* @param {!Object} params An object where keys are URI-encoded parameter keys,
+* @param {!Object<string, *>} params An object where keys are URI-encoded parameter keys,
 *     and the values are arbitrary types or arrays.
 * @return {string} The new URI.
 */
@@ -28847,8 +29090,7 @@ function expandUrl(url) {
 	urls.push(url);
 	return urls;
 }
-//#endregion
-//#region node_modules/ol/tileurlfunction.js
+// node_modules/ol/tileurlfunction.js
 /**
 * @module ol/tileurlfunction
 */
@@ -28905,8 +29147,7 @@ function createFromTileUrlFunctions(tileUrlFunctions) {
 		return tileUrlFunctions[modulo(hash(tileCoord), tileUrlFunctions.length)](tileCoord, pixelRatio, projection);
 	});
 }
-//#endregion
-//#region node_modules/ol/source/Source.js
+// node_modules/ol/source/Source.js
 /**
 * @module ol/source/Source
 */
@@ -28978,6 +29219,11 @@ var Source = class extends BaseObject {
 		*/
 		this.loading = false;
 		/**
+		* Rotation can be requested from the source.
+		* @type {boolean}
+		*/
+		this.canRotate = false;
+		/**
 		* @private
 		* @type {import("./Source.js").State}
 		*/
@@ -28994,12 +29240,12 @@ var Source = class extends BaseObject {
 		this.interpolate_ = !!options.interpolate;
 		/**
 		* @protected
-		* @type {function(import("../View.js").ViewOptions):void}
+		* @type {null|function(import("../View.js").ViewOptions):void}
 		*/
 		this.viewResolver = null;
 		/**
 		* @protected
-		* @type {function(Error):void}
+		* @type {null|function(Error):void}
 		*/
 		this.viewRejector = null;
 		const self = this;
@@ -29132,8 +29378,7 @@ function adaptAttributions(attributionLike) {
 	if (!Array.isArray(attributionLike)) attributionLike = [attributionLike];
 	return (frameState) => attributionLike;
 }
-//#endregion
-//#region node_modules/ol/source/Tile.js
+// node_modules/ol/source/Tile.js
 /**
 * @module ol/source/Tile
 */
@@ -29328,7 +29573,7 @@ var TileSource = class extends Source {
 	* returned.
 	* @param {import("../tilecoord.js").TileCoord} tileCoord Tile coordinate.
 	* @param {import("../proj/Projection.js").default} [projection] Projection.
-	* @return {import("../tilecoord.js").TileCoord} Tile coordinate to be passed to the tileUrlFunction or
+	* @return {import("../tilecoord.js").TileCoord|null} Tile coordinate to be passed to the tileUrlFunction or
 	*     null if no tile URL should be created for the passed `tileCoord`.
 	*/
 	getTileCoordForTileUrlFunction(tileCoord, projection) {
@@ -29370,8 +29615,7 @@ var TileSourceEvent = class extends BaseEvent {
 		this.tile = tile;
 	}
 };
-//#endregion
-//#region node_modules/ol/source/TileEventType.js
+// node_modules/ol/source/TileEventType.js
 /**
 * @module ol/source/TileEventType
 */
@@ -29404,8 +29648,7 @@ var TileEventType_default = {
 /**
 * @typedef {'tileloadstart'|'tileloadend'|'tileloaderror'} TileSourceEventTypes
 */
-//#endregion
-//#region node_modules/ol/source/UrlTile.js
+// node_modules/ol/source/UrlTile.js
 /**
 * @module ol/source/UrlTile
 */
@@ -29578,8 +29821,7 @@ var UrlTile = class UrlTile extends TileSource {
 	*/
 	tileUrlFunction(tileCoord, pixelRatio, projection) {}
 };
-//#endregion
-//#region node_modules/ol/source/TileImage.js
+// node_modules/ol/source/TileImage.js
 /**
 * @module ol/source/TileImage
 */
@@ -29664,7 +29906,7 @@ var TileImage = class extends UrlTile {
 		this.crossOrigin = options.crossOrigin !== void 0 ? options.crossOrigin : null;
 		/**
 		* @protected
-		* @type {ReferrerPolicy}
+		* @type {ReferrerPolicy|undefined}
 		*/
 		this.referrerPolicy = options.referrerPolicy;
 		/**
@@ -29694,7 +29936,8 @@ var TileImage = class extends UrlTile {
 	* @override
 	*/
 	getGutterForProjection(projection) {
-		if (this.getProjection() && projection && !equivalent$1(this.getProjection(), projection)) return 0;
+		const thisProj = this.getProjection();
+		if (thisProj && projection && !equivalent$1(thisProj, projection)) return 0;
 		return this.getGutter();
 	}
 	/**
@@ -29770,7 +30013,7 @@ var TileImage = class extends UrlTile {
 			y
 		];
 		const key = this.getKey();
-		const tile = new ReprojTile(sourceProjection, this.getTileGridForProjection(sourceProjection), projection, this.getTileGridForProjection(projection), tileCoord, this.getTileCoordForTileUrlFunction(tileCoord, projection), this.getTilePixelRatio(pixelRatio), this.getGutter(), (z, x, y, pixelRatio) => this.getTileInternal(z, x, y, pixelRatio, sourceProjection, tileCache), this.reprojectionErrorThreshold_, this.renderReprojectionEdges_, this.tileOptions);
+		const tile = new ReprojTile(sourceProjection, this.getTileGridForProjection(sourceProjection), projection, this.getTileGridForProjection(projection), tileCoord, this.getTileCoordForTileUrlFunction(tileCoord, projection) || tileCoord, this.getTilePixelRatio(pixelRatio), this.getGutter(), (z, x, y, pixelRatio) => this.getTileInternal(z, x, y, pixelRatio, sourceProjection, tileCache), this.reprojectionErrorThreshold_, this.renderReprojectionEdges_, this.tileOptions);
 		tile.key = key;
 		return tile;
 	}
@@ -29852,20 +30095,22 @@ function defaultTileLoadFunction(imageTile, src) {
 			return createImageBitmap(blob);
 		}).then((imageBitmap) => {
 			const canvas = imageTile.getImage();
+			if (!canvas) return;
 			canvas.width = imageBitmap.width;
 			canvas.height = imageBitmap.height;
-			canvas.getContext("2d").drawImage(imageBitmap, 0, 0);
+			const ctx = canvas.getContext("2d");
+			if (!ctx) return;
+			ctx.drawImage(imageBitmap, 0, 0);
 			imageBitmap.close?.();
 			canvas.dispatchEvent(new Event("load"));
 		}).catch(() => {
-			imageTile.getImage().dispatchEvent(new Event("error"));
+			imageTile.getImage()?.dispatchEvent(new Event("error"));
 		});
 		return;
 	}
 	/** @type {HTMLImageElement|HTMLVideoElement} */ imageTile.getImage().src = src;
 }
-//#endregion
-//#region node_modules/ol/source/XYZ.js
+// node_modules/ol/source/XYZ.js
 /**
 * @module ol/source/XYZ
 */
@@ -29981,8 +30226,7 @@ var XYZ = class extends TileImage {
 		return this.gutter_;
 	}
 };
-//#endregion
-//#region node_modules/ol/source/OSM.js
+// node_modules/ol/source/OSM.js
 /**
 * @module ol/source/OSM
 */
@@ -30054,8 +30298,7 @@ var OSM = class extends XYZ {
 		});
 	}
 };
-//#endregion
-//#region node_modules/proj4/lib/global.js
+// node_modules/proj4/lib/global.js
 function global_default(defs) {
 	defs("EPSG:4326", "+title=WGS 84 (long/lat) +proj=longlat +ellps=WGS84 +datum=WGS84 +units=degrees");
 	defs("EPSG:4269", "+title=NAD83 (long/lat) +proj=longlat +a=6378137.0 +b=6356752.31414036 +ellps=GRS80 +datum=NAD83 +units=degrees");
@@ -30072,8 +30315,7 @@ function global_default(defs) {
 	defs["EPSG:900913"] = defs["EPSG:3857"];
 	defs["EPSG:102113"] = defs["EPSG:3857"];
 }
-//#endregion
-//#region node_modules/proj4/lib/constants/values.js
+// node_modules/proj4/lib/constants/values.js
 var SRS_WGS84_SEMIMAJOR = 6378137;
 var SRS_WGS84_SEMIMINOR = 6356752.314;
 var SRS_WGS84_ESQUARED = .0066943799901413165;
@@ -30088,8 +30330,7 @@ var R2D$1 = 57.29577951308232;
 var FORTPI = Math.PI / 4;
 var TWO_PI = Math.PI * 2;
 var SPI = 3.14159265359;
-//#endregion
-//#region node_modules/proj4/lib/constants/PrimeMeridian.js
+// node_modules/proj4/lib/constants/PrimeMeridian.js
 var primeMeridian = {};
 primeMeridian.greenwich = 0;
 primeMeridian.lisbon = -9.131906111111;
@@ -30104,8 +30345,7 @@ primeMeridian.brussels = 4.367975;
 primeMeridian.stockholm = 18.058277777778;
 primeMeridian.athens = 23.7163375;
 primeMeridian.oslo = 10.722916666667;
-//#endregion
-//#region node_modules/proj4/lib/constants/units.js
+// node_modules/proj4/lib/constants/units.js
 var units_default = {
 	mm: { to_meter: .001 },
 	cm: { to_meter: .01 },
@@ -30128,8 +30368,7 @@ var units_default = {
 	"us-in": { to_meter: .025400050800101 },
 	"us-yd": { to_meter: .914401828803658 }
 };
-//#endregion
-//#region node_modules/proj4/lib/match.js
+// node_modules/proj4/lib/match.js
 var ignoredChar = /[\s_\-\/\(\)]/g;
 function match(obj, key) {
 	if (obj[key]) return obj[key];
@@ -30143,8 +30382,7 @@ function match(obj, key) {
 		if (processedKey === lkey) return obj[testkey];
 	}
 }
-//#endregion
-//#region node_modules/proj4/lib/projString.js
+// node_modules/proj4/lib/projString.js
 /**
 * @param {string} defData
 * @returns {import('./defs').ProjectionDefinition}
@@ -30286,8 +30524,7 @@ function projString_default(defData) {
 	self["projStr"] = defData;
 	return self;
 }
-//#endregion
-//#region node_modules/wkt-parser/PROJJSONBuilder.js
+// node_modules/wkt-parser/PROJJSONBuilder.js
 var PROJJSONBuilderBase = class {
 	static getId(node) {
 		const idNode = node.find((child) => Array.isArray(child) && child[0] === "ID");
@@ -30489,8 +30726,7 @@ var PROJJSONBuilderBase = class {
 		return result;
 	}
 };
-//#endregion
-//#region node_modules/wkt-parser/buildPROJJSON.js
+// node_modules/wkt-parser/buildPROJJSON.js
 /**
 * Builds a PROJJSON object from a WKT array structure.
 * @param {Array} root The root WKT array node.
@@ -30499,8 +30735,7 @@ var PROJJSONBuilderBase = class {
 function buildPROJJSON(root) {
 	return PROJJSONBuilderBase.convert(root);
 }
-//#endregion
-//#region node_modules/wkt-parser/detectWKTVersion.js
+// node_modules/wkt-parser/detectWKTVersion.js
 /**
 * Detects whether the WKT string is WKT1 or WKT2.
 * @param {string} wkt The WKT string.
@@ -30512,8 +30747,7 @@ function detectWKTVersion(wkt) {
 	if (normalizedWKT.includes("PROJCS") || normalizedWKT.includes("GEOGCS") || normalizedWKT.includes("LOCAL_CS") || normalizedWKT.includes("VERT_CS") || normalizedWKT.includes("UNIT")) return "WKT1";
 	return "WKT1";
 }
-//#endregion
-//#region node_modules/wkt-parser/parser.js
+// node_modules/wkt-parser/parser.js
 var parser_default = parseString;
 var NEUTRAL = 1;
 var KEYWORD = 2;
@@ -30654,8 +30888,7 @@ Parser.prototype.output = function() {
 function parseString(txt) {
 	return new Parser(txt).output();
 }
-//#endregion
-//#region node_modules/wkt-parser/process.js
+// node_modules/wkt-parser/process.js
 function mapit(obj, key, value) {
 	if (Array.isArray(key)) {
 		value.unshift(key);
@@ -30752,8 +30985,7 @@ function sExpr(v, obj) {
 			return mapit(obj, key, v);
 	}
 }
-//#endregion
-//#region node_modules/wkt-parser/util.js
+// node_modules/wkt-parser/util.js
 var D2R$1 = .017453292519943295;
 function d2r(input) {
 	return input * D2R$1;
@@ -30771,8 +31003,7 @@ function applyProjectionDefaults(wkt) {
 		delete wkt.lat1;
 	}
 }
-//#endregion
-//#region node_modules/wkt-parser/transformPROJJSON.js
+// node_modules/wkt-parser/transformPROJJSON.js
 function processUnit(unit) {
 	let result = {
 		units: null,
@@ -30898,6 +31129,7 @@ function transformPROJJSON(projjson, result = {}) {
 				result.datumCode = value.id ? value.id.authority + "_" + value.id.code : value.name;
 		}
 	});
+	if (!result.datumCode && (projjson.type === "GeographicCRS" || projjson.type === "GeodeticCRS") && projjson.id) result.datumCode = projjson.id.authority + "_" + projjson.id.code;
 	if (result.latitude_of_false_origin !== void 0) result.lat0 = result.latitude_of_false_origin;
 	if (result.longitude_of_false_origin !== void 0) result.long0 = result.longitude_of_false_origin;
 	if (result.latitude_of_standard_parallel !== void 0) {
@@ -30928,8 +31160,7 @@ function transformPROJJSON(projjson, result = {}) {
 	applyProjectionDefaults(result);
 	return result;
 }
-//#endregion
-//#region node_modules/wkt-parser/index.js
+// node_modules/wkt-parser/index.js
 var knownTypes = [
 	"PROJECTEDCRS",
 	"PROJCRS",
@@ -31115,8 +31346,7 @@ function wkt_parser_default(wkt) {
 	cleanWKT(obj);
 	return obj[type];
 }
-//#endregion
-//#region node_modules/proj4/lib/defs.js
+// node_modules/proj4/lib/defs.js
 /**
 * @typedef {Object} ProjectionDefinition
 * @property {string} title
@@ -31205,8 +31435,7 @@ function defs(name) {
 	}
 }
 global_default(defs);
-//#endregion
-//#region node_modules/proj4/lib/parseCode.js
+// node_modules/proj4/lib/parseCode.js
 function testObj(code) {
 	return typeof code === "string";
 }
@@ -31254,8 +31483,7 @@ function parse$2(code) {
 	else out = code;
 	return out && checkMercator(out) ? defs["EPSG:3857"] : out;
 }
-//#endregion
-//#region node_modules/proj4/lib/extend.js
+// node_modules/proj4/lib/extend.js
 function extend_default(destination, source) {
 	destination = destination || {};
 	var value, property;
@@ -31266,33 +31494,28 @@ function extend_default(destination, source) {
 	}
 	return destination;
 }
-//#endregion
-//#region node_modules/proj4/lib/common/msfnz.js
+// node_modules/proj4/lib/common/msfnz.js
 function msfnz_default(eccent, sinphi, cosphi) {
 	var con = eccent * sinphi;
 	return cosphi / Math.sqrt(1 - con * con);
 }
-//#endregion
-//#region node_modules/proj4/lib/common/sign.js
+// node_modules/proj4/lib/common/sign.js
 function sign_default(x) {
 	return x < 0 ? -1 : 1;
 }
-//#endregion
-//#region node_modules/proj4/lib/common/adjust_lon.js
+// node_modules/proj4/lib/common/adjust_lon.js
 function adjust_lon_default(x, skipAdjust) {
 	if (skipAdjust) return x;
 	return Math.abs(x) <= 3.14159265359 ? x : x - sign_default(x) * TWO_PI;
 }
-//#endregion
-//#region node_modules/proj4/lib/common/tsfnz.js
+// node_modules/proj4/lib/common/tsfnz.js
 function tsfnz_default(eccent, phi, sinphi) {
 	var con = eccent * sinphi;
 	var com = .5 * eccent;
 	con = Math.pow((1 - con) / (1 + con), com);
 	return Math.tan(.5 * (HALF_PI - phi)) / con;
 }
-//#endregion
-//#region node_modules/proj4/lib/common/phi2z.js
+// node_modules/proj4/lib/common/phi2z.js
 function phi2z_default(eccent, ts) {
 	var eccnth = .5 * eccent;
 	var con, dphi;
@@ -31305,8 +31528,7 @@ function phi2z_default(eccent, ts) {
 	}
 	return -9999;
 }
-//#endregion
-//#region node_modules/proj4/lib/projections/merc.js
+// node_modules/proj4/lib/projections/merc.js
 /**
 * @typedef {Object} LocalThis
 * @property {number} es
@@ -31378,8 +31600,7 @@ var merc_default = {
 		"merc"
 	]
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/longlat.js
+// node_modules/proj4/lib/projections/longlat.js
 function init$39() {}
 function identity(pt) {
 	return pt;
@@ -31391,8 +31612,7 @@ var names$35 = [
 	"latlon",
 	"latlong"
 ];
-//#endregion
-//#region node_modules/proj4/lib/projections.js
+// node_modules/proj4/lib/projections.js
 /** @type {Array<Partial<import('./Proj').default>>} */
 var projs = [merc_default, {
 	init: init$39,
@@ -31441,8 +31661,7 @@ var projections_default = {
 	add,
 	get: get$2
 };
-//#endregion
-//#region node_modules/proj4/lib/constants/Ellipsoid.js
+// node_modules/proj4/lib/constants/Ellipsoid.js
 var ellipsoids = {
 	MERIT: {
 		a: 6378137,
@@ -31666,8 +31885,7 @@ var ellipsoids = {
 		ellipseName: "Normal Sphere (r=6370997)"
 	}
 };
-//#endregion
-//#region node_modules/proj4/lib/deriveConstants.js
+// node_modules/proj4/lib/deriveConstants.js
 var WGS84 = ellipsoids.WGS84;
 function eccentricity(a, b, rf, R_A) {
 	var a2 = a * a;
@@ -31706,8 +31924,7 @@ function sphere(a, b, rf, ellps, sphere) {
 		sphere
 	};
 }
-//#endregion
-//#region node_modules/proj4/lib/constants/Datum.js
+// node_modules/proj4/lib/constants/Datum.js
 var datums = {
 	wgs84: {
 		towgs84: "0,0,0",
@@ -32225,8 +32442,7 @@ for (var key in datums) {
 	if (!datum$1.datumName) continue;
 	datums[datum$1.datumName] = datum$1;
 }
-//#endregion
-//#region node_modules/proj4/lib/datum.js
+// node_modules/proj4/lib/datum.js
 function datum(datumCode, datum_params, a, b, es, ep2, nadgrids) {
 	var out = {};
 	out.datum_type = 5;
@@ -32254,8 +32470,7 @@ function datum(datumCode, datum_params, a, b, es, ep2, nadgrids) {
 	out.ep2 = ep2;
 	return out;
 }
-//#endregion
-//#region node_modules/proj4/lib/nadgrid.js
+// node_modules/proj4/lib/nadgrid.js
 /**
 * Resources for details of NTv2 file formats:
 * - https://web.archive.org/web/20140127204822if_/http://www.mgs.gov.on.ca:80/stdprodconsume/groups/content/@mgs/@iandit/documents/resourcelist/stel02_047447.pdf
@@ -32494,8 +32709,7 @@ function readGridNodes(view, offset, gridHeader, isLittleEndian, includeErrorFie
 	}
 	return gridShiftRecords;
 }
-//#endregion
-//#region node_modules/proj4/lib/Proj.js
+// node_modules/proj4/lib/Proj.js
 /**
 * @typedef {Object} DatumDefinition
 * @property {number} datum_type - The type of datum.
@@ -32569,8 +32783,7 @@ function Projection(srsCode, callback) {
 }
 Projection.projections = projections_default;
 Projection.projections.start();
-//#endregion
-//#region node_modules/proj4/lib/datumUtils.js
+// node_modules/proj4/lib/datumUtils.js
 function compareDatums(source, dest) {
 	if (source.datum_type !== dest.datum_type) return false;
 	else if (source.a !== dest.a || Math.abs(source.es - dest.es) > 5e-11) return false;
@@ -32721,8 +32934,7 @@ function geocentricFromWgs84(p, datum_type, datum_params) {
 		};
 	}
 }
-//#endregion
-//#region node_modules/proj4/lib/datum_transform.js
+// node_modules/proj4/lib/datum_transform.js
 function checkParams(type) {
 	return type === 1 || type === 2;
 }
@@ -32893,8 +33105,7 @@ function nadInterpolate(pin, ct) {
 	val.y = m00 * f00.y + m10 * f10.y + m01 * f01.y + m11 * f11.y;
 	return val;
 }
-//#endregion
-//#region node_modules/proj4/lib/adjust_axis.js
+// node_modules/proj4/lib/adjust_axis.js
 var order = [
 	"x",
 	"y",
@@ -32970,8 +33181,7 @@ function adjustAxisFromEnu(crs, point) {
 	}
 	return out;
 }
-//#endregion
-//#region node_modules/proj4/lib/common/toPoint.js
+// node_modules/proj4/lib/common/toPoint.js
 /**
 * @param {Array<number>} array
 * @returns {import("../core").InterfaceCoordinates}
@@ -32985,8 +33195,7 @@ function toPoint_default(array) {
 	if (array.length > 3) out.m = array[3];
 	return out;
 }
-//#endregion
-//#region node_modules/proj4/lib/checkSanity.js
+// node_modules/proj4/lib/checkSanity.js
 function checkSanity_default(point) {
 	checkCoord(point.x);
 	checkCoord(point.y);
@@ -32998,8 +33207,7 @@ function checkCoord(num) {
 	}
 	if (typeof num !== "number" || num !== num || !isFinite(num)) throw new TypeError("coordinates must be finite numbers");
 }
-//#endregion
-//#region node_modules/proj4/lib/transform.js
+// node_modules/proj4/lib/transform.js
 function checkNotWGS(source, dest) {
 	return (source.datum.datum_type === 1 || source.datum.datum_type === 2 || source.datum.datum_type === 3) && dest.datumCode !== "WGS84" || (dest.datum.datum_type === 1 || dest.datum.datum_type === 2 || dest.datum.datum_type === 3) && source.datumCode !== "WGS84";
 }
@@ -33081,8 +33289,7 @@ function transform(source, dest, point, enforceAxis) {
 	};
 	return transformInternal(source, dest, pt, enforceAxis);
 }
-//#endregion
-//#region node_modules/proj4/lib/core.js
+// node_modules/proj4/lib/core.js
 var wgs84 = Projection("WGS84");
 /**
 * @typedef {{x: number, y: number, z?: number, m?: number}} InterfaceCoordinates
@@ -33297,8 +33504,7 @@ function proj4$1(fromProjOrToProj, toProjOrCoord, coord) {
 		return obj;
 	}
 }
-//#endregion
-//#region node_modules/mgrs/mgrs.js
+// node_modules/mgrs/mgrs.js
 /**
 * UTM zones are grouped, and assigned to one of a group of 6
 * sets.
@@ -33817,8 +34023,7 @@ function getMinNorthing(zoneLetter) {
 	if (northing >= 0) return northing;
 	else throw "Invalid zone letter: " + zoneLetter;
 }
-//#endregion
-//#region node_modules/proj4/lib/Point.js
+// node_modules/proj4/lib/Point.js
 /**
 * @deprecated v3.0.0 - use proj4.toPoint instead
 * @param {number | import('./core').TemplateCoordinates | string} x
@@ -33853,8 +34058,7 @@ Point.fromMGRS = function(mgrsStr) {
 Point.prototype.toMGRS = function(accuracy) {
 	return forward$32([this.x, this.y], accuracy);
 };
-//#endregion
-//#region node_modules/proj4/lib/common/pj_enfn.js
+// node_modules/proj4/lib/common/pj_enfn.js
 var C00 = 1;
 var C02 = .25;
 var C04 = .046875;
@@ -33878,15 +34082,13 @@ function pj_enfn_default(es) {
 	en[4] = t * es * C88;
 	return en;
 }
-//#endregion
-//#region node_modules/proj4/lib/common/pj_mlfn.js
+// node_modules/proj4/lib/common/pj_mlfn.js
 function pj_mlfn_default(phi, sphi, cphi, en) {
 	cphi *= sphi;
 	sphi *= sphi;
 	return en[0] * phi - cphi * (en[1] + sphi * (en[2] + sphi * (en[3] + sphi * en[4])));
 }
-//#endregion
-//#region node_modules/proj4/lib/common/pj_inv_mlfn.js
+// node_modules/proj4/lib/common/pj_inv_mlfn.js
 var MAX_ITER$3 = 20;
 function pj_inv_mlfn_default(arg, es, en) {
 	var k = 1 / (1 - es);
@@ -33900,8 +34102,7 @@ function pj_inv_mlfn_default(arg, es, en) {
 	}
 	return phi;
 }
-//#endregion
-//#region node_modules/proj4/lib/projections/tmerc.js
+// node_modules/proj4/lib/projections/tmerc.js
 /**
 * @typedef {Object} LocalThis
 * @property {number} es
@@ -34012,15 +34213,13 @@ var tmerc_default = {
 	inverse: inverse$31,
 	names: ["Fast_Transverse_Mercator", "Fast Transverse Mercator"]
 };
-//#endregion
-//#region node_modules/proj4/lib/common/sinh.js
+// node_modules/proj4/lib/common/sinh.js
 function sinh_default(x) {
 	var r = Math.exp(x);
 	r = (r - 1 / r) / 2;
 	return r;
 }
-//#endregion
-//#region node_modules/proj4/lib/common/hypot.js
+// node_modules/proj4/lib/common/hypot.js
 function hypot_default(x, y) {
 	x = Math.abs(x);
 	y = Math.abs(y);
@@ -34028,22 +34227,19 @@ function hypot_default(x, y) {
 	var b = Math.min(x, y) / (a ? a : 1);
 	return a * Math.sqrt(1 + Math.pow(b, 2));
 }
-//#endregion
-//#region node_modules/proj4/lib/common/log1py.js
+// node_modules/proj4/lib/common/log1py.js
 function log1py_default(x) {
 	var y = 1 + x;
 	var z = y - 1;
 	return z === 0 ? x : x * Math.log(y) / z;
 }
-//#endregion
-//#region node_modules/proj4/lib/common/asinhy.js
+// node_modules/proj4/lib/common/asinhy.js
 function asinhy_default(x) {
 	var y = Math.abs(x);
 	y = log1py_default(y * (1 + y / (hypot_default(1, y) + 1)));
 	return x < 0 ? -y : y;
 }
-//#endregion
-//#region node_modules/proj4/lib/common/gatg.js
+// node_modules/proj4/lib/common/gatg.js
 function gatg_default(pp, B) {
 	var cos_2B = 2 * Math.cos(2 * B);
 	var i = pp.length - 1;
@@ -34057,8 +34253,7 @@ function gatg_default(pp, B) {
 	}
 	return B + h * Math.sin(2 * B);
 }
-//#endregion
-//#region node_modules/proj4/lib/common/clens.js
+// node_modules/proj4/lib/common/clens.js
 function clens_default(pp, arg_r) {
 	var r = 2 * Math.cos(arg_r);
 	var i = pp.length - 1;
@@ -34072,15 +34267,13 @@ function clens_default(pp, arg_r) {
 	}
 	return Math.sin(arg_r) * hr;
 }
-//#endregion
-//#region node_modules/proj4/lib/common/cosh.js
+// node_modules/proj4/lib/common/cosh.js
 function cosh_default(x) {
 	var r = Math.exp(x);
 	r = (r + 1 / r) / 2;
 	return r;
 }
-//#endregion
-//#region node_modules/proj4/lib/common/clens_cmplx.js
+// node_modules/proj4/lib/common/clens_cmplx.js
 function clens_cmplx_default(pp, arg_r, arg_i) {
 	var sin_arg_r = Math.sin(arg_r);
 	var cos_arg_r = Math.cos(arg_r);
@@ -34107,8 +34300,7 @@ function clens_cmplx_default(pp, arg_r, arg_i) {
 	i = cos_arg_r * sinh_arg_i;
 	return [r * hr - i * hi, r * hi + i * hr];
 }
-//#endregion
-//#region node_modules/proj4/lib/projections/etmerc.js
+// node_modules/proj4/lib/projections/etmerc.js
 /**
 * @typedef {Object} LocalThis
 * @property {number} es
@@ -34247,8 +34439,7 @@ var etmerc_default = {
 		"tmerc"
 	]
 };
-//#endregion
-//#region node_modules/proj4/lib/common/adjust_zone.js
+// node_modules/proj4/lib/common/adjust_zone.js
 function adjust_zone_default(zone, lon) {
 	if (zone === void 0) {
 		zone = Math.floor((adjust_lon_default(lon) + Math.PI) * 30 / Math.PI) + 1;
@@ -34257,8 +34448,7 @@ function adjust_zone_default(zone, lon) {
 	}
 	return zone;
 }
-//#endregion
-//#region node_modules/proj4/lib/projections/utm.js
+// node_modules/proj4/lib/projections/utm.js
 var dependsOn = "etmerc";
 /** @this {import('../defs.js').ProjectionDefinition} */
 function init$36() {
@@ -34278,13 +34468,11 @@ var utm_default = {
 	names: ["Universal Transverse Mercator System", "utm"],
 	dependsOn
 };
-//#endregion
-//#region node_modules/proj4/lib/common/srat.js
+// node_modules/proj4/lib/common/srat.js
 function srat_default(esinp, exp) {
 	return Math.pow((1 - esinp) / (1 + esinp), exp);
 }
-//#endregion
-//#region node_modules/proj4/lib/projections/gauss.js
+// node_modules/proj4/lib/projections/gauss.js
 var MAX_ITER$2 = 20;
 /**
 * @typedef {Object} LocalThis
@@ -34335,8 +34523,7 @@ var gauss_default = {
 	inverse: inverse$29,
 	names: ["gauss"]
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/sterea.js
+// node_modules/proj4/lib/projections/sterea.js
 /**
 * @typedef {Object} LocalThis
 * @property {number} sinc0
@@ -34402,8 +34589,7 @@ var sterea_default = {
 		"Double_Stereographic"
 	]
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/stere.js
+// node_modules/proj4/lib/projections/stere.js
 /**
 * @typedef {Object} LocalThis
 * @property {number} coslat0
@@ -34543,8 +34729,7 @@ var stere_default = {
 	],
 	ssfn_
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/somerc.js
+// node_modules/proj4/lib/projections/somerc.js
 /**
 * @typedef {Object} LocalThis
 * @property {number} lambda0
@@ -34611,8 +34796,7 @@ var somerc_default = {
 	inverse: inverse$26,
 	names: ["somerc"]
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/omerc.js
+// node_modules/proj4/lib/projections/omerc.js
 /**
 * @typedef {Object} LocalThis
 * @property {boolean} no_off
@@ -34817,8 +35001,7 @@ var omerc_default = {
 		"omerc"
 	]
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/lcc.js
+// node_modules/proj4/lib/projections/lcc.js
 /**
 * @typedef {Object} LocalThis
 * @property {number} e
@@ -34910,8 +35093,7 @@ var lcc_default = {
 		"Lambert Conic Conformal (2SP)"
 	]
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/krovak.js
+// node_modules/proj4/lib/projections/krovak.js
 function init$29() {
 	this.a = 6377397.155;
 	this.es = .006674372230614;
@@ -34997,44 +35179,36 @@ var krovak_default = {
 		"krovak"
 	]
 };
-//#endregion
-//#region node_modules/proj4/lib/common/mlfn.js
+// node_modules/proj4/lib/common/mlfn.js
 function mlfn_default(e0, e1, e2, e3, phi) {
 	return e0 * phi - e1 * Math.sin(2 * phi) + e2 * Math.sin(4 * phi) - e3 * Math.sin(6 * phi);
 }
-//#endregion
-//#region node_modules/proj4/lib/common/e0fn.js
+// node_modules/proj4/lib/common/e0fn.js
 function e0fn_default(x) {
 	return 1 - .25 * x * (1 + x / 16 * (3 + 1.25 * x));
 }
-//#endregion
-//#region node_modules/proj4/lib/common/e1fn.js
+// node_modules/proj4/lib/common/e1fn.js
 function e1fn_default(x) {
 	return .375 * x * (1 + .25 * x * (1 + .46875 * x));
 }
-//#endregion
-//#region node_modules/proj4/lib/common/e2fn.js
+// node_modules/proj4/lib/common/e2fn.js
 function e2fn_default(x) {
 	return .05859375 * x * x * (1 + .75 * x);
 }
-//#endregion
-//#region node_modules/proj4/lib/common/e3fn.js
+// node_modules/proj4/lib/common/e3fn.js
 function e3fn_default(x) {
 	return x * x * x * (35 / 3072);
 }
-//#endregion
-//#region node_modules/proj4/lib/common/gN.js
+// node_modules/proj4/lib/common/gN.js
 function gN_default(a, e, sinphi) {
 	var temp = e * sinphi;
 	return a / Math.sqrt(1 - temp * temp);
 }
-//#endregion
-//#region node_modules/proj4/lib/common/adjust_lat.js
+// node_modules/proj4/lib/common/adjust_lat.js
 function adjust_lat_default(x) {
 	return Math.abs(x) < HALF_PI ? x : x - sign_default(x) * Math.PI;
 }
-//#endregion
-//#region node_modules/proj4/lib/common/imlfn.js
+// node_modules/proj4/lib/common/imlfn.js
 function imlfn_default(ml, e0, e1, e2, e3) {
 	var phi;
 	var dphi;
@@ -35046,8 +35220,7 @@ function imlfn_default(ml, e0, e1, e2, e3) {
 	}
 	return NaN;
 }
-//#endregion
-//#region node_modules/proj4/lib/projections/cass.js
+// node_modules/proj4/lib/projections/cass.js
 /**
 * @typedef {Object} LocalThis
 * @property {number} es
@@ -35131,8 +35304,7 @@ var cass_default = {
 		"cass"
 	]
 };
-//#endregion
-//#region node_modules/proj4/lib/common/qsfnz.js
+// node_modules/proj4/lib/common/qsfnz.js
 function qsfnz_default(eccent, sinphi) {
 	var con;
 	if (eccent > 1e-7) {
@@ -35140,8 +35312,7 @@ function qsfnz_default(eccent, sinphi) {
 		return (1 - eccent * eccent) * (sinphi / (1 - con * con) - .5 / eccent * Math.log((1 - con) / (1 + con)));
 	} else return 2 * sinphi;
 }
-//#endregion
-//#region node_modules/proj4/lib/common/authset.js
+// node_modules/proj4/lib/common/authset.js
 var P00 = .3333333333333333;
 var P01 = .17222222222222222;
 var P02 = .10257936507936508;
@@ -35161,8 +35332,7 @@ function authset(es) {
 	APA[2] = t * P20;
 	return APA;
 }
-//#endregion
-//#region node_modules/proj4/lib/common/authlat.js
+// node_modules/proj4/lib/common/authlat.js
 function authlat(beta, APA) {
 	var t = beta + beta;
 	return beta + APA[0] * Math.sin(t) + APA[1] * Math.sin(t + t) + APA[2] * Math.sin(t + t + t);
@@ -35367,14 +35537,12 @@ var laea_default = {
 	EQUIT: 3,
 	OBLIQ: 4
 };
-//#endregion
-//#region node_modules/proj4/lib/common/asinz.js
+// node_modules/proj4/lib/common/asinz.js
 function asinz_default(x) {
 	if (Math.abs(x) > 1) x = x > 1 ? 1 : -1;
 	return Math.asin(x);
 }
-//#endregion
-//#region node_modules/proj4/lib/projections/aea.js
+// node_modules/proj4/lib/projections/aea.js
 /**
 * @typedef {Object} LocalThis
 * @property {number} temp
@@ -35490,8 +35658,7 @@ var aea_default = {
 	],
 	phi1z
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/gnom.js
+// node_modules/proj4/lib/projections/gnom.js
 /**
 * @typedef {Object} LocalThis
 * @property {number} sin_p14
@@ -35568,8 +35735,7 @@ var gnom_default = {
 	inverse: inverse$19,
 	names: ["gnom"]
 };
-//#endregion
-//#region node_modules/proj4/lib/common/iqsfnz.js
+// node_modules/proj4/lib/common/iqsfnz.js
 function iqsfnz_default(eccent, q) {
 	var temp = 1 - (1 - eccent * eccent) / (2 * eccent) * Math.log((1 - eccent) / (1 + eccent));
 	if (Math.abs(Math.abs(q) - temp) < 1e-6) {
@@ -35591,8 +35757,7 @@ function iqsfnz_default(eccent, q) {
 	}
 	return NaN;
 }
-//#endregion
-//#region node_modules/proj4/lib/projections/cea.js
+// node_modules/proj4/lib/projections/cea.js
 /**
 * @typedef {Object} LocalThis
 * @property {number} e
@@ -35645,8 +35810,7 @@ var cea_default = {
 	inverse: inverse$18,
 	names: ["cea"]
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/eqc.js
+// node_modules/proj4/lib/projections/eqc.js
 function init$23() {
 	this.x0 = this.x0 || 0;
 	this.y0 = this.y0 || 0;
@@ -35683,8 +35847,7 @@ var eqc_default = {
 		"eqc"
 	]
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/poly.js
+// node_modules/proj4/lib/projections/poly.js
 /**
 * @typedef {Object} LocalThis
 * @property {number} temp
@@ -35962,8 +36125,7 @@ var nzmg_default = {
 	names: ["New_Zealand_Map_Grid", "nzmg"],
 	iterations: 1
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/mill.js
+// node_modules/proj4/lib/projections/mill.js
 function init$20() {}
 function forward$14(p) {
 	var lon = p.x;
@@ -35990,8 +36152,7 @@ var mill_default = {
 	inverse: inverse$14,
 	names: ["Miller_Cylindrical", "mill"]
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/sinu.js
+// node_modules/proj4/lib/projections/sinu.js
 var MAX_ITER = 20;
 /**
 * @typedef {Object} LocalThis
@@ -36073,8 +36234,7 @@ var sinu_default = {
 	inverse: inverse$13,
 	names: ["Sinusoidal", "sinu"]
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/eck6.js
+// node_modules/proj4/lib/projections/eck6.js
 /**
 * Eckert VI projection — spherical sinusoidal variant with m=1, n=1+π/2.
 * Always forces spherical computation regardless of the ellipsoid.
@@ -36102,8 +36262,7 @@ var eck6_default = {
 	inverse: inverse$13,
 	names: ["Eckert_VI", "eck6"]
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/moll.js
+// node_modules/proj4/lib/projections/moll.js
 /** @this {import('../defs.js').ProjectionDefinition} */
 function init$17() {
 	this.x0 = this.x0 !== void 0 ? this.x0 : 0;
@@ -36153,8 +36312,7 @@ var moll_default = {
 	inverse: inverse$11,
 	names: ["Mollweide", "moll"]
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/eqdc.js
+// node_modules/proj4/lib/projections/eqdc.js
 /**
 * @typedef {Object} LocalThis
 * @property {number} temp
@@ -36251,8 +36409,7 @@ var eqdc_default = {
 	inverse: inverse$10,
 	names: ["Equidistant_Conic", "eqdc"]
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/vandg.js
+// node_modules/proj4/lib/projections/vandg.js
 /**
 * @typedef {Object} LocalThis
 * @property {number} R - Radius of the Earth
@@ -36349,8 +36506,7 @@ var vandg_default = {
 		"vandg"
 	]
 };
-//#endregion
-//#region node_modules/proj4/lib/common/vincenty.js
+// node_modules/proj4/lib/common/vincenty.js
 /**
 * Calculates the inverse geodesic problem using Vincenty's formulae.
 * Computes the forward azimuth and ellipsoidal distance between two points
@@ -36451,8 +36607,7 @@ function vincentyDirect(lat1, lon1, azi1, s12, a, f) {
 		lon2: lon1 + (lambda - (1 - C) * f * sinAlpha * (sigma + C * sinSigma * (cos2SigmaM + C * cosSigma * (-1 + 2 * cos2SigmaM * cos2SigmaM))))
 	};
 }
-//#endregion
-//#region node_modules/proj4/lib/projections/aeqd.js
+// node_modules/proj4/lib/projections/aeqd.js
 /**
 * @typedef {Object} LocalThis
 * @property {number} es
@@ -36587,8 +36742,7 @@ var aeqd_default = {
 	inverse: inverse$8,
 	names: ["Azimuthal_Equidistant", "aeqd"]
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/ortho.js
+// node_modules/proj4/lib/projections/ortho.js
 /**
 * @typedef {Object} LocalThis
 * @property {number} sin_p14
@@ -36663,8 +36817,7 @@ var ortho_default = {
 	inverse: inverse$7,
 	names: ["ortho"]
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/qsc.js
+// node_modules/proj4/lib/projections/qsc.js
 /**
 * @typedef {Object} LocalThis
 * @property {number} face
@@ -36928,8 +37081,7 @@ var qsc_default = {
 		"qsc"
 	]
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/robin.js
+// node_modules/proj4/lib/projections/robin.js
 var COEFS_X = [
 	[
 		1,
@@ -37242,8 +37394,7 @@ var robin_default = {
 	inverse: inverse$5,
 	names: ["Robinson", "robin"]
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/geocent.js
+// node_modules/proj4/lib/projections/geocent.js
 function init$10() {
 	this.name = "geocent";
 }
@@ -37264,8 +37415,7 @@ var geocent_default = {
 		"Geocent"
 	]
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/tpers.js
+// node_modules/proj4/lib/projections/tpers.js
 /**
 * @typedef {Object} LocalThis
 * @property {number} mode
@@ -37432,8 +37582,7 @@ var tpers_default = {
 	inverse: inverse$3,
 	names: ["Tilted_Perspective", "tpers"]
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/geos.js
+// node_modules/proj4/lib/projections/geos.js
 /**
 * @typedef {Object} LocalThis
 * @property {1 | 0} flip_axis
@@ -37580,8 +37729,7 @@ var geos_default = {
 		"geos"
 	]
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/eqearth.js
+// node_modules/proj4/lib/projections/eqearth.js
 /**
 * Copyright 2018 Bernie Jenny, Monash University, Melbourne, Australia.
 *
@@ -37686,8 +37834,7 @@ var eqearth_default = {
 		"Equal_Earth"
 	]
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/bonne.js
+// node_modules/proj4/lib/projections/bonne.js
 /**
 * @typedef {Object} LocalThis
 * @property {number} phi1
@@ -37768,8 +37915,7 @@ var bonne_default = {
 	init: init$6,
 	names: ["bonne", "Bonne (Werner lat_1=90)"]
 };
-//#endregion
-//#region node_modules/proj4/lib/projections/ob_tran.js
+// node_modules/proj4/lib/projections/ob_tran.js
 /**
 Original projection implementation:
 https://github.com/OSGeo/PROJ/blob/46c47e9adf6376ae06afabe5d24a0016a05ced82/src/projections/ob_tran.cpp
@@ -38034,8 +38180,7 @@ var ob_tran_default = {
 		"ob_tran"
 	]
 };
-//#endregion
-//#region node_modules/proj4/projs.js
+// node_modules/proj4/projs.js
 function projs_default(proj4) {
 	proj4.Proj.projections.add(tmerc_default);
 	proj4.Proj.projections.add(etmerc_default);
@@ -38071,8 +38216,7 @@ function projs_default(proj4) {
 	proj4.Proj.projections.add(bonne_default);
 	proj4.Proj.projections.add(ob_tran_default);
 }
-//#endregion
-//#region node_modules/proj4/lib/index.js
+// node_modules/proj4/lib/index.js
 /**
 * @typedef {Object} Mgrs
 * @property {(lonlat: [number, number]) => string} forward
@@ -38103,8 +38247,7 @@ var proj4 = Object.assign(proj4$1, {
 	version: "__VERSION__"
 });
 projs_default(proj4);
-//#endregion
-//#region node_modules/ol/webgl/Canvas.js
+// node_modules/ol/webgl/Canvas.js
 /**
 * @module ol/webgl/Canvas
 */
@@ -38287,8 +38430,7 @@ function createProgram(gl, fragmentSource, vertexSource) {
 	}
 	return program;
 }
-//#endregion
-//#region node_modules/ol/reproj/glreproj.js
+// node_modules/ol/reproj/glreproj.js
 /**
 * @module ol/reproj/glreproj
 */
@@ -38593,10 +38735,21 @@ function render(gl, width_, height_, pixelRatio, sourceResolution, targetResolut
 		texture: resultTexture
 	};
 }
-//#endregion
-//#region node_modules/ol/reproj/DataTile.js
+// node_modules/ol/reproj/DataTile.js
 /**
 * @module ol/reproj/DataTile
+*/
+/** @type {import('../size.js').Size} */
+var defaultSize = [256, 256];
+/**
+* @typedef {Object} ReprojDataSource
+* @property {import("../extent.js").Extent} extent Extent.
+* @property {import("../extent.js").Extent|undefined} clipExtent Clip extent.
+* @property {import("../DataTile.js").ArrayLike} data Tile data.
+* @property {Float32ArrayConstructor|Uint8ClampedArrayConstructor} dataType Data type.
+* @property {number} bytesPerPixel Bytes per pixel.
+* @property {import('../size.js').Size} pixelSize Pixel size.
+* @property {number} bandCount Band count.
 */
 /**
 * @typedef {function(number, number, number, number) : import("../DataTile.js").default} TileGetter
@@ -38668,20 +38821,20 @@ var ReprojDataTile = class extends DataTile {
 		*/
 		this.gutter_ = options.gutter;
 		/**
-		* @type {import("../DataTile.js").Data}
+		* @type {import("../DataTile.js").Data|null}
 		* @private
 		*/
 		this.reprojData_ = null;
 		/**
-		* @type {Error}
+		* @type {Error|null}
 		* @private
 		*/
 		this.reprojError_ = null;
 		/**
-		* @type {import('../size.js').Size}
+		* @type {import('../size.js').Size|null}
 		* @private
 		*/
-		this.reprojSize_ = void 0;
+		this.reprojSize_ = null;
 		/**
 		* @private
 		* @type {import("../tilegrid/TileGrid.js").default}
@@ -38717,9 +38870,9 @@ var ReprojDataTile = class extends DataTile {
 		const sourceTileGridExtent = options.sourceTileGrid.getExtent();
 		/**
 		* @private
-		* @type {import("../extent.js").Extent}
+		* @type {import("../extent.js").Extent|null}
 		*/
-		this.clipExtent_ = sourceProj.canWrapX() ? sourceTileGridExtent ? getIntersection(sourceProjExtent, sourceTileGridExtent) : sourceProjExtent : sourceTileGridExtent;
+		this.clipExtent_ = sourceProj.canWrapX() ? sourceTileGridExtent ? getIntersection(sourceProjExtent, sourceTileGridExtent) : sourceProjExtent : sourceTileGridExtent || null;
 		const targetExtent = this.targetTileGrid_.getTileCoordExtent(this.wrappedTileCoord_);
 		const maxTargetExtent = this.targetTileGrid_.getExtent();
 		let maxSourceExtent = this.sourceTileGrid_.getExtent();
@@ -38744,7 +38897,7 @@ var ReprojDataTile = class extends DataTile {
 		* @private
 		* @type {!import("./Triangulation.js").default}
 		*/
-		this.triangulation_ = new Triangulation(sourceProj, targetProj, limitedTargetExtent, maxSourceExtent, sourceResolution * errorThresholdInPixels, targetResolution, options.transformMatrix);
+		this.triangulation_ = new Triangulation(sourceProj, targetProj, limitedTargetExtent, maxSourceExtent || void 0, sourceResolution * errorThresholdInPixels, targetResolution, options.transformMatrix);
 		if (this.triangulation_.getTriangles().length === 0) {
 			this.state = TileState_default.EMPTY;
 			return;
@@ -38789,11 +38942,11 @@ var ReprojDataTile = class extends DataTile {
 	* @override
 	*/
 	getSize() {
-		return this.reprojSize_;
+		return this.reprojSize_ || defaultSize;
 	}
 	/**
 	* Get the data for the tile.
-	* @return {import("../DataTile.js").Data} Tile data.
+	* @return {import("../DataTile.js").Data|null} Tile data.
 	* @override
 	*/
 	getData() {
@@ -38801,7 +38954,7 @@ var ReprojDataTile = class extends DataTile {
 	}
 	/**
 	* Get any loading error.
-	* @return {Error} Loading error.
+	* @return {Error|null} Loading error.
 	* @override
 	*/
 	getError() {
@@ -38811,6 +38964,7 @@ var ReprojDataTile = class extends DataTile {
 	* @private
 	*/
 	reproject_() {
+		/** @type {Array<ReprojDataSource>} */
 		const dataSources = [];
 		let imageLike = false;
 		this.sourceTiles_.forEach((source) => {
@@ -38822,11 +38976,15 @@ var ReprojDataTile = class extends DataTile {
 			* @type {import("../DataTile.js").ArrayLike}
 			*/
 			let tileData;
-			const arrayData = asArrayLike(tile.getData());
+			const rawData = tile.getData();
+			if (!rawData) return;
+			const arrayData = asArrayLike(rawData);
 			if (arrayData) tileData = arrayData;
 			else {
 				imageLike = true;
-				tileData = toArray(asImageLike(tile.getData()));
+				const imageLikeData = asImageLike(rawData);
+				if (!imageLikeData) return;
+				tileData = toArray(imageLikeData);
 			}
 			const pixelSize = [size[0] + 2 * gutter, size[1] + 2 * gutter];
 			const isFloat = tileData instanceof Float32Array;
@@ -38902,13 +39060,16 @@ var ReprojDataTile = class extends DataTile {
 				const pixelSize = dataSource.pixelSize;
 				const width = pixelSize[0];
 				const height = pixelSize[1];
-				const data = new dataSource.dataType(BANDS_PR_REPROJ * width * height);
 				const dataS = dataSource.data;
+				const data = new dataSource.dataType(BANDS_PR_REPROJ * width * height);
 				for (let j = 0, p = 0, len = data.length; j < len; j += BANDS_PR_REPROJ) {
 					for (let c = 0; c < BANDS_PR_REPROJ; ++c) {
 						const band = groupBase + c;
 						if (band === coverageBand) data[j + c] = opaque;
-						else if (band < bandCount) data[j + c] = dataS[p * bandCount + band];
+						else if (band < bandCount) {
+							const sourceValue = dataS[p * bandCount + band];
+							data[j + c] = sourceValue;
+						}
 					}
 					++p;
 				}
@@ -38951,7 +39112,9 @@ var ReprojDataTile = class extends DataTile {
 		canvasGLPool.push(gl.canvas);
 		if (imageLike) {
 			const context = createCanvasContext2D(targetWidth, targetHeight);
-			const imageData = new ImageData(dataR, targetWidth);
+			context.putImageData(context.createImageData(outWidth, outHeight), 0, 0);
+			const imageData = context.getImageData(0, 0, outWidth, outHeight);
+			imageData.data.set(dataR);
 			context.putImageData(imageData, 0, 0);
 			this.reprojData_ = context.canvas;
 		} else this.reprojData_ = dataR;
@@ -38984,7 +39147,7 @@ var ReprojDataTile = class extends DataTile {
 					}
 				}
 			});
-			this.sourcesListenerKeys_.push(sourceListenKey);
+			/** @type {!Array<import("../events.js").EventsKey>} */ this.sourcesListenerKeys_.push(sourceListenKey);
 		});
 		if (leftToLoad === 0) setTimeout(this.reproject_.bind(this), 0);
 		else this.sourceTiles_.forEach(function({ tile }) {
@@ -38995,12 +39158,13 @@ var ReprojDataTile = class extends DataTile {
 	* @private
 	*/
 	unlistenSources_() {
-		this.sourcesListenerKeys_.forEach(unlistenByKey);
-		this.sourcesListenerKeys_ = null;
+		if (this.sourcesListenerKeys_) {
+			this.sourcesListenerKeys_.forEach(unlistenByKey);
+			this.sourcesListenerKeys_ = null;
+		}
 	}
 };
-//#endregion
-//#region node_modules/ol/source/DataTile.js
+// node_modules/ol/source/DataTile.js
 /**
 * @module ol/source/DataTile
 */
@@ -39146,7 +39310,7 @@ var DataTileSource = class extends TileSource {
 		this.crossOrigin_ = options.crossOrigin || "anonymous";
 		/**
 		* @private
-		* @type {ReferrerPolicy}
+		* @type {ReferrerPolicy|undefined}
 		*/
 		this.referrerPolicy_ = options.referrerPolicy;
 		/**
@@ -39244,9 +39408,10 @@ var DataTileSource = class extends TileSource {
 	*/
 	getTile(z, x, y, pixelRatio, projection, tileCache) {
 		const sourceProjection = this.getProjection();
-		if (projection && (sourceProjection && !equivalent$1(sourceProjection, projection) || this.transformMatrix)) return this.getReprojTile_(z, x, y, projection, sourceProjection, tileCache);
+		if (projection && (sourceProjection && !equivalent$1(sourceProjection, projection) || this.transformMatrix)) return this.getReprojTile_(z, x, y, projection, sourceProjection || projection, tileCache);
 		const size = this.getTileSize(z);
 		const sourceLoader = this.loader_;
+		if (!sourceLoader) return null;
 		const controller = new AbortController();
 		/**
 		* @type {LoaderOptions}
@@ -39271,6 +39436,7 @@ var DataTileSource = class extends TileSource {
 		const range = this.getTileGrid()?.getFullTileRange(requestZ);
 		if (range) loaderOptions.maxY = range.getHeight() - 1;
 		function loader() {
+			if (!sourceLoader) return Promise.reject(/* @__PURE__ */ new Error("Missing tile loader"));
 			return toPromise(function() {
 				return sourceLoader(requestZ, requestX, requestY, loaderOptions);
 			});
@@ -39353,8 +39519,7 @@ var DataTileSource = class extends TileSource {
 		}
 	}
 };
-//#endregion
-//#region node_modules/ol/Feature.js
+// node_modules/ol/Feature.js
 /**
 * @module ol/Feature
 */
@@ -39457,7 +39622,7 @@ var Feature = class Feature extends BaseObject {
 		/**
 		* User provided style.
 		* @private
-		* @type {import("./style/Style.js").StyleLike}
+		* @type {import("./style/Style.js").StyleLike|null}
 		*/
 		this.style_ = null;
 		/**
@@ -39536,7 +39701,7 @@ var Feature = class Feature extends BaseObject {
 	/**
 	* Get the feature's style. Will return what was provided to the
 	* {@link module:ol/Feature~Feature#setStyle} method.
-	* @return {import("./style/Style.js").StyleLike|undefined} The feature style.
+	* @return {import("./style/Style.js").StyleLike|null|undefined} The feature style.
 	* @api
 	*/
 	getStyle() {
@@ -39572,7 +39737,7 @@ var Feature = class Feature extends BaseObject {
 	/**
 	* Set the default geometry for the feature.  This will update the property
 	* with the name returned by {@link module:ol/Feature~Feature#getGeometryName}.
-	* @param {Geometry|undefined} geometry The new geometry.
+	* @param {Geometry|null|undefined} geometry The new geometry.
 	* @api
 	* @observable
 	*/
@@ -39584,12 +39749,12 @@ var Feature = class Feature extends BaseObject {
 	* single style object, an array of styles, or a function that takes a
 	* resolution and returns an array of styles. To unset the feature style, call
 	* `setStyle()` without arguments or a falsey value.
-	* @param {import("./style/Style.js").StyleLike} [style] Style for this feature.
+	* @param {import("./style/Style.js").StyleLike|null|undefined} [style] Style for this feature.
 	* @api
 	* @fires module:ol/events/Event~BaseEvent#event:change
 	*/
 	setStyle(style) {
-		this.style_ = style;
+		this.style_ = style ?? null;
 		this.styleFunction_ = !style ? void 0 : createStyleFunction(style);
 		this.changed();
 	}
@@ -39644,8 +39809,7 @@ function createStyleFunction(obj) {
 		return styles;
 	};
 }
-//#endregion
-//#region node_modules/ol/geom/flat/interpolate.js
+// node_modules/ol/geom/flat/interpolate.js
 /**
 * @module ol/geom/flat/interpolate
 */
@@ -39686,7 +39850,7 @@ function interpolatePoint(flatCoordinates, offset, end, stride, fraction, dest, 
 			o = offset + (-index - 2) * stride;
 		} else o = offset + index * stride;
 	}
-	dimension = dimension > 1 ? dimension : 2;
+	dimension = dimension !== void 0 && dimension > 1 ? dimension : 2;
 	dest = dest ? dest : new Array(dimension);
 	for (let i = 0; i < dimension; ++i) dest[i] = o === void 0 ? NaN : t === void 0 ? flatCoordinates[o + i] : lerp$1(flatCoordinates[o + i], flatCoordinates[o + stride + i], t);
 	return dest;
@@ -39774,8 +39938,7 @@ function lineStringsCoordinateAtM(flatCoordinates, offset, ends, stride, m, extr
 	}
 	return null;
 }
-//#endregion
-//#region node_modules/ol/geom/flat/length.js
+// node_modules/ol/geom/flat/length.js
 /**
 * @module ol/geom/flat/length
 */
@@ -39799,8 +39962,7 @@ function lineStringLength(flatCoordinates, offset, end, stride) {
 	}
 	return length;
 }
-//#endregion
-//#region node_modules/ol/geom/LineString.js
+// node_modules/ol/geom/LineString.js
 /**
 * @module ol/geom/LineString
 */
@@ -39995,8 +40157,7 @@ var LineString = class LineString extends SimpleGeometry {
 		this.changed();
 	}
 };
-//#endregion
-//#region node_modules/ol/geom/MultiLineString.js
+// node_modules/ol/geom/MultiLineString.js
 /**
 * @module ol/geom/MultiLineString
 */
@@ -40133,7 +40294,7 @@ var MultiLineString = class MultiLineString extends SimpleGeometry {
 	/**
 	* Return the linestring at the specified index.
 	* @param {number} index Index.
-	* @return {LineString} LineString.
+	* @return {LineString|null} LineString.
 	* @api
 	*/
 	getLineString(index) {
@@ -40240,8 +40401,7 @@ var MultiLineString = class MultiLineString extends SimpleGeometry {
 		this.changed();
 	}
 };
-//#endregion
-//#region node_modules/ol/geom/MultiPoint.js
+// node_modules/ol/geom/MultiPoint.js
 /**
 * @module ol/geom/MultiPoint
 */
@@ -40316,7 +40476,7 @@ var MultiPoint = class MultiPoint extends SimpleGeometry {
 	/**
 	* Return the point at the specified index.
 	* @param {number} index Index.
-	* @return {Point} Point.
+	* @return {Point|null} Point.
 	* @api
 	*/
 	getPoint(index) {
@@ -40381,8 +40541,7 @@ var MultiPoint = class MultiPoint extends SimpleGeometry {
 		this.changed();
 	}
 };
-//#endregion
-//#region node_modules/ol/geom/flat/center.js
+// node_modules/ol/geom/flat/center.js
 /**
 * @module ol/geom/flat/center
 */
@@ -40404,8 +40563,7 @@ function linearRingss(flatCoordinates, offset, endss, stride) {
 	}
 	return flatCenters;
 }
-//#endregion
-//#region node_modules/ol/geom/MultiPolygon.js
+// node_modules/ol/geom/MultiPolygon.js
 /**
 * @module ol/geom/MultiPolygon
 */
@@ -40629,7 +40787,7 @@ var MultiPolygon = class MultiPolygon extends SimpleGeometry {
 	/**
 	* Return the polygon at the specified index.
 	* @param {number} index Index.
-	* @return {Polygon} Polygon.
+	* @return {Polygon|null} Polygon.
 	* @api
 	*/
 	getPolygon(index) {
@@ -40704,8 +40862,7 @@ var MultiPolygon = class MultiPolygon extends SimpleGeometry {
 		this.changed();
 	}
 };
-//#endregion
-//#region node_modules/ol/geom/GeometryCollection.js
+// node_modules/ol/geom/GeometryCollection.js
 /**
 * @module ol/geom/GeometryCollection
 */
@@ -40966,8 +41123,7 @@ var GeometryCollection = class GeometryCollection extends Geometry {
 function cloneGeometries(geometries) {
 	return geometries.map((geometry) => geometry.clone());
 }
-//#endregion
-//#region node_modules/ol/render/Feature.js
+// node_modules/ol/render/Feature.js
 /**
 * @typedef {'Point' | 'LineString' | 'LinearRing' | 'Polygon' | 'MultiPoint' | 'MultiLineString'} Type
 * The geometry type.  One of `'Point'`, `'LineString'`, `'LinearRing'`,
@@ -41019,12 +41175,12 @@ var RenderFeature = class RenderFeature {
 		this.flatCoordinates_ = flatCoordinates;
 		/**
 		* @private
-		* @type {Array<number>}
+		* @type {Array<number>|null}
 		*/
 		this.flatInteriorPoints_ = null;
 		/**
 		* @private
-		* @type {Array<number>}
+		* @type {Array<number>|null}
 		*/
 		this.flatMidpoints_ = null;
 		/**
@@ -41240,6 +41396,7 @@ var RenderFeature = class RenderFeature {
 			this.simplifiedGeometry_ = this.clone();
 			if (transform) this.simplifiedGeometry_.applyTransform(transform);
 			const simplifiedFlatCoordinates = this.simplifiedGeometry_.getFlatCoordinates();
+			/** @type {Array<number>|undefined} */
 			let simplifiedEnds;
 			switch (this.type_) {
 				case "LineString":
@@ -41265,8 +41422,7 @@ var RenderFeature = class RenderFeature {
 * @return {Array<number>} Flat coordinates.
 */
 RenderFeature.prototype.getFlatCoordinates = RenderFeature.prototype.getOrientedFlatCoordinates;
-//#endregion
-//#region node_modules/ol/format/Feature.js
+// node_modules/ol/format/Feature.js
 /**
 * @module ol/format/Feature
 */
@@ -41371,9 +41527,9 @@ var FeatureFormat = class {
 		this.featureClass = Feature;
 		/**
 		* A list media types supported by the format in descending order of preference.
-		* @type {Array<string>}
+		* @type {Array<string>|undefined}
 		*/
-		this.supportedMediaTypes = null;
+		this.supportedMediaTypes = void 0;
 	}
 	/**
 	* Adds the data projection to the read options.
@@ -41386,11 +41542,14 @@ var FeatureFormat = class {
 		if (options) {
 			let dataProjection = options.dataProjection ? get$4(options.dataProjection) : this.readProjection(source);
 			if (options.extent && dataProjection && dataProjection.getUnits() === "tile-pixels") {
-				dataProjection = get$4(dataProjection);
-				dataProjection.setWorldExtent(options.extent);
+				const tileProjection = get$4(dataProjection);
+				if (tileProjection) {
+					tileProjection.setWorldExtent(options.extent);
+					dataProjection = tileProjection;
+				}
 			}
 			options = {
-				dataProjection,
+				dataProjection: dataProjection ?? void 0,
 				featureProjection: options.featureProjection
 			};
 		}
@@ -41425,7 +41584,7 @@ var FeatureFormat = class {
 	* @abstract
 	* @param {Document|Element|Object|string} source Source.
 	* @param {ReadOptions} [options] Read options.
-	* @return {FeatureType|Array<FeatureType>} Feature.
+	* @return {FeatureType|Array<FeatureType>|null} Feature.
 	*/
 	readFeature(source, options) {
 		return abstract();
@@ -41447,7 +41606,7 @@ var FeatureFormat = class {
 	* @abstract
 	* @param {Document|Element|Object|string} source Source.
 	* @param {ReadOptions} [options] Read options.
-	* @return {import("../geom/Geometry.js").default} Geometry.
+	* @return {import("../geom/Geometry.js").default|null} Geometry.
 	*/
 	readGeometry(source, options) {
 		return abstract();
@@ -41512,7 +41671,10 @@ function transformGeometryWithOptions(geometry, write, options) {
 		const fromProjection = write ? featureProjection : dataProjection;
 		const toProjection = write ? dataProjection : featureProjection;
 		if (fromProjection.getUnits() === "tile-pixels") transformed.transform(fromProjection, toProjection);
-		else transformed.applyTransform(getTransform(fromProjection, toProjection));
+		else {
+			const transformFn = getTransform(fromProjection, toProjection);
+			if (transformFn) transformed.applyTransform(transformFn);
+		}
 	}
 	if (write && options && options.decimals !== void 0) {
 		const power = Math.pow(
@@ -41533,25 +41695,25 @@ function transformGeometryWithOptions(geometry, write, options) {
 	}
 	return transformed;
 }
-var GeometryConstructor = {
-	Point: Point$1,
-	LineString,
-	Polygon,
-	MultiPoint,
-	MultiLineString,
-	MultiPolygon
-};
+/**
+* @param {Array<number>} flatCoordinates Flat coordinates.
+* @param {Array<number>|Array<Array<number>>} ends Ends or endss.
+* @param {number} stride Stride.
+* @return {Array<number>} Oriented flat coordinates.
+*/
 function orientFlatCoordinates(flatCoordinates, ends, stride) {
 	if (Array.isArray(ends[0])) {
-		if (!linearRingssAreOriented(flatCoordinates, 0, ends, stride)) {
+		const endss = ends;
+		if (!linearRingssAreOriented(flatCoordinates, 0, endss, stride)) {
 			flatCoordinates = flatCoordinates.slice();
-			orientLinearRingsArray(flatCoordinates, 0, ends, stride);
+			orientLinearRingsArray(flatCoordinates, 0, endss, stride);
 		}
 		return flatCoordinates;
 	}
-	if (!linearRingsAreOriented(flatCoordinates, 0, ends, stride)) {
+	const endsArray = ends;
+	if (!linearRingsAreOriented(flatCoordinates, 0, endsArray, stride)) {
 		flatCoordinates = flatCoordinates.slice();
-		orientLinearRings(flatCoordinates, 0, ends, stride);
+		orientLinearRings(flatCoordinates, 0, endsArray, stride);
 	}
 	return flatCoordinates;
 }
@@ -41569,22 +41731,45 @@ function createRenderFeature(object, options) {
 	})).flat();
 	const geometryType = geometry.type === "MultiPolygon" ? "Polygon" : geometry.type;
 	if (geometryType === "GeometryCollection" || geometryType === "Circle") throw new Error("Unsupported geometry type: " + geometryType);
-	const stride = geometry.layout.length;
-	return transformGeometryWithOptions(new RenderFeature(geometryType, geometryType === "Polygon" ? orientFlatCoordinates(geometry.flatCoordinates, geometry.ends, stride) : geometry.flatCoordinates, geometry.ends?.flat(), stride, object.properties || {}, object.id).enableSimplifyTransformed(), false, options);
+	const stride = (geometry.layout ?? "XY").length;
+	return transformGeometryWithOptions(new RenderFeature(geometryType, geometryType === "Polygon" ? orientFlatCoordinates(geometry.flatCoordinates, geometry.ends, stride) : geometry.flatCoordinates, geometry.ends?.flat() ?? [], stride, object.properties || {}, object.id).enableSimplifyTransformed(), false, options);
 }
 /**
 * @param {GeometryObject|null} object Geometry object.
 * @param {WriteOptions|ReadOptions} [options] Options.
-* @return {import("../geom/Geometry.js").default} Geometry.
+* @return {import("../geom/Geometry.js").default|null} Geometry.
 */
 function createGeometry(object, options) {
 	if (!object) return null;
 	if (Array.isArray(object)) return new GeometryCollection(object.map((geometry) => createGeometry(geometry, options)));
-	const Geometry = GeometryConstructor[object.type];
-	return transformGeometryWithOptions(new Geometry(object.flatCoordinates, object.layout || "XY", object.ends), false, options);
+	const type = object.type;
+	const layout = object.layout || "XY";
+	/** @type {import("../geom/Geometry.js").default} */
+	let geometry;
+	switch (type) {
+		case "Point":
+			geometry = new Point$1(object.flatCoordinates, layout);
+			break;
+		case "LineString":
+			geometry = new LineString(object.flatCoordinates, layout);
+			break;
+		case "Polygon":
+			geometry = new Polygon(object.flatCoordinates, layout, object.ends);
+			break;
+		case "MultiPoint":
+			geometry = new MultiPoint(object.flatCoordinates, layout);
+			break;
+		case "MultiLineString":
+			geometry = new MultiLineString(object.flatCoordinates, layout, object.ends);
+			break;
+		case "MultiPolygon":
+			geometry = new MultiPolygon(object.flatCoordinates, layout, object.ends);
+			break;
+		default: throw new Error("Unsupported geometry type: " + type);
+	}
+	return transformGeometryWithOptions(geometry, false, options);
 }
-//#endregion
-//#region node_modules/ol/format/JSONFeature.js
+// node_modules/ol/format/JSONFeature.js
 /**
 * @module ol/format/JSONFeature
 */
@@ -41620,7 +41805,9 @@ var JSONFeature = class extends FeatureFormat {
 	* @override
 	*/
 	readFeature(source, options) {
-		return this.readFeatureFromObject(getObject(source), this.getReadOptions(source, options));
+		const object = getObject(source);
+		if (!object) return [];
+		return this.readFeatureFromObject(object, this.getReadOptions(source, options));
 	}
 	/**
 	* Read all features.  Works with both a single feature and a feature
@@ -41633,7 +41820,9 @@ var JSONFeature = class extends FeatureFormat {
 	* @override
 	*/
 	readFeatures(source, options) {
-		return this.readFeaturesFromObject(getObject(source), this.getReadOptions(source, options));
+		const object = getObject(source);
+		if (!object) return [];
+		return this.readFeaturesFromObject(object, this.getReadOptions(source, options));
 	}
 	/**
 	* @abstract
@@ -41660,19 +41849,21 @@ var JSONFeature = class extends FeatureFormat {
 	*
 	* @param {ArrayBuffer|Document|Element|Object|string} source Source.
 	* @param {import("./Feature.js").ReadOptions} [options] Read options.
-	* @return {import("../geom/Geometry.js").default} Geometry.
+	* @return {import("../geom/Geometry.js").default|null} Geometry.
 	* @api
 	* @override
 	*/
 	readGeometry(source, options) {
-		return this.readGeometryFromObject(getObject(source), this.getReadOptions(source, options));
+		const object = getObject(source);
+		if (!object) throw new Error("Expected a JSON object");
+		return this.readGeometryFromObject(object, this.getReadOptions(source, options));
 	}
 	/**
 	* @abstract
 	* @param {Object} object Object.
 	* @param {import("./Feature.js").ReadOptions} [options] Read options.
 	* @protected
-	* @return {import("../geom/Geometry.js").default} Geometry.
+	* @return {import("../geom/Geometry.js").default|null} Geometry.
 	*/
 	readGeometryFromObject(object, options) {
 		return abstract();
@@ -41686,7 +41877,9 @@ var JSONFeature = class extends FeatureFormat {
 	* @override
 	*/
 	readProjection(source) {
-		return this.readProjectionFromObject(getObject(source));
+		const object = getObject(source);
+		if (!object) throw new Error("Expected a JSON object");
+		return this.readProjectionFromObject(object);
 	}
 	/**
 	* @abstract
@@ -41763,7 +41956,7 @@ var JSONFeature = class extends FeatureFormat {
 };
 /**
 * @param {Document|Element|Object|string} source Source.
-* @return {Object} Object.
+* @return {Object|null} Object.
 */
 function getObject(source) {
 	if (typeof source === "string") {
@@ -41773,8 +41966,7 @@ function getObject(source) {
 	if (source !== null) return source;
 	return null;
 }
-//#endregion
-//#region node_modules/ol/format/GeoJSON.js
+// node_modules/ol/format/GeoJSON.js
 /**
 * @module ol/format/GeoJSON
 */
@@ -41826,12 +42018,12 @@ var GeoJSON = class extends JSONFeature {
 		/**
 		* @type {import("../proj/Projection.js").default}
 		*/
-		this.dataProjection = get$4(options.dataProjection ? options.dataProjection : "EPSG:4326");
+		this.dataProjection = get$4(options.dataProjection ? options.dataProjection : "EPSG:4326") ?? void 0;
 		if (options.featureProjection)
  /**
 		* @type {import("../proj/Projection.js").default}
 		*/
-		this.defaultFeatureProjection = get$4(options.featureProjection);
+		this.defaultFeatureProjection = get$4(options.featureProjection) ?? void 0;
 		if (options.featureClass) this.featureClass = options.featureClass;
 		/**
 		* Name of the geometry attribute for features.
@@ -41855,27 +42047,26 @@ var GeoJSON = class extends JSONFeature {
 	* @override
 	*/
 	readFeatureFromObject(object, options) {
-		/**
-		* @type {GeoJSONFeature}
-		*/
-		let geoJSONFeature = null;
-		if (object["type"] === "Feature") geoJSONFeature = object;
+		const geoJSONObject = object;
+		/** @type {GeoJSONFeature} */
+		let geoJSONFeature;
+		if (geoJSONObject["type"] === "Feature") geoJSONFeature = geoJSONObject;
 		else geoJSONFeature = {
 			"type": "Feature",
 			"geometry": object,
 			"properties": null
 		};
-		const geometry = readGeometryInternal(geoJSONFeature["geometry"], options);
+		const geometryObject = readGeometryInternal(geoJSONFeature["geometry"], options);
 		if (this.featureClass === RenderFeature) return createRenderFeature({
-			geometry,
+			geometry: geometryObject ?? void 0,
 			id: geoJSONFeature["id"],
-			properties: geoJSONFeature["properties"]
+			properties: geoJSONFeature["properties"] ?? void 0
 		}, options);
 		const FeatureClass = this.featureClass;
 		const feature = new FeatureClass();
 		if (this.geometryName_) feature.setGeometryName(this.geometryName_);
-		else if (this.extractGeometryName_ && geoJSONFeature["geometry_name"]) feature.setGeometryName(geoJSONFeature["geometry_name"]);
-		feature.setGeometry(createGeometry(geometry, options));
+		else if (this.extractGeometryName_ && "geometry_name" in geoJSONFeature && geoJSONFeature["geometry_name"]) feature.setGeometryName(geoJSONFeature["geometry_name"]);
+		feature.setGeometry(createGeometry(geometryObject, options));
 		if ("id" in geoJSONFeature) feature.setId(geoJSONFeature["id"]);
 		if (geoJSONFeature["properties"]) feature.setProperties(geoJSONFeature["properties"], true);
 		return feature;
@@ -41906,7 +42097,7 @@ var GeoJSON = class extends JSONFeature {
 	* @param {GeoJSONGeometry} object Object.
 	* @param {import("./Feature.js").ReadOptions} [options] Read options.
 	* @protected
-	* @return {import("../geom/Geometry.js").default} Geometry.
+	* @return {import("../geom/Geometry.js").default|null} Geometry.
 	* @override
 	*/
 	readGeometryFromObject(object, options) {
@@ -41939,11 +42130,10 @@ var GeoJSON = class extends JSONFeature {
 	*/
 	writeFeatureObject(feature, options) {
 		options = this.adaptOptions(options);
-		/** @type {GeoJSONFeature} */
 		const object = {
 			"type": "Feature",
-			geometry: null,
-			properties: null
+			"geometry": null,
+			"properties": null
 		};
 		const id = feature.getId();
 		if (id !== void 0) object.id = id;
@@ -41991,10 +42181,10 @@ var GeoJSON = class extends JSONFeature {
 /**
 * @param {GeoJSONGeometry|GeoJSONGeometryCollection} object Object.
 * @param {import("./Feature.js").ReadOptions} [options] Read options.
-* @return {import("./Feature.js").GeometryObject} Geometry.
+* @return {import("./Feature.js").GeometryObject|null} Geometry.
 */
 function readGeometryInternal(object, options) {
-	if (!object) return null;
+	if (!object || object.type !== "GeometryCollection" && Array.isArray(object.coordinates) && !object.coordinates.length) return null;
 	/** @type {import("./Feature.js").GeometryObject} */
 	let geometry;
 	switch (object["type"]) {
@@ -42026,10 +42216,12 @@ function readGeometryInternal(object, options) {
 /**
 * @param {GeoJSONGeometry|GeoJSONGeometryCollection} object Object.
 * @param {import("./Feature.js").ReadOptions} [options] Read options.
-* @return {import("../geom/Geometry.js").default} Geometry.
+* @return {import("../geom/Geometry.js").default|null} Geometry.
 */
 function readGeometry(object, options) {
-	return createGeometry(readGeometryInternal(object, options), options);
+	const geometryObject = readGeometryInternal(object, options);
+	if (!geometryObject) return null;
+	return createGeometry(geometryObject, options);
 }
 /**
 * @param {GeoJSONGeometryCollection} object Object.
@@ -42037,15 +42229,14 @@ function readGeometry(object, options) {
 * @return {import("./Feature.js").GeometryCollectionObject} Geometry collection.
 */
 function readGeometryCollectionGeometry(object, options) {
-	return object["geometries"].map(
-		/**
-		* @param {GeoJSONGeometry} geometry Geometry.
-		* @return {import("./Feature.js").GeometryObject} geometry Geometry.
-		*/
-		function(geometry) {
-			return readGeometryInternal(geometry, options);
-		}
-	);
+	const geometryObjects = object["geometries"];
+	const geometries = [];
+	for (const geometry of geometryObjects) {
+		const geom = readGeometryInternal(geometry, options);
+		if (!geom) continue;
+		geometries.push(geom);
+	}
+	return geometries;
 }
 /**
 * @param {GeoJSONPoint} object Input object.
@@ -42280,7 +42471,7 @@ function getAllTextContent(node, normalizeWhitespace) {
 function getAllTextContent_(node, normalizeWhitespace, accumulator) {
 	if (node.nodeType == Node.CDATA_SECTION_NODE || node.nodeType == Node.TEXT_NODE) {
 		if (normalizeWhitespace) accumulator.push(String(node.nodeValue).replace(/(\r\n|\r|\n)/g, ""));
-		else accumulator.push(node.nodeValue);
+		else accumulator.push(String(node.nodeValue));
 	} else {
 		let n;
 		for (n = node.firstChild; n; n = n.nextSibling) getAllTextContent_(n, normalizeWhitespace, accumulator);
@@ -42344,6 +42535,7 @@ function makeObjectPropertyPusher(valueReader, property, thisArg) {
 		if (value !== void 0) {
 			const object = objectStack[objectStack.length - 1];
 			const name = property !== void 0 ? property : node.localName;
+			/** @type {Array<*>} */
 			let array;
 			if (name in object) array = object[name];
 			else {
@@ -42379,25 +42571,20 @@ function makeObjectPropertySetter(valueReader, property, thisArg) {
 	});
 }
 /**
-* Create a namespaced structure, using the same values for each namespace.
-* This can be used as a starting point for versioned parsers, when only a few
-* values are version specific.
-* @param {Array<string>} namespaceURIs Namespace URIs.
-* @param {T} structure Structure.
-* @param {Object<string, T>} [structureNS] Namespaced structure to add to.
-* @return {Object<string, T>} Namespaced structure.
-* @template T
+* @param {Array<string|null>} namespaceURIs Namespace URIs.
+* @param {Object<string, (Parser|undefined)>} structure Structure.
+* @param {ParsersNS} [structureNS] Namespaced structure to add to.
+* @return {ParsersNS} Namespaced structure.
 */
-function makeStructureNS(namespaceURIs, structure, structureNS) {
+function makeParsersNS(namespaceURIs, structure, structureNS) {
 	structureNS = structureNS !== void 0 ? structureNS : {};
 	let i, ii;
-	for (i = 0, ii = namespaceURIs.length; i < ii; ++i) structureNS[namespaceURIs[i]] = structure;
+	for (i = 0, ii = namespaceURIs.length; i < ii; ++i) structureNS[namespaceURIs[i] ?? ""] = structure;
 	return structureNS;
 }
 /**
 * Parse a node using the parsers and object stack.
-* @param {Object<string, Object<string, Parser>>} parsersNS
-*     Parsers by namespace.
+* @param {ParsersNS} parsersNS Parsers by namespace.
 * @param {Element} node Node.
 * @param {Array<*>} objectStack Object stack.
 * @param {*} [thisArg] The object to use as `this`.
@@ -42405,7 +42592,7 @@ function makeStructureNS(namespaceURIs, structure, structureNS) {
 function parseNode(parsersNS, node, objectStack, thisArg) {
 	let n;
 	for (n = node.firstElementChild; n; n = n.nextElementSibling) {
-		const parsers = parsersNS[n.namespaceURI];
+		const parsers = parsersNS[n.namespaceURI ?? ""];
 		if (parsers !== void 0) {
 			const parser = parsers[n.localName];
 			if (parser !== void 0) parser.call(thisArg, n, objectStack);
@@ -42415,8 +42602,7 @@ function parseNode(parsersNS, node, objectStack, thisArg) {
 /**
 * Push an object on top of the stack, parse and return the popped object.
 * @param {T} object Object.
-* @param {Object<string, Object<string, Parser>>} parsersNS
-*     Parsers by namespace.
+* @param {ParsersNS} parsersNS Parsers by namespace.
 * @param {Element} node Node.
 * @param {Array<*>} objectStack Object stack.
 * @param {*} [thisArg] The object to use as `this`.
@@ -42428,8 +42614,7 @@ function pushParseAndPop(object, parsersNS, node, objectStack, thisArg) {
 	parseNode(parsersNS, node, objectStack, thisArg);
 	return objectStack.pop();
 }
-//#endregion
-//#region node_modules/ol/format/xsd.js
+// node_modules/ol/format/xsd.js
 /**
 * @param {Node} node Node.
 * @return {number|undefined} Decimal.
@@ -42467,10 +42652,8 @@ function readNonNegativeIntegerString(string) {
 function readString(node) {
 	return getAllTextContent(node, false).trim();
 }
-//#endregion
-//#region node_modules/pbf/index.js
+// node_modules/pbf/index.js
 var SHIFT_LEFT_32 = 4294967296;
-1 / SHIFT_LEFT_32;
 var TEXT_DECODER_MIN_LENGTH = 12;
 var utf8TextDecoder = typeof TextDecoder === "undefined" ? null : new TextDecoder("utf-8");
 var PBF_VARINT = 0;
@@ -42747,10 +42930,18 @@ function readUtf8(buf, pos, end) {
 	}
 	return str;
 }
-//#endregion
-//#region node_modules/ol/format/MVT.js
+// node_modules/ol/format/MVT.js
 /**
 * @module ol/format/MVT
+*/
+/**
+* @typedef {Object<string, *>} MVTObject
+*/
+/***
+* @typedef {MVTObject & {keys: Array<string>, values: Array<*>, features: Array<number>, length?: number, name?: string, extent?: number, version?: number}} MVTLayer
+*/
+/***
+* @typedef {MVTObject & {layer: MVTLayer, type: number, properties: MVTObject, id?: number, geometry?: number}} MVTRawFeature
 */
 /**
 * @template {import("../Feature.js").FeatureLike} [FeatureType=import("../render/Feature.js").default]
@@ -42805,7 +42996,7 @@ var MVT = class extends FeatureFormat {
 		this.layers_ = options.layers ? options.layers : null;
 		/**
 		* @private
-		* @type {string}
+		* @type {string|undefined}
 		*/
 		this.idProperty_ = options.idProperty;
 		this.supportedMediaTypes = ["application/vnd.mapbox-vector-tile", "application/x-protobuf"];
@@ -42814,12 +43005,13 @@ var MVT = class extends FeatureFormat {
 	* Read the raw geometry from the pbf offset stored in a raw feature's geometry
 	* property.
 	* @param {PbfReader} pbf PBF.
-	* @param {Object} feature Raw feature.
+	* @param {MVTRawFeature} feature Raw feature.
 	* @param {Array<number>} flatCoordinates Array to store flat coordinates in.
 	* @param {Array<number>} ends Array to store ends in.
 	* @private
 	*/
 	readRawGeometry_(pbf, feature, flatCoordinates, ends) {
+		if (feature.geometry === void 0) return;
 		pbf.pos = feature.geometry;
 		const end = pbf.readVarint() + pbf.pos;
 		let cmd = 1;
@@ -42861,7 +43053,7 @@ var MVT = class extends FeatureFormat {
 	/**
 	* @private
 	* @param {PbfReader} pbf PBF
-	* @param {Object} rawFeature Raw Mapbox feature.
+	* @param {MVTRawFeature} rawFeature Raw Mapbox feature.
 	* @param {import("./Feature.js").ReadOptions} options Read options.
 	* @return {FeatureType|null} Feature.
 	*/
@@ -42874,7 +43066,7 @@ var MVT = class extends FeatureFormat {
 		if (!this.idProperty_) id = rawFeature.id;
 		else {
 			id = values[this.idProperty_];
-			delete values[this.idProperty_];
+			values[this.idProperty_] = void 0;
 		}
 		values[this.layerName_] = rawFeature.layer.name;
 		const flatCoordinates = [];
@@ -42890,6 +43082,7 @@ var MVT = class extends FeatureFormat {
 				const endss = inflateEnds(flatCoordinates, ends);
 				geom = endss.length > 1 ? new MultiPolygon(flatCoordinates, "XY", endss) : new Polygon(flatCoordinates, "XY", ends);
 			} else geom = geometryType === "Point" ? new Point$1(flatCoordinates, "XY") : geometryType === "LineString" ? new LineString(flatCoordinates, "XY") : geometryType === "MultiPoint" ? new MultiPoint(flatCoordinates, "XY") : geometryType === "MultiLineString" ? new MultiLineString(flatCoordinates, "XY", ends) : null;
+			if (!geom) return null;
 			const ctor = this.featureClass;
 			feature = new ctor();
 			if (this.geometryName_) feature.setGeometryName(this.geometryName_);
@@ -42918,10 +43111,11 @@ var MVT = class extends FeatureFormat {
 	*/
 	readFeatures(source, options) {
 		const layers = this.layers_;
-		options = this.adaptOptions(options);
-		const dataProjection = get$4(options.dataProjection);
-		dataProjection.setWorldExtent(options.extent);
-		options.dataProjection = dataProjection;
+		const readOptions = this.adaptOptions(options);
+		const dataProjection = get$4(readOptions.dataProjection);
+		if (!dataProjection) return [];
+		if (readOptions.extent) dataProjection.setWorldExtent(readOptions.extent);
+		readOptions.dataProjection = dataProjection;
 		const pbf = new PbfReader(source);
 		const pbfLayers = pbf.readFields(layersPBFReader, {});
 		const features = [];
@@ -42934,10 +43128,10 @@ var MVT = class extends FeatureFormat {
 				pbfLayer.extent,
 				pbfLayer.extent
 			] : null;
-			dataProjection.setExtent(extent);
-			for (let i = 0, ii = pbfLayer.length; i < ii; ++i) {
+			if (extent) dataProjection.setExtent(extent);
+			for (let i = 0, ii = pbfLayer.length ?? 0; i < ii; ++i) {
 				const rawFeature = readRawFeature(pbf, pbfLayer, i);
-				const feature = this.createFeature_(pbf, rawFeature, options);
+				const feature = this.createFeature_(pbf, rawFeature, readOptions);
 				if (feature !== null) features.push(feature);
 			}
 		}
@@ -42966,11 +43160,12 @@ var MVT = class extends FeatureFormat {
 /**
 * Reader callback for parsing layers.
 * @param {number} tag The tag.
-* @param {Object} layers The layers object.
+* @param {MVTObject} layers The layers object.
 * @param {PbfReader} pbf The PBF.
 */
 function layersPBFReader(tag, layers, pbf) {
 	if (tag === 3) {
+		/** @type {MVTLayer} */
 		const layer = {
 			keys: [],
 			values: [],
@@ -42979,13 +43174,13 @@ function layersPBFReader(tag, layers, pbf) {
 		const end = pbf.readVarint() + pbf.pos;
 		pbf.readFields(layerPBFReader, layer, end);
 		layer.length = layer.features.length;
-		if (layer.length) layers[layer.name] = layer;
+		if (layer.length && layer.name) layers[layer.name] = layer;
 	}
 }
 /**
 * Reader callback for parsing layer.
 * @param {number} tag The tag.
-* @param {Object} layer The layer object.
+* @param {MVTLayer} layer The layer object.
 * @param {PbfReader} pbf The PBF.
 */
 function layerPBFReader(tag, layer, pbf) {
@@ -43007,7 +43202,7 @@ function layerPBFReader(tag, layer, pbf) {
 /**
 * Reader callback for parsing feature.
 * @param {number} tag The tag.
-* @param {Object} feature The feature object.
+* @param {MVTRawFeature} feature The feature object.
 * @param {PbfReader} pbf The PBF.
 */
 function featurePBFReader(tag, feature, pbf) {
@@ -43025,13 +43220,14 @@ function featurePBFReader(tag, feature, pbf) {
 /**
 * Read a raw feature from the pbf offset stored at index `i` in the raw layer.
 * @param {PbfReader} pbf PBF.
-* @param {Object} layer Raw layer.
+* @param {MVTLayer} layer Raw layer.
 * @param {number} i Index of the feature in the raw layer's `features` array.
-* @return {Object} Raw feature.
+* @return {MVTRawFeature} Raw feature.
 */
 function readRawFeature(pbf, layer, i) {
 	pbf.pos = layer.features[i];
 	const end = pbf.readVarint() + pbf.pos;
+	/** @type {MVTRawFeature} */
 	const feature = {
 		layer,
 		type: 0,
@@ -43047,15 +43243,14 @@ function readRawFeature(pbf, layer, i) {
 * @return {import("../render/Feature.js").Type} The geometry type.
 */
 function getGeometryType(type, numEnds) {
-	/** @type {import("../render/Feature.js").Type} */
+	/** @type {import("../render/Feature.js").Type|undefined} */
 	let geometryType;
 	if (type === 1) geometryType = numEnds === 1 ? "Point" : "MultiPoint";
 	else if (type === 2) geometryType = numEnds === 1 ? "LineString" : "MultiLineString";
 	else if (type === 3) geometryType = "Polygon";
 	return geometryType;
 }
-//#endregion
-//#region node_modules/ol/format/XML.js
+// node_modules/ol/format/XML.js
 /**
 * @module ol/format/XML
 */
@@ -43099,8 +43294,7 @@ var XML = class {
 		abstract();
 	}
 };
-//#endregion
-//#region node_modules/ol/format/xlink.js
+// node_modules/ol/format/xlink.js
 /**
 * @module ol/format/xlink
 */
@@ -43116,8 +43310,7 @@ var NAMESPACE_URI = "http://www.w3.org/1999/xlink";
 function readHref(node) {
 	return node.getAttributeNS(NAMESPACE_URI, "href");
 }
-//#endregion
-//#region node_modules/ol/format/OWS.js
+// node_modules/ol/format/OWS.js
 /**
 * @module ol/format/OWS
 */
@@ -43127,10 +43320,9 @@ function readHref(node) {
 */
 var NAMESPACE_URIS$1 = [null, "http://www.opengis.net/ows/1.1"];
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var PARSERS$1 = makeStructureNS(NAMESPACE_URIS$1, {
+var PARSERS$1 = makeParsersNS(NAMESPACE_URIS$1, {
 	"ServiceIdentification": makeObjectPropertySetter(readServiceIdentification),
 	"ServiceProvider": makeObjectPropertySetter(readServiceProvider),
 	"OperationsMetadata": makeObjectPropertySetter(readOperationsMetadata)
@@ -43150,10 +43342,9 @@ var OWS = class extends XML {
 	}
 };
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var ADDRESS_PARSERS = makeStructureNS(NAMESPACE_URIS$1, {
+var ADDRESS_PARSERS = makeParsersNS(NAMESPACE_URIS$1, {
 	"DeliveryPoint": makeObjectPropertySetter(readString),
 	"City": makeObjectPropertySetter(readString),
 	"AdministrativeArea": makeObjectPropertySetter(readString),
@@ -43162,73 +43353,62 @@ var ADDRESS_PARSERS = makeStructureNS(NAMESPACE_URIS$1, {
 	"ElectronicMailAddress": makeObjectPropertySetter(readString)
 });
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var ALLOWED_VALUES_PARSERS = makeStructureNS(NAMESPACE_URIS$1, { "Value": makeObjectPropertyPusher(readValue) });
+var ALLOWED_VALUES_PARSERS = makeParsersNS(NAMESPACE_URIS$1, { "Value": makeObjectPropertyPusher(readValue) });
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var CONSTRAINT_PARSERS = makeStructureNS(NAMESPACE_URIS$1, { "AllowedValues": makeObjectPropertySetter(readAllowedValues) });
+var CONSTRAINT_PARSERS = makeParsersNS(NAMESPACE_URIS$1, { "AllowedValues": makeObjectPropertySetter(readAllowedValues) });
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var CONTACT_INFO_PARSERS = makeStructureNS(NAMESPACE_URIS$1, {
+var CONTACT_INFO_PARSERS = makeParsersNS(NAMESPACE_URIS$1, {
 	"Phone": makeObjectPropertySetter(readPhone),
 	"Address": makeObjectPropertySetter(readAddress)
 });
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var DCP_PARSERS = makeStructureNS(NAMESPACE_URIS$1, { "HTTP": makeObjectPropertySetter(readHttp) });
+var DCP_PARSERS = makeParsersNS(NAMESPACE_URIS$1, { "HTTP": makeObjectPropertySetter(readHttp) });
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var HTTP_PARSERS = makeStructureNS(NAMESPACE_URIS$1, {
+var HTTP_PARSERS = makeParsersNS(NAMESPACE_URIS$1, {
 	"Get": makeObjectPropertyPusher(readGet),
 	"Post": void 0
 });
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var OPERATION_PARSERS = makeStructureNS(NAMESPACE_URIS$1, { "DCP": makeObjectPropertySetter(readDcp) });
+var OPERATION_PARSERS = makeParsersNS(NAMESPACE_URIS$1, { "DCP": makeObjectPropertySetter(readDcp) });
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var OPERATIONS_METADATA_PARSERS = makeStructureNS(NAMESPACE_URIS$1, { "Operation": readOperation });
+var OPERATIONS_METADATA_PARSERS = makeParsersNS(NAMESPACE_URIS$1, { "Operation": readOperation });
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var PHONE_PARSERS = makeStructureNS(NAMESPACE_URIS$1, {
+var PHONE_PARSERS = makeParsersNS(NAMESPACE_URIS$1, {
 	"Voice": makeObjectPropertySetter(readString),
 	"Facsimile": makeObjectPropertySetter(readString)
 });
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var REQUEST_METHOD_PARSERS = makeStructureNS(NAMESPACE_URIS$1, { "Constraint": makeObjectPropertyPusher(readConstraint) });
+var REQUEST_METHOD_PARSERS = makeParsersNS(NAMESPACE_URIS$1, { "Constraint": makeObjectPropertyPusher(readConstraint) });
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var SERVICE_CONTACT_PARSERS = makeStructureNS(NAMESPACE_URIS$1, {
+var SERVICE_CONTACT_PARSERS = makeParsersNS(NAMESPACE_URIS$1, {
 	"IndividualName": makeObjectPropertySetter(readString),
 	"PositionName": makeObjectPropertySetter(readString),
 	"ContactInfo": makeObjectPropertySetter(readContactInfo)
 });
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var SERVICE_IDENTIFICATION_PARSERS = makeStructureNS(NAMESPACE_URIS$1, {
+var SERVICE_IDENTIFICATION_PARSERS = makeParsersNS(NAMESPACE_URIS$1, {
 	"Abstract": makeObjectPropertySetter(readString),
 	"AccessConstraints": makeObjectPropertySetter(readString),
 	"Fees": makeObjectPropertySetter(readString),
@@ -43237,10 +43417,9 @@ var SERVICE_IDENTIFICATION_PARSERS = makeStructureNS(NAMESPACE_URIS$1, {
 	"ServiceType": makeObjectPropertySetter(readString)
 });
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var SERVICE_PROVIDER_PARSERS = makeStructureNS(NAMESPACE_URIS$1, {
+var SERVICE_PROVIDER_PARSERS = makeParsersNS(NAMESPACE_URIS$1, {
 	"ProviderName": makeObjectPropertySetter(readString),
 	"ProviderSite": makeObjectPropertySetter(readHref),
 	"ServiceContact": makeObjectPropertySetter(readServiceContact)
@@ -43312,6 +43491,7 @@ function readHttp(node, objectStack) {
 */
 function readOperation(node, objectStack) {
 	const name = node.getAttribute("name");
+	if (!name) return;
 	const value = pushParseAndPop({}, OPERATION_PARSERS, node, objectStack);
 	if (!value) return;
 	const object = objectStack[objectStack.length - 1];
@@ -43365,10 +43545,12 @@ function readServiceProvider(node, objectStack) {
 function readValue(node, objectStack) {
 	return readString(node);
 }
-//#endregion
-//#region node_modules/ol/format/WMTSCapabilities.js
+// node_modules/ol/format/WMTSCapabilities.js
 /**
 * @module ol/format/WMTSCapabilities
+*/
+/**
+* @typedef {Object<string, *>} WMTSObject
 */
 /**
 * @const
@@ -43381,10 +43563,9 @@ var NAMESPACE_URIS = [null, "http://www.opengis.net/wmts/1.0"];
 */
 var OWS_NAMESPACE_URIS = [null, "http://www.opengis.net/ows/1.1"];
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var PARSERS = makeStructureNS(NAMESPACE_URIS, { "Contents": makeObjectPropertySetter(readContents) });
+var PARSERS = makeParsersNS(NAMESPACE_URIS, { "Contents": makeObjectPropertySetter(readContents) });
 /**
 * @classdesc
 * Format for reading WMTS capabilities data.
@@ -43416,24 +43597,22 @@ var WMTSCapabilities = class extends XML {
 	}
 };
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var CONTENTS_PARSERS = makeStructureNS(NAMESPACE_URIS, {
+var CONTENTS_PARSERS = makeParsersNS(NAMESPACE_URIS, {
 	"Layer": makeObjectPropertyPusher(readLayer),
 	"TileMatrixSet": makeObjectPropertyPusher(readTileMatrixSet)
 });
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var LAYER_PARSERS = makeStructureNS(NAMESPACE_URIS, {
+var LAYER_PARSERS = makeParsersNS(NAMESPACE_URIS, {
 	"Style": makeObjectPropertyPusher(readStyle),
 	"Format": makeObjectPropertyPusher(readString),
 	"TileMatrixSetLink": makeObjectPropertyPusher(readTileMatrixSetLink),
 	"Dimension": makeObjectPropertyPusher(readDimensions),
 	"ResourceURL": makeObjectPropertyPusher(readResourceUrl)
-}, makeStructureNS(OWS_NAMESPACE_URIS, {
+}, makeParsersNS(OWS_NAMESPACE_URIS, {
 	"Title": makeObjectPropertySetter(readString),
 	"Abstract": makeObjectPropertySetter(readString),
 	"WGS84BoundingBox": makeObjectPropertySetter(readBoundingBox),
@@ -43441,31 +43620,27 @@ var LAYER_PARSERS = makeStructureNS(NAMESPACE_URIS, {
 	"Identifier": makeObjectPropertySetter(readString)
 }));
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var STYLE_PARSERS = makeStructureNS(NAMESPACE_URIS, { "LegendURL": makeObjectPropertyPusher(readLegendUrl) }, makeStructureNS(OWS_NAMESPACE_URIS, {
+var STYLE_PARSERS = makeParsersNS(NAMESPACE_URIS, { "LegendURL": makeObjectPropertyPusher(readLegendUrl) }, makeParsersNS(OWS_NAMESPACE_URIS, {
 	"Title": makeObjectPropertySetter(readString),
 	"Identifier": makeObjectPropertySetter(readString)
 }));
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var TMS_LINKS_PARSERS = makeStructureNS(NAMESPACE_URIS, {
+var TMS_LINKS_PARSERS = makeParsersNS(NAMESPACE_URIS, {
 	"TileMatrixSet": makeObjectPropertySetter(readString),
 	"TileMatrixSetLimits": makeObjectPropertySetter(readTileMatrixLimitsList)
 });
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var TMS_LIMITS_LIST_PARSERS = makeStructureNS(NAMESPACE_URIS, { "TileMatrixLimits": makeArrayPusher(readTileMatrixLimits) });
+var TMS_LIMITS_LIST_PARSERS = makeParsersNS(NAMESPACE_URIS, { "TileMatrixLimits": makeArrayPusher(readTileMatrixLimits) });
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var TMS_LIMITS_PARSERS = makeStructureNS(NAMESPACE_URIS, {
+var TMS_LIMITS_PARSERS = makeParsersNS(NAMESPACE_URIS, {
 	"TileMatrix": makeObjectPropertySetter(readString),
 	"MinTileRow": makeObjectPropertySetter(readPositiveInteger),
 	"MaxTileRow": makeObjectPropertySetter(readPositiveInteger),
@@ -43473,45 +43648,41 @@ var TMS_LIMITS_PARSERS = makeStructureNS(NAMESPACE_URIS, {
 	"MaxTileCol": makeObjectPropertySetter(readPositiveInteger)
 });
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var DIMENSION_PARSERS = makeStructureNS(NAMESPACE_URIS, {
+var DIMENSION_PARSERS = makeParsersNS(NAMESPACE_URIS, {
 	"Default": makeObjectPropertySetter(readString),
 	"Value": makeObjectPropertyPusher(readString)
-}, makeStructureNS(OWS_NAMESPACE_URIS, { "Identifier": makeObjectPropertySetter(readString) }));
+}, makeParsersNS(OWS_NAMESPACE_URIS, { "Identifier": makeObjectPropertySetter(readString) }));
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var WGS84_BBOX_READERS = makeStructureNS(OWS_NAMESPACE_URIS, {
+var WGS84_BBOX_READERS = makeParsersNS(OWS_NAMESPACE_URIS, {
 	"LowerCorner": makeArrayPusher(readCoordinates),
 	"UpperCorner": makeArrayPusher(readCoordinates)
 });
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var TMS_PARSERS = makeStructureNS(NAMESPACE_URIS, {
+var TMS_PARSERS = makeParsersNS(NAMESPACE_URIS, {
 	"WellKnownScaleSet": makeObjectPropertySetter(readString),
 	"TileMatrix": makeObjectPropertyPusher(readTileMatrix)
-}, makeStructureNS(OWS_NAMESPACE_URIS, {
+}, makeParsersNS(OWS_NAMESPACE_URIS, {
 	"SupportedCRS": makeObjectPropertySetter(readString),
 	"Identifier": makeObjectPropertySetter(readString),
 	"BoundingBox": makeObjectPropertySetter(readBoundingBox)
 }));
 /**
-* @const
-* @type {Object<string, Object<string, import("../xml.js").Parser>>}
+* @type {import("../xml.js").ParsersNS}
 */
-var TM_PARSERS = makeStructureNS(NAMESPACE_URIS, {
+var TM_PARSERS = makeParsersNS(NAMESPACE_URIS, {
 	"TopLeftCorner": makeObjectPropertySetter(readCoordinates),
 	"ScaleDenominator": makeObjectPropertySetter(readDecimal),
 	"TileWidth": makeObjectPropertySetter(readPositiveInteger),
 	"TileHeight": makeObjectPropertySetter(readPositiveInteger),
 	"MatrixWidth": makeObjectPropertySetter(readPositiveInteger),
 	"MatrixHeight": makeObjectPropertySetter(readPositiveInteger)
-}, makeStructureNS(OWS_NAMESPACE_URIS, { "Identifier": makeObjectPropertySetter(readString) }));
+}, makeParsersNS(OWS_NAMESPACE_URIS, { "Identifier": makeObjectPropertySetter(readString) }));
 /**
 * @param {Element} node Node.
 * @param {Array<*>} objectStack Object stack.
@@ -43584,7 +43755,8 @@ function readResourceUrl(node, objectStack) {
 * @return {Object|undefined} BBox object.
 */
 function readBoundingBox(node, objectStack) {
-	const coordinates = pushParseAndPop([], WGS84_BBOX_READERS, node, objectStack);
+	/** @type {Array<Array<number>>} */
+	const coordinates = pushParseAndPop([], WGS84_BBOX_READERS, node, objectStack) ?? [];
 	if (coordinates.length != 2) return;
 	return boundingExtent(coordinates);
 }
@@ -43595,7 +43767,8 @@ function readBoundingBox(node, objectStack) {
 */
 function readBoundingBoxWithCrs(node, objectStack) {
 	const crs = node.getAttribute("crs");
-	const coordinates = pushParseAndPop([], WGS84_BBOX_READERS, node, objectStack);
+	/** @type {Array<Array<number>>} */
+	const coordinates = pushParseAndPop([], WGS84_BBOX_READERS, node, objectStack) ?? [];
 	if (coordinates.length != 2) return;
 	return {
 		extent: boundingExtent(coordinates),
@@ -43619,7 +43792,9 @@ function readLegendUrl(node, objectStack) {
 * @return {Object|undefined} Coordinates object.
 */
 function readCoordinates(node, objectStack) {
-	const coordinates = readString(node).split(/\s+/);
+	const text = readString(node);
+	if (!text) return;
+	const coordinates = text.split(/\s+/);
 	if (!coordinates || coordinates.length != 2) return;
 	const x = +coordinates[0];
 	const y = +coordinates[1];
@@ -43650,8 +43825,7 @@ function readTileMatrixLimitsList(node, objectStack) {
 function readTileMatrixLimits(node, objectStack) {
 	return pushParseAndPop({}, TMS_LIMITS_PARSERS, node, objectStack);
 }
-//#endregion
-//#region node_modules/ol/VectorRenderTile.js
+// node_modules/ol/VectorRenderTile.js
 /**
 * @module ol/VectorRenderTile
 */
@@ -43675,7 +43849,7 @@ var VectorRenderTile = class extends Tile {
 	* @param {import("./tilecoord.js").TileCoord} tileCoord Tile coordinate.
 	* @param {import("./TileState.js").default} state State.
 	* @param {import("./tilecoord.js").TileCoord} urlTileCoord Wrapped tile coordinate for source urls.
-	* @param {function(VectorRenderTile):Array<import("./VectorTile.js").default>} getSourceTiles Function.
+	* @param {function(VectorRenderTile):Array<import("./VectorTile.js").default<import("./Feature.js").FeatureLike>>} getSourceTiles Function.
 	* @param {function(VectorRenderTile):void} removeSourceTiles Function.
 	*/
 	constructor(tileCoord, state, urlTileCoord, getSourceTiles, removeSourceTiles) {
@@ -43705,7 +43879,7 @@ var VectorRenderTile = class extends Tile {
 		*/
 		this.replayState_ = {};
 		/**
-		* @type {Array<import("./VectorTile.js").default>}
+		* @type {Array<import("./VectorTile.js").default<import("./Feature.js").FeatureLike>>}
 		*/
 		this.sourceTiles = [];
 		/**
@@ -43717,7 +43891,7 @@ var VectorRenderTile = class extends Tile {
 		*/
 		this.wantedResolution;
 		/**
-		* @type {!function():Array<import("./VectorTile.js").default>}
+		* @type {!function():Array<import("./VectorTile.js").default<import("./Feature.js").FeatureLike>>}
 		*/
 		this.getSourceTiles = getSourceTiles.bind(void 0, this);
 		/**
@@ -43745,7 +43919,7 @@ var VectorRenderTile = class extends Tile {
 	}
 	/**
 	* Get the Canvas for this tile.
-	* @return {HTMLCanvasElement|OffscreenCanvas} Canvas.
+	* @return {HTMLCanvasElement|OffscreenCanvas|null} Canvas.
 	*/
 	getImage() {
 		return this.hasContext() ? this.getContext().canvas : null;
@@ -43790,8 +43964,7 @@ var VectorRenderTile = class extends Tile {
 		super.release();
 	}
 };
-//#endregion
-//#region node_modules/ol/VectorTile.js
+// node_modules/ol/VectorTile.js
 /**
 * @module ol/VectorTile
 */
@@ -43811,7 +43984,7 @@ var VectorTile$1 = class extends Tile {
 		super(tileCoord, state, options);
 		/**
 		* Extent of this tile; set by the source.
-		* @type {import("./extent.js").Extent}
+		* @type {import("./extent.js").Extent|null}
 		*/
 		this.extent = null;
 		/**
@@ -43821,7 +43994,7 @@ var VectorTile$1 = class extends Tile {
 		this.format_ = format;
 		/**
 		* @private
-		* @type {Array<FeatureType>}
+		* @type {Array<FeatureType>|null}
 		*/
 		this.features_ = null;
 		/**
@@ -43831,7 +44004,7 @@ var VectorTile$1 = class extends Tile {
 		this.loader_;
 		/**
 		* Feature projection of this tile; set by the source.
-		* @type {import("./proj/Projection.js").default}
+		* @type {import("./proj/Projection.js").default|null}
 		*/
 		this.projection = null;
 		/**
@@ -43867,7 +44040,7 @@ var VectorTile$1 = class extends Tile {
 	}
 	/**
 	* Get the features for this tile. Geometries will be in the view projection.
-	* @return {Array<FeatureType>} Features.
+	* @return {Array<FeatureType>|null} Features.
 	* @api
 	*/
 	getFeatures() {
@@ -43881,7 +44054,7 @@ var VectorTile$1 = class extends Tile {
 		if (this.state == TileState_default.IDLE) {
 			this.setState(TileState_default.LOADING);
 			this.tileLoadFunction_(this, this.url_);
-			if (this.loader_) this.loader_(this.extent, this.resolution, this.projection);
+			if (this.loader_ && this.extent && this.projection) this.loader_(this.extent, this.resolution, this.projection);
 		}
 	}
 	/**
@@ -43917,8 +44090,7 @@ var VectorTile$1 = class extends Tile {
 		this.loader_ = loader;
 	}
 };
-//#endregion
-//#region node_modules/ol/featureloader.js
+// node_modules/ol/featureloader.js
 /**
 * @module ol/featureloader
 */
@@ -43971,7 +44143,7 @@ var withCredentials = false;
 * @param {import("./extent.js").Extent} extent Extent.
 * @param {number} resolution Resolution.
 * @param {import("./proj/Projection.js").default} projection Projection.
-* @param {function(Array<FeatureType>, import("./proj/Projection.js").default): void} success Success
+* @param {function(Array<FeatureType>, import("./proj/Projection.js").default|undefined): void} success Success
 *      Function called with the loaded features and optionally with the data projection.
 * @param {function(): void} failure Failure
 *      Function called when loading failed.
@@ -44041,7 +44213,7 @@ function xhr(url, format) {
 			projection,
 			/**
 			* @param {Array<FeatureType>} features The loaded features.
-			* @param {import("./proj/Projection.js").default} dataProjection Data
+			* @param {import("./proj/Projection.js").default|undefined} dataProjection Data
 			* projection.
 			*/
 			(features, dataProjection) => {
@@ -44055,8 +44227,7 @@ function xhr(url, format) {
 		);
 	};
 }
-//#endregion
-//#region node_modules/ol/source/VectorTile.js
+// node_modules/ol/source/VectorTile.js
 /**
 * @module ol/source/VectorTile
 */
@@ -44180,7 +44351,7 @@ var VectorTile = class extends UrlTile {
 		*/
 		this.tileKeysBySourceTileUrl_ = {};
 		/**
-		@type {Object<string, Tile<FeatureType>>}
+		@type {Object<string, import("../VectorTile.js").default<FeatureType>>}
 		*/
 		this.sourceTiles_ = {};
 		/**
@@ -44214,7 +44385,7 @@ var VectorTile = class extends UrlTile {
 	*/
 	getSourceZ_(resolution, projection, zDirection) {
 		const sourceProjection = this.projection;
-		const sourceResolution = projection && sourceProjection && !equivalent$1(projection, sourceProjection) ? resolution / sourceProjection.getMetersPerUnit() * projection.getMetersPerUnit() : resolution;
+		const sourceResolution = !equivalent$1(projection, sourceProjection) ? resolution / (sourceProjection.getMetersPerUnit() || 1) * (projection.getMetersPerUnit() || 1) : resolution;
 		return this.tileGrid.getZForResolution(sourceResolution, zDirection);
 	}
 	/**
@@ -44222,7 +44393,7 @@ var VectorTile = class extends UrlTile {
 	* @param {import("../proj/Projection.js").default} projection Projection.
 	* @param {VectorRenderTile} tile Vector render tile.
 	* @param {import("../Tile.js").UrlFunction} [tileUrlFunction] Tile URL function.
-	* @return {Array<import("../VectorTile.js").default>} Tile keys.
+	* @return {Array<import("../VectorTile.js").default<FeatureType>>} Tile keys.
 	*/
 	getSourceTiles(pixelRatio, projection, tile, tileUrlFunction) {
 		if (tile.getState() === TileState_default.IDLE) {
@@ -44234,7 +44405,7 @@ var VectorTile = class extends UrlTile {
 			const resolution = tileGrid.getResolution(z);
 			buffer$1(extent, -resolution, extent);
 			const sourceProjection = this.projection;
-			if (projection && this.projection && !equivalent$1(projection, sourceProjection)) extent = transformExtent(extent, projection, sourceProjection);
+			if (projection && sourceProjection && !equivalent$1(projection, sourceProjection)) extent = transformExtent(extent, projection, sourceProjection);
 			const sourceTileGrid = this.tileGrid;
 			const sourceExtent = sourceTileGrid.getExtent();
 			if (sourceExtent) getIntersection(extent, sourceExtent, extent);
@@ -44242,6 +44413,7 @@ var VectorTile = class extends UrlTile {
 			const urlFunction = tileUrlFunction || this.tileUrlFunction;
 			sourceTileGrid.forEachTileCoord(extent, sourceZ, (sourceTileCoord) => {
 				const tileUrl = urlFunction(sourceTileCoord, pixelRatio, projection);
+				if (!tileUrl) return;
 				if (!this.sourceTiles_[tileUrl]) this.sourceTiles_[tileUrl] = new this.tileClass(sourceTileCoord, tileUrl ? TileState_default.IDLE : TileState_default.EMPTY, tileUrl, this.format_, this.tileLoadFunction);
 				const sourceTile = this.sourceTiles_[tileUrl];
 				tile.sourceTiles.push(sourceTile);
@@ -44267,7 +44439,7 @@ var VectorTile = class extends UrlTile {
 				}
 				if (sourceTileState === TileState_default.IDLE) {
 					sourceTile.extent = sourceTileGrid.getTileCoordExtent(sourceTileCoord);
-					sourceTile.projection = this.projection;
+					sourceTile.projection = sourceProjection;
 					sourceTile.resolution = sourceTileGrid.getResolution(sourceTileCoord[0]);
 					sourceTile.load();
 				}
@@ -44310,7 +44482,8 @@ var VectorTile = class extends UrlTile {
 			y
 		];
 		let urlTileCoord = this.getTileCoordForTileUrlFunction(tileCoord, projection);
-		const sourceExtent = this.getTileGrid().getExtent();
+		const tileGridForExtent = this.getTileGrid();
+		const sourceExtent = tileGridForExtent ? tileGridForExtent.getExtent() : void 0;
 		const sourceProjection = this.projection;
 		const tileGrid = this.getTileGridForProjection(projection);
 		if (urlTileCoord && sourceExtent) {
@@ -44330,7 +44503,7 @@ var VectorTile = class extends UrlTile {
 			});
 		}
 		const tileUrlFunction = this.tileUrlFunction;
-		const newTile = new VectorRenderTile(tileCoord, empty ? TileState_default.EMPTY : TileState_default.IDLE, urlTileCoord, (tile) => this.getSourceTiles(pixelRatio, projection, tile, tileUrlFunction), this.removeSourceTiles.bind(this));
+		const newTile = new VectorRenderTile(tileCoord, empty ? TileState_default.EMPTY : TileState_default.IDLE, urlTileCoord || tileCoord, (tile) => this.getSourceTiles(pixelRatio, projection, tile, tileUrlFunction), this.removeSourceTiles.bind(this));
 		newTile.key = this.getKey();
 		return newTile;
 	}
@@ -44344,8 +44517,8 @@ var VectorTile = class extends UrlTile {
 		let tileGrid = this.tileGrids_[code];
 		if (!tileGrid) {
 			const sourceProjection = this.projection;
-			if (sourceProjection !== null && !equivalent$1(sourceProjection, projection)) return getForProjection(projection);
 			const sourceTileGrid = this.tileGrid;
+			if (sourceProjection !== null && !equivalent$1(sourceProjection, projection)) return getForProjection(projection);
 			const resolutions = sourceTileGrid.getResolutions().slice();
 			const origins = resolutions.map(function(resolution, z) {
 				return sourceTileGrid.getOrigin(z);
@@ -44360,7 +44533,7 @@ var VectorTile = class extends UrlTile {
 				tileSizes.push(tileSizes[z - 1]);
 			}
 			tileGrid = new TileGrid({
-				extent: sourceTileGrid.getExtent(),
+				extent: sourceTileGrid.getExtent() ?? void 0,
 				origins,
 				resolutions,
 				tileSizes
@@ -44411,12 +44584,26 @@ function defaultLoadFunction(tile, url) {
 		* @param {import("../proj/Projection.js").default} projection Projection.
 		*/
 		function(extent, resolution, projection) {
-			loadFeaturesXhr(url, tile.getFormat(), extent, resolution, projection, tile.onLoad.bind(tile), tile.onError.bind(tile));
+			if (!projection) return;
+			loadFeaturesXhr(
+				url,
+				tile.getFormat(),
+				extent,
+				resolution,
+				projection,
+				/**
+				* @param {Array<FeatureType>} features Features.
+				* @param {import("../proj/Projection.js").default|undefined} dataProjection Data projection.
+				*/
+				(features, dataProjection) => {
+					tile.onLoad(features, dataProjection ?? projection);
+				},
+				tile.onError.bind(tile)
+			);
 		}
 	);
 }
-//#endregion
-//#region node_modules/fflate/esm/browser.js
+// node_modules/fflate/esm/browser.js
 var u8 = Uint8Array;
 var u16 = Uint16Array;
 var i32 = Int32Array;
@@ -44767,8 +44954,7 @@ var td = typeof TextDecoder != "undefined" && /*#__PURE__*/ new TextDecoder();
 try {
 	td.decode(et, { stream: true });
 } catch (e) {}
-//#endregion
-//#region node_modules/pmtiles/dist/esm/index.js
+// node_modules/pmtiles/dist/esm/index.js
 var j = Object.defineProperty;
 var S = Math.pow;
 var d = (o, t) => j(o, "name", {
@@ -45323,8 +45509,7 @@ var H = class H {
 };
 d(H, "PMTiles");
 var w = H;
-//#endregion
-//#region node_modules/ol-pmtiles/dist/esm/index.js
+// node_modules/ol-pmtiles/dist/esm/index.js
 var __defProp$1 = Object.defineProperty;
 var __getOwnPropSymbols$1 = Object.getOwnPropertySymbols;
 var __hasOwnProp$1 = Object.prototype.hasOwnProperty;
@@ -45453,8 +45638,7 @@ var _PMTilesVectorSource = class _PMTilesVectorSource extends VectorTile {
 };
 __name(_PMTilesVectorSource, "PMTilesVectorSource");
 var PMTilesVectorSource = _PMTilesVectorSource;
-//#endregion
-//#region node_modules/ol/render/canvas/ZIndexContext.js
+// node_modules/ol/render/canvas/ZIndexContext.js
 /**
 * @module ol/render/canvas/ZIndexContext
 */
@@ -45572,8 +45756,7 @@ var ZIndexContext = class {
 		this.zIndex = 0;
 	}
 };
-//#endregion
-//#region node_modules/ol/renderer/canvas/Layer.js
+// node_modules/ol/renderer/canvas/Layer.js
 /**
 * @module ol/renderer/canvas/Layer
 */
@@ -45582,7 +45765,7 @@ var ZIndexContext = class {
 */
 var canvasPool = [];
 /**
-* @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D}
+* @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D|null}
 */
 var pixelContext = null;
 function createPixelContext() {
@@ -45600,9 +45783,15 @@ var CanvasLayerRenderer = class extends LayerRenderer {
 	constructor(layer) {
 		super(layer);
 		/**
+		* If possible, request viewport rotated content from the source.
+		* @protected
+		* @type {boolean}
+		*/
+		this.wantRotation = false;
+		/**
 		* HTMLElement container for the layer to be rendered in.
 		* @protected
-		* @type {HTMLElement}
+		* @type {HTMLElement|null}
 		*/
 		this.container = null;
 		/**
@@ -45632,12 +45821,12 @@ var CanvasLayerRenderer = class extends LayerRenderer {
 		*/
 		this.inversePixelTransform = create$3();
 		/**
-		* @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D}
+		* @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D|null}
 		*/
 		this.context = null;
 		/**
 		* @private
-		* @type {ZIndexContext}
+		* @type {ZIndexContext|null}
 		*/
 		this.deferredContext_ = null;
 		/**
@@ -45647,7 +45836,7 @@ var CanvasLayerRenderer = class extends LayerRenderer {
 		this.containerReused = false;
 		/**
 		* @protected
-		* @type {import("../../Map.js").FrameState|null}
+		* @type {import("../../Map.js").FrameState|null|undefined}
 		*/
 		this.frameState = null;
 	}
@@ -45659,11 +45848,13 @@ var CanvasLayerRenderer = class extends LayerRenderer {
 	*/
 	getImageData(image, col, row) {
 		if (!pixelContext) createPixelContext();
-		pixelContext.clearRect(0, 0, 1, 1);
+		const ctx = pixelContext;
+		if (!ctx) return null;
+		ctx.clearRect(0, 0, 1, 1);
 		let data;
 		try {
-			pixelContext.drawImage(image, col, row, 1, 1, 0, 0, 1, 1);
-			data = pixelContext.getImageData(0, 0, 1, 1).data;
+			ctx.drawImage(image, col, row, 1, 1, 0, 0, 1, 1);
+			data = ctx.getImageData(0, 0, 1, 1).data;
 		} catch {
 			pixelContext = null;
 			return null;
@@ -45672,7 +45863,7 @@ var CanvasLayerRenderer = class extends LayerRenderer {
 	}
 	/**
 	* @param {import('../../Map.js').FrameState} frameState Frame state.
-	* @return {string} Background color.
+	* @return {string|undefined} Background color.
 	*/
 	getBackground(frameState) {
 		let background = this.getLayer().getBackground();
@@ -45681,8 +45872,8 @@ var CanvasLayerRenderer = class extends LayerRenderer {
 	}
 	/**
 	* Get a rendering container from an existing target, if compatible.
-	* @param {HTMLElement} target Potential render target.
-	* @param {string} transform CSS transform matrix.
+	* @param {HTMLElement|null} target Potential render target.
+	* @param {string|null} transform CSS transform matrix.
 	* @param {string} [backgroundColor] Background color.
 	* @param {number} [width] Physical pixel width of the rendering canvas.
 	* @param {number} [height] Physical pixel height of the rendering canvas.
@@ -45772,10 +45963,11 @@ var CanvasLayerRenderer = class extends LayerRenderer {
 	prepareContainer(frameState, target) {
 		const extent = frameState.extent;
 		const resolution = frameState.viewState.resolution;
-		const rotation = frameState.viewState.rotation;
+		const sourceRotates = this.sourceRotates();
+		const rotation = sourceRotates ? 0 : frameState.viewState.rotation;
 		const pixelRatio = frameState.pixelRatio;
-		const width = Math.round(getWidth(extent) / resolution * pixelRatio);
-		const height = Math.round(getHeight(extent) / resolution * pixelRatio);
+		const width = sourceRotates ? Math.round(frameState.size[0] * pixelRatio) : Math.round(getWidth(extent) / resolution * pixelRatio);
+		const height = sourceRotates ? Math.round(frameState.size[1] * pixelRatio) : Math.round(getHeight(extent) / resolution * pixelRatio);
 		compose(this.pixelTransform, frameState.size[0] / 2, frameState.size[1] / 2, 1 / pixelRatio, 1 / pixelRatio, rotation, -width / 2, -height / 2);
 		makeInverse(this.inversePixelTransform, this.pixelTransform);
 		const canvasTransform = toString$3(this.pixelTransform);
@@ -45786,7 +45978,8 @@ var CanvasLayerRenderer = class extends LayerRenderer {
 			if (canvas.width != width || canvas.height != height) {
 				canvas.width = width;
 				canvas.height = height;
-			} else this.context.clearRect(0, 0, width, height);
+			} else
+ /** @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D} */ this.context.clearRect(0, 0, width, height);
 			if (canvasTransform !== canvas.style.transform)
  /** @type {HTMLCanvasElement} */ canvas.style.transform = canvasTransform;
 		}
@@ -45836,6 +46029,24 @@ var CanvasLayerRenderer = class extends LayerRenderer {
 		return frameState.declutter ? this.deferredContext_.getContext() : this.context;
 	}
 	/**
+	* @protected
+	* @return {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D} Canvas rendering context.
+	*/
+	getCanvasContext() {
+		const context = this.context;
+		if (!context) throw new Error("Canvas context not initialized");
+		return context;
+	}
+	/**
+	* @protected
+	* @return {HTMLElement} Canvas container element.
+	*/
+	getContainerElement() {
+		const container = this.container;
+		if (!container) throw new Error("Canvas container not initialized");
+		return container;
+	}
+	/**
 	* @param {import("../../Map.js").FrameState} frameState Frame state.
 	* @override
 	*/
@@ -45871,6 +46082,13 @@ var CanvasLayerRenderer = class extends LayerRenderer {
 		return compose(this.tempTransform, dx1, dy1, sx, sy, -rotation, dx2, dy2);
 	}
 	/**
+	* @protected
+	* @return {boolean} Request rotation from the source.
+	*/
+	sourceRotates() {
+		return this.wantRotation && !!this.getLayer().getSource()?.canRotate;
+	}
+	/**
 	* Clean up.
 	* @override
 	*/
@@ -45879,8 +46097,7 @@ var CanvasLayerRenderer = class extends LayerRenderer {
 		super.disposeInternal();
 	}
 };
-//#endregion
-//#region node_modules/ol/renderer/canvas/ImageLayer.js
+// node_modules/ol/renderer/canvas/ImageLayer.js
 /**
 * @module ol/renderer/canvas/ImageLayer
 */
@@ -45888,10 +46105,11 @@ var CanvasLayerRenderer = class extends LayerRenderer {
 * @classdesc
 * Canvas renderer for image layers.
 * @api
+* @extends {CanvasLayerRenderer<import("../../layer/Image.js").default<import("../../source/Image.js").default>>}
 */
 var CanvasImageLayerRenderer = class extends CanvasLayerRenderer {
 	/**
-	* @param {import("../../layer/Image.js").default} imageLayer Image layer.
+	* @param {import("../../layer/Image.js").default<import("../../source/Image.js").default>} imageLayer Image layer.
 	*/
 	constructor(imageLayer) {
 		super(imageLayer);
@@ -45905,9 +46123,15 @@ var CanvasImageLayerRenderer = class extends CanvasLayerRenderer {
 		* @type {number}
 		*/
 		this.renderedSourceRevision_ = 0;
+		/**
+		* Rotation baked into the current image.
+		* @protected
+		* @type {number}
+		*/
+		this.renderedRotation = 0;
 	}
 	/**
-	* @return {import('../../DataTile.js').ImageLike} Image.
+	* @return {import('../../DataTile.js').ImageLike|null} Image.
 	*/
 	getImage() {
 		return !this.image ? null : this.image.getImage();
@@ -45934,8 +46158,10 @@ var CanvasImageLayerRenderer = class extends CanvasLayerRenderer {
 				const projection = viewState.projection;
 				const image = imageSource.getImage(renderedExtent, viewResolution, pixelRatio, projection);
 				if (image) {
-					if (this.loadImage(image)) this.image = image;
-					else if (image.getState() === ImageState_default.EMPTY) this.image = null;
+					if (this.loadImage(image)) {
+						this.image = image;
+						this.renderedRotation = this.sourceRotates() ? viewState.rotation : 0;
+					} else if (image.getState() === ImageState_default.EMPTY) this.image = null;
 				}
 			} else this.image = null;
 		}
@@ -45943,12 +46169,12 @@ var CanvasImageLayerRenderer = class extends CanvasLayerRenderer {
 	}
 	/**
 	* @param {import("../../pixel.js").Pixel} pixel Pixel.
-	* @return {Uint8ClampedArray} Data at the pixel location.
+	* @return {Uint8ClampedArray|null} Data at the pixel location.
 	* @override
 	*/
 	getData(pixel) {
 		const frameState = this.frameState;
-		if (!frameState) return null;
+		if (!frameState || !this.image) return null;
 		const layer = this.getLayer();
 		const coordinate = apply(frameState.pixelToCoordinateTransform, pixel.slice());
 		const layerExtent = layer.getExtent();
@@ -45957,6 +46183,17 @@ var CanvasImageLayerRenderer = class extends CanvasLayerRenderer {
 		}
 		const imageExtent = this.image.getExtent();
 		const img = this.image.getImage();
+		if (!img) return null;
+		const imageRotation = this.renderedRotation;
+		if (imageRotation !== 0) {
+			const imageCenter = getCenter(imageExtent);
+			const cosRotation = Math.cos(-imageRotation);
+			const sinRotation = Math.sin(-imageRotation);
+			const deltaX = coordinate[0] - imageCenter[0];
+			const deltaY = coordinate[1] - imageCenter[1];
+			coordinate[0] = imageCenter[0] + cosRotation * deltaX - sinRotation * deltaY;
+			coordinate[1] = imageCenter[1] + sinRotation * deltaX + cosRotation * deltaY;
+		}
 		const imageMapWidth = getWidth(imageExtent);
 		const col = Math.floor(img.width * ((coordinate[0] - imageExtent[0]) / imageMapWidth));
 		if (col < 0 || col >= img.width) return null;
@@ -45974,55 +46211,82 @@ var CanvasImageLayerRenderer = class extends CanvasLayerRenderer {
 	*/
 	renderFrame(frameState, target) {
 		const image = this.image;
+		if (!image) return this.getContainerElement();
 		const imageExtent = image.getExtent();
 		const imageResolution = image.getResolution();
 		const [imageResolutionX, imageResolutionY] = Array.isArray(imageResolution) ? imageResolution : [imageResolution, imageResolution];
 		const imagePixelRatio = image.getPixelRatio();
+		const imageRotation = this.renderedRotation;
+		const imageSource = this.getLayer().getSource();
+		const sourceRotates = this.sourceRotates();
 		const layerState = frameState.layerStatesArray[frameState.layerIndex];
 		const pixelRatio = frameState.pixelRatio;
 		const viewState = frameState.viewState;
 		const viewCenter = viewState.center;
 		const viewResolution = viewState.resolution;
+		const viewRotation = viewState.rotation;
 		const scaleX = pixelRatio * imageResolutionX / (viewResolution * imagePixelRatio);
 		const scaleY = pixelRatio * imageResolutionY / (viewResolution * imagePixelRatio);
 		this.prepareContainer(frameState, target);
-		const width = this.context.canvas.width;
-		const height = this.context.canvas.height;
+		const width = this.getCanvasContext().canvas.width;
+		const height = this.getCanvasContext().canvas.height;
 		const context = this.getRenderContext(frameState);
 		let clipped = false;
 		let render = true;
 		if (layerState.extent) {
 			const layerExtent = fromUserExtent(layerState.extent, viewState.projection);
-			render = intersects$1(layerExtent, frameState.extent);
-			clipped = render && !containsExtent(layerExtent, frameState.extent);
+			const frameExtent = frameState.extent;
+			render = intersects$1(layerExtent, frameExtent);
+			clipped = render && !containsExtent(layerExtent, frameExtent);
 			if (clipped) this.clipUnrotated(context, frameState, layerExtent);
 		}
 		const img = image.getImage();
-		const transform = compose(this.tempTransform, width / 2, height / 2, scaleX, scaleY, 0, imagePixelRatio * (imageExtent[0] - viewCenter[0]) / imageResolutionX, imagePixelRatio * (viewCenter[1] - imageExtent[3]) / imageResolutionY);
+		if (!img) return this.getContainerElement();
+		let transform, dw, dh;
+		if (!sourceRotates) {
+			transform = compose(this.tempTransform, width / 2, height / 2, scaleX, scaleY, 0, imagePixelRatio * (imageExtent[0] - viewCenter[0]) / imageResolutionX, imagePixelRatio * (viewCenter[1] - imageExtent[3]) / imageResolutionY);
+			dw = img.width * transform[0];
+			dh = img.height * transform[3];
+		} else {
+			const scale = pixelRatio / viewResolution;
+			const cosRotation = Math.cos(viewRotation);
+			const sinRotation = Math.sin(viewRotation);
+			const imageCenter = getCenter(imageExtent);
+			const centerX = imageCenter[0] - viewCenter[0];
+			const centerY = imageCenter[1] - viewCenter[1];
+			transform = compose(this.tempTransform, width / 2 + scale * (cosRotation * centerX + sinRotation * centerY), height / 2 + scale * (sinRotation * centerX - cosRotation * centerY), scaleX, scaleY, viewRotation - imageRotation, -img.width / 2, -img.height / 2);
+			dw = img.width * scaleX;
+			dh = img.height * scaleY;
+		}
 		this.renderedResolution = imageResolutionY * pixelRatio / imagePixelRatio;
-		const dw = img.width * transform[0];
-		const dh = img.height * transform[3];
-		if (!this.getLayer().getSource().getInterpolate()) context.imageSmoothingEnabled = false;
+		if (!imageSource?.getInterpolate() && (!sourceRotates || viewRotation === imageRotation)) context.imageSmoothingEnabled = false;
 		this.preRender(context, frameState);
 		if (render && dw >= .5 && dh >= .5) {
-			const dx = transform[4];
-			const dy = transform[5];
 			const opacity = layerState.opacity;
-			if (opacity !== 1) {
+			if (!sourceRotates) {
+				const dx = transform[4];
+				const dy = transform[5];
+				if (opacity !== 1) {
+					context.save();
+					context.globalAlpha = opacity;
+				}
+				context.drawImage(img, 0, 0, img.width, img.height, dx, dy, dw, dh);
+				if (opacity !== 1) context.restore();
+			} else {
 				context.save();
-				context.globalAlpha = opacity;
+				if (opacity !== 1) context.globalAlpha = opacity;
+				context.setTransform(transform[0], transform[1], transform[2], transform[3], transform[4], transform[5]);
+				context.drawImage(img, 0, 0);
+				context.restore();
 			}
-			context.drawImage(img, 0, 0, +img.width, +img.height, dx, dy, dw, dh);
-			if (opacity !== 1) context.restore();
 		}
-		this.postRender(this.context, frameState);
+		this.postRender(this.getCanvasContext(), frameState);
 		if (clipped) context.restore();
 		context.imageSmoothingEnabled = true;
-		return this.container;
+		return this.getContainerElement();
 	}
 };
-//#endregion
-//#region node_modules/ol/layer/BaseImage.js
+// node_modules/ol/layer/BaseImage.js
 /**
 * @module ol/layer/BaseImage
 */
@@ -46064,7 +46328,7 @@ var CanvasImageLayerRenderer = class extends CanvasLayerRenderer {
 * options means that `title` is observable, and has get/set accessors.
 *
 * @template {import("../source/Image.js").default} ImageSourceType
-* @template {import("../renderer/Layer.js").default} RendererType
+* @template {import("../renderer/Layer.js").default<*>} RendererType
 * @extends {Layer<ImageSourceType, RendererType>}
 * @api
 */
@@ -46077,8 +46341,7 @@ var BaseImageLayer = class extends Layer {
 		super(options);
 	}
 };
-//#endregion
-//#region node_modules/ol/layer/Image.js
+// node_modules/ol/layer/Image.js
 /**
 * @module ol/layer/Image
 */
@@ -46127,8 +46390,7 @@ var ImageLayer = class extends BaseImageLayer {
 		return super.getData(pixel);
 	}
 };
-//#endregion
-//#region node_modules/ol/renderer/canvas/TileLayer.js
+// node_modules/ol/renderer/canvas/TileLayer.js
 /**
 * @module ol/renderer/canvas/TileLayer
 */
@@ -46172,6 +46434,7 @@ function removeTileFromLookup(tilesByZ, tile, z) {
 function getRenderExtent(frameState, extent) {
 	const layerState = frameState.layerStatesArray[frameState.layerIndex];
 	if (layerState.extent) extent = getIntersection(extent, fromUserExtent(layerState.extent, frameState.viewState.projection));
+	if (!layerState.layer) return extent;
 	const source = layerState.layer.getRenderSource();
 	if (!source.getWrapX()) {
 		const gridExtent = source.getTileGridForProjection(frameState.viewState.projection).getExtent();
@@ -46255,7 +46518,7 @@ var CanvasTileLayerRenderer = class extends CanvasLayerRenderer {
 		*/
 		this.tileCache_ = new LRUCache(cacheSize);
 		/**
-		* @type {import("../../structs/LRUCache.js").default<import("../../Tile.js").default|null>}
+		* @type {import("../../structs/LRUCache.js").default<import("../../Tile.js").default|null>|null}
 		* @private
 		*/
 		this.sourceTileCache_ = null;
@@ -46267,13 +46530,13 @@ var CanvasTileLayerRenderer = class extends CanvasLayerRenderer {
 		this.maxStaleKeys = cacheSize * .5;
 	}
 	/**
-	* @return {LRUCache} Tile cache.
+	* @return {import("../../structs/LRUCache.js").default<import("../../Tile.js").default>} Tile cache.
 	*/
 	getTileCache() {
 		return this.tileCache_;
 	}
 	/**
-	* @return {LRUCache} Tile cache.
+	* @return {import("../../structs/LRUCache.js").default<import("../../Tile.js").default|null>} Tile cache.
 	*/
 	getSourceTileCache() {
 		if (!this.sourceTileCache_) this.sourceTileCache_ = new LRUCache(512);
@@ -46292,11 +46555,14 @@ var CanvasTileLayerRenderer = class extends CanvasLayerRenderer {
 	getOrCreateTile(z, x, y, frameState) {
 		const tileCache = this.tileCache_;
 		const tileSource = this.getLayer().getSource();
+		if (!tileSource) return null;
 		const cacheKey = getCacheKey$1(tileSource, tileSource.getKey(), z, x, y);
-		/** @type {import("../../Tile.js").default} */
+		/** @type {import("../../Tile.js").default|null} */
 		let tile;
-		if (tileCache.containsKey(cacheKey)) tile = tileCache.get(cacheKey);
-		else {
+		if (tileCache.containsKey(cacheKey)) {
+			tile = tileCache.get(cacheKey);
+			if (!tile) return null;
+		} else {
 			const projection = frameState.viewState.projection;
 			const sourceProjection = tileSource.getProjection();
 			tile = tileSource.getTile(z, x, y, frameState.pixelRatio, projection, !sourceProjection || equivalent$1(sourceProjection, projection) ? void 0 : this.getSourceTileCache());
@@ -46320,7 +46586,7 @@ var CanvasTileLayerRenderer = class extends CanvasLayerRenderer {
 	}
 	/**
 	* @param {import("../../pixel.js").Pixel} pixel Pixel.
-	* @return {Uint8ClampedArray} Data at the pixel location.
+	* @return {Uint8ClampedArray|null} Data at the pixel location.
 	* @override
 	*/
 	getData(pixel) {
@@ -46334,6 +46600,7 @@ var CanvasTileLayerRenderer = class extends CanvasLayerRenderer {
 		}
 		const viewState = frameState.viewState;
 		const source = layer.getRenderSource();
+		if (!source) return null;
 		const tileGrid = source.getTileGridForProjection(viewState.projection);
 		const tilePixelRatio = source.getTilePixelRatio(frameState.pixelRatio);
 		for (let z = tileGrid.getZForResolution(viewState.resolution); z >= tileGrid.getMinZoom(); --z) {
@@ -46344,20 +46611,104 @@ var CanvasTileLayerRenderer = class extends CanvasLayerRenderer {
 			const tileSize = toSize(tileGrid.getTileSize(z));
 			const tileResolution = tileGrid.getResolution(z);
 			/**
-			* @type {import('../../DataTile.js').ImageLike}
+			* @type {import('../../DataTile.js').ImageLike|null}
 			*/
-			let image;
+			let image = null;
 			if (tile instanceof ImageTile || tile instanceof ReprojTile) image = tile.getImage();
 			else if (tile instanceof DataTile) {
-				image = asImageLike(tile.getData());
-				if (!image) continue;
-			} else continue;
+				const data = tile.getData();
+				if (data) image = asImageLike(data);
+			}
+			if (!image) continue;
 			const col = Math.floor(tilePixelRatio * ((coordinate[0] - tileOrigin[0]) / tileResolution - tileCoord[1] * tileSize[0]));
 			const row = Math.floor(tilePixelRatio * ((tileOrigin[1] - coordinate[1]) / tileResolution - tileCoord[2] * tileSize[1]));
 			const gutter = Math.round(tilePixelRatio * source.getGutterForProjection(viewState.projection));
 			return this.getImageData(image, col + gutter, row + gutter);
 		}
 		return null;
+	}
+	/**
+	* Read tile data over the frame extent, resampled with nearest-neighbor
+	* sampling onto the frame's output grid, keeping the tiles' own array type so
+	* floating point precision is preserved.  This is used by
+	* {@link module:ol/source/Raster~RasterSource} to run operations on native
+	* band values.  Returns `null` until every covering tile is loaded.  Sources
+	* with a gutter are not supported.
+	* @param {import("../../Map.js").FrameState} frameState Frame state.
+	* @return {{data: Uint8Array|Uint8ClampedArray|Int8Array|Uint16Array|Int16Array|Uint32Array|Int32Array|Float32Array|Float64Array, width: number, height: number, bandCount: number}|null}
+	*     The resampled data, or `null` if not all covering tiles are loaded yet.
+	*/
+	readData(frameState) {
+		const source = this.getLayer().getRenderSource();
+		if (!source) return null;
+		const viewState = frameState.viewState;
+		const projection = viewState.projection;
+		if (source.getGutterForProjection(projection)) throw new Error("readData() does not support sources with a gutter");
+		const tileGrid = source.getTileGridForProjection(projection);
+		const resolution = viewState.resolution;
+		const extent = frameState.extent;
+		const z = tileGrid.getZForResolution(resolution);
+		/**
+		* @type {TileLookup}
+		*/
+		const tilesByZ = {};
+		this.enqueueTiles(frameState, extent, z, tilesByZ, 0);
+		const tileSet = tilesByZ[z];
+		if (!tileSet) return null;
+		/**
+		* @type {Array<DataTile>}
+		*/
+		const tiles = [];
+		let ready = true;
+		tileSet.forEach((candidate) => {
+			const tile = candidate;
+			const state = tile.getState();
+			if (state === TileState_default.LOADED) tiles.push(tile);
+			else if (state !== TileState_default.ERROR && state !== TileState_default.EMPTY) ready = false;
+		});
+		if (!ready || tiles.length === 0) return null;
+		const width = frameState.size[0];
+		const height = frameState.size[1];
+		const sampleTile = tiles[0];
+		const sampleData = asArrayLike(sampleTile.getData());
+		if (!sampleData || sampleData instanceof DataView) throw new Error("ol/renderer/canvas/TileLayer#readData only supports typed array tile data");
+		const sampleSize = sampleTile.getSize();
+		const bandCount = Math.round(sampleData.length / (sampleSize[0] * sampleSize[1]));
+		const ArrayConstructor = sampleData.constructor;
+		const output = new ArrayConstructor(width * height * bandCount);
+		for (const tile of tiles) {
+			const tileExtent = tileGrid.getTileCoordExtent(tile.tileCoord, this.tempExtent);
+			const tileSize = tile.getSize();
+			const tileData = asArrayLike(tile.getData());
+			const left = (tileExtent[0] - extent[0]) / resolution - .5;
+			const top = (extent[3] - tileExtent[3]) / resolution - .5;
+			const footprintWidth = getWidth(tileExtent) / resolution;
+			const footprintHeight = getHeight(tileExtent) / resolution;
+			const scaleX = tileSize[0] / footprintWidth;
+			const scaleY = tileSize[1] / footprintHeight;
+			const minX = Math.max(0, Math.ceil(left));
+			const maxX = Math.min(width, Math.ceil(left + footprintWidth));
+			const minY = Math.max(0, Math.ceil(top));
+			const maxY = Math.min(height, Math.ceil(top + footprintHeight));
+			for (let y = minY; y < maxY; ++y) {
+				const tileY = Math.min(Math.floor((y - top) * scaleY), tileSize[1] - 1);
+				for (let x = minX; x < maxX; ++x) {
+					const tileX = Math.min(Math.floor((x - left) * scaleX), tileSize[0] - 1);
+					const inputOffset = (tileY * tileSize[0] + tileX) * bandCount;
+					const outputOffset = (y * width + x) * bandCount;
+					for (let b = 0; b < bandCount; ++b) output[outputOffset + b] = tileData[inputOffset + b];
+				}
+			}
+		}
+		this.updateCacheSize(tileSet.size);
+		this.tileCache_.expireCache();
+		this.sourceTileCache_?.expireCache();
+		return {
+			data: output,
+			width,
+			height,
+			bandCount
+		};
 	}
 	/**
 	* Determine whether render should be called.
@@ -46403,6 +46754,7 @@ var CanvasTileLayerRenderer = class extends CanvasLayerRenderer {
 		const viewState = frameState.viewState;
 		const tileLayer = this.getLayer();
 		const tileSource = tileLayer.getRenderSource();
+		if (!tileSource) return;
 		const tileGrid = tileSource.getTileGridForProjection(viewState.projection);
 		const tileSourceKey = getUid(tileSource);
 		if (!(tileSourceKey in frameState.wantedTiles)) frameState.wantedTiles[tileSourceKey] = {};
@@ -46415,7 +46767,7 @@ var CanvasTileLayerRenderer = class extends CanvasLayerRenderer {
 			const tileRange = tileGrid.getTileRangeForExtentAndZ(extent, z, this.tempTileRange_);
 			const tileResolution = tileGrid.getResolution(z);
 			for (let x = tileRange.minX; x <= tileRange.maxX; ++x) for (let y = tileRange.minY; y <= tileRange.maxY; ++y) {
-				if (rotation && !tileGrid.tileCoordIntersectsViewport([
+				if (rotation && viewport && !tileGrid.tileCoordIntersectsViewport([
 					z,
 					x,
 					y
@@ -46453,11 +46805,13 @@ var CanvasTileLayerRenderer = class extends CanvasLayerRenderer {
 		const x = tileCoord[1];
 		const y = tileCoord[2];
 		const staleKeys = this.getStaleKeys();
+		const layerSource = this.getLayer().getSource();
+		if (!layerSource) return false;
 		for (let i = 0; i < staleKeys.length; ++i) {
-			const cacheKey = getCacheKey$1(this.getLayer().getSource(), staleKeys[i], z, x, y);
+			const cacheKey = getCacheKey$1(layerSource, staleKeys[i], z, x, y);
 			if (tileCache.containsKey(cacheKey)) {
 				const tile = tileCache.peek(cacheKey);
-				if (tile.getState() === TileState_default.LOADED) {
+				if (tile && tile.getState() === TileState_default.LOADED) {
 					tile.endTransition(getUid(this));
 					addTileToLookup(tilesByZ, tile, z);
 					return true;
@@ -46482,13 +46836,14 @@ var CanvasTileLayerRenderer = class extends CanvasLayerRenderer {
 		let covered = true;
 		const tileCache = this.tileCache_;
 		const source = this.getLayer().getRenderSource();
+		if (!source) return false;
 		const sourceKey = source.getKey();
 		for (let x = tileRange.minX; x <= tileRange.maxX; ++x) for (let y = tileRange.minY; y <= tileRange.maxY; ++y) {
 			const cacheKey = getCacheKey$1(source, sourceKey, altZ, x, y);
 			let loaded = false;
 			if (tileCache.containsKey(cacheKey)) {
 				const tile = tileCache.peek(cacheKey);
-				if (tile.getState() === TileState_default.LOADED) {
+				if (tile && tile.getState() === TileState_default.LOADED) {
 					addTileToLookup(tilesByZ, tile, altZ);
 					loaded = true;
 				}
@@ -46526,6 +46881,7 @@ var CanvasTileLayerRenderer = class extends CanvasLayerRenderer {
 		const pixelRatio = frameState.pixelRatio;
 		const tileLayer = this.getLayer();
 		const tileSource = tileLayer.getSource();
+		if (!tileSource) return this.getContainerElement();
 		const tileGrid = tileSource.getTileGridForProjection(projection);
 		const z = tileGrid.getZForResolution(viewResolution, tileSource.zDirection);
 		const tileResolution = tileGrid.getResolution(z);
@@ -46533,8 +46889,8 @@ var CanvasTileLayerRenderer = class extends CanvasLayerRenderer {
 		let frameExtent = frameState.extent;
 		const tilePixelRatio = tileSource.getTilePixelRatio(pixelRatio);
 		this.prepareContainer(frameState, target);
-		const width = this.context.canvas.width;
-		const height = this.context.canvas.height;
+		const width = this.getCanvasContext().canvas.width;
+		const height = this.getCanvasContext().canvas.height;
 		this.layerExtent = layerState.extent ? fromUserExtent(layerState.extent, projection) : null;
 		if (this.layerExtent) frameExtent = getIntersection(frameExtent, this.layerExtent);
 		const dx = tileResolution * width / 2 / tilePixelRatio;
@@ -46555,7 +46911,7 @@ var CanvasTileLayerRenderer = class extends CanvasLayerRenderer {
 		*/
 		const preload = tileLayer.getPreload();
 		if (frameState.nextExtent && this.enqueueTilesForNextExtent()) {
-			const targetZ = tileGrid.getZForResolution(viewState.nextResolution, tileSource.zDirection);
+			const targetZ = tileGrid.getZForResolution(viewState.nextResolution ?? viewResolution, tileSource.zDirection);
 			const nextExtent = getRenderExtent(frameState, frameState.nextExtent);
 			this.enqueueTiles(frameState, nextExtent, targetZ, tilesByZ, preload);
 		}
@@ -46564,7 +46920,7 @@ var CanvasTileLayerRenderer = class extends CanvasLayerRenderer {
 		if (preload > 0) setTimeout(() => {
 			this.enqueueTiles(frameState, renderExtent, z - 1, tilesByZ, preload - 1);
 		}, 0);
-		if (!(z in tilesByZ)) return this.container;
+		if (!(z in tilesByZ)) return this.getContainerElement();
 		/**
 		* Part 2: Find alt tiles for those that are not yet loaded
 		*/
@@ -46668,7 +47024,7 @@ var CanvasTileLayerRenderer = class extends CanvasLayerRenderer {
 		this.extentChanged = !this.renderedExtent_ || !equals$1(this.renderedExtent_, canvasExtent);
 		this.renderedExtent_ = canvasExtent;
 		this.renderedPixelRatio = pixelRatio;
-		this.postRender(this.context, frameState);
+		this.postRender(this.getCanvasContext(), frameState);
 		if (this.layerExtent) context.restore();
 		context.imageSmoothingEnabled = true;
 		if (this.renderComplete) {
@@ -46686,7 +47042,7 @@ var CanvasTileLayerRenderer = class extends CanvasLayerRenderer {
 			};
 			frameState.postRenderFunctions.push(postRenderFunction);
 		}
-		return this.container;
+		return this.getContainerElement();
 	}
 	/**
 	* Increases the cache size if needed
@@ -46713,7 +47069,9 @@ var CanvasTileLayerRenderer = class extends CanvasLayerRenderer {
 	drawTile(tile, frameState, x, y, w, h, gutter, transition, clipRects) {
 		let image;
 		if (tile instanceof DataTile) {
-			image = asImageLike(tile.getData());
+			const data = tile.getData();
+			if (!data) return;
+			image = asImageLike(data);
 			if (!image) throw new Error("Rendering array data is not yet supported");
 		} else image = this.getTileImage(tile);
 		if (!image) return;
@@ -46745,20 +47103,20 @@ var CanvasTileLayerRenderer = class extends CanvasLayerRenderer {
 		else if (transition) tile.endTransition(uid);
 	}
 	/**
-	* @return {HTMLCanvasElement|OffscreenCanvas} Image
+	* @return {HTMLCanvasElement|OffscreenCanvas|null} Image
 	*/
 	getImage() {
-		const context = this.context;
+		const context = this.getCanvasContext();
 		return context ? context.canvas : null;
 	}
 	/**
 	* Get the image from a tile.
 	* @param {import("../../ImageTile.js").default} tile Tile.
-	* @return {HTMLCanvasElement|OffscreenCanvas|HTMLImageElement|HTMLVideoElement} Image.
+	* @return {HTMLCanvasElement|OffscreenCanvas|HTMLImageElement|HTMLVideoElement|null} Image.
 	* @protected
 	*/
 	getTileImage(tile) {
-		return tile.getImage();
+		return tile.getImage() ?? null;
 	}
 	/**
 	* @param {!Object<string, !Object<string, boolean>>} usedTiles Used tiles.
@@ -46772,8 +47130,7 @@ var CanvasTileLayerRenderer = class extends CanvasLayerRenderer {
 		usedTiles[tileSourceKey][tile.getKey()] = true;
 	}
 };
-//#endregion
-//#region node_modules/ol/layer/Tile.js
+// node_modules/ol/layer/Tile.js
 /**
 * @module ol/layer/Tile
 */
@@ -46803,8 +47160,7 @@ var TileLayer = class extends BaseTileLayer {
 		return new CanvasTileLayerRenderer(this, { cacheSize: this.getCacheSize() });
 	}
 };
-//#endregion
-//#region node_modules/ol/render/VectorContext.js
+// node_modules/ol/render/VectorContext.js
 /**
 * @module ol/render/VectorContext
 */
@@ -46898,12 +47254,12 @@ var VectorContext = class {
 	*/
 	drawText(geometry, feature, index) {}
 	/**
-	* @param {import("../style/Fill.js").default} fillStyle Fill style.
-	* @param {import("../style/Stroke.js").default} strokeStyle Stroke style.
+	* @param {import("../style/Fill.js").default|null} fillStyle Fill style.
+	* @param {import("../style/Stroke.js").default|null} strokeStyle Stroke style.
 	*/
 	setFillStrokeStyle(fillStyle, strokeStyle) {}
 	/**
-	* @param {import("../style/Image.js").default} imageStyle Image style.
+	* @param {import("../style/Image.js").default|null} imageStyle Image style.
 	* @param {import("../render/canvas.js").DeclutterImageWithText} [declutterImageWithText] Shared data for combined decluttering with a text style.
 	*/
 	setImageStyle(imageStyle, declutterImageWithText) {}
@@ -46913,8 +47269,7 @@ var VectorContext = class {
 	*/
 	setTextStyle(textStyle, declutterImageWithText) {}
 };
-//#endregion
-//#region node_modules/ol/render/canvas/Instruction.js
+// node_modules/ol/render/canvas/Instruction.js
 /**
 * @module ol/render/canvas/Instruction
 */
@@ -46952,8 +47307,7 @@ var beginPathInstruction = [Instruction.BEGIN_PATH];
 * @type {Array<Instruction>}
 */
 var closePathInstruction = [Instruction.CLOSE_PATH];
-//#endregion
-//#region node_modules/ol/render/canvas/Builder.js
+// node_modules/ol/render/canvas/Builder.js
 /**
 * @module ol/render/canvas/Builder
 */
@@ -46995,17 +47349,17 @@ var CanvasBuilder = class extends VectorContext {
 		this.resolution = resolution;
 		/**
 		* @private
-		* @type {Array<*>}
+		* @type {Array<*>|null}
 		*/
 		this.beginGeometryInstruction1_ = null;
 		/**
 		* @private
-		* @type {Array<*>}
+		* @type {Array<*>|null}
 		*/
 		this.beginGeometryInstruction2_ = null;
 		/**
 		* @private
-		* @type {import("../../extent.js").Extent}
+		* @type {import("../../extent.js").Extent|null}
 		*/
 		this.bufferedMaxExtent_ = null;
 		/**
@@ -47030,7 +47384,7 @@ var CanvasBuilder = class extends VectorContext {
 		this.hitDetectionInstructions = [];
 		/**
 		* @protected
-		* @type {import("../canvas.js").FillStrokeState}
+		* @type {import("../canvas.js").FillStrokeState|null}
 		*/
 		this.state = {};
 	}
@@ -47143,7 +47497,9 @@ var CanvasBuilder = class extends VectorContext {
 		const type = geometry.getType();
 		const stride = geometry.getStride();
 		const builderBegin = this.coordinates.length;
-		let flatCoordinates, builderEnd, builderEnds, builderEndss;
+		let flatCoordinates, builderEnd, builderEndss;
+		/** @type {Array<number>} */
+		let builderEnds;
 		let offset;
 		switch (type) {
 			case "MultiPolygon":
@@ -47152,6 +47508,7 @@ var CanvasBuilder = class extends VectorContext {
 				const endss = geometry.getEndss();
 				offset = 0;
 				for (let i = 0, ii = endss.length; i < ii; ++i) {
+					/** @type {Array<number>} */
 					const myEnds = [];
 					offset = this.drawCustomCoordinates_(flatCoordinates, offset, endss[i], stride, myEnds);
 					builderEndss.push(myEnds);
@@ -47335,7 +47692,7 @@ var CanvasBuilder = class extends VectorContext {
 		}
 	}
 	/**
-	* @param {import("../../style/Fill.js").default} fillStyle Fill style.
+	* @param {import("../../style/Fill.js").default|null} fillStyle Fill style.
 	* @param {import('../canvas.js').FillStrokeState} [state] State.
 	* @return {import('../canvas.js').FillStrokeState} State.
 	*/
@@ -47348,14 +47705,14 @@ var CanvasBuilder = class extends VectorContext {
 		return state;
 	}
 	/**
-	* @param {import("../../style/Stroke.js").default} strokeStyle Stroke style.
+	* @param {import("../../style/Stroke.js").default|null} strokeStyle Stroke style.
 	* @param {import("../canvas.js").FillStrokeState} state State.
 	* @return {import("../canvas.js").FillStrokeState} State.
 	*/
 	strokeStyleToState(strokeStyle, state = {}) {
 		if (strokeStyle) {
 			const strokeStyleColor = strokeStyle.getColor();
-			state.strokeStyle = asColorLike(strokeStyleColor ? strokeStyleColor : defaultStrokeStyle);
+			state.strokeStyle = asColorLike(strokeStyleColor ? strokeStyleColor : "#000") ?? void 0;
 			const strokeStyleLineCap = strokeStyle.getLineCap();
 			state.lineCap = strokeStyleLineCap !== void 0 ? strokeStyleLineCap : defaultLineCap;
 			const strokeStyleLineDash = strokeStyle.getLineDash();
@@ -47386,8 +47743,8 @@ var CanvasBuilder = class extends VectorContext {
 		return state;
 	}
 	/**
-	* @param {import("../../style/Fill.js").default} fillStyle Fill style.
-	* @param {import("../../style/Stroke.js").default} strokeStyle Stroke style.
+	* @param {import("../../style/Fill.js").default|null} fillStyle Fill style.
+	* @param {import("../../style/Stroke.js").default|null} strokeStyle Stroke style.
 	* @override
 	*/
 	setFillStrokeStyle(fillStyle, strokeStyle) {
@@ -47452,7 +47809,7 @@ var CanvasBuilder = class extends VectorContext {
 		const lineWidth = state.lineWidth;
 		const miterLimit = state.miterLimit;
 		const strokeOffset = state.strokeOffset;
-		if (state.currentStrokeStyle != strokeStyle || state.currentLineCap != lineCap || lineDash != state.currentLineDash && !equals$2(state.currentLineDash, lineDash) || state.currentLineDashOffset != lineDashOffset || state.currentLineJoin != lineJoin || state.currentLineWidth != lineWidth || state.currentMiterLimit != miterLimit || state.currentStrokeOffset != strokeOffset) {
+		if (state.currentStrokeStyle != strokeStyle || state.currentLineCap != lineCap || lineDash != state.currentLineDash && (!lineDash || !state.currentLineDash || !equals$2(state.currentLineDash, lineDash)) || state.currentLineDashOffset != lineDashOffset || state.currentLineJoin != lineJoin || state.currentLineWidth != lineWidth || state.currentMiterLimit != miterLimit || state.currentStrokeOffset != strokeOffset) {
 			applyStroke.call(this, state);
 			state.currentStrokeStyle = strokeStyle;
 			state.currentLineCap = lineCap;
@@ -47468,9 +47825,9 @@ var CanvasBuilder = class extends VectorContext {
 	* @param {import("../../Feature.js").FeatureLike} feature Feature.
 	*/
 	endGeometry(feature) {
-		this.beginGeometryInstruction1_[2] = this.instructions.length;
+		/** @type {Array<*>} */ this.beginGeometryInstruction1_[2] = this.instructions.length;
 		this.beginGeometryInstruction1_ = null;
-		this.beginGeometryInstruction2_[2] = this.hitDetectionInstructions.length;
+		/** @type {Array<*>} */ this.beginGeometryInstruction2_[2] = this.hitDetectionInstructions.length;
 		this.beginGeometryInstruction2_ = null;
 		const endGeometryInstruction = [Instruction.END_GEOMETRY, feature];
 		this.instructions.push(endGeometryInstruction);
@@ -47494,8 +47851,7 @@ var CanvasBuilder = class extends VectorContext {
 		return this.bufferedMaxExtent_;
 	}
 };
-//#endregion
-//#region node_modules/ol/render/canvas/ImageBuilder.js
+// node_modules/ol/render/canvas/ImageBuilder.js
 /**
 * @module ol/render/canvas/ImageBuilder
 */
@@ -47510,12 +47866,12 @@ var CanvasImageBuilder = class extends CanvasBuilder {
 		super(tolerance, maxExtent, resolution, pixelRatio);
 		/**
 		* @private
-		* @type {import('../../DataTile.js').ImageLike}
+		* @type {import('../../DataTile.js').ImageLike|null}
 		*/
 		this.hitDetectionImage_ = null;
 		/**
 		* @private
-		* @type {import('../../DataTile.js').ImageLike}
+		* @type {import('../../DataTile.js').ImageLike|null}
 		*/
 		this.image_ = null;
 		/**
@@ -47575,13 +47931,13 @@ var CanvasImageBuilder = class extends CanvasBuilder {
 		this.width_ = void 0;
 		/**
 		* @private
-		* @type {import('../../style/Style.js').DeclutterMode}
+		* @type {import('../../style/Style.js').DeclutterMode|undefined}
 		*/
 		this.declutterMode_ = void 0;
 		/**
 		* Data shared with a text builder for combined decluttering.
 		* @private
-		* @type {import("../canvas.js").DeclutterImageWithText}
+		* @type {import("../canvas.js").DeclutterImageWithText|undefined}
 		*/
 		this.declutterImageWithText_ = void 0;
 	}
@@ -47593,26 +47949,34 @@ var CanvasImageBuilder = class extends CanvasBuilder {
 	*/
 	drawPoint(pointGeometry, feature, index) {
 		if (!this.image_ || this.maxExtent && !containsCoordinate(this.maxExtent, pointGeometry.getFlatCoordinates())) return;
-		this.beginGeometry(pointGeometry, feature, index);
+		this.beginGeometry(pointGeometry, feature, index ?? 0);
 		const flatCoordinates = pointGeometry.getFlatCoordinates();
 		const stride = pointGeometry.getStride();
 		const myBegin = this.coordinates.length;
 		const myEnd = this.appendFlatPointCoordinates(flatCoordinates, stride);
+		const imagePixelRatio = this.imagePixelRatio_ ?? 1;
+		const anchorX = this.anchorX_ ?? 0;
+		const anchorY = this.anchorY_ ?? 0;
+		const height = this.height_ ?? 0;
+		const originX = this.originX_ ?? 0;
+		const originY = this.originY_ ?? 0;
+		const scale = this.scale_ ?? [1, 1];
+		const width = this.width_ ?? 0;
 		this.instructions.push([
 			Instruction.DRAW_IMAGE,
 			myBegin,
 			myEnd,
 			this.image_,
-			this.anchorX_ * this.imagePixelRatio_,
-			this.anchorY_ * this.imagePixelRatio_,
-			Math.ceil(this.height_ * this.imagePixelRatio_),
+			anchorX * imagePixelRatio,
+			anchorY * imagePixelRatio,
+			Math.ceil(height * imagePixelRatio),
 			this.opacity_,
-			this.originX_ * this.imagePixelRatio_,
-			this.originY_ * this.imagePixelRatio_,
+			originX * imagePixelRatio,
+			originY * imagePixelRatio,
 			this.rotateWithView_,
 			this.rotation_,
-			[this.scale_[0] * this.pixelRatio / this.imagePixelRatio_, this.scale_[1] * this.pixelRatio / this.imagePixelRatio_],
-			Math.ceil(this.width_ * this.imagePixelRatio_),
+			[scale[0] * this.pixelRatio / imagePixelRatio, scale[1] * this.pixelRatio / imagePixelRatio],
+			Math.ceil(width * imagePixelRatio),
 			this.declutterMode_,
 			this.declutterImageWithText_
 		]);
@@ -47644,27 +48008,35 @@ var CanvasImageBuilder = class extends CanvasBuilder {
 	*/
 	drawMultiPoint(multiPointGeometry, feature, index) {
 		if (!this.image_) return;
-		this.beginGeometry(multiPointGeometry, feature, index);
+		this.beginGeometry(multiPointGeometry, feature, index ?? 0);
 		const flatCoordinates = multiPointGeometry.getFlatCoordinates();
 		const filteredFlatCoordinates = [];
 		for (let i = 0, ii = flatCoordinates.length; i < ii; i += multiPointGeometry.getStride()) if (!this.maxExtent || containsCoordinate(this.maxExtent, flatCoordinates.slice(i, i + 2))) filteredFlatCoordinates.push(flatCoordinates[i], flatCoordinates[i + 1]);
 		const myBegin = this.coordinates.length;
 		const myEnd = this.appendFlatPointCoordinates(filteredFlatCoordinates, 2);
+		const imagePixelRatio = this.imagePixelRatio_ ?? 1;
+		const anchorX = this.anchorX_ ?? 0;
+		const anchorY = this.anchorY_ ?? 0;
+		const height = this.height_ ?? 0;
+		const originX = this.originX_ ?? 0;
+		const originY = this.originY_ ?? 0;
+		const scale = this.scale_ ?? [1, 1];
+		const width = this.width_ ?? 0;
 		this.instructions.push([
 			Instruction.DRAW_IMAGE,
 			myBegin,
 			myEnd,
 			this.image_,
-			this.anchorX_ * this.imagePixelRatio_,
-			this.anchorY_ * this.imagePixelRatio_,
-			Math.ceil(this.height_ * this.imagePixelRatio_),
+			anchorX * imagePixelRatio,
+			anchorY * imagePixelRatio,
+			Math.ceil(height * imagePixelRatio),
 			this.opacity_,
-			this.originX_ * this.imagePixelRatio_,
-			this.originY_ * this.imagePixelRatio_,
+			originX * imagePixelRatio,
+			originY * imagePixelRatio,
 			this.rotateWithView_,
 			this.rotation_,
-			[this.scale_[0] * this.pixelRatio / this.imagePixelRatio_, this.scale_[1] * this.pixelRatio / this.imagePixelRatio_],
-			Math.ceil(this.width_ * this.imagePixelRatio_),
+			[scale[0] * this.pixelRatio / imagePixelRatio, scale[1] * this.pixelRatio / imagePixelRatio],
+			Math.ceil(width * imagePixelRatio),
 			this.declutterMode_,
 			this.declutterImageWithText_
 		]);
@@ -47718,6 +48090,7 @@ var CanvasImageBuilder = class extends CanvasBuilder {
 		const anchor = imageStyle.getAnchor();
 		const size = imageStyle.getSize();
 		const origin = imageStyle.getOrigin();
+		if (!anchor || !size || !origin) return;
 		this.imagePixelRatio_ = imageStyle.getPixelRatio(this.pixelRatio);
 		this.anchorX_ = anchor[0];
 		this.anchorY_ = anchor[1];
@@ -47735,8 +48108,7 @@ var CanvasImageBuilder = class extends CanvasBuilder {
 		this.declutterImageWithText_ = sharedData;
 	}
 };
-//#endregion
-//#region node_modules/ol/render/canvas/LineStringBuilder.js
+// node_modules/ol/render/canvas/LineStringBuilder.js
 /**
 * @module ol/render/canvas/LineStringBuilder
 */
@@ -47760,19 +48132,20 @@ var CanvasLineStringBuilder = class extends CanvasBuilder {
 	* @return {number} end.
 	*/
 	drawFlatCoordinates_(flatCoordinates, offset, end, stride, strokeOffset) {
+		const strokeOffsetValue = (strokeOffset ?? 0) * this.pixelRatio;
 		const myBegin = this.coordinates.length;
 		const myEnd = this.appendFlatLineCoordinates(flatCoordinates, offset, end, stride, false, false);
 		this.instructions.push([
 			Instruction.MOVE_TO_LINE_TO,
 			myBegin,
 			myEnd,
-			strokeOffset * this.pixelRatio
+			strokeOffsetValue
 		]);
 		this.hitDetectionInstructions.push([
 			Instruction.MOVE_TO_LINE_TO,
 			myBegin,
 			myEnd,
-			strokeOffset
+			strokeOffset ?? 0
 		]);
 		return end;
 	}
@@ -47784,12 +48157,13 @@ var CanvasLineStringBuilder = class extends CanvasBuilder {
 	*/
 	drawLineString(lineStringGeometry, feature, index) {
 		const state = this.state;
+		if (!state) return;
 		const strokeStyle = state.strokeStyle;
 		const lineWidth = state.lineWidth;
 		const strokeOffset = state.strokeOffset;
 		if (strokeStyle === void 0 || lineWidth === void 0) return;
 		this.updateStrokeStyle(state, this.applyStroke);
-		this.beginGeometry(lineStringGeometry, feature, index);
+		this.beginGeometry(lineStringGeometry, feature, index ?? 0);
 		this.hitDetectionInstructions.push([
 			Instruction.SET_STROKE_STYLE,
 			defaultStrokeStyle,
@@ -47814,12 +48188,13 @@ var CanvasLineStringBuilder = class extends CanvasBuilder {
 	*/
 	drawMultiLineString(multiLineStringGeometry, feature, index) {
 		const state = this.state;
+		if (!state) return;
 		const strokeStyle = state.strokeStyle;
 		const lineWidth = state.lineWidth;
 		const strokeOffset = state.strokeOffset;
 		if (strokeStyle === void 0 || lineWidth === void 0) return;
 		this.updateStrokeStyle(state, this.applyStroke);
-		this.beginGeometry(multiLineStringGeometry, feature, index);
+		this.beginGeometry(multiLineStringGeometry, feature, index ?? 0);
 		this.hitDetectionInstructions.push([
 			Instruction.SET_STROKE_STYLE,
 			defaultStrokeStyle,
@@ -47830,7 +48205,7 @@ var CanvasLineStringBuilder = class extends CanvasBuilder {
 			defaultLineDash,
 			0
 		], beginPathInstruction);
-		const ends = multiLineStringGeometry.getEnds();
+		const ends = multiLineStringGeometry.getEnds() ?? [];
 		const flatCoordinates = multiLineStringGeometry.getFlatCoordinates();
 		const stride = multiLineStringGeometry.getStride();
 		let offset = 0;
@@ -47844,7 +48219,7 @@ var CanvasLineStringBuilder = class extends CanvasBuilder {
 	*/
 	finish() {
 		const state = this.state;
-		if (state.lastStroke != void 0 && state.lastStroke != this.coordinates.length) this.instructions.push(strokeInstruction);
+		if (state && state.lastStroke != void 0 && state.lastStroke != this.coordinates.length) this.instructions.push(strokeInstruction);
 		this.reverseHitDetectionInstructions();
 		this.state = null;
 		return super.finish();
@@ -47863,8 +48238,7 @@ var CanvasLineStringBuilder = class extends CanvasBuilder {
 		this.instructions.push(beginPathInstruction);
 	}
 };
-//#endregion
-//#region node_modules/ol/render/canvas/PolygonBuilder.js
+// node_modules/ol/render/canvas/PolygonBuilder.js
 /**
 * @module ol/render/canvas/PolygonBuilder
 */
@@ -47889,6 +48263,7 @@ var CanvasPolygonBuilder = class extends CanvasBuilder {
 	*/
 	drawFlatCoordinatess_(flatCoordinates, offset, ends, stride, strokeOffset) {
 		const state = this.state;
+		const strokeOffsetValue = strokeOffset ?? 0;
 		const fill = state.fillStyle !== void 0;
 		const stroke = state.strokeStyle !== void 0;
 		const numEnds = ends.length;
@@ -47902,14 +48277,14 @@ var CanvasPolygonBuilder = class extends CanvasBuilder {
 				Instruction.MOVE_TO_LINE_TO,
 				myBegin,
 				myEnd,
-				strokeOffset * this.pixelRatio,
+				strokeOffsetValue * this.pixelRatio,
 				true
 			]);
 			this.hitDetectionInstructions.push([
 				Instruction.MOVE_TO_LINE_TO,
 				myBegin,
 				myEnd,
-				strokeOffset,
+				strokeOffsetValue,
 				true
 			]);
 			if (stroke) {
@@ -47936,13 +48311,14 @@ var CanvasPolygonBuilder = class extends CanvasBuilder {
 	*/
 	drawCircle(circleGeometry, feature, index) {
 		const state = this.state;
+		if (!state) return;
 		const fillStyle = state.fillStyle;
 		const strokeStyle = state.strokeStyle;
 		const strokeOffset = state.strokeOffset;
 		if (fillStyle === void 0 && strokeStyle === void 0) return;
 		if (this.handleStrokeOffset_(() => this.drawCircle(circleGeometry, feature, index))) return;
 		this.setFillStrokeStyles_();
-		this.beginGeometry(circleGeometry, feature, index);
+		this.beginGeometry(circleGeometry, feature, index ?? 0);
 		if (state.fillStyle !== void 0) this.hitDetectionInstructions.push([Instruction.SET_FILL_STYLE, defaultFillStyle]);
 		if (state.strokeStyle !== void 0) this.hitDetectionInstructions.push([
 			Instruction.SET_STROKE_STYLE,
@@ -47983,13 +48359,14 @@ var CanvasPolygonBuilder = class extends CanvasBuilder {
 	*/
 	drawPolygon(polygonGeometry, feature, index) {
 		const state = this.state;
+		if (!state) return;
 		const fillStyle = state.fillStyle;
 		const strokeStyle = state.strokeStyle;
 		const strokeOffset = state.strokeOffset;
 		if (fillStyle === void 0 && strokeStyle === void 0) return;
 		if (this.handleStrokeOffset_(() => this.drawPolygon(polygonGeometry, feature, index))) return;
 		this.setFillStrokeStyles_();
-		this.beginGeometry(polygonGeometry, feature, index);
+		this.beginGeometry(polygonGeometry, feature, index ?? 0);
 		if (state.fillStyle !== void 0) this.hitDetectionInstructions.push([Instruction.SET_FILL_STYLE, defaultFillStyle]);
 		if (state.strokeStyle !== void 0) this.hitDetectionInstructions.push([
 			Instruction.SET_STROKE_STYLE,
@@ -48015,13 +48392,14 @@ var CanvasPolygonBuilder = class extends CanvasBuilder {
 	*/
 	drawMultiPolygon(multiPolygonGeometry, feature, index) {
 		const state = this.state;
+		if (!state) return;
 		const fillStyle = state.fillStyle;
 		const strokeStyle = state.strokeStyle;
 		const strokeOffset = state.strokeOffset;
 		if (fillStyle === void 0 && strokeStyle === void 0) return;
 		if (this.handleStrokeOffset_(() => this.drawMultiPolygon(multiPolygonGeometry, feature, index))) return;
 		this.setFillStrokeStyles_();
-		this.beginGeometry(multiPolygonGeometry, feature, index);
+		this.beginGeometry(multiPolygonGeometry, feature, index ?? 0);
 		if (state.fillStyle !== void 0) this.hitDetectionInstructions.push([Instruction.SET_FILL_STYLE, defaultFillStyle]);
 		if (state.strokeStyle !== void 0) this.hitDetectionInstructions.push([
 			Instruction.SET_STROKE_STYLE,
@@ -48059,14 +48437,20 @@ var CanvasPolygonBuilder = class extends CanvasBuilder {
 	*/
 	setFillStrokeStyles_() {
 		const state = this.state;
+		if (!state) return;
 		this.updateFillStyle(state, this.createFill);
 		this.updateStrokeStyle(state, this.applyStroke);
 	}
+	/**
+	* @private
+	* @param {function(): void} drawGeometryCallback Draw callback.
+	* @return {boolean} Whether the stroke was drawn with an offset.
+	*/
 	handleStrokeOffset_(drawGeometryCallback) {
 		const state = this.state;
 		const fillStyle = state.fillStyle;
 		const strokeStyle = state.strokeStyle;
-		const strokeOffset = state.strokeOffset;
+		const strokeOffset = state.strokeOffset ?? 0;
 		if (Math.abs(strokeOffset) > 0 && fillStyle !== void 0 && strokeStyle !== void 0) {
 			state.strokeStyle = void 0;
 			state.strokeOffset = 0;
@@ -48081,8 +48465,7 @@ var CanvasPolygonBuilder = class extends CanvasBuilder {
 		return false;
 	}
 };
-//#endregion
-//#region node_modules/ol/geom/flat/clip.js
+// node_modules/ol/geom/flat/clip.js
 /**
 * @module ol/geom/flat/clip
 */
@@ -48210,8 +48593,7 @@ function clipFlatLineStrings(flatCoordinates, ends, stride, extent) {
 		ends: destEnds
 	};
 }
-//#endregion
-//#region node_modules/ol/geom/flat/linechunk.js
+// node_modules/ol/geom/flat/linechunk.js
 /**
 * Creates chunks of equal length from a linestring
 * @param {number} chunkLength Length of each chunk.
@@ -48258,8 +48640,7 @@ function lineChunk(chunkLength, flatCoordinates, offset, end, stride) {
 	if (chunkM > 0) chunks.push(currentChunk);
 	return chunks;
 }
-//#endregion
-//#region node_modules/ol/geom/flat/straightchunk.js
+// node_modules/ol/geom/flat/straightchunk.js
 /**
 * @module ol/geom/flat/straightchunk
 */
@@ -48282,11 +48663,11 @@ function matchingChunk(maxAngle, flatCoordinates, offset, end, stride) {
 	for (i = offset; i < end; i += stride) {
 		const x2 = flatCoordinates[i];
 		const y2 = flatCoordinates[i + 1];
-		if (x1 !== void 0) {
+		if (x1 !== void 0 && y1 !== void 0) {
 			x23 = x2 - x1;
 			y23 = y2 - y1;
 			m23 = Math.sqrt(x23 * x23 + y23 * y23);
-			if (x12 !== void 0) {
+			if (x12 !== void 0 && y12 !== void 0 && m12 !== void 0) {
 				m += m12;
 				acos = Math.acos((x12 * x23 + y12 * y23) / (m12 * m23));
 				if (acos > maxAngle) {
@@ -48306,11 +48687,10 @@ function matchingChunk(maxAngle, flatCoordinates, offset, end, stride) {
 		x1 = x2;
 		y1 = y2;
 	}
-	m += m23;
+	m += m23 || 0;
 	return m > chunkM ? [start, i] : [chunkStart, chunkEnd];
 }
-//#endregion
-//#region node_modules/ol/render/canvas/TextBuilder.js
+// node_modules/ol/render/canvas/TextBuilder.js
 /**
 * @module ol/render/canvas/TextBuilder
 */
@@ -48340,7 +48720,7 @@ var CanvasTextBuilder = class extends CanvasBuilder {
 		super(tolerance, maxExtent, resolution, pixelRatio);
 		/**
 		* @private
-		* @type {Array<HTMLCanvasElement>}
+		* @type {Array<HTMLCanvasElement>|null}
 		*/
 		this.labels_ = null;
 		/**
@@ -48418,13 +48798,13 @@ var CanvasTextBuilder = class extends CanvasBuilder {
 		this.strokeKey_ = "";
 		/**
 		* @private
-		* @type {import('../../style/Style.js').DeclutterMode}
+		* @type {import('../../style/Style.js').DeclutterMode|undefined}
 		*/
 		this.declutterMode_ = void 0;
 		/**
 		* Data shared with an image builder for combined decluttering.
 		* @private
-		* @type {import("../canvas.js").DeclutterImageWithText}
+		* @type {import("../canvas.js").DeclutterImageWithText|undefined}
 		*/
 		this.declutterImageWithText_ = void 0;
 	}
@@ -48453,12 +48833,14 @@ var CanvasTextBuilder = class extends CanvasBuilder {
 		const coordinates = this.coordinates;
 		let begin = coordinates.length;
 		const geometryType = geometry.getType();
+		/** @type {Array<number> | null} */
 		let flatCoordinates = null;
 		let stride = geometry.getStride();
 		if (textState.placement === "line" && (geometryType == "LineString" || geometryType == "MultiLineString" || geometryType == "Polygon" || geometryType == "MultiPolygon")) {
 			const geometryExtent = geometry.getExtent();
 			if (!intersects$1(this.maxExtent, geometryExtent)) return;
-			let ends;
+			/** @type {Array<number>} */
+			let ends = [];
 			flatCoordinates = geometry.getFlatCoordinates();
 			if (geometryType == "LineString") ends = [flatCoordinates.length];
 			else if (geometryType == "MultiLineString") ends = geometry.getEnds();
@@ -48468,14 +48850,14 @@ var CanvasTextBuilder = class extends CanvasBuilder {
 				ends = [];
 				for (let i = 0, ii = endss.length; i < ii; ++i) ends.push(endss[i][0]);
 			}
-			if ((geometryType == "LineString" || geometryType == "MultiLineString") && !containsExtent(this.getBufferedMaxExtent(), geometryExtent)) {
+			if (textState.textAlign === void 0 && (geometryType == "LineString" || geometryType == "MultiLineString") && !containsExtent(this.getBufferedMaxExtent(), geometryExtent)) {
 				const clipped = clipFlatLineStrings(flatCoordinates, ends, stride, this.getBufferedMaxExtent());
 				flatCoordinates = clipped.flatCoordinates;
 				ends = clipped.ends;
 				stride = 2;
 				if (ends.length === 0) return;
 			}
-			this.beginGeometry(geometry, feature, index);
+			this.beginGeometry(geometry, feature, index ?? 0);
 			const repeat = textState.repeat;
 			const textAlign = repeat ? void 0 : textState.textAlign;
 			let flatOffset = 0;
@@ -48488,7 +48870,7 @@ var CanvasTextBuilder = class extends CanvasBuilder {
 					let chunkBegin = 0;
 					let chunkEnd = chunk.length;
 					if (textAlign == void 0) {
-						const range = matchingChunk(textState.maxAngle, chunk, 0, chunk.length, 2);
+						const range = matchingChunk(textState.maxAngle ?? Math.PI / 4, chunk, 0, chunk.length, 2);
 						chunkBegin = range[0];
 						chunkEnd = range[1];
 					}
@@ -48501,6 +48883,7 @@ var CanvasTextBuilder = class extends CanvasBuilder {
 			}
 			this.endGeometry(feature);
 		} else {
+			/** @type {Array<number>|null} */
 			let geometryWidths = textState.overflow ? null : [];
 			switch (geometryType) {
 				case "Point":
@@ -48519,25 +48902,29 @@ var CanvasTextBuilder = class extends CanvasBuilder {
 					break;
 				case "Polygon":
 					flatCoordinates = geometry.getFlatInteriorPoint();
-					if (!textState.overflow) geometryWidths.push(flatCoordinates[2] / this.resolution);
+					if (!textState.overflow && geometryWidths) geometryWidths.push(flatCoordinates[2] / this.resolution);
 					stride = 3;
 					break;
 				case "MultiPolygon":
 					const interiorPoints = geometry.getFlatInteriorPoints();
 					flatCoordinates = [];
 					for (let i = 0, ii = interiorPoints.length; i < ii; i += 3) {
-						if (!textState.overflow) geometryWidths.push(interiorPoints[i + 2] / this.resolution);
+						if (!textState.overflow && geometryWidths) geometryWidths.push(interiorPoints[i + 2] / this.resolution);
 						flatCoordinates.push(interiorPoints[i], interiorPoints[i + 1]);
 					}
 					if (flatCoordinates.length === 0) return;
 					stride = 2;
+					break;
+				default: return;
 			}
+			if (!flatCoordinates) return;
 			const end = this.appendFlatPointCoordinates(flatCoordinates, stride);
 			if (end === begin) return;
 			if (geometryWidths && (end - begin) / 2 !== flatCoordinates.length / stride) {
+				const flatCoords = flatCoordinates;
 				let beg = begin / 2;
 				geometryWidths = geometryWidths.filter((w, i) => {
-					const keep = coordinates[(beg + i) * 2] === flatCoordinates[i * stride] && coordinates[(beg + i) * 2 + 1] === flatCoordinates[i * stride + 1];
+					const keep = coordinates[(beg + i) * 2] === flatCoords[i * stride] && coordinates[(beg + i) * 2 + 1] === flatCoords[i * stride + 1];
 					if (!keep) --beg;
 					return keep;
 				});
@@ -48545,18 +48932,19 @@ var CanvasTextBuilder = class extends CanvasBuilder {
 			this.saveTextStates_();
 			const backgroundFill = textState.backgroundFill ? this.createFill(this.fillStyleToState(textState.backgroundFill)) : null;
 			const backgroundStroke = textState.backgroundStroke ? this.createStroke(this.strokeStyleToState(textState.backgroundStroke)) : null;
-			this.beginGeometry(geometry, feature, index);
-			let padding = textState.padding;
-			if (padding != defaultPadding && (textState.scale[0] < 0 || textState.scale[1] < 0)) {
-				let p0 = textState.padding[0];
-				let p1 = textState.padding[1];
-				let p2 = textState.padding[2];
-				let p3 = textState.padding[3];
-				if (textState.scale[0] < 0) {
+			this.beginGeometry(geometry, feature, index ?? 0);
+			const textScale = textState.scale ?? [1, 1];
+			let padding = textState.padding ?? defaultPadding;
+			if (padding != defaultPadding && (textScale[0] < 0 || textScale[1] < 0)) {
+				let p0 = padding[0];
+				let p1 = padding[1];
+				let p2 = padding[2];
+				let p3 = padding[3];
+				if (textScale[0] < 0) {
 					p1 = -p1;
 					p3 = -p3;
 				}
-				if (textState.scale[1] < 0) {
+				if (textScale[1] < 0) {
 					p0 = -p0;
 					p2 = -p2;
 				}
@@ -48677,11 +49065,12 @@ var CanvasTextBuilder = class extends CanvasBuilder {
 		const fillKey = this.fillKey_;
 		this.saveTextStates_();
 		const pixelRatio = this.pixelRatio;
-		const baseline = TEXT_ALIGN[textState.textBaseline];
+		const baseline = TEXT_ALIGN[textState.textBaseline || "middle"];
 		const offsetX = this.textOffsetX_ * pixelRatio;
 		const offsetY = this.textOffsetY_ * pixelRatio;
 		const text = this.text_;
-		const strokeWidth = strokeState ? strokeState.lineWidth * Math.abs(textState.scale[0]) / 2 : 0;
+		const textScale = textState.scale ?? [1, 1];
+		const strokeWidth = strokeState ? strokeState.lineWidth * Math.abs(textScale[0]) / 2 : 0;
 		this.instructions.push([
 			Instruction.DRAW_CHARS,
 			begin,
@@ -48740,7 +49129,7 @@ var CanvasTextBuilder = class extends CanvasBuilder {
 					fillState = {};
 					this.textFillState_ = fillState;
 				}
-				fillState.fillStyle = asColorLike(textFillStyle.getColor() || "#000");
+				fillState.fillStyle = asColorLike(textFillStyle.getColor() || "#000") || "#000";
 			}
 			const textStrokeStyle = textStyle.getStroke();
 			if (!textStrokeStyle) {
@@ -48762,7 +49151,7 @@ var CanvasTextBuilder = class extends CanvasBuilder {
 				strokeState.lineJoin = textStrokeStyle.getLineJoin() || "round";
 				strokeState.lineWidth = lineWidth === void 0 ? 1 : lineWidth;
 				strokeState.miterLimit = miterLimit === void 0 ? 10 : miterLimit;
-				strokeState.strokeStyle = asColorLike(textStrokeStyle.getColor() || "#000");
+				strokeState.strokeStyle = asColorLike(textStrokeStyle.getColor() || "#000") || "#000";
 			}
 			textState = this.textState_;
 			const font = textStyle.getFont() || "10px sans-serif";
@@ -48776,8 +49165,8 @@ var CanvasTextBuilder = class extends CanvasBuilder {
 			textState.repeat = textStyle.getRepeat();
 			textState.justify = textStyle.getJustify();
 			textState.textBaseline = textStyle.getTextBaseline() || "middle";
-			textState.backgroundFill = textStyle.getBackgroundFill();
-			textState.backgroundStroke = textStyle.getBackgroundStroke();
+			textState.backgroundFill = textStyle.getBackgroundFill() ?? void 0;
+			textState.backgroundStroke = textStyle.getBackgroundStroke() ?? void 0;
 			textState.padding = textStyle.getPadding() || defaultPadding;
 			textState.scale = textScale === void 0 ? [1, 1] : textScale;
 			const textOffsetX = textStyle.getOffsetX();
@@ -48795,12 +49184,11 @@ var CanvasTextBuilder = class extends CanvasBuilder {
 			this.textKey_ = textState.font + textState.scale + (textState.textAlign || "?") + (textState.repeat || "?") + (textState.justify || "?") + (textState.textBaseline || "?");
 			this.fillKey_ = fillState && fillState.fillStyle ? typeof fillState.fillStyle == "string" ? fillState.fillStyle : "|" + getUid(fillState.fillStyle) : "";
 		}
-		this.declutterMode_ = textStyle.getDeclutterMode();
+		this.declutterMode_ = textStyle ? textStyle.getDeclutterMode() : void 0;
 		this.declutterImageWithText_ = sharedData;
 	}
 };
-//#endregion
-//#region node_modules/ol/render/canvas/BuilderGroup.js
+// node_modules/ol/render/canvas/BuilderGroup.js
 /**
 * @module ol/render/canvas/BuilderGroup
 */
@@ -48850,9 +49238,10 @@ var BuilderGroup = class {
 		this.buildersByZIndex_ = {};
 	}
 	/**
-	* @return {!Object<string, !Object<import("../canvas.js").BuilderType, import("./Builder.js").SerializableInstructions>>} The serializable instructions
+	* @return {!Object<string, !Object<import("../canvas.js").BuilderType, import("../canvas.js").SerializableInstructions>>} The serializable instructions
 	*/
 	finish() {
+		/** @type {!Object<string, !Object<import("../canvas.js").BuilderType, import("../canvas.js").SerializableInstructions>>} */
 		const builderInstructions = {};
 		for (const zKey in this.buildersByZIndex_) {
 			builderInstructions[zKey] = builderInstructions[zKey] || {};
@@ -48885,8 +49274,7 @@ var BuilderGroup = class {
 		return replay;
 	}
 };
-//#endregion
-//#region node_modules/ol/geom/flat/lineoffset.js
+// node_modules/ol/geom/flat/lineoffset.js
 /**
 * Offsets a line string to the left / right along its segments direction.
 * Offset is applied to each segment of the line in the direciton of the segment normal (positive offset goes "right" relative to the line direction).
@@ -49037,12 +49425,19 @@ function removeOffsetCycles(coords, stride, closedLine = false) {
 	}
 	return coords;
 }
-//#endregion
-//#region node_modules/ol/geom/flat/textpath.js
+// node_modules/ol/geom/flat/textpath.js
 /**
 * @module ol/geom/flat/textpath
 */
+/**
+* @type {Intl.Segmenter|undefined}
+*/
 var segmenter;
+/**
+* Matches characters of right-to-left scripts.
+* @type {RegExp}
+*/
+var rtlRegEx = new RegExp("[" + String.fromCharCode(1425) + "-ࣿיִ-﷿ﹰ-ﻼࠀ-࿿-]");
 /**
 * @return {Intl.Segmenter} A grapheme segmenter.
 */
@@ -49133,6 +49528,7 @@ function drawTextOnPath(flatCoordinates, offset, end, stride, text, startM, maxA
 	}
 	text = text.replace(/\n/g, " ");
 	const segments = Array.from(getSegmenter().segment(text), (s) => s.segment);
+	const reverseChunks = reverse !== rtlRegEx.test(text);
 	for (let i = 0, ii = segments.length; i < ii;) {
 		advance();
 		let angle = Math.atan2(y2 - y1, x2 - x1);
@@ -49146,12 +49542,12 @@ function drawTextOnPath(flatCoordinates, offset, end, stride, text, startM, maxA
 		const iStart = i;
 		let charLength = 0;
 		for (; i < ii; ++i) {
-			const len = scale * measureAndCacheTextWidth(font, segments[reverse ? ii - i - 1 : i], cache);
+			const len = scale * measureAndCacheTextWidth(font, segments[reverseChunks ? ii - i - 1 : i], cache);
 			if (offset + stride < end && segmentM + segmentLength < startM + charLength + len / 2) break;
 			charLength += len;
 		}
 		if (i === iStart) continue;
-		const chars = (reverse ? segments.slice(ii - i, ii - iStart) : segments.slice(iStart, i)).join("");
+		const chars = (reverseChunks ? segments.slice(ii - i, ii - iStart) : segments.slice(iStart, i)).join("");
 		interpolate = segmentLength === 0 ? 0 : (startM + charLength / 2 - segmentM) / segmentLength;
 		const x = lerp$1(x1, x2, interpolate);
 		const y = lerp$1(y1, y2, interpolate);
@@ -49166,8 +49562,7 @@ function drawTextOnPath(flatCoordinates, offset, end, stride, text, startM, maxA
 	}
 	return result;
 }
-//#endregion
-//#region node_modules/ol/render/canvas/Executor.js
+// node_modules/ol/render/canvas/Executor.js
 /**
 * @module ol/render/canvas/Executor
 */
@@ -49184,10 +49579,14 @@ function drawTextOnPath(flatCoordinates, offset, end, stride, text, startM, maxA
 * @property {number} originY OriginY.
 * @property {Array<number>} scale Scale.
 * @property {DeclutterEntry} declutterBox DeclutterBox.
-* @property {import("../../transform.js").Transform} canvasTransform CanvasTransform.
+* @property {import("../../transform.js").Transform|undefined} canvasTransform CanvasTransform.
 */
 /**
-* @typedef {{0: CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D, 1: import('../../size.js').Size, 2: import("../canvas.js").Label|HTMLImageElement|HTMLCanvasElement|HTMLVideoElement, 3: ImageOrLabelDimensions, 4: number, 5: Array<*>, 6: Array<*>}} ReplayImageOrLabelArgs
+* @typedef {{args: ReplayImageOrLabelArgs, declutterMode: import('../../style/Style.js').DeclutterMode}} DeclutterImageWithTextEntry
+* @typedef {Object<number, DeclutterImageWithTextEntry>} DeclutterImageWithTextMap
+
+/**
+* @typedef {{0: CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D, 1: import('../../size.js').Size, 2: import("../canvas.js").Label|HTMLImageElement|HTMLCanvasElement|HTMLVideoElement, 3: ImageOrLabelDimensions, 4: number, 5: Array<*>|null, 6: Array<*>|null}} ReplayImageOrLabelArgs
 */
 /**
 * @template T
@@ -49212,7 +49611,6 @@ var p4 = [];
 function getDeclutterBox(replayImageOrLabelArgs) {
 	return replayImageOrLabelArgs[3].declutterBox;
 }
-var rtlRegEx = new RegExp("[" + String.fromCharCode(1425) + "-ࣿיִ-﷿ﹰ-ﻼࠀ-࿿-]");
 /**
 * @param {string} text Text.
 * @param {CanvasTextAlign} align Alignment.
@@ -49302,7 +49700,7 @@ var Executor = class {
 		this.hitDetectionInstructions = instructions.hitDetectionInstructions;
 		/**
 		* @private
-		* @type {Array<number>}
+		* @type {Array<number>|null}
 		*/
 		this.pixelCoordinates_ = null;
 		/**
@@ -49334,12 +49732,12 @@ var Executor = class {
 		this.labels_ = {};
 		/**
 		* @private
-		* @type {import("../canvas/ZIndexContext.js").default}
+		* @type {import("../canvas/ZIndexContext.js").default|null}
 		*/
 		this.zIndexContext_ = deferredRendering ? new ZIndexContext() : null;
 	}
 	/**
-	* @return {ZIndexContext} ZIndex context.
+	* @return {import("../canvas/ZIndexContext.js").default|null} ZIndex context.
 	*/
 	getZIndexContext() {
 		return this.zIndexContext_;
@@ -49364,6 +49762,7 @@ var Executor = class {
 		const chunks = Array.isArray(text) ? text : String(text).split("\n").reduce(createTextChunks, []);
 		const { width, height, widths, heights, lineWidths } = getTextDimensions(textState, chunks);
 		const renderWidth = width + strokeWidth;
+		/** @type {Array<*>} */
 		const contextInstructions = [];
 		const w = (renderWidth + 2) * scale[0];
 		const h = (height + strokeWidth) * scale[1];
@@ -49374,7 +49773,7 @@ var Executor = class {
 			contextInstructions
 		};
 		if (scale[0] != 1 || scale[1] != 1) contextInstructions.push("scale", scale);
-		if (strokeKey) {
+		if (strokeKey && strokeState) {
 			contextInstructions.push("strokeStyle", strokeState.strokeStyle);
 			contextInstructions.push("lineWidth", strokeWidth);
 			contextInstructions.push("lineCap", strokeState.lineCap);
@@ -49383,7 +49782,7 @@ var Executor = class {
 			contextInstructions.push("setLineDash", [strokeState.lineDash]);
 			contextInstructions.push("lineDashOffset", strokeState.lineDashOffset);
 		}
-		if (fillKey) contextInstructions.push("fillStyle", fillState.fillStyle);
+		if (fillKey && fillState) contextInstructions.push("fillStyle", fillState.fillStyle);
 		contextInstructions.push("textBaseline", "middle");
 		contextInstructions.push("textAlign", "center");
 		const leftRight = .5 - align;
@@ -49427,13 +49826,13 @@ var Executor = class {
 		return label;
 	}
 	/**
-	* @param {CanvasRenderingContext2D} context Context.
+	* @param {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D} context Context.
 	* @param {import("../../coordinate.js").Coordinate} p1 1st point of the background box.
 	* @param {import("../../coordinate.js").Coordinate} p2 2nd point of the background box.
 	* @param {import("../../coordinate.js").Coordinate} p3 3rd point of the background box.
 	* @param {import("../../coordinate.js").Coordinate} p4 4th point of the background box.
-	* @param {Array<*>} fillInstruction Fill instruction.
-	* @param {Array<*>} strokeInstruction Stroke instruction.
+	* @param {Array<*>|null} fillInstruction Fill instruction.
+	* @param {Array<*>|null} strokeInstruction Stroke instruction.
 	*/
 	replayTextBackground_(context, p1, p2, p3, p4, fillInstruction, strokeInstruction) {
 		context.beginPath();
@@ -49526,13 +49925,21 @@ var Executor = class {
 	}
 	/**
 	* @private
-	* @param {CanvasRenderingContext2D} context Context.
+	* @param {ReplayImageOrLabelArgs} replayArgs Arguments.
+	* @return {boolean} The image or label was rendered.
+	*/
+	replayImageOrLabelArgs_(replayArgs) {
+		return this.replayImageOrLabel_(replayArgs[0], replayArgs[1], replayArgs[2], replayArgs[3], replayArgs[4], replayArgs[5], replayArgs[6]);
+	}
+	/**
+	* @private
+	* @param {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D} context Context.
 	* @param {import('../../size.js').Size} scaledCanvasSize Scaled canvas size.
 	* @param {import("../canvas.js").Label|HTMLImageElement|HTMLCanvasElement|HTMLVideoElement} imageOrLabel Image.
 	* @param {ImageOrLabelDimensions} dimensions Dimensions.
 	* @param {number} opacity Opacity.
-	* @param {Array<*>} fillInstruction Fill instruction.
-	* @param {Array<*>} strokeInstruction Stroke instruction.
+	* @param {Array<*>|null} fillInstruction Fill instruction.
+	* @param {Array<*>|null} strokeInstruction Stroke instruction.
 	* @return {boolean} The image or label was rendered.
 	*/
 	replayImageOrLabel_(context, scaledCanvasSize, imageOrLabel, dimensions, opacity, fillInstruction, strokeInstruction) {
@@ -49787,7 +50194,10 @@ var Executor = class {
 								delete declutterImageWithText[index];
 								imageDeclutterBox = getDeclutterBox(imageArgs);
 							}
-							let renderImage, renderText;
+							/** @type {boolean|undefined} */
+							let renderImage;
+							/** @type {boolean|undefined} */
+							let renderText;
 							if (imageArgs && (imageDeclutterMode !== "declutter" || !declutterTree.collides(imageDeclutterBox))) renderImage = true;
 							if (declutterMode !== "declutter" || !declutterTree.collides(dimensions.declutterBox)) renderText = true;
 							if (imageDeclutterMode === "declutter" && declutterMode === "declutter") {
@@ -49797,13 +50207,13 @@ var Executor = class {
 							}
 							if (renderImage) {
 								if (imageDeclutterMode !== "none") declutterTree.insert(imageDeclutterBox);
-								this.replayImageOrLabel_.apply(this, imageArgs);
+								this.replayImageOrLabelArgs_(imageArgs);
 							}
 							if (renderText) {
 								if (declutterMode !== "none") declutterTree.insert(dimensions.declutterBox);
-								this.replayImageOrLabel_.apply(this, args);
+								this.replayImageOrLabelArgs_(args);
 							}
-						} else this.replayImageOrLabel_.apply(this, args);
+						} else this.replayImageOrLabelArgs_(args);
 					}
 					++i;
 					break;
@@ -49881,7 +50291,7 @@ var Executor = class {
 								]);
 							}
 							if (declutterTree && declutterMode !== "none") declutterTree.load(replayImageOrLabelArgs.map(getDeclutterBox));
-							for (let i = 0, ii = replayImageOrLabelArgs.length; i < ii; ++i) this.replayImageOrLabel_.apply(this, replayImageOrLabelArgs[i]);
+							for (let i = 0, ii = replayImageOrLabelArgs.length; i < ii; ++i) this.replayImageOrLabelArgs_(replayImageOrLabelArgs[i]);
 						}
 					}
 					++i;
@@ -50001,8 +50411,7 @@ var Executor = class {
 		return this.execute_(context, [context.canvas.width, context.canvas.height], transform, this.hitDetectionInstructions, true, featureCallback, hitExtent);
 	}
 };
-//#endregion
-//#region node_modules/ol/render/canvas/ExecutorGroup.js
+// node_modules/ol/render/canvas/ExecutorGroup.js
 /**
 * @module ol/render/canvas/ExecutorGroup
 */
@@ -50036,7 +50445,7 @@ var canvasReadsBenchmarked = false;
 function benchmarkCanvasReads() {
 	let bestResult = 0;
 	/**
-	* @param {boolean} willReadFrequently Will read frequently.
+	* @param {boolean|undefined} willReadFrequently Will read frequently.
 	* @return {number} Operation count.
 	*/
 	const measure = (willReadFrequently) => {
@@ -50060,10 +50469,10 @@ function benchmarkCanvasReads() {
 }
 var ExecutorGroup = class {
 	/**
-	* @param {import("../../extent.js").Extent} maxExtent Max extent for clipping. When a
+	* @param {import("../../extent.js").Extent|null} maxExtent Max extent for clipping. When a
 	* `maxExtent` was set on the Builder for this executor group, the same `maxExtent`
 	* should be set here, unless the target context does not exceed that extent (which
-	* can be the case when rendering to tiles).
+	* can be the case when rendering to tiles). Pass `null` to disable clipping.
 	* @param {number} resolution Resolution.
 	* @param {number} pixelRatio Pixel ratio.
 	* @param {boolean} overlaps The executor group can have overlapping geometries.
@@ -50075,7 +50484,7 @@ var ExecutorGroup = class {
 	constructor(maxExtent, resolution, pixelRatio, overlaps, allInstructions, renderBuffer, deferredRendering) {
 		/**
 		* @private
-		* @type {import("../../extent.js").Extent}
+		* @type {import("../../extent.js").Extent|null}
 		*/
 		this.maxExtent_ = maxExtent;
 		/**
@@ -50105,7 +50514,7 @@ var ExecutorGroup = class {
 		this.executorsByZIndex_ = {};
 		/**
 		* @private
-		* @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D}
+		* @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D|null}
 		*/
 		this.hitDetectionContext_ = null;
 		/**
@@ -50115,7 +50524,7 @@ var ExecutorGroup = class {
 		this.hitDetectionTransform_ = create$3();
 		/**
 		* @private
-		* @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D}
+		* @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D|null}
 		*/
 		this.renderedContext_ = null;
 		/**
@@ -50123,7 +50532,7 @@ var ExecutorGroup = class {
 		* @type {Object<number, Array<import("./ZIndexContext.js").default>>}
 		*/
 		this.deferredZIndexContexts_ = {};
-		this.createExecutors_(allInstructions, deferredRendering);
+		this.createExecutors_(allInstructions, !!deferredRendering);
 	}
 	/**
 	* @param {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D} context Context.
@@ -50201,6 +50610,8 @@ var ExecutorGroup = class {
 		const indexes = getPixelIndexArray(hitTolerance);
 		/** @type {import("../canvas.js").BuilderType} */
 		let builderType;
+		/** @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D} */
+		const hitContext = context;
 		/**
 		* @param {import("../../Feature.js").FeatureLike} feature Feature.
 		* @param {import("../../geom/SimpleGeometry.js").default} geometry Geometry.
@@ -50208,7 +50619,7 @@ var ExecutorGroup = class {
 		* @return {T|undefined} Callback result.
 		*/
 		function featureCallback(feature, geometry, declutterMode) {
-			const imageData = context.getImageData(0, 0, contextSize, contextSize).data;
+			const imageData = hitContext.getImageData(0, 0, contextSize, contextSize).data;
 			for (let i = 0, ii = indexes.length; i < ii; i++) if (imageData[indexes[i]] > 0) {
 				if (!declutteredFeatures || declutterMode === "none" || builderType !== "Image" && builderType !== "Text" || declutteredFeatures.includes(feature)) {
 					const idx = (indexes[i] - 3) / 4;
@@ -50217,7 +50628,7 @@ var ExecutorGroup = class {
 					const result = callback(feature, geometry, x * x + y * y);
 					if (result) return result;
 				}
-				context.clearRect(0, 0, contextSize, contextSize);
+				hitContext.clearRect(0, 0, contextSize, contextSize);
 				break;
 			}
 		}
@@ -50369,8 +50780,7 @@ function getPixelIndexArray(radius) {
 	circlePixelIndexArrayCache[radius] = pixelIndex;
 	return pixelIndex;
 }
-//#endregion
-//#region node_modules/ol/render/canvas/Immediate.js
+// node_modules/ol/render/canvas/Immediate.js
 /**
 * @module ol/render/canvas/Immediate
 */
@@ -50427,12 +50837,12 @@ var CanvasImmediateRenderer = class extends VectorContext {
 		this.viewRotation_ = viewRotation;
 		/**
 		* @private
-		* @type {number}
+		* @type {number|undefined}
 		*/
 		this.squaredTolerance_ = squaredTolerance;
 		/**
 		* @private
-		* @type {import("../../proj.js").TransformFunction}
+		* @type {import("../../proj.js").TransformFunction|undefined}
 		*/
 		this.userTransform_ = userTransform;
 		/**
@@ -50462,7 +50872,7 @@ var CanvasImmediateRenderer = class extends VectorContext {
 		this.strokeState_ = null;
 		/**
 		* @private
-		* @type {import('../../DataTile.js').ImageLike}
+		* @type {import('../../DataTile.js').ImageLike|null}
 		*/
 		this.image_ = null;
 		/**
@@ -50652,11 +51062,12 @@ var CanvasImmediateRenderer = class extends VectorContext {
 	*/
 	moveToLineTo_(flatCoordinates, offset, end, stride, close, strokeOffset) {
 		const context = this.context_;
+		const strokeOffsetPx = strokeOffset ?? 0;
 		let pixelCoordinates = transform2D(flatCoordinates, offset, end, stride, this.transform_, this.pixelCoordinates_);
-		if (Math.abs(strokeOffset) > 0) {
+		if (Math.abs(strokeOffsetPx) > 0) {
 			const n = pixelCoordinates.length;
 			const isClosedLine = close || Math.abs(pixelCoordinates[0] - pixelCoordinates[n - 2]) < 1e-6 && Math.abs(pixelCoordinates[1] - pixelCoordinates[n - 1]) < 1e-6;
-			pixelCoordinates = offsetLineString(pixelCoordinates, 0, n, 2, strokeOffset, isClosedLine, pixelCoordinates);
+			pixelCoordinates = offsetLineString(pixelCoordinates, 0, n, 2, strokeOffsetPx, isClosedLine, pixelCoordinates);
 			removeOffsetCycles(pixelCoordinates, 2, isClosedLine);
 		}
 		context.moveTo(pixelCoordinates[0], pixelCoordinates[1]);
@@ -50694,6 +51105,7 @@ var CanvasImmediateRenderer = class extends VectorContext {
 			if (this.fillState_) this.setContextFillState_(this.fillState_);
 			if (this.strokeState_) this.setContextStrokeState_(this.strokeState_);
 			const pixelCoordinates = transformGeom2D(geometry, this.transform_, this.pixelCoordinates_);
+			if (!pixelCoordinates) return;
 			const dx = pixelCoordinates[2] - pixelCoordinates[0];
 			const dy = pixelCoordinates[3] - pixelCoordinates[1];
 			const radius = Math.sqrt(dx * dx + dy * dy);
@@ -50714,9 +51126,9 @@ var CanvasImmediateRenderer = class extends VectorContext {
 	* @override
 	*/
 	setStyle(style) {
-		this.setFillStrokeStyle(style.getFill(), style.getStroke());
-		this.setImageStyle(style.getImage());
-		this.setTextStyle(style.getText());
+		this.setFillStrokeStyle(style.getFill() ?? null, style.getStroke() ?? null);
+		this.setImageStyle(style.getImage() ?? null);
+		this.setTextStyle(style.getText() ?? null);
 	}
 	/**
 	* @param {import("../../transform.js").Transform} transform Transform.
@@ -51021,15 +51433,15 @@ var CanvasImmediateRenderer = class extends VectorContext {
 	* Set the fill and stroke style for subsequent draw operations.  To clear
 	* either fill or stroke styles, pass null for the appropriate parameter.
 	*
-	* @param {import("../../style/Fill.js").default} fillStyle Fill style.
-	* @param {import("../../style/Stroke.js").default} strokeStyle Stroke style.
+	* @param {import("../../style/Fill.js").default|null} fillStyle Fill style.
+	* @param {import("../../style/Stroke.js").default|null} strokeStyle Stroke style.
 	* @override
 	*/
 	setFillStrokeStyle(fillStyle, strokeStyle) {
 		if (!fillStyle) this.fillState_ = null;
 		else {
 			const fillStyleColor = fillStyle.getColor();
-			this.fillState_ = { fillStyle: asColorLike(fillStyleColor ? fillStyleColor : defaultFillStyle) };
+			this.fillState_ = { fillStyle: asColorLike(fillStyleColor ? fillStyleColor : "#000") || "#000" };
 		}
 		if (!strokeStyle) this.strokeState_ = null;
 		else {
@@ -51049,7 +51461,7 @@ var CanvasImmediateRenderer = class extends VectorContext {
 				lineJoin: strokeStyleLineJoin !== void 0 ? strokeStyleLineJoin : defaultLineJoin,
 				lineWidth: (strokeStyleWidth !== void 0 ? strokeStyleWidth : 1) * this.pixelRatio_,
 				miterLimit: strokeStyleMiterLimit !== void 0 ? strokeStyleMiterLimit : 10,
-				strokeStyle: asColorLike(strokeStyleColor ? strokeStyleColor : defaultStrokeStyle),
+				strokeStyle: asColorLike(strokeStyleColor ? strokeStyleColor : "#000") || "#000",
 				strokeOffset: (strokeOffset ?? 0) * this.pixelRatio_
 			};
 		}
@@ -51058,7 +51470,7 @@ var CanvasImmediateRenderer = class extends VectorContext {
 	* Set the image style for subsequent draw operations.  Pass null to remove
 	* the image style.
 	*
-	* @param {import("../../style/Image.js").default} imageStyle Image style.
+	* @param {import("../../style/Image.js").default|null} imageStyle Image style.
 	* @override
 	*/
 	setImageStyle(imageStyle) {
@@ -51070,6 +51482,10 @@ var CanvasImmediateRenderer = class extends VectorContext {
 		const imagePixelRatio = imageStyle.getPixelRatio(this.pixelRatio_);
 		const imageAnchor = imageStyle.getAnchor();
 		const imageOrigin = imageStyle.getOrigin();
+		if (!imageAnchor || !imageOrigin) {
+			this.image_ = null;
+			return;
+		}
 		this.image_ = imageStyle.getImage(this.pixelRatio_);
 		this.imageAnchorX_ = imageAnchor[0] * imagePixelRatio;
 		this.imageAnchorY_ = imageAnchor[1] * imagePixelRatio;
@@ -51087,7 +51503,7 @@ var CanvasImmediateRenderer = class extends VectorContext {
 	* Set the text style for subsequent draw operations.  Pass null to
 	* remove the text style.
 	*
-	* @param {import("../../style/Text.js").default} textStyle Text style.
+	* @param {import("../../style/Text.js").default|null} textStyle Text style.
 	* @override
 	*/
 	setTextStyle(textStyle) {
@@ -51097,7 +51513,7 @@ var CanvasImmediateRenderer = class extends VectorContext {
 			if (!textFillStyle) this.textFillState_ = null;
 			else {
 				const textFillStyleColor = textFillStyle.getColor();
-				this.textFillState_ = { fillStyle: asColorLike(textFillStyleColor ? textFillStyleColor : defaultFillStyle) };
+				this.textFillState_ = { fillStyle: asColorLike(textFillStyleColor ? textFillStyleColor : "#000") || "#000" };
 			}
 			const textStrokeStyle = textStyle.getStroke();
 			if (!textStrokeStyle) this.textStrokeState_ = null;
@@ -51116,7 +51532,7 @@ var CanvasImmediateRenderer = class extends VectorContext {
 					lineJoin: textStrokeStyleLineJoin !== void 0 ? textStrokeStyleLineJoin : defaultLineJoin,
 					lineWidth: textStrokeStyleWidth !== void 0 ? textStrokeStyleWidth : 1,
 					miterLimit: textStrokeStyleMiterLimit !== void 0 ? textStrokeStyleMiterLimit : 10,
-					strokeStyle: asColorLike(textStrokeStyleColor ? textStrokeStyleColor : defaultStrokeStyle)
+					strokeStyle: asColorLike(textStrokeStyleColor ? textStrokeStyleColor : "#000") || "#000"
 				};
 			}
 			const textFont = textStyle.getFont();
@@ -51142,8 +51558,7 @@ var CanvasImmediateRenderer = class extends VectorContext {
 		}
 	}
 };
-//#endregion
-//#region node_modules/ol/render/canvas/hitdetect.js
+// node_modules/ol/render/canvas/hitdetect.js
 /**
 * @module ol/render/canvas/hitdetect
 */
@@ -51169,9 +51584,17 @@ function createHitDetectionImageData(size, transforms, features, styleFunction, 
 	const context = createCanvasContext2D(size[0] * HIT_DETECT_RESOLUTION, size[1] * HIT_DETECT_RESOLUTION);
 	context.imageSmoothingEnabled = false;
 	const canvas = context.canvas;
-	const renderer = new CanvasImmediateRenderer(context, HIT_DETECT_RESOLUTION, extent, null, rotation, squaredTolerance, projection ? getTransformFromProjections(getUserProjection(), projection) : null);
+	const renderer = new CanvasImmediateRenderer(context, HIT_DETECT_RESOLUTION, extent, [
+		1,
+		0,
+		0,
+		1,
+		0,
+		0
+	], rotation, squaredTolerance ?? 0, projection ? getTransformFromProjections(getUserProjection(), projection) ?? void 0 : void 0);
 	const featureCount = features.length;
 	const indexFactor = Math.floor(16777215 / featureCount);
+	/** @type {Object<number, Object<string, Array<*>>>} */
 	const featuresByZIndex = {};
 	for (let i = 1; i <= featureCount; ++i) {
 		const feature = features[i - 1];
@@ -51193,7 +51616,7 @@ function createHitDetectionImageData(size, transforms, features, styleFunction, 
 				stroke.setColor(color);
 				stroke.setLineDash(null);
 			}
-			style.setText(void 0);
+			style.setText(null);
 			const image = originalStyle.getImage();
 			if (image) {
 				const imgSize = image.getImageSize();
@@ -51204,12 +51627,12 @@ function createHitDetectionImageData(size, transforms, features, styleFunction, 
 				imgContext.fillRect(0, 0, img.width, img.height);
 				style.setImage(new Icon({
 					img,
-					anchor: image.getAnchor(),
+					anchor: image.getAnchor() ?? void 0,
 					anchorXUnits: "pixels",
 					anchorYUnits: "pixels",
-					offset: image.getOrigin(),
+					offset: image.getOrigin() ?? void 0,
 					opacity: 1,
-					size: image.getSize(),
+					size: image.getSize() ?? void 0,
 					scale: image.getScale(),
 					rotation: image.getRotation(),
 					rotateWithView: image.getRotateWithView()
@@ -51276,8 +51699,7 @@ function hitDetect(pixel, features, imageData) {
 	}
 	return resultFeatures;
 }
-//#endregion
-//#region node_modules/ol/renderer/vector.js
+// node_modules/ol/renderer/vector.js
 /**
 * @module ol/renderer/vector
 */
@@ -51512,7 +51934,7 @@ function renderPointGeometry(builderGroup, geometry, style, feature, index, decl
 	const imageStyle = style.getImage();
 	const textStyle = style.getText();
 	const hasText = textStyle && textStyle.getText();
-	/** @type {import("../render/canvas.js").DeclutterImageWithText} */
+	/** @type {import("../render/canvas.js").DeclutterImageWithText|undefined} */
 	const declutterImageWithText = declutter && imageStyle && hasText ? {} : void 0;
 	if (imageStyle) {
 		if (imageStyle.getImageState() != ImageState_default.LOADED) return;
@@ -51539,7 +51961,7 @@ function renderMultiPointGeometry(builderGroup, geometry, style, feature, index,
 	const hasImage = imageStyle && imageStyle.getOpacity() !== 0;
 	const textStyle = style.getText();
 	const hasText = textStyle && textStyle.getText();
-	/** @type {import("../render/canvas.js").DeclutterImageWithText} */
+	/** @type {import("../render/canvas.js").DeclutterImageWithText|undefined} */
 	const declutterImageWithText = declutter && hasImage && hasText ? {} : void 0;
 	if (hasImage) {
 		if (imageStyle.getImageState() != ImageState_default.LOADED) return;
@@ -51575,21 +51997,26 @@ function renderPolygonGeometry(builderGroup, geometry, style, feature, index) {
 		textReplay.drawText(geometry, feature, index);
 	}
 }
-//#endregion
-//#region node_modules/ol/renderer/canvas/VectorLayer.js
+// node_modules/ol/renderer/canvas/VectorLayer.js
 /**
 * @module ol/renderer/canvas/VectorLayer
+*/
+/**
+* @typedef {Object} VectorLayerRendererOptions
+* @property {boolean} [wantRotation] If possible, request viewport rotated content from the source.
 */
 /**
 * @classdesc
 * Canvas renderer for vector layers.
 * @api
+* @extends {CanvasLayerRenderer<import("../../layer/Vector.js").default>}
 */
 var CanvasVectorLayerRenderer = class extends CanvasLayerRenderer {
 	/**
-	* @param {import("../../layer/BaseVector.js").default} vectorLayer Vector layer.
+	* @param {import("../../layer/Vector.js").default} vectorLayer Vector layer.
+	* @param {VectorLayerRendererOptions} [options] Options.
 	*/
-	constructor(vectorLayer) {
+	constructor(vectorLayer, options) {
 		super(vectorLayer);
 		/** @private */
 		this.boundHandleStyleImageChange_ = this.handleStyleImageChange_.bind(this);
@@ -51605,7 +52032,7 @@ var CanvasVectorLayerRenderer = class extends CanvasLayerRenderer {
 		this.hitDetectionImageData_ = null;
 		/**
 		* @private
-		* @type {import("../../extent.js").Extent}
+		* @type {import("../../extent.js").Extent|null}
 		*/
 		this.clipExtent_ = null;
 		/**
@@ -51617,7 +52044,7 @@ var CanvasVectorLayerRenderer = class extends CanvasLayerRenderer {
 		this.extendX_ = false;
 		/**
 		* @private
-		* @type {Array<import("../../Feature.js").default>}
+		* @type {Array<import("../../Feature.js").default>|null}
 		*/
 		this.renderedFeatures_ = null;
 		/**
@@ -51647,12 +52074,12 @@ var CanvasVectorLayerRenderer = class extends CanvasLayerRenderer {
 		this.renderedRotation_;
 		/**
 		* @private
-		* @type {import("../../coordinate.js").Coordinate}
+		* @type {import("../../coordinate.js").Coordinate|null}
 		*/
 		this.renderedCenter_ = null;
 		/**
 		* @private
-		* @type {import("../../proj/Projection.js").default}
+		* @type {import("../../proj/Projection.js").default|null}
 		*/
 		this.renderedProjection_ = null;
 		/**
@@ -51672,7 +52099,7 @@ var CanvasVectorLayerRenderer = class extends CanvasLayerRenderer {
 		this.renderedFrameDeclutter_;
 		/**
 		* @private
-		* @type {import("../../render/canvas/ExecutorGroup.js").default}
+		* @type {import("../../render/canvas/ExecutorGroup.js").default|null}
 		*/
 		this.replayGroup_ = null;
 		/**
@@ -51687,7 +52114,7 @@ var CanvasVectorLayerRenderer = class extends CanvasLayerRenderer {
 		this.clipping = true;
 		/**
 		* @private
-		* @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D}
+		* @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D|null}
 		*/
 		this.targetContext_ = null;
 		/**
@@ -51695,6 +52122,7 @@ var CanvasVectorLayerRenderer = class extends CanvasLayerRenderer {
 		* @type {number}
 		*/
 		this.opacity_ = 1;
+		if (options?.wantRotation !== void 0) this.wantRotation = options.wantRotation;
 	}
 	/**
 	* @param {ExecutorGroup} executorGroup Executor group.
@@ -51716,14 +52144,15 @@ var CanvasVectorLayerRenderer = class extends CanvasLayerRenderer {
 		const viewHints = frameState.viewHints;
 		const snapToPixel = !(viewHints[ViewHint_default.ANIMATING] || viewHints[ViewHint_default.INTERACTING]);
 		const context = this.context;
-		const width = Math.round(getWidth(extent) / resolution * pixelRatio);
-		const height = Math.round(getHeight(extent) / resolution * pixelRatio);
+		const width = context.canvas.width;
+		const height = context.canvas.height;
 		const multiWorld = vectorSource.getWrapX() && projection.canWrapX();
 		const worldWidth = multiWorld ? getWidth(projectionExtent) : null;
-		const endWorld = multiWorld ? Math.ceil((extent[2] - projectionExtent[2]) / worldWidth) + (this.extendX_ ? 2 : 1) : 1;
-		let world = multiWorld ? Math.floor((extent[0] - projectionExtent[0]) / worldWidth) - (this.extendX_ ? 1 : 0) : 0;
+		const viewExtent = extent;
+		const endWorld = multiWorld ? Math.ceil((viewExtent[2] - projectionExtent[2]) / worldWidth) + (this.extendX_ ? 2 : 1) : 1;
+		let world = multiWorld ? Math.floor((viewExtent[0] - projectionExtent[0]) / worldWidth) - (this.extendX_ ? 1 : 0) : 0;
 		do {
-			let transform = this.getRenderTransform(center, resolution, 0, pixelRatio, width, height, world * worldWidth);
+			let transform = this.getRenderTransform(center, resolution, this.sourceRotates() ? rotation : 0, pixelRatio, width, height, world * worldWidth);
 			if (frameState.declutter) transform = transform.slice(0);
 			executorGroup.execute(context, [context.canvas.width, context.canvas.height], transform, rotation, snapToPixel, declutterable === void 0 ? ALL : declutterable ? DECLUTTER : NON_DECLUTTER, declutterable ? declutter && frameState.declutter[declutter] : void 0);
 		} while (++world < endWorld);
@@ -51734,7 +52163,13 @@ var CanvasVectorLayerRenderer = class extends CanvasLayerRenderer {
 	setDrawContext_() {
 		if (this.opacity_ !== 1) {
 			this.targetContext_ = this.context;
-			this.context = createCanvasContext2D(this.context.canvas.width, this.context.canvas.height, canvasPool);
+			this.context = createCanvasContext2D(
+				/** @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D} */
+				this.context.canvas.width,
+				/** @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D} */
+				this.context.canvas.height,
+				canvasPool
+			);
 		}
 	}
 	/**
@@ -51744,10 +52179,18 @@ var CanvasVectorLayerRenderer = class extends CanvasLayerRenderer {
 		if (this.opacity_ !== 1 && this.targetContext_) {
 			const alpha = this.targetContext_.globalAlpha;
 			this.targetContext_.globalAlpha = this.opacity_;
-			this.targetContext_.drawImage(this.context.canvas, 0, 0);
+			this.targetContext_.drawImage(
+				/** @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D} */
+				this.context.canvas,
+				0,
+				0
+			);
 			this.targetContext_.globalAlpha = alpha;
 			releaseCanvas$1(this.context);
-			canvasPool.push(this.context.canvas);
+			canvasPool.push(
+				/** @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D} */
+				this.context.canvas
+			);
 			this.context = this.targetContext_;
 			this.targetContext_ = null;
 		}
@@ -51770,7 +52213,7 @@ var CanvasVectorLayerRenderer = class extends CanvasLayerRenderer {
 		if (this.clipExtent_) this.clipUnrotated(this.context, frameState, this.clipExtent_);
 		this.replayGroup_.renderDeferred();
 		if (this.clipExtent_) {
-			this.context.restore();
+			/** @type {CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D} */ this.context.restore();
 			this.clipExtent_ = null;
 		}
 		this.resetDrawContext_();
@@ -51964,7 +52407,11 @@ var CanvasVectorLayerRenderer = class extends CanvasLayerRenderer {
 		let vectorLayerRenderOrder = vectorLayer.getRenderOrder();
 		if (vectorLayerRenderOrder === void 0) vectorLayerRenderOrder = defaultOrder;
 		const center = viewState.center.slice();
-		const extent = buffer$1(frameStateExtent, vectorLayerRenderBuffer * resolution);
+		const extent = buffer$1(
+			frameStateExtent,
+			/** @type {number} */
+			vectorLayerRenderBuffer * resolution
+		);
 		const renderedExtent = extent.slice();
 		const loadExtents = [extent.slice()];
 		const projectionExtent = projection.getExtent();
@@ -52012,6 +52459,7 @@ var CanvasVectorLayerRenderer = class extends CanvasLayerRenderer {
 		this.replayGroup_ = null;
 		const replayGroup = new BuilderGroup(getTolerance(resolution, pixelRatio), extent, resolution, pixelRatio);
 		const userProjection = getUserProjection();
+		/** @type {import("../../proj.js").TransformFunction|undefined} */
 		let userTransform;
 		if (userProjection) {
 			for (let i = 0, ii = loadExtents.length; i < ii; ++i) {
@@ -52073,8 +52521,7 @@ var CanvasVectorLayerRenderer = class extends CanvasLayerRenderer {
 		return loading;
 	}
 };
-//#endregion
-//#region node_modules/ol/layer/Vector.js
+// node_modules/ol/layer/Vector.js
 /**
 * @module ol/layer/Vector
 */
@@ -52158,8 +52605,7 @@ var VectorLayer = class extends BaseVectorLayer {
 		return new CanvasVectorLayerRenderer(this);
 	}
 };
-//#endregion
-//#region node_modules/ol/renderer/canvas/VectorTileLayer.js
+// node_modules/ol/renderer/canvas/VectorTileLayer.js
 /**
 * @module ol/renderer/canvas/VectorTileLayer
 */
@@ -52217,7 +52663,7 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 		this.renderedLayerRevision_;
 		/**
 		* @private
-		* @type {import("../../transform.js").Transform}
+		* @type {import("../../transform.js").Transform|null}
 		*/
 		this.renderedPixelToCoordinateTransform_ = null;
 		/**
@@ -52237,7 +52683,7 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 		this.tmpTransform_ = create$3();
 		/**
 		* @private
-		* @type {Array<ZIndexContext>}
+		* @type {Array<ZIndexContext|null>|null}
 		*/
 		this.tileClipContexts_ = null;
 	}
@@ -52282,6 +52728,7 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 		const resolution = viewState.resolution;
 		const viewHints = frameState.viewHints;
 		const source = this.getLayer().getSource();
+		if (!source) return null;
 		const tileGrid = source.getTileGridForProjection(viewState.projection);
 		const hifi = !(viewHints[ViewHint_default.ANIMATING] || viewHints[ViewHint_default.INTERACTING]);
 		const withinTileResolutionRange = tileGrid.getZForResolution(resolution, source.zDirection) === z;
@@ -52317,8 +52764,10 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 		const builderState = tile.getReplayState(layer);
 		if (!builderState.dirty && builderState.renderedResolution === resolution && builderState.renderedRevision == revision && builderState.renderedPixelRatio === pixelRatio && builderState.renderedRenderOrder == renderOrder) return;
 		const source = layer.getSource();
+		if (!source) return;
 		const declutter = !!layer.getDeclutter();
 		const sourceTileGrid = source.getTileGrid();
+		if (!sourceTileGrid) return;
 		const tileExtent = source.getTileGridForProjection(projection).getTileCoordExtent(tile.wrappedTileCoord);
 		const sourceTiles = source.getSourceTiles(pixelRatio, projection, tile);
 		const layerUid = getUid(layer);
@@ -52333,7 +52782,7 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 			let sourceTileExtent = sourceTileGrid.getTileCoordExtent(sourceTileCoord);
 			if (projection && sourceProjection && !equivalent$1(projection, sourceProjection)) sourceTileExtent = transformExtent(sourceTileExtent, sourceProjection, projection, 32);
 			const sharedExtent = getIntersection(tileExtent, sourceTileExtent);
-			const builderExtent = buffer$1(sharedExtent, layer.getRenderBuffer() * resolution, this.tempExtent);
+			const builderExtent = buffer$1(sharedExtent, (layer.getRenderBuffer() ?? 0) * resolution, this.tempExtent);
 			const bufferedExtent = equals$1(sourceTileExtent, sharedExtent) ? null : builderExtent;
 			const builderGroup = new BuilderGroup(0, sharedExtent, resolution, pixelRatio);
 			const squaredTolerance = getSquaredTolerance(resolution, pixelRatio);
@@ -52351,7 +52800,7 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 					builderState.dirty = builderState.dirty || dirty;
 				}
 			};
-			const features = sourceTile.getFeatures();
+			const features = sourceTile.getFeatures() ?? [];
 			if (renderOrder && renderOrder !== builderState.renderedRenderOrder) features.sort(renderOrder);
 			for (let i = 0, ii = features.length; i < ii; ++i) {
 				let feature = features[i];
@@ -52359,10 +52808,10 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 					feature = feature.clone();
 					feature.getGeometry().applyTransform(getTransform(sourceTile.projection, projection));
 				}
-				if (!bufferedExtent || intersects$1(bufferedExtent, feature.getGeometry().getExtent())) render.call(this, feature, i);
+				if (!bufferedExtent || intersects$1(bufferedExtent, feature.getGeometry()?.getExtent())) render.call(this, feature, i);
 			}
 			const executorGroupInstructions = builderGroup.finish();
-			const renderingReplayGroup = new ExecutorGroup(layer.getRenderMode() !== "vector" && declutter && sourceTiles.length === 1 ? null : sharedExtent, resolution, pixelRatio, source.getOverlaps(), executorGroupInstructions, layer.getRenderBuffer(), true);
+			const renderingReplayGroup = new ExecutorGroup(layer.getRenderMode() !== "vector" && declutter && sourceTiles.length === 1 ? null : sharedExtent, resolution, pixelRatio, source.getOverlaps(), executorGroupInstructions, layer.getRenderBuffer() ?? 0, true);
 			tile.executorGroups[layerUid].push(renderingReplayGroup);
 		}
 		builderState.renderedRevision = revision;
@@ -52385,8 +52834,10 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 		const rotation = frameState.viewState.rotation;
 		hitTolerance = hitTolerance == void 0 ? 0 : hitTolerance;
 		const layer = this.getLayer();
-		const tileGrid = layer.getSource().getTileGridForProjection(frameState.viewState.projection);
-		const renderBuffer = layer.getRenderBuffer();
+		const source = layer.getSource();
+		if (!source) return;
+		const tileGrid = source.getTileGridForProjection(frameState.viewState.projection);
+		const renderBuffer = layer.getRenderBuffer() ?? 0;
 		const hitExtent = boundingExtent([coordinate]);
 		buffer$1(hitExtent, resolution * (renderBuffer + hitTolerance), hitExtent);
 		/** @type {!Object<string, import("../Map.js").HitMatch<T>|true>} */
@@ -52426,7 +52877,7 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 		const renderedTiles = this.renderedTiles;
 		const layerUid = getUid(layer);
 		const declutter = layer.getDeclutter();
-		const declutteredFeatures = declutter ? frameState.declutter?.[declutter]?.all().map((item) => item.value) : null;
+		const declutteredFeatures = declutter ? frameState.declutter?.[declutter]?.all().map((item) => item.value) ?? [] : [];
 		let found;
 		foundFeature: for (let i = renderedTiles.length - 1; i >= 0; --i) {
 			const tile = renderedTiles[i];
@@ -52451,6 +52902,10 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 			const layer = this.getLayer();
 			const source = layer.getSource();
 			const projection = this.renderedProjection;
+			if (!source || !projection || !this.renderedPixelToCoordinateTransform_) {
+				resolve([]);
+				return;
+			}
 			const projectionExtent = projection.getExtent();
 			const resolution = this.renderedResolution;
 			const tileGrid = source.getTileGridForProjection(projection);
@@ -52465,7 +52920,7 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 			const layerUid = getUid(layer);
 			const corner = getTopLeft(tileGrid.getTileCoordExtent(tile.wrappedTileCoord));
 			const tilePixel = [(coordinate[0] - corner[0]) / resolution, (corner[1] - coordinate[1]) / resolution];
-			const features = tile.getSourceTiles().reduce((accumulator, sourceTile) => accumulator.concat(sourceTile.getFeatures()), []);
+			const features = tile.getSourceTiles().reduce((accumulator, sourceTile) => accumulator.concat(sourceTile.getFeatures() ?? []), []);
 			let hitDetectionImageData = tile.hitDetectionImageData[layerUid];
 			if (!hitDetectionImageData) {
 				const tileSize = toSize(tileGrid.getTileSize(tileGrid.getZForResolution(resolution, source.zDirection)));
@@ -52485,7 +52940,9 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 		const features = [];
 		const tileCache = this.getTileCache();
 		if (tileCache.getCount() === 0) return features;
-		const tileGrid = this.getLayer().getSource().getTileGridForProjection(this.frameState.viewState.projection);
+		const source = this.getLayer().getSource();
+		if (!source || !this.frameState) return features;
+		const tileGrid = source.getTileGridForProjection(this.frameState.viewState.projection);
 		const z = tileGrid.getZForResolution(this.renderedResolution);
 		/** @type {Object<string, true>} */
 		const visitedSourceTiles = {};
@@ -52502,7 +52959,8 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 					const tileFeatures = sourceTile.getFeatures();
 					if (tileFeatures) for (let j = 0, jj = tileFeatures.length; j < jj; ++j) {
 						const candidate = tileFeatures[j];
-						if (intersects$1(extent, candidate.getGeometry().getExtent())) features.push(candidate);
+						const geometry = candidate.getGeometry();
+						if (geometry && intersects$1(extent, geometry.getExtent())) features.push(candidate);
 					}
 				}
 			}
@@ -52531,12 +52989,12 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 	* @param {import("../../layer/Layer.js").State} layerState Layer state.
 	*/
 	renderDeclutter(frameState, layerState) {
-		const context = this.context;
+		const context = this.getCanvasContext();
 		const alpha = context.globalAlpha;
 		context.globalAlpha = layerState.opacity;
 		const viewHints = frameState.viewHints;
 		const hifi = !(viewHints[ViewHint_default.ANIMATING] || viewHints[ViewHint_default.INTERACTING]);
-		const scaledCanvasSize = [this.context.canvas.width, this.context.canvas.height];
+		const scaledCanvasSize = [this.getCanvasContext().canvas.width, this.getCanvasContext().canvas.height];
 		const declutter = this.getLayer().getDeclutter();
 		const declutterTree = declutter ? frameState.declutter?.[declutter] : void 0;
 		const layerUid = getUid(this.getLayer());
@@ -52544,7 +53002,7 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 		for (let i = 0, ii = tiles.length; i < ii; ++i) {
 			const tile = tiles[i];
 			const executorGroups = tile.executorGroups[layerUid];
-			if (executorGroups) for (let j = executorGroups.length - 1; j >= 0; --j) executorGroups[j].execute(this.context, scaledCanvasSize, this.getTileRenderTransform(tile, frameState), frameState.viewState.rotation, hifi, DECLUTTER, declutterTree);
+			if (executorGroups) for (let j = executorGroups.length - 1; j >= 0; --j) executorGroups[j].execute(this.getCanvasContext(), scaledCanvasSize, this.getTileRenderTransform(tile, frameState), frameState.viewState.rotation, hifi, DECLUTTER, declutterTree);
 		}
 		context.globalAlpha = alpha;
 	}
@@ -52570,16 +53028,17 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 			for (const key in executorGroupZindexContext) usedZIndices[key] = true;
 		}
 		const zIndexKeys = Object.keys(usedZIndices).map(Number).sort(ascending);
-		if (this.layerExtent) this.clipUnrotated(this.context, frameState, this.layerExtent);
+		if (this.layerExtent) this.clipUnrotated(this.getCanvasContext(), frameState, this.layerExtent);
 		zIndexKeys.forEach((zIndex) => {
 			executorGroupZIndexContexts.forEach((zIndexContexts, i) => {
 				if (!zIndexContexts[zIndex]) return;
 				zIndexContexts[zIndex].forEach((zIndexContext) => {
 					const { executorGroup, index } = executorGroups[i];
 					const context = executorGroup.getRenderedContext();
+					if (!context) return;
 					const alpha = context.globalAlpha;
 					context.globalAlpha = this.renderedOpacity_;
-					const tileClipContext = this.tileClipContexts_[index];
+					const tileClipContext = this.tileClipContexts_?.[index];
 					if (tileClipContext) tileClipContext.draw(context);
 					zIndexContext.draw(context);
 					if (tileClipContext) context.restore();
@@ -52589,7 +53048,7 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 				zIndexContexts[zIndex].length = 0;
 			});
 		});
-		if (this.layerExtent) this.context.restore();
+		if (this.layerExtent) this.getCanvasContext().restore();
 	}
 	/**
 	* @param {import("../../VectorRenderTile.js").default} tile The tile
@@ -52605,7 +53064,9 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 		const size = frameState.size;
 		const width = Math.round(size[0] * pixelRatio);
 		const height = Math.round(size[1] * pixelRatio);
-		const tileGrid = this.getLayer().getSource().getTileGridForProjection(frameState.viewState.projection);
+		const source = this.getLayer().getSource();
+		if (!source) return create$3();
+		const tileGrid = source.getTileGridForProjection(frameState.viewState.projection);
 		const tileCoord = tile.tileCoord;
 		const tileExtent = tileGrid.getTileCoordExtent(tile.wrappedTileCoord);
 		const worldOffset = tileGrid.getTileCoordExtent(tileCoord, this.tempExtent)[0] - tileExtent[0];
@@ -52670,11 +53131,13 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 		const rotation = viewState.rotation;
 		if (this.layerExtent) this.clipUnrotated(context, frameState, this.layerExtent);
 		const tileSource = layer.getSource();
+		if (!tileSource) return;
 		const z = tileSource.getTileGridForProjection(viewState.projection).getZForResolution(viewState.resolution, tileSource.zDirection);
 		const tiles = this.renderedTiles;
 		/** @type {Array<import("../../extent.js").Extent>} */
 		const clips = [];
 		const clipZs = [];
+		/** @type {Array<ZIndexContext|null>} */
 		const tileClipContexts = [];
 		const layerUid = getUid(layer);
 		let ready = true;
@@ -52702,10 +53165,10 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 				clips.push(currentExtent);
 				clipZs.push(currentZ);
 			}
-			for (let t = 0, tt = executorGroups.length; t < tt; ++t) executorGroups[t].execute(context, [context.canvas.width, context.canvas.height], transform, rotation, hifi, replayTypes, frameState.declutter?.[declutter]);
+			for (let t = 0, tt = executorGroups.length; t < tt; ++t) executorGroups[t].execute(context, [context.canvas.width, context.canvas.height], transform, rotation, hifi, replayTypes, declutter ? frameState.declutter?.[declutter] : void 0);
 			if (contextSaved) {
 				if (clipContext === context) clipContext.restore();
-				else tileClipContexts[i] = tileClipContext;
+				else tileClipContexts[i] = tileClipContext ?? null;
 			}
 		}
 		if (this.layerExtent) context.restore();
@@ -52758,6 +53221,7 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 		const tileCoord = tile.wrappedTileCoord;
 		const z = tileCoord[0];
 		const source = layer.getSource();
+		if (!source) return;
 		let pixelRatio = frameState.pixelRatio;
 		const projection = frameState.viewState.projection;
 		const tileGrid = source.getTileGridForProjection(projection);
@@ -52773,7 +53237,7 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 		if (renderScale !== 1) {
 			const canvasTransform = reset(this.tmpTransform_);
 			scale$3(canvasTransform, renderScale, renderScale);
-			context.setTransform.apply(context, canvasTransform);
+			context.setTransform(canvasTransform[0], canvasTransform[1], canvasTransform[2], canvasTransform[3], canvasTransform[4], canvasTransform[5]);
 		}
 		const tileExtent = tileGrid.getTileCoordExtent(tileCoord, this.tempExtent);
 		const pixelScale = renderPixelRatio / resolution;
@@ -52784,8 +53248,7 @@ var CanvasVectorTileLayerRenderer = class extends CanvasTileLayerRenderer {
 		replayState.renderedTileResolution = tile.wantedResolution;
 	}
 };
-//#endregion
-//#region node_modules/ol/layer/VectorTile.js
+// node_modules/ol/layer/VectorTile.js
 /**
 * @module ol/layer/VectorTile
 */
@@ -52971,7 +53434,9 @@ var VectorTileLayer = class extends BaseVectorLayer {
 	* @api
 	*/
 	getFeaturesInExtent(extent) {
-		return this.getRenderer().getFeaturesInExtent(extent);
+		const renderer = this.getRenderer();
+		if (!renderer) return [];
+		return renderer.getFeaturesInExtent(extent);
 	}
 	/**
 	* @return {VectorTileRenderType} The render mode.
@@ -53016,8 +53481,7 @@ var VectorTileLayer = class extends BaseVectorLayer {
 		this.set(TileProperty_default.USE_INTERIM_TILES_ON_ERROR, useInterimTilesOnError);
 	}
 };
-//#endregion
-//#region node_modules/@petamoriken/float16/src/_util/primordials.mjs
+// node_modules/@petamoriken/float16/src/_util/primordials.mjs
 /** @type {<T extends (...args: any) => any>(target: T) => (thisArg: ThisType<T>, ...args: any[]) => any} */
 function uncurryThis(target) {
 	return (thisArg, ...args) => {
@@ -53102,8 +53566,7 @@ var WeakMapPrototypeGet = uncurryThis(WeakMapPrototype.get);
 WeakMapPrototype.has;
 /** @type {<K extends {}, V>(weakMap: WeakMap<K, V>, key: K, value: V) => WeakMap} */
 var WeakMapPrototypeSet = uncurryThis(WeakMapPrototype.set);
-//#endregion
-//#region node_modules/@petamoriken/float16/src/_util/arrayIterator.mjs
+// node_modules/@petamoriken/float16/src/_util/arrayIterator.mjs
 /** @type {WeakMap<{}, IterableIterator<any>>} */
 var arrayIterators = new NativeWeakMap();
 var SafeIteratorPrototype = ObjectCreate(null, {
@@ -53138,13 +53601,7 @@ for (const key of ReflectOwnKeys(ArrayIteratorPrototype)) {
 	if (key === "next") continue;
 	ObjectDefineProperty(DummyArrayIteratorPrototype, key, ReflectGetOwnPropertyDescriptor(ArrayIteratorPrototype, key));
 }
-//#endregion
-//#region node_modules/@petamoriken/float16/src/_util/converter.mjs
-var INVERSE_OF_EPSILON = 1 / EPSILON;
-var FLOAT16_MIN_VALUE = 6103515625e-14;
-var FLOAT16_EPSILON = .0009765625;
-FLOAT16_EPSILON * FLOAT16_MIN_VALUE;
-FLOAT16_EPSILON * INVERSE_OF_EPSILON;
+.0009765625 * (1 / EPSILON);
 var buffer = new NativeArrayBuffer(4);
 var floatView = new NativeFloat32Array(buffer);
 var uint32View = new NativeUint32Array(buffer);
@@ -53210,8 +53667,7 @@ function convertToNumber(float16bits) {
 	uint32View[0] = mantissaTable[offsetTable[i] + (float16bits & 1023)] + exponentTable[i];
 	return floatView[0];
 }
-//#endregion
-//#region node_modules/@petamoriken/float16/src/DataView.mjs
+// node_modules/@petamoriken/float16/src/DataView.mjs
 /**
 * returns an unsigned 16-bit float at the specified byte offset from the start of the DataView
 * @param {DataView} dataView
@@ -53222,8 +53678,7 @@ function convertToNumber(float16bits) {
 function getFloat16(dataView, byteOffset, ...opts) {
 	return convertToNumber(DataViewPrototypeGetUint16(dataView, byteOffset, ...safeIfNeeded(opts)));
 }
-//#endregion
-//#region node_modules/xml-utils/get-attribute.mjs
+// node_modules/xml-utils/get-attribute.mjs
 function getAttribute(tag, attributeName, options) {
 	const debug = options && options.debug || false;
 	if (debug) console.log("[xml-utils] getting " + attributeName + " in " + tag);
@@ -53239,29 +53694,25 @@ function getAttribute(tag, attributeName, options) {
 		if (match) return match[1];
 	}
 }
-//#endregion
-//#region node_modules/xml-utils/index-of-match.mjs
+// node_modules/xml-utils/index-of-match.mjs
 function indexOfMatch(xml, pattern, startIndex) {
 	const match = new RegExp(pattern).exec(xml.slice(startIndex));
 	if (match) return startIndex + match.index;
 	else return -1;
 }
-//#endregion
-//#region node_modules/xml-utils/index-of-match-end.mjs
+// node_modules/xml-utils/index-of-match-end.mjs
 function indexOfMatchEnd(xml, pattern, startIndex) {
 	const match = new RegExp(pattern).exec(xml.slice(startIndex));
 	if (match) return startIndex + match.index + match[0].length - 1;
 	else return -1;
 }
-//#endregion
-//#region node_modules/xml-utils/count-substring.mjs
+// node_modules/xml-utils/count-substring.mjs
 function countSubstring(string, substring) {
 	const pattern = new RegExp(substring, "g");
 	const match = string.match(pattern);
 	return match ? match.length : 0;
 }
-//#endregion
-//#region node_modules/xml-utils/find-tag-by-name.mjs
+// node_modules/xml-utils/find-tag-by-name.mjs
 function findTagByName(xml, tagName, options) {
 	const debug = options && options.debug || false;
 	const nested = !(options && typeof options.nested === false);
@@ -53302,8 +53753,7 @@ function findTagByName(xml, tagName, options) {
 		end
 	};
 }
-//#endregion
-//#region node_modules/xml-utils/find-tags-by-name.mjs
+// node_modules/xml-utils/find-tags-by-name.mjs
 function findTagsByName(xml, tagName, options) {
 	const tags = [];
 	const debug = options && options.debug || false;
@@ -53321,8 +53771,7 @@ function findTagsByName(xml, tagName, options) {
 	if (debug) console.log("findTagsByName found", tags.length, "tags");
 	return tags;
 }
-//#endregion
-//#region node_modules/geotiff/dist-module/globals.js
+// node_modules/geotiff/dist-module/globals.js
 /** @import {TypedArray} from './geotiff.js' */
 var fieldTypes = {
 	BYTE: 1,
@@ -53987,8 +54436,7 @@ var geoKeyNames = {
 */
 var geoKeys = {};
 for (const [key, name] of Object.entries(geoKeyNames)) geoKeys[name] = parseInt(key, 10);
-//#endregion
-//#region node_modules/geotiff/dist-module/rgb.js
+// node_modules/geotiff/dist-module/rgb.js
 function fromWhiteIsZero(raster, max) {
 	const { width, height } = raster;
 	const rgbRaster = new Uint8Array(width * height * 3);
@@ -54084,17 +54532,35 @@ function fromCIELab(cieLabRaster) {
 	}
 	return rgbRaster;
 }
-//#endregion
-//#region \0vite/preload-helper.js
+// \0vite/preload-helper.js
 var scriptRel = "modulepreload";
 var assetsURL = function(dep, importerUrl) {
 	return new URL(dep, importerUrl).href;
 };
 var seen = {};
+var isCssPreloadUrl = function isCssPreloadUrl(url) {
+	return url.pathname.endsWith(".css");
+};
+var preloadOnce = function preloadOnce(seen, href, preload) {
+	if (href in seen) return seen[href];
+	const promise = preload();
+	if (!promise) {
+		seen[href] = void 0;
+		return;
+	}
+	const preloadPromise = promise.then(() => {
+		seen[href] = void 0;
+	}, (err) => {
+		seen[href] = void 0;
+		throw err;
+	});
+	seen[href] = preloadPromise;
+	return preloadPromise;
+};
 var __vitePreload = function preload(baseModule, deps, importerUrl) {
 	let promise = Promise.resolve();
 	if (deps && deps.length > 0) {
-		const links = document.getElementsByTagName("link");
+		let preloadedHrefs;
 		const cspNonceMeta = document.querySelector("meta[property=csp-nonce]");
 		const cspNonce = cspNonceMeta?.nonce || cspNonceMeta?.getAttribute("nonce");
 		function allSettled(promises) {
@@ -54107,35 +54573,44 @@ var __vitePreload = function preload(baseModule, deps, importerUrl) {
 			}))));
 		}
 		function importMetaResolve(specifier) {
-			if (import.meta.resolve) return import.meta.resolve(specifier);
+			if (import.meta.resolve) return new URL(import.meta.resolve(specifier));
 			return new URL(
 				specifier,
 				/** #__KEEP__ */
 				import.meta.url
-			).href;
+			);
 		}
-		promise = allSettled(deps.map((dep) => {
-			dep = assetsURL(dep, importerUrl);
-			dep = importMetaResolve(dep);
-			if (dep in seen) return;
-			seen[dep] = true;
-			const isCss = dep.endsWith(".css");
-			for (let i = links.length - 1; i >= 0; i--) {
-				const link = links[i];
-				if (link.href === dep && (!isCss || link.rel === "stylesheet")) return;
-			}
-			const link = document.createElement("link");
-			link.rel = isCss ? "stylesheet" : scriptRel;
-			if (!isCss) link.as = "script";
-			link.crossOrigin = "";
-			link.href = dep;
-			if (cspNonce) link.setAttribute("nonce", cspNonce);
-			document.head.appendChild(link);
-			if (isCss) return new Promise((res, rej) => {
-				link.addEventListener("load", res);
-				link.addEventListener("error", () => rej(/* @__PURE__ */ new Error(`Unable to preload CSS for ${dep}`)));
+		promise = allSettled(deps.map((depString) => {
+			depString = assetsURL(depString, importerUrl);
+			const dep = importMetaResolve(depString);
+			const isCss = isCssPreloadUrl(dep);
+			return preloadOnce(seen, dep.href, () => {
+				if (preloadedHrefs === void 0) {
+					preloadedHrefs = {
+						all: /* @__PURE__ */ new Set(),
+						styles: /* @__PURE__ */ new Set()
+					};
+					const links = document.getElementsByTagName("link");
+					for (let i = links.length - 1; i >= 0; i--) {
+						const link = links[i];
+						preloadedHrefs.all.add(link.href);
+						if (link.rel === "stylesheet") preloadedHrefs.styles.add(link.href);
+					}
+				}
+				if ((isCss ? preloadedHrefs.styles : preloadedHrefs.all).has(dep.href)) return;
+				const link = document.createElement("link");
+				link.rel = isCss ? "stylesheet" : scriptRel;
+				if (!isCss) link.as = "script";
+				link.crossOrigin = "";
+				link.href = dep.href;
+				if (cspNonce) link.setAttribute("nonce", cspNonce);
+				document.head.appendChild(link);
+				if (isCss) return new Promise((res, rej) => {
+					link.addEventListener("load", res);
+					link.addEventListener("error", () => rej(/* @__PURE__ */ new Error(`Unable to preload CSS for ${dep}`)));
+				});
 			});
-		}));
+		}).filter((p) => p !== void 0));
 	}
 	function handlePreloadError(err) {
 		const e = new Event("vite:preloadError", { cancelable: true });
@@ -54151,8 +54626,7 @@ var __vitePreload = function preload(baseModule, deps, importerUrl) {
 		return baseModule().catch(handlePreloadError);
 	});
 };
-//#endregion
-//#region node_modules/geotiff/dist-module/compression/index.js
+// node_modules/geotiff/dist-module/compression/index.js
 /** @import BaseDecoder, {BaseDecoderParameters} from "./basedecoder.js" */
 /**
 * @typedef {Object} RegistryEntry
@@ -54303,8 +54777,7 @@ for (const decoderDefinition of defaultDecoderDefinitions) {
 	const { cases, importFn, decoderParameterFn, preferWorker: preferWorker_ } = decoderDefinition;
 	addDecoder(cases, importFn, decoderParameterFn, preferWorker_);
 }
-//#endregion
-//#region node_modules/geotiff/dist-module/resample.js
+// node_modules/geotiff/dist-module/resample.js
 /**
 * @module resample
 */
@@ -54485,8 +54958,7 @@ function resampleInterleaved(valueArray, inWidth, inHeight, outWidth, outHeight,
 		default: throw new Error(`Unsupported resampling method: '${method}'`);
 	}
 }
-//#endregion
-//#region node_modules/geotiff/dist-module/geotiffimage.js
+// node_modules/geotiff/dist-module/geotiffimage.js
 /** @module geotiffimage */
 /** @import {DecoderWorker, TypedArray} from "./geotiff.js" */
 /** @import {ReadRasterResult} from "./geotiff.js" */
@@ -55267,8 +55739,7 @@ var GeoTIFFImage = class {
 		}
 	}
 };
-//#endregion
-//#region node_modules/geotiff/dist-module/dataview64.js
+// node_modules/geotiff/dist-module/dataview64.js
 var DataView64 = class {
 	/**
 	* @param {ArrayBufferLike} arrayBuffer
@@ -55393,8 +55864,7 @@ var DataView64 = class {
 		return this._dataView.getFloat64(offset, littleEndian);
 	}
 };
-//#endregion
-//#region node_modules/geotiff/dist-module/dataslice.js
+// node_modules/geotiff/dist-module/dataslice.js
 var DataSlice = class {
 	/**
 	* @param {ArrayBufferLike} arrayBuffer
@@ -55537,8 +56007,7 @@ var DataSlice = class {
 		return this.readUint32(offset);
 	}
 };
-//#endregion
-//#region node_modules/web-worker/src/browser/index.js
+// node_modules/web-worker/src/browser/index.js
 /**
 * Copyright 2020 Google LLC
 *
@@ -55555,14 +56024,12 @@ var DataSlice = class {
 * limitations under the License.
 */
 var browser_default = typeof Worker !== "undefined" ? Worker : void 0;
-//#endregion
-//#region node_modules/geotiff/dist-module/worker/create.js
+// node_modules/geotiff/dist-module/worker/create.js
 function create$1() {
 	const source = "const A=new Map;async function I(A){const I=!A.hasTag(\"StripOffsets\");return{tileWidth:I?await A.loadValue(\"TileWidth\"):await A.loadValue(\"ImageWidth\"),tileHeight:I?await A.loadValue(\"TileLength\"):await A.loadValue(\"RowsPerStrip\")||await A.loadValue(\"ImageLength\"),planarConfiguration:await A.loadValue(\"PlanarConfiguration\"),bitsPerSample:await A.loadValue(\"BitsPerSample\"),predictor:await A.loadValue(\"Predictor\")||1}}function g(g,B,C=I,Q=!0){Array.isArray(g)||(g=[g]),g.forEach((I=>{A.set(I,{importFn:B,decoderParameterFn:C,preferWorker:Q})}))}const B=[{cases:[void 0,1],importFn:()=>Promise.resolve().then((function(){return e})).then((A=>A.default)),preferWorker:!1},{cases:5,importFn:()=>Promise.resolve().then((function(){return a})).then((A=>A.default))},{cases:6,importFn:()=>{throw new Error(\"old style JPEG compression is not supported.\")}},{cases:7,importFn:()=>Promise.resolve().then((function(){return w})).then((A=>A.default)),decoderParameterFn:async A=>({...await I(A),JPEGTables:await A.loadValue(\"JPEGTables\")})},{cases:[8,32946],importFn:()=>Promise.resolve().then((function(){return Qg})).then((A=>A.default))},{cases:32773,importFn:()=>Promise.resolve().then((function(){return ig})).then((A=>A.default))},{cases:34887,importFn:()=>Promise.resolve().then((function(){return Rg})).then((async A=>(await A.zstd.init(),A))).then((A=>A.default)),decoderParameterFn:async A=>({...await I(A),LercParameters:await A.loadValue(\"LercParameters\")})},{cases:5e4,importFn:()=>Promise.resolve().then((function(){return Jg})).then((async A=>(await A.zstd.init(),A))).then((A=>A.default))},{cases:50001,importFn:()=>Promise.resolve().then((function(){return Hg})).then((A=>A.default)),decoderParameterFn:async A=>({...await I(A),samplesPerPixel:Number(await A.loadValue(\"SamplesPerPixel\"))||4}),preferWorker:!1}];for(const A of B){const{cases:I,importFn:B,decoderParameterFn:C,preferWorker:Q}=A;g(I,B,C,Q)}const C=globalThis;function Q(A,I){let g=A.length-I,B=0;do{for(let g=I;g>0;g--)A[B+I]+=A[B],B++;g-=I}while(g>0)}function E(A,I,g){let B=0,C=A.length;const Q=C/g;for(;C>I;){for(let g=I;g>0;--g)A[B+I]+=A[B],++B;C-=I}const E=A.slice();for(let I=0;I<Q;++I)for(let B=0;B<g;++B)A[g*I+B]=E[(g-B-1)*Q+I]}C.addEventListener(\"message\",(async I=>{const{compression:g,decoderParameters:B,buffer:Q,...E}=I.data;try{const I=await async function(I,g){if(!A.has(I))throw new Error(`Unknown compression method identifier: ${I}`);const{importFn:B}=A.get(I);return new(await B())(g)}(g,B),i=await I.decode(Q);C.postMessage({decoded:i,...E},[i])}catch(A){A instanceof Error?C.postMessage({error:A.message,...E}):C.postMessage({error:String(A),...E})}}));class i{constructor(A){this.parameters=A}decodeBlock(A){throw new Error(\"decodeBlock not implemented\")}async decode(A){const I=await this.decodeBlock(A),{tileWidth:g,tileHeight:B,predictor:C,bitsPerSample:i,planarConfiguration:e}=this.parameters;if(1!==C){return function(A,I,g,B,C,i){if(!I||1===I)return A;for(let A=0;A<C.length;++A){if(C[A]%8!=0)throw new Error(\"When decoding with predictor, only multiple of 8 bits are supported.\");if(C[A]!==C[0])throw new Error(\"When decoding with predictor, all samples must have the same size.\")}const e=C[0]/8,t=2===i?1:C.length;for(let i=0;i<B&&!(i*t*g*e>=A.byteLength);++i){let B;if(2===I){switch(C[0]){case 8:B=new Uint8Array(A,i*t*g*e,t*g*e);break;case 16:B=new Uint16Array(A,i*t*g*e,t*g*e/2);break;case 32:B=new Uint32Array(A,i*t*g*e,t*g*e/4);break;default:throw new Error(`Predictor 2 not allowed with ${C[0]} bits per sample.`)}Q(B,t)}else 3===I&&(B=new Uint8Array(A,i*t*g*e,t*g*e),E(B,t,e))}return A}(I,C,g,B,Array.isArray(i)||ArrayBuffer.isView(i)?Array.from(i):[i],e)}return I}}var e=Object.freeze({__proto__:null,default:class extends i{decodeBlock(A){return A}}});function t(A,I){for(let g=I.length-1;g>=0;g--)A.push(I[g]);return A}function o(A){const I=new Uint16Array(4093),g=new Uint8Array(4093);for(let A=0;A<=257;A++)I[A]=4096,g[A]=A;let B=258,C=9,Q=0;function E(){B=258,C=9}function i(A){const I=function(A,I,g){const B=I%8,C=Math.floor(I/8),Q=8-B,E=I+g-8*(C+1);let i=8*(C+2)-(I+g);const e=8*(C+2)-I;if(i=Math.max(0,i),C>=A.length)return console.warn(\"ran off the end of the buffer before finding EOI_CODE (end on input code)\"),257;let t=A[C]&2**(8-B)-1;t<<=g-Q;let o=t;if(C+1<A.length){let I=A[C+1]>>>i;I<<=Math.max(0,g-e),o+=I}if(E>8&&C+2<A.length){const B=8*(C+3)-(I+g);o+=A[C+2]>>>B}return o}(A,Q,C);return Q+=C,I}function e(A,C){return g[B]=C,I[B]=A,B++,B-1}function o(A){const B=[];for(let C=A;4096!==C;C=I[C])B.push(g[C]);return B}const a=[];E();const s=new Uint8Array(A);let r,D=i(s);for(;257!==D;){if(256===D){for(E(),D=i(s);256===D;)D=i(s);if(257===D)break;if(D>256)throw new Error(`corrupted code at scanline ${D}`);t(a,o(D)),r=D}else if(D<B){const A=o(D);t(a,A),void 0!==r&&e(r,A[A.length-1]),r=D}else{if(void 0===r)throw new Error(`Invalid LZW code: ${D} with no previous code`);const A=o(r);if(!A)throw new Error(`Bogus entry. Not in dictionary, ${r} / ${B}, position: ${Q}`);t(a,A),a.push(A[A.length-1]),e(r,A[A.length-1]),r=D}B+1>=2**C&&(12===C?r=void 0:C++),D=i(s)}return new Uint8Array(a)}var a=Object.freeze({__proto__:null,default:class extends i{decodeBlock(A){return o(A).buffer}}});const s=new Int32Array([0,1,8,16,9,2,3,10,17,24,32,25,18,11,4,5,12,19,26,33,40,48,41,34,27,20,13,6,7,14,21,28,35,42,49,56,57,50,43,36,29,22,15,23,30,37,44,51,58,59,52,45,38,31,39,46,53,60,61,54,47,55,62,63]);function r(A,I){let g=0;const B=[];let C=16;for(;C>0&&!A[C-1];)--C;B.push({children:[],index:0});let Q,E=B[0];for(let i=0;i<C;i++){for(let C=0;C<A[i];C++){if(E=B.pop(),!E)throw new Error(\"buildHuffmanTable: codeLength mismatch\");for(E.children[E.index]=I[g];E.index>0;)if(E=B.pop(),!E)throw new Error(\"buildHuffmanTable: codeLength mismatch\");for(E.index++,B.push(E);B.length<=i;)B.push(Q={children:[],index:0}),E.children[E.index]=Q.children,E=Q;g++}i+1<C&&(B.push(Q={children:[],index:0}),E.children[E.index]=Q.children,E=Q)}return B[0].children}function D(A,I,g,B,C,Q,E,i,e){const{mcusPerLine:t,progressive:o}=g;if(B.length>1&&(void 0===t||void 0===g.mcusPerColumn))throw new Error(\"Missing MCU dimensions\");if(1===B.length&&(void 0===B[0].blocksPerLine||void 0===B[0].blocksPerColumn))throw new Error(\"Missing block dimensions\");const a=I;let r=I,D=0,n=0;function h(){if(n>0)return n--,D>>n&1;if(D=A[r++],255===D){const I=A[r++];if(I)throw new Error(`unexpected marker: ${(D<<8|I).toString(16)}`)}return n=7,D>>>7}function w(A){if(!A)throw new Error(\"Huffman table not found\");let I,g=A;for(;null!==(I=h());){const A=g[I];if(\"number\"==typeof A)return A;if(\"object\"!=typeof A)throw new Error(\"invalid huffman sequence\");g=A}return null}function y(A){let I=A,g=0;for(;I>0;){const A=h();if(null===A)return;g=g<<1|A,--I}return g}function G(A){const I=y(A);if(void 0!==I)return I>=1<<A-1?I:I+(-1<<A)+1}let S=0;let c,N=0;function d(A,I,g,B,C){const Q=g%t,E=(g/t|0)*A.v+B,i=Q*A.h+C;if(!A.blocks)throw new Error(\"Missing blocks\");I(A,A.blocks[E][i])}function l(A,I,g){const B=g/A.blocksPerLine|0,C=g%A.blocksPerLine;if(!A.blocks)throw new Error(\"Missing blocks\");I(A,A.blocks[B][C])}const k=B.length;let F,R,L,U,f,Y;Y=o?0===Q?0===i?function(A,I){const g=w(A.huffmanTableDC);if(null===g)throw new Error(\"Huffman error\");const B=G(g);if(void 0===B)throw new Error(\"Unexpected end of data in DC coefficient decoding\");const C=0===g?0:B<<e;void 0===A.pred&&(A.pred=0),A.pred+=C,I[0]=A.pred}:function(A,I){const g=h();if(null===g)throw new Error(\"Unexpected end of data in DC coefficient decoding\");I[0]|=g<<e}:0===i?function(A,I){if(S>0)return void S--;let g=Q;const B=E;for(;g<=B;){const B=w(A.huffmanTableAC);if(null===B)throw new Error(\"Unexpected end of data in AC coefficient decoding\");const C=15&B,Q=B>>4;if(0===C){if(Q<15){const A=y(Q);if(void 0===A)throw new Error(\"Unexpected end of data in AC coefficient decoding\");S=A+(1<<Q)-1;break}g+=16}else{g+=Q;const A=s[g],B=G(C);if(void 0===B)throw new Error(\"Unexpected end of data in AC coefficient decoding\");I[A]=B*(1<<e),g++}}}:function(A,I){let g=Q;const B=E;let C=0;for(;g<=B;){const B=s[g],Q=I[B]<0?-1:1;switch(N){case 0:{const I=w(A.huffmanTableAC);if(null===I)throw new Error(\"Unexpected end of data in AC coefficient decoding\");const g=15&I;if(C=I>>4,0===g)if(C<15){const A=y(C);if(void 0===A)throw new Error(\"Unexpected end of data in AC coefficient decoding\");S=A+(1<<C),N=4}else C=16,N=1;else{if(1!==g)throw new Error(\"invalid ACn encoding\");const A=G(g);if(void 0===A)throw new Error(\"Unexpected end of data in AC coefficient decoding\");c=A,N=C?2:3}continue}case 1:case 2:if(I[B]){const A=h();if(null===A)throw new Error(\"Unexpected end of data in AC coefficient decoding\");I[B]+=(A<<e)*Q}else C--,0===C&&(N=2===N?3:0);break;case 3:if(I[B]){const A=h();if(null===A)throw new Error(\"Unexpected end of data in AC coefficient decoding\");I[B]+=(A<<e)*Q}else I[B]=c<<e,N=0;break;case 4:if(I[B]){const A=h();if(null===A)throw new Error(\"Unexpected end of data in AC coefficient decoding\");I[B]+=(A<<e)*Q}}g++}4===N&&(S--,0===S&&(N=0))}:function(A,I){const g=w(A.huffmanTableDC);if(null===g)throw new Error(\"Huffman error\");const B=0===g?0:G(g);if(void 0===B)throw new Error(\"Unexpected end of stream\");void 0===A.pred&&(A.pred=0),A.pred+=B,I[0]=A.pred;let C=1;for(;C<64;){const g=w(A.huffmanTableAC);if(null===g)throw new Error(\"Unexpected end of data in AC coefficient decoding\");const B=15&g,Q=g>>4;if(0===B){if(Q<15)break;C+=16}else{C+=Q;const A=s[C],g=G(B);if(void 0===g)throw new Error(\"Unexpected end of stream\");I[A]=g,C++}}};let K,u,M=0;u=1===k?B[0].blocksPerLine*B[0].blocksPerColumn:t*g.mcusPerColumn;const J=C||u;for(;M<u;){for(R=0;R<k;R++)B[R].pred=0;if(S=0,1===k)for(F=B[0],f=0;f<J;f++)l(F,Y,M),M++;else for(f=0;f<J;f++){for(R=0;R<k;R++){F=B[R];const{h:A,v:I}=F;for(L=0;L<I;L++)for(U=0;U<A;U++)d(F,Y,M,L,U)}if(M++,M===u)break}if(n=0,K=A[r]<<8|A[r+1],K<65280)throw new Error(\"marker was not found\");if(!(K>=65488&&K<=65495))break;r+=2}return r-a}function n(A){const I=[],{blocksPerLine:g,blocksPerColumn:B}=A;if(!g||!B||!A.blocks)throw new Error(\"Missing component data\");const C=g<<3,Q=new Int32Array(64),E=new Uint8Array(64);function i(I,g,B){const C=A.quantizationTable;if(!C)throw new Error(\"No quantization table found\");let Q,E,i,e,t,o,a,s,r;const D=B;let n;for(n=0;n<64;n++)D[n]=I[n]*C[n];for(n=0;n<8;++n){const A=8*n;0!==D[1+A]||0!==D[2+A]||0!==D[3+A]||0!==D[4+A]||0!==D[5+A]||0!==D[6+A]||0!==D[7+A]?(Q=5793*D[0+A]+128>>8,E=5793*D[4+A]+128>>8,i=D[2+A],e=D[6+A],t=2896*(D[1+A]-D[7+A])+128>>8,s=2896*(D[1+A]+D[7+A])+128>>8,o=D[3+A]<<4,a=D[5+A]<<4,r=Q-E+1>>1,Q=Q+E+1>>1,E=r,r=3784*i+1567*e+128>>8,i=1567*i-3784*e+128>>8,e=r,r=t-a+1>>1,t=t+a+1>>1,a=r,r=s+o+1>>1,o=s-o+1>>1,s=r,r=Q-e+1>>1,Q=Q+e+1>>1,e=r,r=E-i+1>>1,E=E+i+1>>1,i=r,r=2276*t+3406*s+2048>>12,t=3406*t-2276*s+2048>>12,s=r,r=799*o+4017*a+2048>>12,o=4017*o-799*a+2048>>12,a=r,D[0+A]=Q+s,D[7+A]=Q-s,D[1+A]=E+a,D[6+A]=E-a,D[2+A]=i+o,D[5+A]=i-o,D[3+A]=e+t,D[4+A]=e-t):(r=5793*D[0+A]+512>>10,D[0+A]=r,D[1+A]=r,D[2+A]=r,D[3+A]=r,D[4+A]=r,D[5+A]=r,D[6+A]=r,D[7+A]=r)}for(n=0;n<8;++n){const A=n;0!==D[8+A]||0!==D[16+A]||0!==D[24+A]||0!==D[32+A]||0!==D[40+A]||0!==D[48+A]||0!==D[56+A]?(Q=5793*D[0+A]+2048>>12,E=5793*D[32+A]+2048>>12,i=D[16+A],e=D[48+A],t=2896*(D[8+A]-D[56+A])+2048>>12,s=2896*(D[8+A]+D[56+A])+2048>>12,o=D[24+A],a=D[40+A],r=Q-E+1>>1,Q=Q+E+1>>1,E=r,r=3784*i+1567*e+2048>>12,i=1567*i-3784*e+2048>>12,e=r,r=t-a+1>>1,t=t+a+1>>1,a=r,r=s+o+1>>1,o=s-o+1>>1,s=r,r=Q-e+1>>1,Q=Q+e+1>>1,e=r,r=E-i+1>>1,E=E+i+1>>1,i=r,r=2276*t+3406*s+2048>>12,t=3406*t-2276*s+2048>>12,s=r,r=799*o+4017*a+2048>>12,o=4017*o-799*a+2048>>12,a=r,D[0+A]=Q+s,D[56+A]=Q-s,D[8+A]=E+a,D[48+A]=E-a,D[16+A]=i+o,D[40+A]=i-o,D[24+A]=e+t,D[32+A]=e-t):(r=5793*B[n+0]+8192>>14,D[0+A]=r,D[8+A]=r,D[16+A]=r,D[24+A]=r,D[32+A]=r,D[40+A]=r,D[48+A]=r,D[56+A]=r)}for(n=0;n<64;++n){const A=128+(D[n]+8>>4);g[n]=A<0?0:A>255?255:A}}for(let e=0;e<B;e++){const B=e<<3;for(let A=0;A<8;A++)I.push(new Uint8Array(C));for(let C=0;C<g;C++){i(A.blocks[e][C],E,Q);let g=0;const t=C<<3;for(let A=0;A<8;A++){const C=I[B+A];for(let A=0;A<8;A++)C[t+A]=E[g++]}}}return I}class h{constructor(){this.jfif=null,this.adobe=null,this.resetInterval=0,this.quantizationTables=[],this.huffmanTablesAC=[],this.huffmanTablesDC=[],this.frames=[]}resetFrames(){this.frames=[]}parse(A){let I=0;function g(){const g=A[I]<<8|A[I+1];return I+=2,g}function B(){const B=g(),C=A.subarray(I,I+B-2);return I+=C.length,C}function C(A){let I,g,B=0,C=0;for(g in A.components)A.components.hasOwnProperty(g)&&(I=A.components[g],B<I.h&&(B=I.h),C<I.v&&(C=I.v));const Q=Math.ceil(A.samplesPerLine/8/B),E=Math.ceil(A.scanLines/8/C);for(g in A.components)if(A.components.hasOwnProperty(g)){I=A.components[g];const i=Math.ceil(Math.ceil(A.samplesPerLine/8)*I.h/B),e=Math.ceil(Math.ceil(A.scanLines/8)*I.v/C),t=Q*I.h,o=E*I.v,a=[];for(let A=0;A<o;A++){const A=[];for(let I=0;I<t;I++)A.push(new Int32Array(64));a.push(A)}I.blocksPerLine=i,I.blocksPerColumn=e,I.blocks=a}A.maxH=B,A.maxV=C,A.mcusPerLine=Q,A.mcusPerColumn=E}let Q=g();if(65496!==Q)throw new Error(\"SOI not found\");for(Q=g();65497!==Q;){switch(Q){case 65280:break;case 65504:case 65505:case 65506:case 65507:case 65508:case 65509:case 65510:case 65511:case 65512:case 65513:case 65514:case 65515:case 65516:case 65517:case 65518:case 65519:case 65534:{const A=B();65504===Q&&74===A[0]&&70===A[1]&&73===A[2]&&70===A[3]&&0===A[4]&&(this.jfif={version:{major:A[5],minor:A[6]},densityUnits:A[7],xDensity:A[8]<<8|A[9],yDensity:A[10]<<8|A[11],thumbWidth:A[12],thumbHeight:A[13],thumbData:A.subarray(14,14+3*A[12]*A[13])}),65518===Q&&65===A[0]&&100===A[1]&&111===A[2]&&98===A[3]&&101===A[4]&&0===A[5]&&(this.adobe={version:A[6],flags0:A[7]<<8|A[8],flags1:A[9]<<8|A[10],transformCode:A[11]});break}case 65499:{const B=g()+I-2;for(;I<B;){const B=A[I++],C=new Int32Array(64);if(B>>4==0)for(let g=0;g<64;g++){C[s[g]]=A[I++]}else{if(B>>4!=1)throw new Error(\"DQT: invalid table spec\");for(let A=0;A<64;A++){C[s[A]]=g()}}this.quantizationTables[15&B]=C}break}case 65472:case 65473:case 65474:{g();const B={extended:65473===Q,progressive:65474===Q,precision:A[I++],scanLines:g(),samplesPerLine:g(),components:{},componentsOrder:[],maxH:0,maxV:0,mcusPerLine:0,mcusPerColumn:0},E=A[I++];let i;for(let g=0;g<E;g++){i=A[I];const g=A[I+1]>>4,C=15&A[I+1],Q=A[I+2];B.componentsOrder.push(i),B.components[i]={h:g,v:C,quantizationIdx:Q,blocksPerLine:0,blocksPerColumn:0,blocks:[]},I+=3}C(B),this.frames.push(B);break}case 65476:{const B=g();for(let g=2;g<B;){const B=A[I++],C=new Uint8Array(16);let Q=0;for(let g=0;g<16;g++,I++)C[g]=A[I],Q+=C[g];const E=new Uint8Array(Q);for(let g=0;g<Q;g++,I++)E[g]=A[I];g+=17+Q,B>>4==0?this.huffmanTablesDC[15&B]=r(C,E):this.huffmanTablesAC[15&B]=r(C,E)}break}case 65501:g(),this.resetInterval=g();break;case 65498:{g();const B=A[I++],C=[],Q=this.frames[0];for(let g=0;g<B;g++){const g=Q.components[A[I++]],B=A[I++];g.huffmanTableDC=this.huffmanTablesDC[B>>4],g.huffmanTableAC=this.huffmanTablesAC[15&B],C.push(g)}const E=A[I++],i=A[I++],e=A[I++],t=D(A,I,Q,C,this.resetInterval,E,i,e>>4,15&e);I+=t;break}case 65535:255!==A[I]&&I--;break;default:if(255===A[I-3]&&A[I-2]>=192&&A[I-2]<=254){I-=3;break}throw new Error(`unknown JPEG marker ${Q.toString(16)}`)}Q=g()}}getResult(){const{frames:A}=this;if(0===this.frames.length)throw new Error(\"no frames were decoded\");this.frames.length>1&&console.warn(\"more than one frame is not supported\");for(let A=0;A<this.frames.length;A++){const I=this.frames[A].components;for(const A of Object.keys(I)){const g=I[A].quantizationIdx;\"number\"==typeof g&&(I[A].quantizationTable=this.quantizationTables[g],delete I[A].quantizationIdx)}}const I=A[0];if(!I.maxH||!I.maxV)throw new Error(\"Invalid frame dimensions\");const{components:g,componentsOrder:B}=I,C=[],Q=I.samplesPerLine,E=I.scanLines;for(let A=0;A<B.length;A++){const Q=g[B[A]];C.push({lines:n(Q),scaleX:Q.h/I.maxH,scaleY:Q.v/I.maxV})}const i=new Uint8Array(Q*E*C.length);let e=0;for(let A=0;A<E;++A)for(let I=0;I<Q;++I)for(let g=0;g<C.length;++g){const B=C[g];i[e]=B.lines[0|A*B.scaleY][0|I*B.scaleX],++e}return i}}var w=Object.freeze({__proto__:null,default:class extends i{constructor(A){super(A),this.reader=new h,A.JPEGTables&&this.reader.parse(A.JPEGTables)}decodeBlock(A){return this.reader.resetFrames(),this.reader.parse(new Uint8Array(A)),this.reader.getResult().buffer}}});\n/*! pako 2.0.4 https://github.com/nodeca/pako @license (MIT AND Zlib) */function y(A){let I=A.length;for(;--I>=0;)A[I]=0}const G=new Uint8Array([0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0]),S=new Uint8Array([0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13]),c=new Uint8Array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,7]),N=new Uint8Array([16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15]),d=new Array(576);y(d);const l=new Array(60);y(l);const k=new Array(512);y(k);const F=new Array(256);y(F);const R=new Array(29);y(R);const L=new Array(30);function U(A,I,g,B,C){this.static_tree=A,this.extra_bits=I,this.extra_base=g,this.elems=B,this.max_length=C,this.has_stree=A&&A.length}let f,Y,K;function u(A,I){this.dyn_tree=A,this.max_code=0,this.stat_desc=I}y(L);const M=A=>A<256?k[A]:k[256+(A>>>7)],J=(A,I)=>{A.pending_buf[A.pending++]=255&I,A.pending_buf[A.pending++]=I>>>8&255},H=(A,I,g)=>{A.bi_valid>16-g?(A.bi_buf|=I<<A.bi_valid&65535,J(A,A.bi_buf),A.bi_buf=I>>16-A.bi_valid,A.bi_valid+=g-16):(A.bi_buf|=I<<A.bi_valid&65535,A.bi_valid+=g)},p=(A,I,g)=>{H(A,g[2*I],g[2*I+1])},m=(A,I)=>{let g=0;do{g|=1&A,A>>>=1,g<<=1}while(--I>0);return g>>>1},q=(A,I,g)=>{const B=new Array(16);let C,Q,E=0;for(C=1;C<=15;C++)B[C]=E=E+g[C-1]<<1;for(Q=0;Q<=I;Q++){let I=A[2*Q+1];0!==I&&(A[2*Q]=m(B[I]++,I))}},b=A=>{let I;for(I=0;I<286;I++)A.dyn_ltree[2*I]=0;for(I=0;I<30;I++)A.dyn_dtree[2*I]=0;for(I=0;I<19;I++)A.bl_tree[2*I]=0;A.dyn_ltree[512]=1,A.opt_len=A.static_len=0,A.last_lit=A.matches=0},x=A=>{A.bi_valid>8?J(A,A.bi_buf):A.bi_valid>0&&(A.pending_buf[A.pending++]=A.bi_buf),A.bi_buf=0,A.bi_valid=0},O=(A,I,g,B)=>{const C=2*I,Q=2*g;return A[C]<A[Q]||A[C]===A[Q]&&B[I]<=B[g]},T=(A,I,g)=>{const B=A.heap[g];let C=g<<1;for(;C<=A.heap_len&&(C<A.heap_len&&O(I,A.heap[C+1],A.heap[C],A.depth)&&C++,!O(I,B,A.heap[C],A.depth));)A.heap[g]=A.heap[C],g=C,C<<=1;A.heap[g]=B},_=(A,I,g)=>{let B,C,Q,E,i=0;if(0!==A.last_lit)do{B=A.pending_buf[A.d_buf+2*i]<<8|A.pending_buf[A.d_buf+2*i+1],C=A.pending_buf[A.l_buf+i],i++,0===B?p(A,C,I):(Q=F[C],p(A,Q+256+1,I),E=G[Q],0!==E&&(C-=R[Q],H(A,C,E)),B--,Q=M(B),p(A,Q,g),E=S[Q],0!==E&&(B-=L[Q],H(A,B,E)))}while(i<A.last_lit);p(A,256,I)},Z=(A,I)=>{const g=I.dyn_tree,B=I.stat_desc.static_tree,C=I.stat_desc.has_stree,Q=I.stat_desc.elems;let E,i,e,t=-1;for(A.heap_len=0,A.heap_max=573,E=0;E<Q;E++)0!==g[2*E]?(A.heap[++A.heap_len]=t=E,A.depth[E]=0):g[2*E+1]=0;for(;A.heap_len<2;)e=A.heap[++A.heap_len]=t<2?++t:0,g[2*e]=1,A.depth[e]=0,A.opt_len--,C&&(A.static_len-=B[2*e+1]);for(I.max_code=t,E=A.heap_len>>1;E>=1;E--)T(A,g,E);e=Q;do{E=A.heap[1],A.heap[1]=A.heap[A.heap_len--],T(A,g,1),i=A.heap[1],A.heap[--A.heap_max]=E,A.heap[--A.heap_max]=i,g[2*e]=g[2*E]+g[2*i],A.depth[e]=(A.depth[E]>=A.depth[i]?A.depth[E]:A.depth[i])+1,g[2*E+1]=g[2*i+1]=e,A.heap[1]=e++,T(A,g,1)}while(A.heap_len>=2);A.heap[--A.heap_max]=A.heap[1],((A,I)=>{const g=I.dyn_tree,B=I.max_code,C=I.stat_desc.static_tree,Q=I.stat_desc.has_stree,E=I.stat_desc.extra_bits,i=I.stat_desc.extra_base,e=I.stat_desc.max_length;let t,o,a,s,r,D,n=0;for(s=0;s<=15;s++)A.bl_count[s]=0;for(g[2*A.heap[A.heap_max]+1]=0,t=A.heap_max+1;t<573;t++)o=A.heap[t],s=g[2*g[2*o+1]+1]+1,s>e&&(s=e,n++),g[2*o+1]=s,o>B||(A.bl_count[s]++,r=0,o>=i&&(r=E[o-i]),D=g[2*o],A.opt_len+=D*(s+r),Q&&(A.static_len+=D*(C[2*o+1]+r)));if(0!==n){do{for(s=e-1;0===A.bl_count[s];)s--;A.bl_count[s]--,A.bl_count[s+1]+=2,A.bl_count[e]--,n-=2}while(n>0);for(s=e;0!==s;s--)for(o=A.bl_count[s];0!==o;)a=A.heap[--t],a>B||(g[2*a+1]!==s&&(A.opt_len+=(s-g[2*a+1])*g[2*a],g[2*a+1]=s),o--)}})(A,I),q(g,t,A.bl_count)},P=(A,I,g)=>{let B,C,Q=-1,E=I[1],i=0,e=7,t=4;for(0===E&&(e=138,t=3),I[2*(g+1)+1]=65535,B=0;B<=g;B++)C=E,E=I[2*(B+1)+1],++i<e&&C===E||(i<t?A.bl_tree[2*C]+=i:0!==C?(C!==Q&&A.bl_tree[2*C]++,A.bl_tree[32]++):i<=10?A.bl_tree[34]++:A.bl_tree[36]++,i=0,Q=C,0===E?(e=138,t=3):C===E?(e=6,t=3):(e=7,t=4))},v=(A,I,g)=>{let B,C,Q=-1,E=I[1],i=0,e=7,t=4;for(0===E&&(e=138,t=3),B=0;B<=g;B++)if(C=E,E=I[2*(B+1)+1],!(++i<e&&C===E)){if(i<t)do{p(A,C,A.bl_tree)}while(0!=--i);else 0!==C?(C!==Q&&(p(A,C,A.bl_tree),i--),p(A,16,A.bl_tree),H(A,i-3,2)):i<=10?(p(A,17,A.bl_tree),H(A,i-3,3)):(p(A,18,A.bl_tree),H(A,i-11,7));i=0,Q=C,0===E?(e=138,t=3):C===E?(e=6,t=3):(e=7,t=4)}};let j=!1;const W=(A,I,g,B)=>{H(A,0+(B?1:0),3),((A,I,g,B)=>{x(A),B&&(J(A,g),J(A,~g)),A.pending_buf.set(A.window.subarray(I,I+g),A.pending),A.pending+=g})(A,I,g,!0)};var V=(A,I,g,B)=>{let C,Q,E=0;A.level>0?(2===A.strm.data_type&&(A.strm.data_type=(A=>{let I,g=4093624447;for(I=0;I<=31;I++,g>>>=1)if(1&g&&0!==A.dyn_ltree[2*I])return 0;if(0!==A.dyn_ltree[18]||0!==A.dyn_ltree[20]||0!==A.dyn_ltree[26])return 1;for(I=32;I<256;I++)if(0!==A.dyn_ltree[2*I])return 1;return 0})(A)),Z(A,A.l_desc),Z(A,A.d_desc),E=(A=>{let I;for(P(A,A.dyn_ltree,A.l_desc.max_code),P(A,A.dyn_dtree,A.d_desc.max_code),Z(A,A.bl_desc),I=18;I>=3&&0===A.bl_tree[2*N[I]+1];I--);return A.opt_len+=3*(I+1)+5+5+4,I})(A),C=A.opt_len+3+7>>>3,Q=A.static_len+3+7>>>3,Q<=C&&(C=Q)):C=Q=g+5,g+4<=C&&-1!==I?W(A,I,g,B):4===A.strategy||Q===C?(H(A,2+(B?1:0),3),_(A,d,l)):(H(A,4+(B?1:0),3),((A,I,g,B)=>{let C;for(H(A,I-257,5),H(A,g-1,5),H(A,B-4,4),C=0;C<B;C++)H(A,A.bl_tree[2*N[C]+1],3);v(A,A.dyn_ltree,I-1),v(A,A.dyn_dtree,g-1)})(A,A.l_desc.max_code+1,A.d_desc.max_code+1,E+1),_(A,A.dyn_ltree,A.dyn_dtree)),b(A),B&&x(A)},z={_tr_init:A=>{j||((()=>{let A,I,g,B,C;const Q=new Array(16);for(g=0,B=0;B<28;B++)for(R[B]=g,A=0;A<1<<G[B];A++)F[g++]=B;for(F[g-1]=B,C=0,B=0;B<16;B++)for(L[B]=C,A=0;A<1<<S[B];A++)k[C++]=B;for(C>>=7;B<30;B++)for(L[B]=C<<7,A=0;A<1<<S[B]-7;A++)k[256+C++]=B;for(I=0;I<=15;I++)Q[I]=0;for(A=0;A<=143;)d[2*A+1]=8,A++,Q[8]++;for(;A<=255;)d[2*A+1]=9,A++,Q[9]++;for(;A<=279;)d[2*A+1]=7,A++,Q[7]++;for(;A<=287;)d[2*A+1]=8,A++,Q[8]++;for(q(d,287,Q),A=0;A<30;A++)l[2*A+1]=5,l[2*A]=m(A,5);f=new U(d,G,257,286,15),Y=new U(l,S,0,30,15),K=new U(new Array(0),c,0,19,7)})(),j=!0),A.l_desc=new u(A.dyn_ltree,f),A.d_desc=new u(A.dyn_dtree,Y),A.bl_desc=new u(A.bl_tree,K),A.bi_buf=0,A.bi_valid=0,b(A)},_tr_stored_block:W,_tr_flush_block:V,_tr_tally:(A,I,g)=>(A.pending_buf[A.d_buf+2*A.last_lit]=I>>>8&255,A.pending_buf[A.d_buf+2*A.last_lit+1]=255&I,A.pending_buf[A.l_buf+A.last_lit]=255&g,A.last_lit++,0===I?A.dyn_ltree[2*g]++:(A.matches++,I--,A.dyn_ltree[2*(F[g]+256+1)]++,A.dyn_dtree[2*M(I)]++),A.last_lit===A.lit_bufsize-1),_tr_align:A=>{H(A,2,3),p(A,256,d),(A=>{16===A.bi_valid?(J(A,A.bi_buf),A.bi_buf=0,A.bi_valid=0):A.bi_valid>=8&&(A.pending_buf[A.pending++]=255&A.bi_buf,A.bi_buf>>=8,A.bi_valid-=8)})(A)}};var X=(A,I,g,B)=>{let C=65535&A|0,Q=A>>>16&65535|0,E=0;for(;0!==g;){E=g>2e3?2e3:g,g-=E;do{C=C+I[B++]|0,Q=Q+C|0}while(--E);C%=65521,Q%=65521}return C|Q<<16|0};const $=new Uint32Array((()=>{let A,I=[];for(var g=0;g<256;g++){A=g;for(var B=0;B<8;B++)A=1&A?3988292384^A>>>1:A>>>1;I[g]=A}return I})());var AA=(A,I,g,B)=>{const C=$,Q=B+g;A^=-1;for(let g=B;g<Q;g++)A=A>>>8^C[255&(A^I[g])];return-1^A},IA={2:\"need dictionary\",1:\"stream end\",0:\"\",\"-1\":\"file error\",\"-2\":\"stream error\",\"-3\":\"data error\",\"-4\":\"insufficient memory\",\"-5\":\"buffer error\",\"-6\":\"incompatible version\"},gA={Z_NO_FLUSH:0,Z_PARTIAL_FLUSH:1,Z_SYNC_FLUSH:2,Z_FULL_FLUSH:3,Z_FINISH:4,Z_BLOCK:5,Z_TREES:6,Z_OK:0,Z_STREAM_END:1,Z_NEED_DICT:2,Z_ERRNO:-1,Z_STREAM_ERROR:-2,Z_DATA_ERROR:-3,Z_MEM_ERROR:-4,Z_BUF_ERROR:-5,Z_NO_COMPRESSION:0,Z_BEST_SPEED:1,Z_BEST_COMPRESSION:9,Z_DEFAULT_COMPRESSION:-1,Z_FILTERED:1,Z_HUFFMAN_ONLY:2,Z_RLE:3,Z_FIXED:4,Z_DEFAULT_STRATEGY:0,Z_BINARY:0,Z_TEXT:1,Z_UNKNOWN:2,Z_DEFLATED:8};const{_tr_init:BA,_tr_stored_block:CA,_tr_flush_block:QA,_tr_tally:EA,_tr_align:iA}=z,{Z_NO_FLUSH:eA,Z_PARTIAL_FLUSH:tA,Z_FULL_FLUSH:oA,Z_FINISH:aA,Z_BLOCK:sA,Z_OK:rA,Z_STREAM_END:DA,Z_STREAM_ERROR:nA,Z_DATA_ERROR:hA,Z_BUF_ERROR:wA,Z_DEFAULT_COMPRESSION:yA,Z_FILTERED:GA,Z_HUFFMAN_ONLY:SA,Z_RLE:cA,Z_FIXED:NA,Z_DEFAULT_STRATEGY:dA,Z_UNKNOWN:lA,Z_DEFLATED:kA}=gA,FA=(A,I)=>(A.msg=IA[I],I),RA=A=>(A<<1)-(A>4?9:0),LA=A=>{let I=A.length;for(;--I>=0;)A[I]=0};let UA=(A,I,g)=>(I<<A.hash_shift^g)&A.hash_mask;const fA=A=>{const I=A.state;let g=I.pending;g>A.avail_out&&(g=A.avail_out),0!==g&&(A.output.set(I.pending_buf.subarray(I.pending_out,I.pending_out+g),A.next_out),A.next_out+=g,I.pending_out+=g,A.total_out+=g,A.avail_out-=g,I.pending-=g,0===I.pending&&(I.pending_out=0))},YA=(A,I)=>{QA(A,A.block_start>=0?A.block_start:-1,A.strstart-A.block_start,I),A.block_start=A.strstart,fA(A.strm)},KA=(A,I)=>{A.pending_buf[A.pending++]=I},uA=(A,I)=>{A.pending_buf[A.pending++]=I>>>8&255,A.pending_buf[A.pending++]=255&I},MA=(A,I,g,B)=>{let C=A.avail_in;return C>B&&(C=B),0===C?0:(A.avail_in-=C,I.set(A.input.subarray(A.next_in,A.next_in+C),g),1===A.state.wrap?A.adler=X(A.adler,I,C,g):2===A.state.wrap&&(A.adler=AA(A.adler,I,C,g)),A.next_in+=C,A.total_in+=C,C)},JA=(A,I)=>{let g,B,C=A.max_chain_length,Q=A.strstart,E=A.prev_length,i=A.nice_match;const e=A.strstart>A.w_size-262?A.strstart-(A.w_size-262):0,t=A.window,o=A.w_mask,a=A.prev,s=A.strstart+258;let r=t[Q+E-1],D=t[Q+E];A.prev_length>=A.good_match&&(C>>=2),i>A.lookahead&&(i=A.lookahead);do{if(g=I,t[g+E]===D&&t[g+E-1]===r&&t[g]===t[Q]&&t[++g]===t[Q+1]){Q+=2,g++;do{}while(t[++Q]===t[++g]&&t[++Q]===t[++g]&&t[++Q]===t[++g]&&t[++Q]===t[++g]&&t[++Q]===t[++g]&&t[++Q]===t[++g]&&t[++Q]===t[++g]&&t[++Q]===t[++g]&&Q<s);if(B=258-(s-Q),Q=s-258,B>E){if(A.match_start=I,E=B,B>=i)break;r=t[Q+E-1],D=t[Q+E]}}}while((I=a[I&o])>e&&0!=--C);return E<=A.lookahead?E:A.lookahead},HA=A=>{const I=A.w_size;let g,B,C,Q,E;do{if(Q=A.window_size-A.lookahead-A.strstart,A.strstart>=I+(I-262)){A.window.set(A.window.subarray(I,I+I),0),A.match_start-=I,A.strstart-=I,A.block_start-=I,B=A.hash_size,g=B;do{C=A.head[--g],A.head[g]=C>=I?C-I:0}while(--B);B=I,g=B;do{C=A.prev[--g],A.prev[g]=C>=I?C-I:0}while(--B);Q+=I}if(0===A.strm.avail_in)break;if(B=MA(A.strm,A.window,A.strstart+A.lookahead,Q),A.lookahead+=B,A.lookahead+A.insert>=3)for(E=A.strstart-A.insert,A.ins_h=A.window[E],A.ins_h=UA(A,A.ins_h,A.window[E+1]);A.insert&&(A.ins_h=UA(A,A.ins_h,A.window[E+3-1]),A.prev[E&A.w_mask]=A.head[A.ins_h],A.head[A.ins_h]=E,E++,A.insert--,!(A.lookahead+A.insert<3)););}while(A.lookahead<262&&0!==A.strm.avail_in)},pA=(A,I)=>{let g,B;for(;;){if(A.lookahead<262){if(HA(A),A.lookahead<262&&I===eA)return 1;if(0===A.lookahead)break}if(g=0,A.lookahead>=3&&(A.ins_h=UA(A,A.ins_h,A.window[A.strstart+3-1]),g=A.prev[A.strstart&A.w_mask]=A.head[A.ins_h],A.head[A.ins_h]=A.strstart),0!==g&&A.strstart-g<=A.w_size-262&&(A.match_length=JA(A,g)),A.match_length>=3)if(B=EA(A,A.strstart-A.match_start,A.match_length-3),A.lookahead-=A.match_length,A.match_length<=A.max_lazy_match&&A.lookahead>=3){A.match_length--;do{A.strstart++,A.ins_h=UA(A,A.ins_h,A.window[A.strstart+3-1]),g=A.prev[A.strstart&A.w_mask]=A.head[A.ins_h],A.head[A.ins_h]=A.strstart}while(0!=--A.match_length);A.strstart++}else A.strstart+=A.match_length,A.match_length=0,A.ins_h=A.window[A.strstart],A.ins_h=UA(A,A.ins_h,A.window[A.strstart+1]);else B=EA(A,0,A.window[A.strstart]),A.lookahead--,A.strstart++;if(B&&(YA(A,!1),0===A.strm.avail_out))return 1}return A.insert=A.strstart<2?A.strstart:2,I===aA?(YA(A,!0),0===A.strm.avail_out?3:4):A.last_lit&&(YA(A,!1),0===A.strm.avail_out)?1:2},mA=(A,I)=>{let g,B,C;for(;;){if(A.lookahead<262){if(HA(A),A.lookahead<262&&I===eA)return 1;if(0===A.lookahead)break}if(g=0,A.lookahead>=3&&(A.ins_h=UA(A,A.ins_h,A.window[A.strstart+3-1]),g=A.prev[A.strstart&A.w_mask]=A.head[A.ins_h],A.head[A.ins_h]=A.strstart),A.prev_length=A.match_length,A.prev_match=A.match_start,A.match_length=2,0!==g&&A.prev_length<A.max_lazy_match&&A.strstart-g<=A.w_size-262&&(A.match_length=JA(A,g),A.match_length<=5&&(A.strategy===GA||3===A.match_length&&A.strstart-A.match_start>4096)&&(A.match_length=2)),A.prev_length>=3&&A.match_length<=A.prev_length){C=A.strstart+A.lookahead-3,B=EA(A,A.strstart-1-A.prev_match,A.prev_length-3),A.lookahead-=A.prev_length-1,A.prev_length-=2;do{++A.strstart<=C&&(A.ins_h=UA(A,A.ins_h,A.window[A.strstart+3-1]),g=A.prev[A.strstart&A.w_mask]=A.head[A.ins_h],A.head[A.ins_h]=A.strstart)}while(0!=--A.prev_length);if(A.match_available=0,A.match_length=2,A.strstart++,B&&(YA(A,!1),0===A.strm.avail_out))return 1}else if(A.match_available){if(B=EA(A,0,A.window[A.strstart-1]),B&&YA(A,!1),A.strstart++,A.lookahead--,0===A.strm.avail_out)return 1}else A.match_available=1,A.strstart++,A.lookahead--}return A.match_available&&(B=EA(A,0,A.window[A.strstart-1]),A.match_available=0),A.insert=A.strstart<2?A.strstart:2,I===aA?(YA(A,!0),0===A.strm.avail_out?3:4):A.last_lit&&(YA(A,!1),0===A.strm.avail_out)?1:2};function qA(A,I,g,B,C){this.good_length=A,this.max_lazy=I,this.nice_length=g,this.max_chain=B,this.func=C}const bA=[new qA(0,0,0,0,((A,I)=>{let g=65535;for(g>A.pending_buf_size-5&&(g=A.pending_buf_size-5);;){if(A.lookahead<=1){if(HA(A),0===A.lookahead&&I===eA)return 1;if(0===A.lookahead)break}A.strstart+=A.lookahead,A.lookahead=0;const B=A.block_start+g;if((0===A.strstart||A.strstart>=B)&&(A.lookahead=A.strstart-B,A.strstart=B,YA(A,!1),0===A.strm.avail_out))return 1;if(A.strstart-A.block_start>=A.w_size-262&&(YA(A,!1),0===A.strm.avail_out))return 1}return A.insert=0,I===aA?(YA(A,!0),0===A.strm.avail_out?3:4):(A.strstart>A.block_start&&(YA(A,!1),A.strm.avail_out),1)})),new qA(4,4,8,4,pA),new qA(4,5,16,8,pA),new qA(4,6,32,32,pA),new qA(4,4,16,16,mA),new qA(8,16,32,32,mA),new qA(8,16,128,128,mA),new qA(8,32,128,256,mA),new qA(32,128,258,1024,mA),new qA(32,258,258,4096,mA)];function xA(){this.strm=null,this.status=0,this.pending_buf=null,this.pending_buf_size=0,this.pending_out=0,this.pending=0,this.wrap=0,this.gzhead=null,this.gzindex=0,this.method=kA,this.last_flush=-1,this.w_size=0,this.w_bits=0,this.w_mask=0,this.window=null,this.window_size=0,this.prev=null,this.head=null,this.ins_h=0,this.hash_size=0,this.hash_bits=0,this.hash_mask=0,this.hash_shift=0,this.block_start=0,this.match_length=0,this.prev_match=0,this.match_available=0,this.strstart=0,this.match_start=0,this.lookahead=0,this.prev_length=0,this.max_chain_length=0,this.max_lazy_match=0,this.level=0,this.strategy=0,this.good_match=0,this.nice_match=0,this.dyn_ltree=new Uint16Array(1146),this.dyn_dtree=new Uint16Array(122),this.bl_tree=new Uint16Array(78),LA(this.dyn_ltree),LA(this.dyn_dtree),LA(this.bl_tree),this.l_desc=null,this.d_desc=null,this.bl_desc=null,this.bl_count=new Uint16Array(16),this.heap=new Uint16Array(573),LA(this.heap),this.heap_len=0,this.heap_max=0,this.depth=new Uint16Array(573),LA(this.depth),this.l_buf=0,this.lit_bufsize=0,this.last_lit=0,this.d_buf=0,this.opt_len=0,this.static_len=0,this.matches=0,this.insert=0,this.bi_buf=0,this.bi_valid=0}const OA=A=>{if(!A||!A.state)return FA(A,nA);A.total_in=A.total_out=0,A.data_type=lA;const I=A.state;return I.pending=0,I.pending_out=0,I.wrap<0&&(I.wrap=-I.wrap),I.status=I.wrap?42:113,A.adler=2===I.wrap?0:1,I.last_flush=eA,BA(I),rA},TA=A=>{const I=OA(A);var g;return I===rA&&((g=A.state).window_size=2*g.w_size,LA(g.head),g.max_lazy_match=bA[g.level].max_lazy,g.good_match=bA[g.level].good_length,g.nice_match=bA[g.level].nice_length,g.max_chain_length=bA[g.level].max_chain,g.strstart=0,g.block_start=0,g.lookahead=0,g.insert=0,g.match_length=g.prev_length=2,g.match_available=0,g.ins_h=0),I},_A=(A,I,g,B,C,Q)=>{if(!A)return nA;let E=1;if(I===yA&&(I=6),B<0?(E=0,B=-B):B>15&&(E=2,B-=16),C<1||C>9||g!==kA||B<8||B>15||I<0||I>9||Q<0||Q>NA)return FA(A,nA);8===B&&(B=9);const i=new xA;return A.state=i,i.strm=A,i.wrap=E,i.gzhead=null,i.w_bits=B,i.w_size=1<<i.w_bits,i.w_mask=i.w_size-1,i.hash_bits=C+7,i.hash_size=1<<i.hash_bits,i.hash_mask=i.hash_size-1,i.hash_shift=~~((i.hash_bits+3-1)/3),i.window=new Uint8Array(2*i.w_size),i.head=new Uint16Array(i.hash_size),i.prev=new Uint16Array(i.w_size),i.lit_bufsize=1<<C+6,i.pending_buf_size=4*i.lit_bufsize,i.pending_buf=new Uint8Array(i.pending_buf_size),i.d_buf=1*i.lit_bufsize,i.l_buf=3*i.lit_bufsize,i.level=I,i.strategy=Q,i.method=g,TA(A)};var ZA={deflateInit:(A,I)=>_A(A,I,kA,15,8,dA),deflateInit2:_A,deflateReset:TA,deflateResetKeep:OA,deflateSetHeader:(A,I)=>A&&A.state?2!==A.state.wrap?nA:(A.state.gzhead=I,rA):nA,deflate:(A,I)=>{let g,B;if(!A||!A.state||I>sA||I<0)return A?FA(A,nA):nA;const C=A.state;if(!A.output||!A.input&&0!==A.avail_in||666===C.status&&I!==aA)return FA(A,0===A.avail_out?wA:nA);C.strm=A;const Q=C.last_flush;if(C.last_flush=I,42===C.status)if(2===C.wrap)A.adler=0,KA(C,31),KA(C,139),KA(C,8),C.gzhead?(KA(C,(C.gzhead.text?1:0)+(C.gzhead.hcrc?2:0)+(C.gzhead.extra?4:0)+(C.gzhead.name?8:0)+(C.gzhead.comment?16:0)),KA(C,255&C.gzhead.time),KA(C,C.gzhead.time>>8&255),KA(C,C.gzhead.time>>16&255),KA(C,C.gzhead.time>>24&255),KA(C,9===C.level?2:C.strategy>=SA||C.level<2?4:0),KA(C,255&C.gzhead.os),C.gzhead.extra&&C.gzhead.extra.length&&(KA(C,255&C.gzhead.extra.length),KA(C,C.gzhead.extra.length>>8&255)),C.gzhead.hcrc&&(A.adler=AA(A.adler,C.pending_buf,C.pending,0)),C.gzindex=0,C.status=69):(KA(C,0),KA(C,0),KA(C,0),KA(C,0),KA(C,0),KA(C,9===C.level?2:C.strategy>=SA||C.level<2?4:0),KA(C,3),C.status=113);else{let I=kA+(C.w_bits-8<<4)<<8,g=-1;g=C.strategy>=SA||C.level<2?0:C.level<6?1:6===C.level?2:3,I|=g<<6,0!==C.strstart&&(I|=32),I+=31-I%31,C.status=113,uA(C,I),0!==C.strstart&&(uA(C,A.adler>>>16),uA(C,65535&A.adler)),A.adler=1}if(69===C.status)if(C.gzhead.extra){for(g=C.pending;C.gzindex<(65535&C.gzhead.extra.length)&&(C.pending!==C.pending_buf_size||(C.gzhead.hcrc&&C.pending>g&&(A.adler=AA(A.adler,C.pending_buf,C.pending-g,g)),fA(A),g=C.pending,C.pending!==C.pending_buf_size));)KA(C,255&C.gzhead.extra[C.gzindex]),C.gzindex++;C.gzhead.hcrc&&C.pending>g&&(A.adler=AA(A.adler,C.pending_buf,C.pending-g,g)),C.gzindex===C.gzhead.extra.length&&(C.gzindex=0,C.status=73)}else C.status=73;if(73===C.status)if(C.gzhead.name){g=C.pending;do{if(C.pending===C.pending_buf_size&&(C.gzhead.hcrc&&C.pending>g&&(A.adler=AA(A.adler,C.pending_buf,C.pending-g,g)),fA(A),g=C.pending,C.pending===C.pending_buf_size)){B=1;break}B=C.gzindex<C.gzhead.name.length?255&C.gzhead.name.charCodeAt(C.gzindex++):0,KA(C,B)}while(0!==B);C.gzhead.hcrc&&C.pending>g&&(A.adler=AA(A.adler,C.pending_buf,C.pending-g,g)),0===B&&(C.gzindex=0,C.status=91)}else C.status=91;if(91===C.status)if(C.gzhead.comment){g=C.pending;do{if(C.pending===C.pending_buf_size&&(C.gzhead.hcrc&&C.pending>g&&(A.adler=AA(A.adler,C.pending_buf,C.pending-g,g)),fA(A),g=C.pending,C.pending===C.pending_buf_size)){B=1;break}B=C.gzindex<C.gzhead.comment.length?255&C.gzhead.comment.charCodeAt(C.gzindex++):0,KA(C,B)}while(0!==B);C.gzhead.hcrc&&C.pending>g&&(A.adler=AA(A.adler,C.pending_buf,C.pending-g,g)),0===B&&(C.status=103)}else C.status=103;if(103===C.status&&(C.gzhead.hcrc?(C.pending+2>C.pending_buf_size&&fA(A),C.pending+2<=C.pending_buf_size&&(KA(C,255&A.adler),KA(C,A.adler>>8&255),A.adler=0,C.status=113)):C.status=113),0!==C.pending){if(fA(A),0===A.avail_out)return C.last_flush=-1,rA}else if(0===A.avail_in&&RA(I)<=RA(Q)&&I!==aA)return FA(A,wA);if(666===C.status&&0!==A.avail_in)return FA(A,wA);if(0!==A.avail_in||0!==C.lookahead||I!==eA&&666!==C.status){let g=C.strategy===SA?((A,I)=>{let g;for(;;){if(0===A.lookahead&&(HA(A),0===A.lookahead)){if(I===eA)return 1;break}if(A.match_length=0,g=EA(A,0,A.window[A.strstart]),A.lookahead--,A.strstart++,g&&(YA(A,!1),0===A.strm.avail_out))return 1}return A.insert=0,I===aA?(YA(A,!0),0===A.strm.avail_out?3:4):A.last_lit&&(YA(A,!1),0===A.strm.avail_out)?1:2})(C,I):C.strategy===cA?((A,I)=>{let g,B,C,Q;const E=A.window;for(;;){if(A.lookahead<=258){if(HA(A),A.lookahead<=258&&I===eA)return 1;if(0===A.lookahead)break}if(A.match_length=0,A.lookahead>=3&&A.strstart>0&&(C=A.strstart-1,B=E[C],B===E[++C]&&B===E[++C]&&B===E[++C])){Q=A.strstart+258;do{}while(B===E[++C]&&B===E[++C]&&B===E[++C]&&B===E[++C]&&B===E[++C]&&B===E[++C]&&B===E[++C]&&B===E[++C]&&C<Q);A.match_length=258-(Q-C),A.match_length>A.lookahead&&(A.match_length=A.lookahead)}if(A.match_length>=3?(g=EA(A,1,A.match_length-3),A.lookahead-=A.match_length,A.strstart+=A.match_length,A.match_length=0):(g=EA(A,0,A.window[A.strstart]),A.lookahead--,A.strstart++),g&&(YA(A,!1),0===A.strm.avail_out))return 1}return A.insert=0,I===aA?(YA(A,!0),0===A.strm.avail_out?3:4):A.last_lit&&(YA(A,!1),0===A.strm.avail_out)?1:2})(C,I):bA[C.level].func(C,I);if(3!==g&&4!==g||(C.status=666),1===g||3===g)return 0===A.avail_out&&(C.last_flush=-1),rA;if(2===g&&(I===tA?iA(C):I!==sA&&(CA(C,0,0,!1),I===oA&&(LA(C.head),0===C.lookahead&&(C.strstart=0,C.block_start=0,C.insert=0))),fA(A),0===A.avail_out))return C.last_flush=-1,rA}return I!==aA?rA:C.wrap<=0?DA:(2===C.wrap?(KA(C,255&A.adler),KA(C,A.adler>>8&255),KA(C,A.adler>>16&255),KA(C,A.adler>>24&255),KA(C,255&A.total_in),KA(C,A.total_in>>8&255),KA(C,A.total_in>>16&255),KA(C,A.total_in>>24&255)):(uA(C,A.adler>>>16),uA(C,65535&A.adler)),fA(A),C.wrap>0&&(C.wrap=-C.wrap),0!==C.pending?rA:DA)},deflateEnd:A=>{if(!A||!A.state)return nA;const I=A.state.status;return 42!==I&&69!==I&&73!==I&&91!==I&&103!==I&&113!==I&&666!==I?FA(A,nA):(A.state=null,113===I?FA(A,hA):rA)},deflateSetDictionary:(A,I)=>{let g=I.length;if(!A||!A.state)return nA;const B=A.state,C=B.wrap;if(2===C||1===C&&42!==B.status||B.lookahead)return nA;if(1===C&&(A.adler=X(A.adler,I,g,0)),B.wrap=0,g>=B.w_size){0===C&&(LA(B.head),B.strstart=0,B.block_start=0,B.insert=0);let A=new Uint8Array(B.w_size);A.set(I.subarray(g-B.w_size,g),0),I=A,g=B.w_size}const Q=A.avail_in,E=A.next_in,i=A.input;for(A.avail_in=g,A.next_in=0,A.input=I,HA(B);B.lookahead>=3;){let A=B.strstart,I=B.lookahead-2;do{B.ins_h=UA(B,B.ins_h,B.window[A+3-1]),B.prev[A&B.w_mask]=B.head[B.ins_h],B.head[B.ins_h]=A,A++}while(--I);B.strstart=A,B.lookahead=2,HA(B)}return B.strstart+=B.lookahead,B.block_start=B.strstart,B.insert=B.lookahead,B.lookahead=0,B.match_length=B.prev_length=2,B.match_available=0,A.next_in=E,A.input=i,A.avail_in=Q,B.wrap=C,rA},deflateInfo:\"pako deflate (from Nodeca project)\"};const PA=(A,I)=>Object.prototype.hasOwnProperty.call(A,I);var vA=function(A){const I=Array.prototype.slice.call(arguments,1);for(;I.length;){const g=I.shift();if(g){if(\"object\"!=typeof g)throw new TypeError(g+\"must be non-object\");for(const I in g)PA(g,I)&&(A[I]=g[I])}}return A},jA=A=>{let I=0;for(let g=0,B=A.length;g<B;g++)I+=A[g].length;const g=new Uint8Array(I);for(let I=0,B=0,C=A.length;I<C;I++){let C=A[I];g.set(C,B),B+=C.length}return g};let WA=!0;try{String.fromCharCode.apply(null,new Uint8Array(1))}catch(A){WA=!1}const VA=new Uint8Array(256);for(let A=0;A<256;A++)VA[A]=A>=252?6:A>=248?5:A>=240?4:A>=224?3:A>=192?2:1;VA[254]=VA[254]=1;var zA=A=>{if(\"function\"==typeof TextEncoder&&TextEncoder.prototype.encode)return(new TextEncoder).encode(A);let I,g,B,C,Q,E=A.length,i=0;for(C=0;C<E;C++)g=A.charCodeAt(C),55296==(64512&g)&&C+1<E&&(B=A.charCodeAt(C+1),56320==(64512&B)&&(g=65536+(g-55296<<10)+(B-56320),C++)),i+=g<128?1:g<2048?2:g<65536?3:4;for(I=new Uint8Array(i),Q=0,C=0;Q<i;C++)g=A.charCodeAt(C),55296==(64512&g)&&C+1<E&&(B=A.charCodeAt(C+1),56320==(64512&B)&&(g=65536+(g-55296<<10)+(B-56320),C++)),g<128?I[Q++]=g:g<2048?(I[Q++]=192|g>>>6,I[Q++]=128|63&g):g<65536?(I[Q++]=224|g>>>12,I[Q++]=128|g>>>6&63,I[Q++]=128|63&g):(I[Q++]=240|g>>>18,I[Q++]=128|g>>>12&63,I[Q++]=128|g>>>6&63,I[Q++]=128|63&g);return I},XA=(A,I)=>{const g=I||A.length;if(\"function\"==typeof TextDecoder&&TextDecoder.prototype.decode)return(new TextDecoder).decode(A.subarray(0,I));let B,C;const Q=new Array(2*g);for(C=0,B=0;B<g;){let I=A[B++];if(I<128){Q[C++]=I;continue}let E=VA[I];if(E>4)Q[C++]=65533,B+=E-1;else{for(I&=2===E?31:3===E?15:7;E>1&&B<g;)I=I<<6|63&A[B++],E--;E>1?Q[C++]=65533:I<65536?Q[C++]=I:(I-=65536,Q[C++]=55296|I>>10&1023,Q[C++]=56320|1023&I)}}return((A,I)=>{if(I<65534&&A.subarray&&WA)return String.fromCharCode.apply(null,A.length===I?A:A.subarray(0,I));let g=\"\";for(let B=0;B<I;B++)g+=String.fromCharCode(A[B]);return g})(Q,C)},$A=(A,I)=>{(I=I||A.length)>A.length&&(I=A.length);let g=I-1;for(;g>=0&&128==(192&A[g]);)g--;return g<0||0===g?I:g+VA[A[g]]>I?g:I};var AI=function(){this.input=null,this.next_in=0,this.avail_in=0,this.total_in=0,this.output=null,this.next_out=0,this.avail_out=0,this.total_out=0,this.msg=\"\",this.state=null,this.data_type=2,this.adler=0};const II=Object.prototype.toString,{Z_NO_FLUSH:gI,Z_SYNC_FLUSH:BI,Z_FULL_FLUSH:CI,Z_FINISH:QI,Z_OK:EI,Z_STREAM_END:iI,Z_DEFAULT_COMPRESSION:eI,Z_DEFAULT_STRATEGY:tI,Z_DEFLATED:oI}=gA;function aI(A){this.options=vA({level:eI,method:oI,chunkSize:16384,windowBits:15,memLevel:8,strategy:tI},A||{});let I=this.options;I.raw&&I.windowBits>0?I.windowBits=-I.windowBits:I.gzip&&I.windowBits>0&&I.windowBits<16&&(I.windowBits+=16),this.err=0,this.msg=\"\",this.ended=!1,this.chunks=[],this.strm=new AI,this.strm.avail_out=0;let g=ZA.deflateInit2(this.strm,I.level,I.method,I.windowBits,I.memLevel,I.strategy);if(g!==EI)throw new Error(IA[g]);if(I.header&&ZA.deflateSetHeader(this.strm,I.header),I.dictionary){let A;if(A=\"string\"==typeof I.dictionary?zA(I.dictionary):\"[object ArrayBuffer]\"===II.call(I.dictionary)?new Uint8Array(I.dictionary):I.dictionary,g=ZA.deflateSetDictionary(this.strm,A),g!==EI)throw new Error(IA[g]);this._dict_set=!0}}aI.prototype.push=function(A,I){const g=this.strm,B=this.options.chunkSize;let C,Q;if(this.ended)return!1;for(Q=I===~~I?I:!0===I?QI:gI,\"string\"==typeof A?g.input=zA(A):\"[object ArrayBuffer]\"===II.call(A)?g.input=new Uint8Array(A):g.input=A,g.next_in=0,g.avail_in=g.input.length;;)if(0===g.avail_out&&(g.output=new Uint8Array(B),g.next_out=0,g.avail_out=B),(Q===BI||Q===CI)&&g.avail_out<=6)this.onData(g.output.subarray(0,g.next_out)),g.avail_out=0;else{if(C=ZA.deflate(g,Q),C===iI)return g.next_out>0&&this.onData(g.output.subarray(0,g.next_out)),C=ZA.deflateEnd(this.strm),this.onEnd(C),this.ended=!0,C===EI;if(0!==g.avail_out){if(Q>0&&g.next_out>0)this.onData(g.output.subarray(0,g.next_out)),g.avail_out=0;else if(0===g.avail_in)break}else this.onData(g.output)}return!0},aI.prototype.onData=function(A){this.chunks.push(A)},aI.prototype.onEnd=function(A){A===EI&&(this.result=jA(this.chunks)),this.chunks=[],this.err=A,this.msg=this.strm.msg};var sI=function(A,I){let g,B,C,Q,E,i,e,t,o,a,s,r,D,n,h,w,y,G,S,c,N,d,l,k;const F=A.state;g=A.next_in,l=A.input,B=g+(A.avail_in-5),C=A.next_out,k=A.output,Q=C-(I-A.avail_out),E=C+(A.avail_out-257),i=F.dmax,e=F.wsize,t=F.whave,o=F.wnext,a=F.window,s=F.hold,r=F.bits,D=F.lencode,n=F.distcode,h=(1<<F.lenbits)-1,w=(1<<F.distbits)-1;A:do{r<15&&(s+=l[g++]<<r,r+=8,s+=l[g++]<<r,r+=8),y=D[s&h];I:for(;;){if(G=y>>>24,s>>>=G,r-=G,G=y>>>16&255,0===G)k[C++]=65535&y;else{if(!(16&G)){if(0==(64&G)){y=D[(65535&y)+(s&(1<<G)-1)];continue I}if(32&G){F.mode=12;break A}A.msg=\"invalid literal/length code\",F.mode=30;break A}S=65535&y,G&=15,G&&(r<G&&(s+=l[g++]<<r,r+=8),S+=s&(1<<G)-1,s>>>=G,r-=G),r<15&&(s+=l[g++]<<r,r+=8,s+=l[g++]<<r,r+=8),y=n[s&w];g:for(;;){if(G=y>>>24,s>>>=G,r-=G,G=y>>>16&255,!(16&G)){if(0==(64&G)){y=n[(65535&y)+(s&(1<<G)-1)];continue g}A.msg=\"invalid distance code\",F.mode=30;break A}if(c=65535&y,G&=15,r<G&&(s+=l[g++]<<r,r+=8,r<G&&(s+=l[g++]<<r,r+=8)),c+=s&(1<<G)-1,c>i){A.msg=\"invalid distance too far back\",F.mode=30;break A}if(s>>>=G,r-=G,G=C-Q,c>G){if(G=c-G,G>t&&F.sane){A.msg=\"invalid distance too far back\",F.mode=30;break A}if(N=0,d=a,0===o){if(N+=e-G,G<S){S-=G;do{k[C++]=a[N++]}while(--G);N=C-c,d=k}}else if(o<G){if(N+=e+o-G,G-=o,G<S){S-=G;do{k[C++]=a[N++]}while(--G);if(N=0,o<S){G=o,S-=G;do{k[C++]=a[N++]}while(--G);N=C-c,d=k}}}else if(N+=o-G,G<S){S-=G;do{k[C++]=a[N++]}while(--G);N=C-c,d=k}for(;S>2;)k[C++]=d[N++],k[C++]=d[N++],k[C++]=d[N++],S-=3;S&&(k[C++]=d[N++],S>1&&(k[C++]=d[N++]))}else{N=C-c;do{k[C++]=k[N++],k[C++]=k[N++],k[C++]=k[N++],S-=3}while(S>2);S&&(k[C++]=k[N++],S>1&&(k[C++]=k[N++]))}break}}break}}while(g<B&&C<E);S=r>>3,g-=S,r-=S<<3,s&=(1<<r)-1,A.next_in=g,A.next_out=C,A.avail_in=g<B?B-g+5:5-(g-B),A.avail_out=C<E?E-C+257:257-(C-E),F.hold=s,F.bits=r};const rI=new Uint16Array([3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258,0,0]),DI=new Uint8Array([16,16,16,16,16,16,16,16,17,17,17,17,18,18,18,18,19,19,19,19,20,20,20,20,21,21,21,21,16,72,78]),nI=new Uint16Array([1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577,0,0]),hI=new Uint8Array([16,16,16,16,17,17,18,18,19,19,20,20,21,21,22,22,23,23,24,24,25,25,26,26,27,27,28,28,29,29,64,64]);var wI=(A,I,g,B,C,Q,E,i)=>{const e=i.bits;let t,o,a,s,r,D,n=0,h=0,w=0,y=0,G=0,S=0,c=0,N=0,d=0,l=0,k=null,F=0;const R=new Uint16Array(16),L=new Uint16Array(16);let U,f,Y,K=null,u=0;for(n=0;n<=15;n++)R[n]=0;for(h=0;h<B;h++)R[I[g+h]]++;for(G=e,y=15;y>=1&&0===R[y];y--);if(G>y&&(G=y),0===y)return C[Q++]=20971520,C[Q++]=20971520,i.bits=1,0;for(w=1;w<y&&0===R[w];w++);for(G<w&&(G=w),N=1,n=1;n<=15;n++)if(N<<=1,N-=R[n],N<0)return-1;if(N>0&&(0===A||1!==y))return-1;for(L[1]=0,n=1;n<15;n++)L[n+1]=L[n]+R[n];for(h=0;h<B;h++)0!==I[g+h]&&(E[L[I[g+h]]++]=h);if(0===A?(k=K=E,D=19):1===A?(k=rI,F-=257,K=DI,u-=257,D=256):(k=nI,K=hI,D=-1),l=0,h=0,n=w,r=Q,S=G,c=0,a=-1,d=1<<G,s=d-1,1===A&&d>852||2===A&&d>592)return 1;for(;;){U=n-c,E[h]<D?(f=0,Y=E[h]):E[h]>D?(f=K[u+E[h]],Y=k[F+E[h]]):(f=96,Y=0),t=1<<n-c,o=1<<S,w=o;do{o-=t,C[r+(l>>c)+o]=U<<24|f<<16|Y|0}while(0!==o);for(t=1<<n-1;l&t;)t>>=1;if(0!==t?(l&=t-1,l+=t):l=0,h++,0==--R[n]){if(n===y)break;n=I[g+E[h]]}if(n>G&&(l&s)!==a){for(0===c&&(c=G),r+=w,S=n-c,N=1<<S;S+c<y&&(N-=R[S+c],!(N<=0));)S++,N<<=1;if(d+=1<<S,1===A&&d>852||2===A&&d>592)return 1;a=l&s,C[a]=G<<24|S<<16|r-Q|0}}return 0!==l&&(C[r+l]=n-c<<24|64<<16|0),i.bits=G,0};const{Z_FINISH:yI,Z_BLOCK:GI,Z_TREES:SI,Z_OK:cI,Z_STREAM_END:NI,Z_NEED_DICT:dI,Z_STREAM_ERROR:lI,Z_DATA_ERROR:kI,Z_MEM_ERROR:FI,Z_BUF_ERROR:RI,Z_DEFLATED:LI}=gA,UI=A=>(A>>>24&255)+(A>>>8&65280)+((65280&A)<<8)+((255&A)<<24);function fI(){this.mode=0,this.last=!1,this.wrap=0,this.havedict=!1,this.flags=0,this.dmax=0,this.check=0,this.total=0,this.head=null,this.wbits=0,this.wsize=0,this.whave=0,this.wnext=0,this.window=null,this.hold=0,this.bits=0,this.length=0,this.offset=0,this.extra=0,this.lencode=null,this.distcode=null,this.lenbits=0,this.distbits=0,this.ncode=0,this.nlen=0,this.ndist=0,this.have=0,this.next=null,this.lens=new Uint16Array(320),this.work=new Uint16Array(288),this.lendyn=null,this.distdyn=null,this.sane=0,this.back=0,this.was=0}const YI=A=>{if(!A||!A.state)return lI;const I=A.state;return A.total_in=A.total_out=I.total=0,A.msg=\"\",I.wrap&&(A.adler=1&I.wrap),I.mode=1,I.last=0,I.havedict=0,I.dmax=32768,I.head=null,I.hold=0,I.bits=0,I.lencode=I.lendyn=new Int32Array(852),I.distcode=I.distdyn=new Int32Array(592),I.sane=1,I.back=-1,cI},KI=A=>{if(!A||!A.state)return lI;const I=A.state;return I.wsize=0,I.whave=0,I.wnext=0,YI(A)},uI=(A,I)=>{let g;if(!A||!A.state)return lI;const B=A.state;return I<0?(g=0,I=-I):(g=1+(I>>4),I<48&&(I&=15)),I&&(I<8||I>15)?lI:(null!==B.window&&B.wbits!==I&&(B.window=null),B.wrap=g,B.wbits=I,KI(A))},MI=(A,I)=>{if(!A)return lI;const g=new fI;A.state=g,g.window=null;const B=uI(A,I);return B!==cI&&(A.state=null),B};let JI,HI,pI=!0;const mI=A=>{if(pI){JI=new Int32Array(512),HI=new Int32Array(32);let I=0;for(;I<144;)A.lens[I++]=8;for(;I<256;)A.lens[I++]=9;for(;I<280;)A.lens[I++]=7;for(;I<288;)A.lens[I++]=8;for(wI(1,A.lens,0,288,JI,0,A.work,{bits:9}),I=0;I<32;)A.lens[I++]=5;wI(2,A.lens,0,32,HI,0,A.work,{bits:5}),pI=!1}A.lencode=JI,A.lenbits=9,A.distcode=HI,A.distbits=5},qI=(A,I,g,B)=>{let C;const Q=A.state;return null===Q.window&&(Q.wsize=1<<Q.wbits,Q.wnext=0,Q.whave=0,Q.window=new Uint8Array(Q.wsize)),B>=Q.wsize?(Q.window.set(I.subarray(g-Q.wsize,g),0),Q.wnext=0,Q.whave=Q.wsize):(C=Q.wsize-Q.wnext,C>B&&(C=B),Q.window.set(I.subarray(g-B,g-B+C),Q.wnext),(B-=C)?(Q.window.set(I.subarray(g-B,g),0),Q.wnext=B,Q.whave=Q.wsize):(Q.wnext+=C,Q.wnext===Q.wsize&&(Q.wnext=0),Q.whave<Q.wsize&&(Q.whave+=C))),0};var bI={inflateReset:KI,inflateReset2:uI,inflateResetKeep:YI,inflateInit:A=>MI(A,15),inflateInit2:MI,inflate:(A,I)=>{let g,B,C,Q,E,i,e,t,o,a,s,r,D,n,h,w,y,G,S,c,N,d,l=0;const k=new Uint8Array(4);let F,R;const L=new Uint8Array([16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15]);if(!A||!A.state||!A.output||!A.input&&0!==A.avail_in)return lI;g=A.state,12===g.mode&&(g.mode=13),E=A.next_out,C=A.output,e=A.avail_out,Q=A.next_in,B=A.input,i=A.avail_in,t=g.hold,o=g.bits,a=i,s=e,d=cI;A:for(;;)switch(g.mode){case 1:if(0===g.wrap){g.mode=13;break}for(;o<16;){if(0===i)break A;i--,t+=B[Q++]<<o,o+=8}if(2&g.wrap&&35615===t){g.check=0,k[0]=255&t,k[1]=t>>>8&255,g.check=AA(g.check,k,2,0),t=0,o=0,g.mode=2;break}if(g.flags=0,g.head&&(g.head.done=!1),!(1&g.wrap)||(((255&t)<<8)+(t>>8))%31){A.msg=\"incorrect header check\",g.mode=30;break}if((15&t)!==LI){A.msg=\"unknown compression method\",g.mode=30;break}if(t>>>=4,o-=4,N=8+(15&t),0===g.wbits)g.wbits=N;else if(N>g.wbits){A.msg=\"invalid window size\",g.mode=30;break}g.dmax=1<<g.wbits,A.adler=g.check=1,g.mode=512&t?10:12,t=0,o=0;break;case 2:for(;o<16;){if(0===i)break A;i--,t+=B[Q++]<<o,o+=8}if(g.flags=t,(255&g.flags)!==LI){A.msg=\"unknown compression method\",g.mode=30;break}if(57344&g.flags){A.msg=\"unknown header flags set\",g.mode=30;break}g.head&&(g.head.text=t>>8&1),512&g.flags&&(k[0]=255&t,k[1]=t>>>8&255,g.check=AA(g.check,k,2,0)),t=0,o=0,g.mode=3;case 3:for(;o<32;){if(0===i)break A;i--,t+=B[Q++]<<o,o+=8}g.head&&(g.head.time=t),512&g.flags&&(k[0]=255&t,k[1]=t>>>8&255,k[2]=t>>>16&255,k[3]=t>>>24&255,g.check=AA(g.check,k,4,0)),t=0,o=0,g.mode=4;case 4:for(;o<16;){if(0===i)break A;i--,t+=B[Q++]<<o,o+=8}g.head&&(g.head.xflags=255&t,g.head.os=t>>8),512&g.flags&&(k[0]=255&t,k[1]=t>>>8&255,g.check=AA(g.check,k,2,0)),t=0,o=0,g.mode=5;case 5:if(1024&g.flags){for(;o<16;){if(0===i)break A;i--,t+=B[Q++]<<o,o+=8}g.length=t,g.head&&(g.head.extra_len=t),512&g.flags&&(k[0]=255&t,k[1]=t>>>8&255,g.check=AA(g.check,k,2,0)),t=0,o=0}else g.head&&(g.head.extra=null);g.mode=6;case 6:if(1024&g.flags&&(r=g.length,r>i&&(r=i),r&&(g.head&&(N=g.head.extra_len-g.length,g.head.extra||(g.head.extra=new Uint8Array(g.head.extra_len)),g.head.extra.set(B.subarray(Q,Q+r),N)),512&g.flags&&(g.check=AA(g.check,B,r,Q)),i-=r,Q+=r,g.length-=r),g.length))break A;g.length=0,g.mode=7;case 7:if(2048&g.flags){if(0===i)break A;r=0;do{N=B[Q+r++],g.head&&N&&g.length<65536&&(g.head.name+=String.fromCharCode(N))}while(N&&r<i);if(512&g.flags&&(g.check=AA(g.check,B,r,Q)),i-=r,Q+=r,N)break A}else g.head&&(g.head.name=null);g.length=0,g.mode=8;case 8:if(4096&g.flags){if(0===i)break A;r=0;do{N=B[Q+r++],g.head&&N&&g.length<65536&&(g.head.comment+=String.fromCharCode(N))}while(N&&r<i);if(512&g.flags&&(g.check=AA(g.check,B,r,Q)),i-=r,Q+=r,N)break A}else g.head&&(g.head.comment=null);g.mode=9;case 9:if(512&g.flags){for(;o<16;){if(0===i)break A;i--,t+=B[Q++]<<o,o+=8}if(t!==(65535&g.check)){A.msg=\"header crc mismatch\",g.mode=30;break}t=0,o=0}g.head&&(g.head.hcrc=g.flags>>9&1,g.head.done=!0),A.adler=g.check=0,g.mode=12;break;case 10:for(;o<32;){if(0===i)break A;i--,t+=B[Q++]<<o,o+=8}A.adler=g.check=UI(t),t=0,o=0,g.mode=11;case 11:if(0===g.havedict)return A.next_out=E,A.avail_out=e,A.next_in=Q,A.avail_in=i,g.hold=t,g.bits=o,dI;A.adler=g.check=1,g.mode=12;case 12:if(I===GI||I===SI)break A;case 13:if(g.last){t>>>=7&o,o-=7&o,g.mode=27;break}for(;o<3;){if(0===i)break A;i--,t+=B[Q++]<<o,o+=8}switch(g.last=1&t,t>>>=1,o-=1,3&t){case 0:g.mode=14;break;case 1:if(mI(g),g.mode=20,I===SI){t>>>=2,o-=2;break A}break;case 2:g.mode=17;break;case 3:A.msg=\"invalid block type\",g.mode=30}t>>>=2,o-=2;break;case 14:for(t>>>=7&o,o-=7&o;o<32;){if(0===i)break A;i--,t+=B[Q++]<<o,o+=8}if((65535&t)!=(t>>>16^65535)){A.msg=\"invalid stored block lengths\",g.mode=30;break}if(g.length=65535&t,t=0,o=0,g.mode=15,I===SI)break A;case 15:g.mode=16;case 16:if(r=g.length,r){if(r>i&&(r=i),r>e&&(r=e),0===r)break A;C.set(B.subarray(Q,Q+r),E),i-=r,Q+=r,e-=r,E+=r,g.length-=r;break}g.mode=12;break;case 17:for(;o<14;){if(0===i)break A;i--,t+=B[Q++]<<o,o+=8}if(g.nlen=257+(31&t),t>>>=5,o-=5,g.ndist=1+(31&t),t>>>=5,o-=5,g.ncode=4+(15&t),t>>>=4,o-=4,g.nlen>286||g.ndist>30){A.msg=\"too many length or distance symbols\",g.mode=30;break}g.have=0,g.mode=18;case 18:for(;g.have<g.ncode;){for(;o<3;){if(0===i)break A;i--,t+=B[Q++]<<o,o+=8}g.lens[L[g.have++]]=7&t,t>>>=3,o-=3}for(;g.have<19;)g.lens[L[g.have++]]=0;if(g.lencode=g.lendyn,g.lenbits=7,F={bits:g.lenbits},d=wI(0,g.lens,0,19,g.lencode,0,g.work,F),g.lenbits=F.bits,d){A.msg=\"invalid code lengths set\",g.mode=30;break}g.have=0,g.mode=19;case 19:for(;g.have<g.nlen+g.ndist;){for(;l=g.lencode[t&(1<<g.lenbits)-1],h=l>>>24,w=l>>>16&255,y=65535&l,!(h<=o);){if(0===i)break A;i--,t+=B[Q++]<<o,o+=8}if(y<16)t>>>=h,o-=h,g.lens[g.have++]=y;else{if(16===y){for(R=h+2;o<R;){if(0===i)break A;i--,t+=B[Q++]<<o,o+=8}if(t>>>=h,o-=h,0===g.have){A.msg=\"invalid bit length repeat\",g.mode=30;break}N=g.lens[g.have-1],r=3+(3&t),t>>>=2,o-=2}else if(17===y){for(R=h+3;o<R;){if(0===i)break A;i--,t+=B[Q++]<<o,o+=8}t>>>=h,o-=h,N=0,r=3+(7&t),t>>>=3,o-=3}else{for(R=h+7;o<R;){if(0===i)break A;i--,t+=B[Q++]<<o,o+=8}t>>>=h,o-=h,N=0,r=11+(127&t),t>>>=7,o-=7}if(g.have+r>g.nlen+g.ndist){A.msg=\"invalid bit length repeat\",g.mode=30;break}for(;r--;)g.lens[g.have++]=N}}if(30===g.mode)break;if(0===g.lens[256]){A.msg=\"invalid code -- missing end-of-block\",g.mode=30;break}if(g.lenbits=9,F={bits:g.lenbits},d=wI(1,g.lens,0,g.nlen,g.lencode,0,g.work,F),g.lenbits=F.bits,d){A.msg=\"invalid literal/lengths set\",g.mode=30;break}if(g.distbits=6,g.distcode=g.distdyn,F={bits:g.distbits},d=wI(2,g.lens,g.nlen,g.ndist,g.distcode,0,g.work,F),g.distbits=F.bits,d){A.msg=\"invalid distances set\",g.mode=30;break}if(g.mode=20,I===SI)break A;case 20:g.mode=21;case 21:if(i>=6&&e>=258){A.next_out=E,A.avail_out=e,A.next_in=Q,A.avail_in=i,g.hold=t,g.bits=o,sI(A,s),E=A.next_out,C=A.output,e=A.avail_out,Q=A.next_in,B=A.input,i=A.avail_in,t=g.hold,o=g.bits,12===g.mode&&(g.back=-1);break}for(g.back=0;l=g.lencode[t&(1<<g.lenbits)-1],h=l>>>24,w=l>>>16&255,y=65535&l,!(h<=o);){if(0===i)break A;i--,t+=B[Q++]<<o,o+=8}if(w&&0==(240&w)){for(G=h,S=w,c=y;l=g.lencode[c+((t&(1<<G+S)-1)>>G)],h=l>>>24,w=l>>>16&255,y=65535&l,!(G+h<=o);){if(0===i)break A;i--,t+=B[Q++]<<o,o+=8}t>>>=G,o-=G,g.back+=G}if(t>>>=h,o-=h,g.back+=h,g.length=y,0===w){g.mode=26;break}if(32&w){g.back=-1,g.mode=12;break}if(64&w){A.msg=\"invalid literal/length code\",g.mode=30;break}g.extra=15&w,g.mode=22;case 22:if(g.extra){for(R=g.extra;o<R;){if(0===i)break A;i--,t+=B[Q++]<<o,o+=8}g.length+=t&(1<<g.extra)-1,t>>>=g.extra,o-=g.extra,g.back+=g.extra}g.was=g.length,g.mode=23;case 23:for(;l=g.distcode[t&(1<<g.distbits)-1],h=l>>>24,w=l>>>16&255,y=65535&l,!(h<=o);){if(0===i)break A;i--,t+=B[Q++]<<o,o+=8}if(0==(240&w)){for(G=h,S=w,c=y;l=g.distcode[c+((t&(1<<G+S)-1)>>G)],h=l>>>24,w=l>>>16&255,y=65535&l,!(G+h<=o);){if(0===i)break A;i--,t+=B[Q++]<<o,o+=8}t>>>=G,o-=G,g.back+=G}if(t>>>=h,o-=h,g.back+=h,64&w){A.msg=\"invalid distance code\",g.mode=30;break}g.offset=y,g.extra=15&w,g.mode=24;case 24:if(g.extra){for(R=g.extra;o<R;){if(0===i)break A;i--,t+=B[Q++]<<o,o+=8}g.offset+=t&(1<<g.extra)-1,t>>>=g.extra,o-=g.extra,g.back+=g.extra}if(g.offset>g.dmax){A.msg=\"invalid distance too far back\",g.mode=30;break}g.mode=25;case 25:if(0===e)break A;if(r=s-e,g.offset>r){if(r=g.offset-r,r>g.whave&&g.sane){A.msg=\"invalid distance too far back\",g.mode=30;break}r>g.wnext?(r-=g.wnext,D=g.wsize-r):D=g.wnext-r,r>g.length&&(r=g.length),n=g.window}else n=C,D=E-g.offset,r=g.length;r>e&&(r=e),e-=r,g.length-=r;do{C[E++]=n[D++]}while(--r);0===g.length&&(g.mode=21);break;case 26:if(0===e)break A;C[E++]=g.length,e--,g.mode=21;break;case 27:if(g.wrap){for(;o<32;){if(0===i)break A;i--,t|=B[Q++]<<o,o+=8}if(s-=e,A.total_out+=s,g.total+=s,s&&(A.adler=g.check=g.flags?AA(g.check,C,s,E-s):X(g.check,C,s,E-s)),s=e,(g.flags?t:UI(t))!==g.check){A.msg=\"incorrect data check\",g.mode=30;break}t=0,o=0}g.mode=28;case 28:if(g.wrap&&g.flags){for(;o<32;){if(0===i)break A;i--,t+=B[Q++]<<o,o+=8}if(t!==(4294967295&g.total)){A.msg=\"incorrect length check\",g.mode=30;break}t=0,o=0}g.mode=29;case 29:d=NI;break A;case 30:d=kI;break A;case 31:return FI;default:return lI}return A.next_out=E,A.avail_out=e,A.next_in=Q,A.avail_in=i,g.hold=t,g.bits=o,(g.wsize||s!==A.avail_out&&g.mode<30&&(g.mode<27||I!==yI))&&qI(A,A.output,A.next_out,s-A.avail_out),a-=A.avail_in,s-=A.avail_out,A.total_in+=a,A.total_out+=s,g.total+=s,g.wrap&&s&&(A.adler=g.check=g.flags?AA(g.check,C,s,A.next_out-s):X(g.check,C,s,A.next_out-s)),A.data_type=g.bits+(g.last?64:0)+(12===g.mode?128:0)+(20===g.mode||15===g.mode?256:0),(0===a&&0===s||I===yI)&&d===cI&&(d=RI),d},inflateEnd:A=>{if(!A||!A.state)return lI;let I=A.state;return I.window&&(I.window=null),A.state=null,cI},inflateGetHeader:(A,I)=>{if(!A||!A.state)return lI;const g=A.state;return 0==(2&g.wrap)?lI:(g.head=I,I.done=!1,cI)},inflateSetDictionary:(A,I)=>{const g=I.length;let B,C,Q;return A&&A.state?(B=A.state,0!==B.wrap&&11!==B.mode?lI:11===B.mode&&(C=1,C=X(C,I,g,0),C!==B.check)?kI:(Q=qI(A,I,g,g),Q?(B.mode=31,FI):(B.havedict=1,cI))):lI},inflateInfo:\"pako inflate (from Nodeca project)\"};var xI=function(){this.text=0,this.time=0,this.xflags=0,this.os=0,this.extra=null,this.extra_len=0,this.name=\"\",this.comment=\"\",this.hcrc=0,this.done=!1};const OI=Object.prototype.toString,{Z_NO_FLUSH:TI,Z_FINISH:_I,Z_OK:ZI,Z_STREAM_END:PI,Z_NEED_DICT:vI,Z_STREAM_ERROR:jI,Z_DATA_ERROR:WI,Z_MEM_ERROR:VI}=gA;function zI(A){this.options=vA({chunkSize:65536,windowBits:15,to:\"\"},A||{});const I=this.options;I.raw&&I.windowBits>=0&&I.windowBits<16&&(I.windowBits=-I.windowBits,0===I.windowBits&&(I.windowBits=-15)),!(I.windowBits>=0&&I.windowBits<16)||A&&A.windowBits||(I.windowBits+=32),I.windowBits>15&&I.windowBits<48&&0==(15&I.windowBits)&&(I.windowBits|=15),this.err=0,this.msg=\"\",this.ended=!1,this.chunks=[],this.strm=new AI,this.strm.avail_out=0;let g=bI.inflateInit2(this.strm,I.windowBits);if(g!==ZI)throw new Error(IA[g]);if(this.header=new xI,bI.inflateGetHeader(this.strm,this.header),I.dictionary&&(\"string\"==typeof I.dictionary?I.dictionary=zA(I.dictionary):\"[object ArrayBuffer]\"===OI.call(I.dictionary)&&(I.dictionary=new Uint8Array(I.dictionary)),I.raw&&(g=bI.inflateSetDictionary(this.strm,I.dictionary),g!==ZI)))throw new Error(IA[g])}function XI(A,I){const g=new zI(I);if(g.push(A),g.err)throw g.msg||IA[g.err];return g.result}zI.prototype.push=function(A,I){const g=this.strm,B=this.options.chunkSize,C=this.options.dictionary;let Q,E,i;if(this.ended)return!1;for(E=I===~~I?I:!0===I?_I:TI,\"[object ArrayBuffer]\"===OI.call(A)?g.input=new Uint8Array(A):g.input=A,g.next_in=0,g.avail_in=g.input.length;;){for(0===g.avail_out&&(g.output=new Uint8Array(B),g.next_out=0,g.avail_out=B),Q=bI.inflate(g,E),Q===vI&&C&&(Q=bI.inflateSetDictionary(g,C),Q===ZI?Q=bI.inflate(g,E):Q===WI&&(Q=vI));g.avail_in>0&&Q===PI&&g.state.wrap>0&&0!==A[g.next_in];)bI.inflateReset(g),Q=bI.inflate(g,E);switch(Q){case jI:case WI:case vI:case VI:return this.onEnd(Q),this.ended=!0,!1}if(i=g.avail_out,g.next_out&&(0===g.avail_out||Q===PI))if(\"string\"===this.options.to){let A=$A(g.output,g.next_out),I=g.next_out-A,C=XA(g.output,A);g.next_out=I,g.avail_out=B-I,I&&g.output.set(g.output.subarray(A,A+I),0),this.onData(C)}else this.onData(g.output.length===g.next_out?g.output:g.output.subarray(0,g.next_out));if(Q!==ZI||0!==i){if(Q===PI)return Q=bI.inflateEnd(this.strm),this.onEnd(Q),this.ended=!0,!0;if(0===g.avail_in)break}}return!0},zI.prototype.onData=function(A){this.chunks.push(A)},zI.prototype.onEnd=function(A){A===ZI&&(\"string\"===this.options.to?this.result=this.chunks.join(\"\"):this.result=jA(this.chunks)),this.chunks=[],this.err=A,this.msg=this.strm.msg};var $I={Inflate:zI,inflate:XI,inflateRaw:function(A,I){return(I=I||{}).raw=!0,XI(A,I)},ungzip:XI,constants:gA};const{Inflate:Ag,inflate:Ig,inflateRaw:gg,ungzip:Bg}=$I;var Cg=Ig;var Qg=Object.freeze({__proto__:null,default:class extends i{decodeBlock(A){return Cg(new Uint8Array(A)).buffer}}});var Eg,ig=Object.freeze({__proto__:null,default:class extends i{decodeBlock(A){const I=new DataView(A),g=[];for(let B=0;B<A.byteLength;++B){let A=I.getInt8(B);if(A<0){const C=I.getUint8(B+1);A=-A;for(let I=0;I<=A;++I)g.push(C);B+=1}else{for(let C=0;C<=A;++C)g.push(I.getUint8(B+C+1));B+=A+1}}return new Uint8Array(g).buffer}}}),eg={exports:{}};Eg=eg,\n/* Copyright 2015-2021 Esri. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 @preserve */\nfunction(){var A,I,g,B,C,Q,E,i,e,t,o,a,s,r,D,n,h=(A={defaultNoDataValue:-34027999387901484e22,decode:function(Q,E){var i=(E=E||{}).encodedMaskData||null===E.encodedMaskData,e=C(Q,E.inputOffset||0,i),t=null!==E.noDataValue?E.noDataValue:A.defaultNoDataValue,o=I(e,E.pixelType||Float32Array,E.encodedMaskData,t,E.returnMask),a={width:e.width,height:e.height,pixelData:o.resultPixels,minValue:o.minValue,maxValue:e.pixels.maxValue,noDataValue:t};return o.resultMask&&(a.maskData=o.resultMask),E.returnEncodedMask&&e.mask&&(a.encodedMaskData=e.mask.bitset?e.mask.bitset:null),E.returnFileInfo&&(a.fileInfo=g(e),E.computeUsedBitDepths&&(a.fileInfo.bitDepths=B(e))),a}},I=function(A,I,g,B,C){var E,i,e,t=0,o=A.pixels.numBlocksX,a=A.pixels.numBlocksY,s=Math.floor(A.width/o),r=Math.floor(A.height/a),D=2*A.maxZError,n=Number.MAX_VALUE;g=g||(A.mask?A.mask.bitset:null),i=new I(A.width*A.height),C&&g&&(e=new Uint8Array(A.width*A.height));for(var h,w,y=new Float32Array(s*r),G=0;G<=a;G++){var S=G!==a?r:A.height%a;if(0!==S)for(var c=0;c<=o;c++){var N=c!==o?s:A.width%o;if(0!==N){var d,l,k,F,R=G*A.width*r+c*s,L=A.width-N,U=A.pixels.blocks[t];if(U.encoding<2?(0===U.encoding?d=U.rawData:(Q(U.stuffedData,U.bitsPerPixel,U.numValidPixels,U.offset,D,y,A.pixels.maxValue),d=y),l=0):k=2===U.encoding?0:U.offset,g)for(w=0;w<S;w++){for(7&R&&(F=g[R>>3],F<<=7&R),h=0;h<N;h++)7&R||(F=g[R>>3]),128&F?(e&&(e[R]=1),n=n>(E=U.encoding<2?d[l++]:k)?E:n,i[R++]=E):(e&&(e[R]=0),i[R++]=B),F<<=1;R+=L}else if(U.encoding<2)for(w=0;w<S;w++){for(h=0;h<N;h++)n=n>(E=d[l++])?E:n,i[R++]=E;R+=L}else for(n=n>k?k:n,w=0;w<S;w++){for(h=0;h<N;h++)i[R++]=k;R+=L}if(1===U.encoding&&l!==U.numValidPixels)throw\"Block and Mask do not match\";t++}}}return{resultPixels:i,resultMask:e,minValue:n}},g=function(A){return{fileIdentifierString:A.fileIdentifierString,fileVersion:A.fileVersion,imageType:A.imageType,height:A.height,width:A.width,maxZError:A.maxZError,eofOffset:A.eofOffset,mask:A.mask?{numBlocksX:A.mask.numBlocksX,numBlocksY:A.mask.numBlocksY,numBytes:A.mask.numBytes,maxValue:A.mask.maxValue}:null,pixels:{numBlocksX:A.pixels.numBlocksX,numBlocksY:A.pixels.numBlocksY,numBytes:A.pixels.numBytes,maxValue:A.pixels.maxValue,noDataValue:A.noDataValue}}},B=function(A){for(var I=A.pixels.numBlocksX*A.pixels.numBlocksY,g={},B=0;B<I;B++){var C=A.pixels.blocks[B];0===C.encoding?g.float32=!0:1===C.encoding?g[C.bitsPerPixel]=!0:g[0]=!0}return Object.keys(g)},C=function(A,I,g){var B={},C=new Uint8Array(A,I,10);if(B.fileIdentifierString=String.fromCharCode.apply(null,C),\"CntZImage\"!==B.fileIdentifierString.trim())throw\"Unexpected file identifier string: \"+B.fileIdentifierString;I+=10;var Q=new DataView(A,I,24);if(B.fileVersion=Q.getInt32(0,!0),B.imageType=Q.getInt32(4,!0),B.height=Q.getUint32(8,!0),B.width=Q.getUint32(12,!0),B.maxZError=Q.getFloat64(16,!0),I+=24,!g)if(Q=new DataView(A,I,16),B.mask={},B.mask.numBlocksY=Q.getUint32(0,!0),B.mask.numBlocksX=Q.getUint32(4,!0),B.mask.numBytes=Q.getUint32(8,!0),B.mask.maxValue=Q.getFloat32(12,!0),I+=16,B.mask.numBytes>0){var E=new Uint8Array(Math.ceil(B.width*B.height/8)),i=(Q=new DataView(A,I,B.mask.numBytes)).getInt16(0,!0),e=2,t=0;do{if(i>0)for(;i--;)E[t++]=Q.getUint8(e++);else{var o=Q.getUint8(e++);for(i=-i;i--;)E[t++]=o}i=Q.getInt16(e,!0),e+=2}while(e<B.mask.numBytes);if(-32768!==i||t<E.length)throw\"Unexpected end of mask RLE encoding\";B.mask.bitset=E,I+=B.mask.numBytes}else 0==(B.mask.numBytes|B.mask.numBlocksY|B.mask.maxValue)&&(B.mask.bitset=new Uint8Array(Math.ceil(B.width*B.height/8)));Q=new DataView(A,I,16),B.pixels={},B.pixels.numBlocksY=Q.getUint32(0,!0),B.pixels.numBlocksX=Q.getUint32(4,!0),B.pixels.numBytes=Q.getUint32(8,!0),B.pixels.maxValue=Q.getFloat32(12,!0),I+=16;var a=B.pixels.numBlocksX,s=B.pixels.numBlocksY,r=a+(B.width%a>0?1:0),D=s+(B.height%s>0?1:0);B.pixels.blocks=new Array(r*D);for(var n=0,h=0;h<D;h++)for(var w=0;w<r;w++){var y=0,G=A.byteLength-I;Q=new DataView(A,I,Math.min(10,G));var S={};B.pixels.blocks[n++]=S;var c=Q.getUint8(0);if(y++,S.encoding=63&c,S.encoding>3)throw\"Invalid block encoding (\"+S.encoding+\")\";if(2!==S.encoding){if(0!==c&&2!==c){if(c>>=6,S.offsetType=c,2===c)S.offset=Q.getInt8(1),y++;else if(1===c)S.offset=Q.getInt16(1,!0),y+=2;else{if(0!==c)throw\"Invalid block offset type\";S.offset=Q.getFloat32(1,!0),y+=4}if(1===S.encoding)if(c=Q.getUint8(y),y++,S.bitsPerPixel=63&c,c>>=6,S.numValidPixelsType=c,2===c)S.numValidPixels=Q.getUint8(y),y++;else if(1===c)S.numValidPixels=Q.getUint16(y,!0),y+=2;else{if(0!==c)throw\"Invalid valid pixel count type\";S.numValidPixels=Q.getUint32(y,!0),y+=4}}var N;if(I+=y,3!==S.encoding)if(0===S.encoding){var d=(B.pixels.numBytes-1)/4;if(d!==Math.floor(d))throw\"uncompressed block has invalid length\";N=new ArrayBuffer(4*d),new Uint8Array(N).set(new Uint8Array(A,I,4*d));var l=new Float32Array(N);S.rawData=l,I+=4*d}else if(1===S.encoding){var k=Math.ceil(S.numValidPixels*S.bitsPerPixel/8),F=Math.ceil(k/4);N=new ArrayBuffer(4*F),new Uint8Array(N).set(new Uint8Array(A,I,k)),S.stuffedData=new Uint32Array(N),I+=k}}else I++}return B.eofOffset=I,B},Q=function(A,I,g,B,C,Q,E){var i,e,t,o=(1<<I)-1,a=0,s=0,r=Math.ceil((E-B)/C),D=4*A.length-Math.ceil(I*g/8);for(A[A.length-1]<<=8*D,i=0;i<g;i++){if(0===s&&(t=A[a++],s=32),s>=I)e=t>>>s-I&o,s-=I;else{var n=I-s;e=(t&o)<<n&o,e+=(t=A[a++])>>>(s=32-n)}Q[i]=e<r?B+e*C:E}return Q},A),w=(E=function(A,I,g,B,C,Q,E,i){var e,t,o,a,s,r=(1<<g)-1,D=0,n=0,h=4*A.length-Math.ceil(g*B/8);if(A[A.length-1]<<=8*h,C)for(e=0;e<B;e++)0===n&&(o=A[D++],n=32),n>=g?(t=o>>>n-g&r,n-=g):(t=(o&r)<<(a=g-n)&r,t+=(o=A[D++])>>>(n=32-a)),I[e]=C[t];else for(s=Math.ceil((i-Q)/E),e=0;e<B;e++)0===n&&(o=A[D++],n=32),n>=g?(t=o>>>n-g&r,n-=g):(t=(o&r)<<(a=g-n)&r,t+=(o=A[D++])>>>(n=32-a)),I[e]=t<s?Q+t*E:i},i=function(A,I,g,B,C,Q){var E,i=(1<<I)-1,e=0,t=0,o=0,a=0,s=0,r=[],D=4*A.length-Math.ceil(I*g/8);A[A.length-1]<<=8*D;var n=Math.ceil((Q-B)/C);for(t=0;t<g;t++)0===a&&(E=A[e++],a=32),a>=I?(s=E>>>a-I&i,a-=I):(s=(E&i)<<(o=I-a)&i,s+=(E=A[e++])>>>(a=32-o)),r[t]=s<n?B+s*C:Q;return r.unshift(B),r},e=function(A,I,g,B,C,Q,E,i){var e,t,o,a,s=(1<<g)-1,r=0,D=0,n=0;if(C)for(e=0;e<B;e++)0===D&&(o=A[r++],D=32,n=0),D>=g?(t=o>>>n&s,D-=g,n+=g):(t=o>>>n&s,D=32-(a=g-D),t|=((o=A[r++])&(1<<a)-1)<<g-a,n=a),I[e]=C[t];else{var h=Math.ceil((i-Q)/E);for(e=0;e<B;e++)0===D&&(o=A[r++],D=32,n=0),D>=g?(t=o>>>n&s,D-=g,n+=g):(t=o>>>n&s,D=32-(a=g-D),t|=((o=A[r++])&(1<<a)-1)<<g-a,n=a),I[e]=t<h?Q+t*E:i}return I},t=function(A,I,g,B,C,Q){var E,i=(1<<I)-1,e=0,t=0,o=0,a=0,s=0,r=0,D=[],n=Math.ceil((Q-B)/C);for(t=0;t<g;t++)0===a&&(E=A[e++],a=32,r=0),a>=I?(s=E>>>r&i,a-=I,r+=I):(s=E>>>r&i,a=32-(o=I-a),s|=((E=A[e++])&(1<<o)-1)<<I-o,r=o),D[t]=s<n?B+s*C:Q;return D.unshift(B),D},o=function(A,I,g,B){var C,Q,E,i,e=(1<<g)-1,t=0,o=0,a=4*A.length-Math.ceil(g*B/8);for(A[A.length-1]<<=8*a,C=0;C<B;C++)0===o&&(E=A[t++],o=32),o>=g?(Q=E>>>o-g&e,o-=g):(Q=(E&e)<<(i=g-o)&e,Q+=(E=A[t++])>>>(o=32-i)),I[C]=Q;return I},a=function(A,I,g,B){var C,Q,E,i,e=(1<<g)-1,t=0,o=0,a=0;for(C=0;C<B;C++)0===o&&(E=A[t++],o=32,a=0),o>=g?(Q=E>>>a&e,o-=g,a+=g):(Q=E>>>a&e,o=32-(i=g-o),Q|=((E=A[t++])&(1<<i)-1)<<g-i,a=i),I[C]=Q;return I},s={HUFFMAN_LUT_BITS_MAX:12,computeChecksumFletcher32:function(A){for(var I=65535,g=65535,B=A.length,C=Math.floor(B/2),Q=0;C;){var E=C>=359?359:C;C-=E;do{I+=A[Q++]<<8,g+=I+=A[Q++]}while(--E);I=(65535&I)+(I>>>16),g=(65535&g)+(g>>>16)}return 1&B&&(g+=I+=A[Q]<<8),((g=(65535&g)+(g>>>16))<<16|(I=(65535&I)+(I>>>16)))>>>0},readHeaderInfo:function(A,I){var g=I.ptr,B=new Uint8Array(A,g,6),C={};if(C.fileIdentifierString=String.fromCharCode.apply(null,B),0!==C.fileIdentifierString.lastIndexOf(\"Lerc2\",0))throw\"Unexpected file identifier string (expect Lerc2 ): \"+C.fileIdentifierString;g+=6;var Q,E=new DataView(A,g,8),i=E.getInt32(0,!0);if(C.fileVersion=i,g+=4,i>=3&&(C.checksum=E.getUint32(4,!0),g+=4),E=new DataView(A,g,12),C.height=E.getUint32(0,!0),C.width=E.getUint32(4,!0),g+=8,i>=4?(C.numDims=E.getUint32(8,!0),g+=4):C.numDims=1,E=new DataView(A,g,40),C.numValidPixel=E.getUint32(0,!0),C.microBlockSize=E.getInt32(4,!0),C.blobSize=E.getInt32(8,!0),C.imageType=E.getInt32(12,!0),C.maxZError=E.getFloat64(16,!0),C.zMin=E.getFloat64(24,!0),C.zMax=E.getFloat64(32,!0),g+=40,I.headerInfo=C,I.ptr=g,i>=3&&(Q=i>=4?52:48,this.computeChecksumFletcher32(new Uint8Array(A,g-Q,C.blobSize-14))!==C.checksum))throw\"Checksum failed.\";return!0},checkMinMaxRanges:function(A,I){var g=I.headerInfo,B=this.getDataTypeArray(g.imageType),C=g.numDims*this.getDataTypeSize(g.imageType),Q=this.readSubArray(A,I.ptr,B,C),E=this.readSubArray(A,I.ptr+C,B,C);I.ptr+=2*C;var i,e=!0;for(i=0;i<g.numDims;i++)if(Q[i]!==E[i]){e=!1;break}return g.minValues=Q,g.maxValues=E,e},readSubArray:function(A,I,g,B){var C;if(g===Uint8Array)C=new Uint8Array(A,I,B);else{var Q=new ArrayBuffer(B);new Uint8Array(Q).set(new Uint8Array(A,I,B)),C=new g(Q)}return C},readMask:function(A,I){var g,B,C=I.ptr,Q=I.headerInfo,E=Q.width*Q.height,i=Q.numValidPixel,e=new DataView(A,C,4),t={};if(t.numBytes=e.getUint32(0,!0),C+=4,(0===i||E===i)&&0!==t.numBytes)throw\"invalid mask\";if(0===i)g=new Uint8Array(Math.ceil(E/8)),t.bitset=g,B=new Uint8Array(E),I.pixels.resultMask=B,C+=t.numBytes;else if(t.numBytes>0){g=new Uint8Array(Math.ceil(E/8));var o=(e=new DataView(A,C,t.numBytes)).getInt16(0,!0),a=2,s=0,r=0;do{if(o>0)for(;o--;)g[s++]=e.getUint8(a++);else for(r=e.getUint8(a++),o=-o;o--;)g[s++]=r;o=e.getInt16(a,!0),a+=2}while(a<t.numBytes);if(-32768!==o||s<g.length)throw\"Unexpected end of mask RLE encoding\";B=new Uint8Array(E);var D=0,n=0;for(n=0;n<E;n++)7&n?(D=g[n>>3],D<<=7&n):D=g[n>>3],128&D&&(B[n]=1);I.pixels.resultMask=B,t.bitset=g,C+=t.numBytes}return I.ptr=C,I.mask=t,!0},readDataOneSweep:function(A,I,g,B){var C,Q=I.ptr,E=I.headerInfo,i=E.numDims,e=E.width*E.height,t=E.imageType,o=E.numValidPixel*s.getDataTypeSize(t)*i,a=I.pixels.resultMask;if(g===Uint8Array)C=new Uint8Array(A,Q,o);else{var r=new ArrayBuffer(o);new Uint8Array(r).set(new Uint8Array(A,Q,o)),C=new g(r)}if(C.length===e*i)I.pixels.resultPixels=B?s.swapDimensionOrder(C,e,i,g,!0):C;else{I.pixels.resultPixels=new g(e*i);var D=0,n=0,h=0,w=0;if(i>1){if(B){for(n=0;n<e;n++)if(a[n])for(w=n,h=0;h<i;h++,w+=e)I.pixels.resultPixels[w]=C[D++]}else for(n=0;n<e;n++)if(a[n])for(w=n*i,h=0;h<i;h++)I.pixels.resultPixels[w+h]=C[D++]}else for(n=0;n<e;n++)a[n]&&(I.pixels.resultPixels[n]=C[D++])}return Q+=o,I.ptr=Q,!0},readHuffmanTree:function(A,I){var g=this.HUFFMAN_LUT_BITS_MAX,B=new DataView(A,I.ptr,16);if(I.ptr+=16,B.getInt32(0,!0)<2)throw\"unsupported Huffman version\";var C=B.getInt32(4,!0),Q=B.getInt32(8,!0),E=B.getInt32(12,!0);if(Q>=E)return!1;var i=new Uint32Array(E-Q);s.decodeBits(A,I,i);var e,t,o,a,D=[];for(e=Q;e<E;e++)D[t=e-(e<C?0:C)]={first:i[e-Q],second:null};var n=A.byteLength-I.ptr,h=Math.ceil(n/4),w=new ArrayBuffer(4*h);new Uint8Array(w).set(new Uint8Array(A,I.ptr,n));var y,G=new Uint32Array(w),S=0,c=0;for(y=G[0],e=Q;e<E;e++)(a=D[t=e-(e<C?0:C)].first)>0&&(D[t].second=y<<S>>>32-a,32-S>=a?32===(S+=a)&&(S=0,y=G[++c]):(S+=a-32,y=G[++c],D[t].second|=y>>>32-S));var N=0,d=0,l=new r;for(e=0;e<D.length;e++)void 0!==D[e]&&(N=Math.max(N,D[e].first));d=N>=g?g:N;var k,F,R,L,U,f=[];for(e=Q;e<E;e++)if((a=D[t=e-(e<C?0:C)].first)>0)if(k=[a,t],a<=d)for(F=D[t].second<<d-a,R=1<<d-a,o=0;o<R;o++)f[F|o]=k;else for(F=D[t].second,U=l,L=a-1;L>=0;L--)F>>>L&1?(U.right||(U.right=new r),U=U.right):(U.left||(U.left=new r),U=U.left),0!==L||U.val||(U.val=k[1]);return{decodeLut:f,numBitsLUTQick:d,numBitsLUT:N,tree:l,stuffedData:G,srcPtr:c,bitPos:S}},readHuffman:function(A,I,g,B){var C,Q,E,i,e,t,o,a,r,D=I.headerInfo.numDims,n=I.headerInfo.height,h=I.headerInfo.width,w=h*n,y=this.readHuffmanTree(A,I),G=y.decodeLut,S=y.tree,c=y.stuffedData,N=y.srcPtr,d=y.bitPos,l=y.numBitsLUTQick,k=y.numBitsLUT,F=0===I.headerInfo.imageType?128:0,R=I.pixels.resultMask,L=0;d>0&&(N++,d=0);var U,f=c[N],Y=1===I.encodeMode,K=new g(w*D),u=K;if(D<2||Y){for(U=0;U<D;U++)if(D>1&&(u=new g(K.buffer,w*U,w),L=0),I.headerInfo.numValidPixel===h*n)for(a=0,t=0;t<n;t++)for(o=0;o<h;o++,a++){if(Q=0,e=i=f<<d>>>32-l,32-d<l&&(e=i|=c[N+1]>>>64-d-l),G[e])Q=G[e][1],d+=G[e][0];else for(e=i=f<<d>>>32-k,32-d<k&&(e=i|=c[N+1]>>>64-d-k),C=S,r=0;r<k;r++)if(!(C=i>>>k-r-1&1?C.right:C.left).left&&!C.right){Q=C.val,d=d+r+1;break}d>=32&&(d-=32,f=c[++N]),E=Q-F,Y?(E+=o>0?L:t>0?u[a-h]:L,E&=255,u[a]=E,L=E):u[a]=E}else for(a=0,t=0;t<n;t++)for(o=0;o<h;o++,a++)if(R[a]){if(Q=0,e=i=f<<d>>>32-l,32-d<l&&(e=i|=c[N+1]>>>64-d-l),G[e])Q=G[e][1],d+=G[e][0];else for(e=i=f<<d>>>32-k,32-d<k&&(e=i|=c[N+1]>>>64-d-k),C=S,r=0;r<k;r++)if(!(C=i>>>k-r-1&1?C.right:C.left).left&&!C.right){Q=C.val,d=d+r+1;break}d>=32&&(d-=32,f=c[++N]),E=Q-F,Y?(o>0&&R[a-1]?E+=L:t>0&&R[a-h]?E+=u[a-h]:E+=L,E&=255,u[a]=E,L=E):u[a]=E}}else for(a=0,t=0;t<n;t++)for(o=0;o<h;o++)if(a=t*h+o,!R||R[a])for(U=0;U<D;U++,a+=w){if(Q=0,e=i=f<<d>>>32-l,32-d<l&&(e=i|=c[N+1]>>>64-d-l),G[e])Q=G[e][1],d+=G[e][0];else for(e=i=f<<d>>>32-k,32-d<k&&(e=i|=c[N+1]>>>64-d-k),C=S,r=0;r<k;r++)if(!(C=i>>>k-r-1&1?C.right:C.left).left&&!C.right){Q=C.val,d=d+r+1;break}d>=32&&(d-=32,f=c[++N]),E=Q-F,u[a]=E}I.ptr=I.ptr+4*(N+1)+(d>0?4:0),I.pixels.resultPixels=K,D>1&&!B&&(I.pixels.resultPixels=s.swapDimensionOrder(K,w,D,g))},decodeBits:function(A,I,g,B,C){var Q=I.headerInfo,s=Q.fileVersion,r=0,D=A.byteLength-I.ptr>=5?5:A.byteLength-I.ptr,n=new DataView(A,I.ptr,D),h=n.getUint8(0);r++;var w=h>>6,y=0===w?4:3-w,G=(32&h)>0,S=31&h,c=0;if(1===y)c=n.getUint8(r),r++;else if(2===y)c=n.getUint16(r,!0),r+=2;else{if(4!==y)throw\"Invalid valid pixel count type\";c=n.getUint32(r,!0),r+=4}var N,d,l,k,F,R,L,U,f,Y=2*Q.maxZError,K=Q.numDims>1?Q.maxValues[C]:Q.zMax;if(G){for(I.counter.lut++,U=n.getUint8(r),r++,k=Math.ceil((U-1)*S/8),F=Math.ceil(k/4),d=new ArrayBuffer(4*F),l=new Uint8Array(d),I.ptr+=r,l.set(new Uint8Array(A,I.ptr,k)),L=new Uint32Array(d),I.ptr+=k,f=0;U-1>>>f;)f++;k=Math.ceil(c*f/8),F=Math.ceil(k/4),d=new ArrayBuffer(4*F),(l=new Uint8Array(d)).set(new Uint8Array(A,I.ptr,k)),N=new Uint32Array(d),I.ptr+=k,R=s>=3?t(L,S,U-1,B,Y,K):i(L,S,U-1,B,Y,K),s>=3?e(N,g,f,c,R):E(N,g,f,c,R)}else I.counter.bitstuffer++,f=S,I.ptr+=r,f>0&&(k=Math.ceil(c*f/8),F=Math.ceil(k/4),d=new ArrayBuffer(4*F),(l=new Uint8Array(d)).set(new Uint8Array(A,I.ptr,k)),N=new Uint32Array(d),I.ptr+=k,s>=3?null==B?a(N,g,f,c):e(N,g,f,c,!1,B,Y,K):null==B?o(N,g,f,c):E(N,g,f,c,!1,B,Y,K))},readTiles:function(A,I,g,B){var C=I.headerInfo,Q=C.width,E=C.height,i=Q*E,e=C.microBlockSize,t=C.imageType,o=s.getDataTypeSize(t),a=Math.ceil(Q/e),r=Math.ceil(E/e);I.pixels.numBlocksY=r,I.pixels.numBlocksX=a,I.pixels.ptr=0;var D,n,h,w,y,G,S,c,N,d,l=0,k=0,F=0,R=0,L=0,U=0,f=0,Y=0,K=0,u=0,M=0,J=0,H=0,p=0,m=0,q=new g(e*e),b=E%e||e,x=Q%e||e,O=C.numDims,T=I.pixels.resultMask,_=I.pixels.resultPixels,Z=C.fileVersion>=5?14:15,P=C.zMax;for(F=0;F<r;F++)for(L=F!==r-1?e:b,R=0;R<a;R++)for(u=F*Q*e+R*e,M=Q-(U=R!==a-1?e:x),c=0;c<O;c++){if(O>1?(d=_,u=F*Q*e+R*e,_=new g(I.pixels.resultPixels.buffer,i*c*o,i),P=C.maxValues[c]):d=null,f=A.byteLength-I.ptr,n={},m=0,Y=(D=new DataView(A,I.ptr,Math.min(10,f))).getUint8(0),m++,N=C.fileVersion>=5?4&Y:0,K=Y>>6&255,(Y>>2&Z)!=(R*e>>3&Z))throw\"integrity issue\";if(N&&0===c)throw\"integrity issue\";if((y=3&Y)>3)throw I.ptr+=m,\"Invalid block encoding (\"+y+\")\";if(2!==y)if(0===y){if(N)throw\"integrity issue\";if(I.counter.uncompressed++,I.ptr+=m,J=(J=L*U*o)<(H=A.byteLength-I.ptr)?J:H,h=new ArrayBuffer(J%o==0?J:J+o-J%o),new Uint8Array(h).set(new Uint8Array(A,I.ptr,J)),w=new g(h),p=0,T)for(l=0;l<L;l++){for(k=0;k<U;k++)T[u]&&(_[u]=w[p++]),u++;u+=M}else for(l=0;l<L;l++){for(k=0;k<U;k++)_[u++]=w[p++];u+=M}I.ptr+=p*o}else if(G=s.getDataTypeUsed(N&&t<6?4:t,K),S=s.getOnePixel(n,m,G,D),m+=s.getDataTypeSize(G),3===y)if(I.ptr+=m,I.counter.constantoffset++,T)for(l=0;l<L;l++){for(k=0;k<U;k++)T[u]&&(_[u]=N?Math.min(P,d[u]+S):S),u++;u+=M}else for(l=0;l<L;l++){for(k=0;k<U;k++)_[u]=N?Math.min(P,d[u]+S):S,u++;u+=M}else if(I.ptr+=m,s.decodeBits(A,I,q,S,c),m=0,N)if(T)for(l=0;l<L;l++){for(k=0;k<U;k++)T[u]&&(_[u]=q[m++]+d[u]),u++;u+=M}else for(l=0;l<L;l++){for(k=0;k<U;k++)_[u]=q[m++]+d[u],u++;u+=M}else if(T)for(l=0;l<L;l++){for(k=0;k<U;k++)T[u]&&(_[u]=q[m++]),u++;u+=M}else for(l=0;l<L;l++){for(k=0;k<U;k++)_[u++]=q[m++];u+=M}else{if(N)if(T)for(l=0;l<L;l++)for(k=0;k<U;k++)T[u]&&(_[u]=d[u]),u++;else for(l=0;l<L;l++)for(k=0;k<U;k++)_[u]=d[u],u++;I.counter.constant++,I.ptr+=m}}O>1&&!B&&(I.pixels.resultPixels=s.swapDimensionOrder(I.pixels.resultPixels,i,O,g))},formatFileInfo:function(A){return{fileIdentifierString:A.headerInfo.fileIdentifierString,fileVersion:A.headerInfo.fileVersion,imageType:A.headerInfo.imageType,height:A.headerInfo.height,width:A.headerInfo.width,numValidPixel:A.headerInfo.numValidPixel,microBlockSize:A.headerInfo.microBlockSize,blobSize:A.headerInfo.blobSize,maxZError:A.headerInfo.maxZError,pixelType:s.getPixelType(A.headerInfo.imageType),eofOffset:A.eofOffset,mask:A.mask?{numBytes:A.mask.numBytes}:null,pixels:{numBlocksX:A.pixels.numBlocksX,numBlocksY:A.pixels.numBlocksY,maxValue:A.headerInfo.zMax,minValue:A.headerInfo.zMin,noDataValue:A.noDataValue}}},constructConstantSurface:function(A,I){var g=A.headerInfo.zMax,B=A.headerInfo.zMin,C=A.headerInfo.maxValues,Q=A.headerInfo.numDims,E=A.headerInfo.height*A.headerInfo.width,i=0,e=0,t=0,o=A.pixels.resultMask,a=A.pixels.resultPixels;if(o)if(Q>1){if(I)for(i=0;i<Q;i++)for(t=i*E,g=C[i],e=0;e<E;e++)o[e]&&(a[t+e]=g);else for(e=0;e<E;e++)if(o[e])for(t=e*Q,i=0;i<Q;i++)a[t+Q]=C[i]}else for(e=0;e<E;e++)o[e]&&(a[e]=g);else if(Q>1&&B!==g)if(I)for(i=0;i<Q;i++)for(t=i*E,g=C[i],e=0;e<E;e++)a[t+e]=g;else for(e=0;e<E;e++)for(t=e*Q,i=0;i<Q;i++)a[t+i]=C[i];else for(e=0;e<E*Q;e++)a[e]=g},getDataTypeArray:function(A){var I;switch(A){case 0:I=Int8Array;break;case 1:I=Uint8Array;break;case 2:I=Int16Array;break;case 3:I=Uint16Array;break;case 4:I=Int32Array;break;case 5:I=Uint32Array;break;case 6:default:I=Float32Array;break;case 7:I=Float64Array}return I},getPixelType:function(A){var I;switch(A){case 0:I=\"S8\";break;case 1:I=\"U8\";break;case 2:I=\"S16\";break;case 3:I=\"U16\";break;case 4:I=\"S32\";break;case 5:I=\"U32\";break;case 6:default:I=\"F32\";break;case 7:I=\"F64\"}return I},isValidPixelValue:function(A,I){if(null==I)return!1;var g;switch(A){case 0:g=I>=-128&&I<=127;break;case 1:g=I>=0&&I<=255;break;case 2:g=I>=-32768&&I<=32767;break;case 3:g=I>=0&&I<=65536;break;case 4:g=I>=-2147483648&&I<=2147483647;break;case 5:g=I>=0&&I<=4294967296;break;case 6:g=I>=-34027999387901484e22&&I<=34027999387901484e22;break;case 7:g=I>=-17976931348623157e292&&I<=17976931348623157e292;break;default:g=!1}return g},getDataTypeSize:function(A){var I=0;switch(A){case 0:case 1:I=1;break;case 2:case 3:I=2;break;case 4:case 5:case 6:I=4;break;case 7:I=8;break;default:I=A}return I},getDataTypeUsed:function(A,I){var g=A;switch(A){case 2:case 4:g=A-I;break;case 3:case 5:g=A-2*I;break;case 6:g=0===I?A:1===I?2:1;break;case 7:g=0===I?A:A-2*I+1;break;default:g=A}return g},getOnePixel:function(A,I,g,B){var C=0;switch(g){case 0:C=B.getInt8(I);break;case 1:C=B.getUint8(I);break;case 2:C=B.getInt16(I,!0);break;case 3:C=B.getUint16(I,!0);break;case 4:C=B.getInt32(I,!0);break;case 5:C=B.getUInt32(I,!0);break;case 6:C=B.getFloat32(I,!0);break;case 7:C=B.getFloat64(I,!0);break;default:throw\"the decoder does not understand this pixel type\"}return C},swapDimensionOrder:function(A,I,g,B,C){var Q=0,E=0,i=0,e=0,t=A;if(g>1)if(t=new B(I*g),C)for(Q=0;Q<I;Q++)for(e=Q,i=0;i<g;i++,e+=I)t[e]=A[E++];else for(Q=0;Q<I;Q++)for(e=Q,i=0;i<g;i++,e+=I)t[E++]=A[e];return t}},r=function(A,I,g){this.val=A,this.left=I,this.right=g},{decode:function(A,I){var g=(I=I||{}).noDataValue,B=0,C={};C.ptr=I.inputOffset||0,C.pixels={},s.readHeaderInfo(A,C);var Q=C.headerInfo,E=Q.fileVersion,i=s.getDataTypeArray(Q.imageType);if(E>5)throw\"unsupported lerc version 2.\"+E;s.readMask(A,C),Q.numValidPixel===Q.width*Q.height||C.pixels.resultMask||(C.pixels.resultMask=I.maskData);var e=Q.width*Q.height;C.pixels.resultPixels=new i(e*Q.numDims),C.counter={onesweep:0,uncompressed:0,lut:0,bitstuffer:0,constant:0,constantoffset:0};var t,o=!I.returnPixelInterleavedDims;if(0!==Q.numValidPixel)if(Q.zMax===Q.zMin)s.constructConstantSurface(C,o);else if(E>=4&&s.checkMinMaxRanges(A,C))s.constructConstantSurface(C,o);else{var a=new DataView(A,C.ptr,2),r=a.getUint8(0);if(C.ptr++,r)s.readDataOneSweep(A,C,i,o);else if(E>1&&Q.imageType<=1&&Math.abs(Q.maxZError-.5)<1e-5){var D=a.getUint8(1);if(C.ptr++,C.encodeMode=D,D>2||E<4&&D>1)throw\"Invalid Huffman flag \"+D;D?s.readHuffman(A,C,i,o):s.readTiles(A,C,i,o)}else s.readTiles(A,C,i,o)}C.eofOffset=C.ptr,I.inputOffset?(t=C.headerInfo.blobSize+I.inputOffset-C.ptr,Math.abs(t)>=1&&(C.eofOffset=I.inputOffset+C.headerInfo.blobSize)):(t=C.headerInfo.blobSize-C.ptr,Math.abs(t)>=1&&(C.eofOffset=C.headerInfo.blobSize));var n={width:Q.width,height:Q.height,pixelData:C.pixels.resultPixels,minValue:Q.zMin,maxValue:Q.zMax,validPixelCount:Q.numValidPixel,dimCount:Q.numDims,dimStats:{minValues:Q.minValues,maxValues:Q.maxValues},maskData:C.pixels.resultMask};if(C.pixels.resultMask&&s.isValidPixelValue(Q.imageType,g)){var h=C.pixels.resultMask;for(B=0;B<e;B++)h[B]||(n.pixelData[B]=g);n.noDataValue=g}return C.noDataValue=g,I.returnFileInfo&&(n.fileInfo=s.formatFileInfo(C)),n},getBandCount:function(A){for(var I=0,g=0,B={ptr:0,pixels:{}};g<A.byteLength-58;)s.readHeaderInfo(A,B),g+=B.headerInfo.blobSize,I++,B.ptr=g;return I}}),y=(D=new ArrayBuffer(4),n=new Uint8Array(D),new Uint32Array(D)[0]=1,1===n[0]),G={decode:function(A,I){if(!y)throw\"Big endian system is not supported.\";var g,B,C=(I=I||{}).inputOffset||0,Q=new Uint8Array(A,C,10),E=String.fromCharCode.apply(null,Q);if(\"CntZImage\"===E.trim())g=h,B=1;else{if(\"Lerc2\"!==E.substring(0,5))throw\"Unexpected file identifier string: \"+E;g=w,B=2}for(var i,e,t,o,a,s,r=0,D=A.byteLength-10,n=[],G={width:0,height:0,pixels:[],pixelType:I.pixelType,mask:null,statistics:[]},S=0;C<D;){var c=g.decode(A,{inputOffset:C,encodedMaskData:i,maskData:t,returnMask:0===r,returnEncodedMask:0===r,returnFileInfo:!0,returnPixelInterleavedDims:I.returnPixelInterleavedDims,pixelType:I.pixelType||null,noDataValue:I.noDataValue||null});C=c.fileInfo.eofOffset,t=c.maskData,0===r&&(i=c.encodedMaskData,G.width=c.width,G.height=c.height,G.dimCount=c.dimCount||1,G.pixelType=c.pixelType||c.fileInfo.pixelType,G.mask=t),B>1&&(t&&n.push(t),c.fileInfo.mask&&c.fileInfo.mask.numBytes>0&&S++),r++,G.pixels.push(c.pixelData),G.statistics.push({minValue:c.minValue,maxValue:c.maxValue,noDataValue:c.noDataValue,dimStats:c.dimStats})}if(B>1&&S>1){for(s=G.width*G.height,G.bandMasks=n,(t=new Uint8Array(s)).set(n[0]),o=1;o<n.length;o++)for(e=n[o],a=0;a<s;a++)t[a]=t[a]&e[a];G.maskData=t}return G}};Eg.exports?Eg.exports=G:this.Lerc=G}();var tg=eg.exports;let og,ag,sg;const rg={env:{emscripten_notify_memory_growth:A=>{sg=new Uint8Array(ag.exports.memory.buffer)}}};const Dg=\"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AikACDcACCAHIDo3AAAgEUEZSA0BIARBGGohBANAIAIpABAhOiAEIAIpABg3AAggBCA6NwAAIAIpACAhOiAEIAIpACg3ABggBCA6NwAQIAJBIGohAiAEQSBqIgQgCkkNAAsMAQsCQAJAIAUoAswCIhEgBUHgAWogJUEHcUEMbGoiDygCACICaiIHIBxLDQAgCSAPKAIEIgogAmoiBmogG0sNACAGQSBqIBQgCWtNDQELIAUgDygCCDYCoAEgBSAPKQIANwOYASAJIBQgBUGYAWogBUHMAmogHCALIBcgIhAgIQYMAQsgAiAJaiEEIA8oAgghFSARKQAAITogCSARKQAINwAIIAkgOjcAAAJAIAJBEUkNACARKQAQITogCSARKQAYNwAYIAkgOjcAECACQRBrQRFIDQAgEUEQaiECIAlBIGohEgNAIAIpABAhOiASIAIpABg3AAggEiA6NwAAIAIpACAhOiASIAIpACg3ABggEiA6NwAQIAJBIGohAiASQSBqIhIgBEkNAAsLIAQgFWshAiAFIAc2AswCIAQgC2sgFUkEQCAVIAQgF2tLDQwgIiAiIAIgC2siD2oiByAKak8EQCAKRQ0CIAQgByAK/AoAAAwCC0EAIA9rIgIEQCAEIAcgAvwKAAALIAogD2ohCiAEIA9rIQQgCyECCyAVQRBPBEAgAikAACE6IAQgAikACDcACCAEIDo3AAAgCkERSA0BIAQgCmohByAEQRBqIQQDQCACKQAQITogBCACKQAYNwAIIAQgOjcAACACKQAgITogBCACKQAoNwAYIAQgOjcAECACQSBqIQIgBEEgaiIEIAdJDQALDAELAkAgFUEHTQRAIAQgAi0AADoAACAEIAItAAE6AAEgBCACLQACOgACIAQgAi0AAzoAAyAEIAIgFUECdCIHQeAaaigCAGoiAigAADYABCACIAdBgBtqKAIAayECDAELIAQgAikAADcAAAsgCkEJSQ0AIAQgCmohDyAEQQhqIgcgAkEIaiICa0EPTARAA0AgByACKQAANwAAIAJBCGohAiAHQQhqIgcgD0kNAAwCCwALIAIpAAAhOiAHIAIpAAg3AAggByA6NwAAIApBGUgNACAEQRhqIQQDQCACKQAQITogBCACKQAYNwAIIAQgOjcAACACKQAgITogBCACKQAoNwAYIAQgOjcAECACQSBqIQIgBEEgaiIEIA9JDQALCyAGQYh/SwRAIAYhAwwLCyAFQeABaiAlQQdxQQxsaiICIA02AgggAiAMNgIEIAIgEDYCAAsgBiAJaiEJICVBAWohJSAQIC1qIAxqIS0MAQsLIAUoArABIAUoArQBRw0HIAUoAqwBQSBHDQcgDiAoayEQA0ACQCAOIBBMBEBBACECA0AgAkEDRg0CIDIgAkECdCIDaiADICZqKAIANgIAIAJBAWohAgwACwALIAVB4AFqIBBBB3FBDGxqIQoCfwJAIAgoAoTsAUECRgRAIAUoAswCIg8gCigCACIEaiIHIAgoAoDsASICSwRAIAIgD0cEQCACIA9rIgIgFCAJa0sNCyAJIA8gAhAfIAogBCACayIENgIAIAIgCWohCQsgBSAWNgLMAiAIQQA2AoTsAQJAAkACQCAEQYCABEoNACAJIAooAgQiDSAEaiIGaiAbSw0AIAZBIGogFCAJa00NAQsgBSAKKAIINgJQIAUgCikCADcDSCAJIBQgBUHIAGogBUHMAmogGSALIBcgIhAgIQYMAQsgBCAWaiEHIAQgCWohDCAKKAIIIQogFikAACE6IAkgFikACDcACCAJIDo3AAACQCAEQRFJDQAgHikAACE6IAkgHikACDcAGCAJIDo3ABAgBEEQa0ERSA0AIAlBIGohAiAeIQQDQCAEKQAQITogAiAEKQAYNwAIIAIgOjcAACAEKQAgITogAiAEKQAoNwAYIAIgOjcAECAEQSBqIQQgAkEgaiICIAxJDQALCyAMIAprIQIgBSAHNgLMAiAMIAtrIApJBEAgCiAMIBdrSw0PICIgIiACIAtrIgdqIgQgDWpPBEAgDUUNAiAMIAQgDfwKAAAMAgtBACAHayICBEAgDCAEIAL8CgAACyAHIA1qIQ0gDCAHayEMIAshAgsgCkEQTwRAIAIpAAAhOiAMIAIpAAg3AAggDCA6NwAAIA1BEUgNASAMIA1qIQcgDEEQaiEEA0AgAikAECE6IAQgAikAGDcACCAEIDo3AAAgAikAICE6IAQgAikAKDcAGCAEIDo3ABAgAkEgaiECIARBIGoiBCAHSQ0ACwwBCwJAIApBB00EQCAMIAItAAA6AAAgDCACLQABOgABIAwgAi0AAjoAAiAMIAItAAM6AAMgDCACIApBAnQiBEHgGmooAgBqIgIoAAA2AAQgAiAEQYAbaigCAGshAgwBCyAMIAIpAAA3AAALIA1BCUkNACAMIA1qIQcgDEEIaiIEIAJBCGoiAmtBD0wEQANAIAQgAikAADcAACACQQhqIQIgBEEIaiIEIAdJDQAMAgsACyACKQAAITogBCACKQAINwAIIAQgOjcAACANQRlIDQAgDEEYaiEEA0AgAikAECE6IAQgAikAGDcACCAEIDo3AAAgAikAICE6IAQgAikAKDcAGCAEIDo3ABAgAkEgaiECIARBIGoiBCAHSQ0ACwsgBkGJf08EQCAGIQMMDgsgGSEcIAYgCWoMAwsgB0EgayECAkACQCAHIBxLDQAgCSAKKAIEIhIgBGoiDGogAksNACAMQSBqIBQgCWtNDQELIAUgCigCCDYCYCAFIAopAgA3A1ggCSAUIAIgBUHYAGogBUHMAmogHCALIBcgIhAhIQwMAgsgBCAJaiEGIAooAgghCiAPKQAAITogCSAPKQAINwAIIAkgOjcAAAJAIARBEUkNACAPKQAQITogCSAPKQAYNwAYIAkgOjcAECAEQRBrQRFIDQAgD0EQaiECIAlBIGohBANAIAIpABAhOiAEIAIpABg3AAggBCA6NwAAIAIpACAhOiAEIAIpACg3ABggBCA6NwAQIAJBIGohAiAEQSBqIgQgBkkNAAsLIAYgCmshAiAFIAc2AswCIAYgC2sgCkkEQCAKIAYgF2tLDQ0gIiAiIAIgC2siB2oiBCASak8EQCASRQ0DIAYgBCAS/AoAAAwDC0EAIAdrIgIEQCAGIAQgAvwKAAALIAcgEmohEiAGIAdrIQYgCyECCyAKQRBPBEAgAikAACE6IAYgAikACDcACCAGIDo3AAAgEkERSA0CIAYgEmohByAGQRBqIQQDQCACKQAQITogBCACKQAYNwAIIAQgOjcAACACKQAgITogBCACKQAoNwAYIAQgOjcAECACQSBqIQIgBEEgaiIEIAdJDQALDAILAkAgCkEHTQRAIAYgAi0AADoAACAGIAItAAE6AAEgBiACLQACOgACIAYgAi0AAzoAAyAGIAIgCkECdCIEQeAaaigCAGoiAigAADYABCACIARBgBtqKAIAayECDAELIAYgAikAADcAAAsgEkEJSQ0BIAYgEmohByAGQQhqIgQgAkEIaiICa0EPTARAA0AgBCACKQAANwAAIAJBCGohAiAE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\",ng={BYTE:1,ASCII:2,SHORT:3,LONG:4,RATIONAL:5,SBYTE:6,UNDEFINED:7,SSHORT:8,SLONG:9,SRATIONAL:10,FLOAT:11,DOUBLE:12,IFD:13,LONG8:16,SLONG8:17,IFD8:18},hg={NewSubfileType:{tag:254,type:ng.LONG,eager:!0},SubfileType:{tag:255,type:ng.SHORT,eager:!0},ImageWidth:{tag:256,type:ng.SHORT,eager:!0},ImageLength:{tag:257,type:ng.SHORT,eager:!0},BitsPerSample:{tag:258,type:ng.SHORT,isArray:!0,eager:!0},Compression:{tag:259,type:ng.SHORT,eager:!0},PhotometricInterpretation:{tag:262,type:ng.SHORT,eager:!0},Threshholding:{tag:263,type:ng.SHORT},CellWidth:{tag:264,type:ng.SHORT},CellLength:{tag:265,type:ng.SHORT},FillOrder:{tag:266,type:ng.SHORT},DocumentName:{tag:269,type:ng.ASCII},ImageDescription:{tag:270,type:ng.ASCII},Make:{tag:271,type:ng.ASCII},Model:{tag:272,type:ng.ASCII},StripOffsets:{tag:273,type:ng.SHORT,isArray:!0},Orientation:{tag:274,type:ng.SHORT},SamplesPerPixel:{tag:277,type:ng.SHORT,eager:!0},RowsPerStrip:{tag:278,type:ng.SHORT,eager:!0},StripByteCounts:{tag:279,type:ng.LONG,isArray:!0},MinSampleValue:{tag:280,type:ng.SHORT,isArray:!0},MaxSampleValue:{tag:281,type:ng.SHORT,isArray:!0},XResolution:{tag:282,type:ng.RATIONAL},YResolution:{tag:283,type:ng.RATIONAL},PlanarConfiguration:{tag:284,type:ng.SHORT,eager:!0},PageName:{tag:285,type:ng.ASCII},XPosition:{tag:286,type:ng.RATIONAL},YPosition:{tag:287,type:ng.RATIONAL},FreeOffsets:{tag:288,type:ng.LONG},FreeByteCounts:{tag:289,type:ng.LONG},GrayResponseUnit:{tag:290,type:ng.SHORT},GrayResponseCurve:{tag:291,type:ng.SHORT,isArray:!0},T4Options:{tag:292,type:ng.LONG},T6Options:{tag:293,type:ng.LONG},ResolutionUnit:{tag:296,type:ng.SHORT},PageNumber:{tag:297,type:ng.SHORT,isArray:!0},TransferFunction:{tag:301,type:ng.SHORT,isArray:!0},Software:{tag:305,type:ng.ASCII},DateTime:{tag:306,type:ng.ASCII},Artist:{tag:315,type:ng.ASCII},HostComputer:{tag:316,type:ng.ASCII},Predictor:{tag:317,type:ng.SHORT},WhitePoint:{tag:318,type:ng.RATIONAL,isArray:!0},PrimaryChromaticities:{tag:319,type:ng.RATIONAL,isArray:!0},ColorMap:{tag:320,type:ng.SHORT,isArray:!0},HalftoneHints:{tag:321,type:ng.SHORT,isArray:!0},TileWidth:{tag:322,type:ng.SHORT,eager:!0},TileLength:{tag:323,type:ng.SHORT,eager:!0},TileOffsets:{tag:324,type:ng.LONG,isArray:!0},TileByteCounts:{tag:325,type:ng.SHORT,isArray:!0},InkSet:{tag:332,type:ng.SHORT},InkNames:{tag:333,type:ng.ASCII},NumberOfInks:{tag:334,type:ng.SHORT},DotRange:{tag:336,type:ng.BYTE,isArray:!0},TargetPrinter:{tag:337,type:ng.ASCII},ExtraSamples:{tag:338,type:ng.BYTE,isArray:!0,eager:!0},SampleFormat:{tag:339,type:ng.SHORT,isArray:!0,eager:!0},SMinSampleValue:{tag:340,isArray:!0},SMaxSampleValue:{tag:341,isArray:!0},TransferRange:{tag:342,type:ng.SHORT,isArray:!0},JPEGProc:{tag:512,type:ng.SHORT},JPEGInterchangeFormat:{tag:513,type:ng.LONG},JPEGInterchangeFormatLngth:{tag:514,type:ng.LONG},JPEGRestartInterval:{tag:515,type:ng.SHORT},JPEGLosslessPredictors:{tag:517,type:ng.SHORT,isArray:!0},JPEGPointTransforms:{tag:518,type:ng.SHORT,isArray:!0},JPEGQTables:{tag:519,type:ng.LONG,isArray:!0},JPEGDCTables:{tag:520,type:ng.LONG,isArray:!0},JPEGACTables:{tag:521,type:ng.LONG,isArray:!0},YCbCrCoefficients:{tag:529,type:ng.RATIONAL,isArray:!0},YCbCrSubSampling:{tag:530,type:ng.SHORT,isArray:!0},YCbCrPositioning:{tag:531,type:ng.SHORT},ReferenceBlackWhite:{tag:532,type:ng.LONG,isArray:!0},Copyright:{tag:33432,type:ng.ASCII},BadFaxLines:{tag:326},CleanFaxData:{tag:327},ClipPath:{tag:343},ConsecutiveBadFaxLines:{tag:328},Decode:{tag:433},DefaultImageColor:{tag:434},Indexed:{tag:346},JPEGTables:{tag:347,isArray:!0,eager:!0},StripRowCounts:{tag:559,isArray:!0},SubIFDs:{tag:330,isArray:!0},XClipPathUnits:{tag:344},YClipPathUnits:{tag:345},ApertureValue:{tag:37378},ColorSpace:{tag:40961},DateTimeDigitized:{tag:36868},DateTimeOriginal:{tag:36867},ExifIFD:{tag:34665,name:\"Exif IFD\",type:ng.LONG},ExifVersion:{tag:36864},ExposureTime:{tag:33434},FileSource:{tag:41728},Flash:{tag:37385},FlashpixVersion:{tag:40960},FNumber:{tag:33437},ImageUniqueID:{tag:42016},LightSource:{tag:37384},MakerNote:{tag:37500},ShutterSpeedValue:{tag:37377},UserComment:{tag:37510},IPTC:{tag:33723},CZ_LSMINFO:{tag:34412},ICCProfile:{tag:34675,name:\"ICC Profile\"},XMP:{tag:700},GDAL_METADATA:{tag:42112},GDAL_NODATA:{tag:42113,type:ng.ASCII,eager:!0},Photoshop:{tag:34377},ModelPixelScale:{tag:33550,type:ng.DOUBLE,isArray:!0,eager:!0},ModelTiepoint:{tag:33922,type:ng.DOUBLE,isArray:!0,eager:!0},ModelTransformation:{tag:34264,type:ng.DOUBLE,isArray:!0,eager:!0},GeoKeyDirectory:{tag:34735,type:ng.SHORT,isArray:!0,eager:!0},GeoDoubleParams:{tag:34736,type:ng.DOUBLE,isArray:!0,eager:!0},GeoAsciiParams:{tag:34737,type:ng.ASCII,eager:!0},LercParameters:{tag:50674,eager:!0}},wg={},yg={};function Gg(A,I,g,B=!1,C=!1){wg[I]=A,yg[A]={tag:A,name:I,type:\"string\"==typeof g?ng[g]:g,isArray:B,eager:C}}for(const[A,I]of Object.entries(hg)){const g=I;Gg(g.tag,g.name||A,g.type,g.isArray,g.eager)}const Sg=1,cg=0,Ng=1,dg=2,lg={1024:\"GTModelTypeGeoKey\",1025:\"GTRasterTypeGeoKey\",1026:\"GTCitationGeoKey\",2048:\"GeographicTypeGeoKey\",2049:\"GeogCitationGeoKey\",2050:\"GeogGeodeticDatumGeoKey\",2051:\"GeogPrimeMeridianGeoKey\",2052:\"GeogLinearUnitsGeoKey\",2053:\"GeogLinearUnitSizeGeoKey\",2054:\"GeogAngularUnitsGeoKey\",2055:\"GeogAngularUnitSizeGeoKey\",2056:\"GeogEllipsoidGeoKey\",2057:\"GeogSemiMajorAxisGeoKey\",2058:\"GeogSemiMinorAxisGeoKey\",2059:\"GeogInvFlatteningGeoKey\",2060:\"GeogAzimuthUnitsGeoKey\",2061:\"GeogPrimeMeridianLongGeoKey\",2062:\"GeogTOWGS84GeoKey\",3072:\"ProjectedCSTypeGeoKey\",3073:\"PCSCitationGeoKey\",3074:\"ProjectionGeoKey\",3075:\"ProjCoordTransGeoKey\",3076:\"ProjLinearUnitsGeoKey\",3077:\"ProjLinearUnitSizeGeoKey\",3078:\"ProjStdParallel1GeoKey\",3079:\"ProjStdParallel2GeoKey\",3080:\"ProjNatOriginLongGeoKey\",3081:\"ProjNatOriginLatGeoKey\",3082:\"ProjFalseEastingGeoKey\",3083:\"ProjFalseNorthingGeoKey\",3084:\"ProjFalseOriginLongGeoKey\",3085:\"ProjFalseOriginLatGeoKey\",3086:\"ProjFalseOriginEastingGeoKey\",3087:\"ProjFalseOriginNorthingGeoKey\",3088:\"ProjCenterLongGeoKey\",3089:\"ProjCenterLatGeoKey\",3090:\"ProjCenterEastingGeoKey\",3091:\"ProjCenterNorthingGeoKey\",3092:\"ProjScaleAtNatOriginGeoKey\",3093:\"ProjScaleAtCenterGeoKey\",3094:\"ProjAzimuthAngleGeoKey\",3095:\"ProjStraightVertPoleLongGeoKey\",3096:\"ProjRectifiedGridAngleGeoKey\",4096:\"VerticalCSTypeGeoKey\",4097:\"VerticalCitationGeoKey\",4098:\"VerticalDatumGeoKey\",4099:\"VerticalUnitsGeoKey\"},kg={};for(const[A,I]of Object.entries(lg))kg[I]=parseInt(A,10);const Fg=new class{init(){return og||(og=\"undefined\"!=typeof fetch?fetch(`data:application/wasm;base64,${Dg}`).then((A=>A.arrayBuffer())).then((A=>WebAssembly.instantiate(A,rg))).then(this._init):WebAssembly.instantiate(Buffer.from(Dg,\"base64\"),rg).then(this._init),og)}_init(A){ag=A.instance,rg.env.emscripten_notify_memory_growth(0)}decode(A,I=0){if(!ag)throw new Error(\"ZSTDDecoder: Await .init() before decoding.\");const g=A.byteLength,B=ag.exports.malloc(g);sg.set(A,B),I=I||Number(ag.exports.ZSTD_findDecompressedSize(B,g));const C=ag.exports.malloc(I),Q=ag.exports.ZSTD_decompress(C,I,B,g),E=sg.slice(C,C+Q);return ag.exports.free(B),ag.exports.free(C),E}};var Rg=Object.freeze({__proto__:null,zstd:Fg,default:class extends i{decodeBlock(A){const I=this.parameters.LercParameters?.[Sg];let g=A;switch(I){case cg:break;case Ng:g=Cg(new Uint8Array(g)).buffer;break;case dg:g=Fg.decode(new Uint8Array(g)).buffer;break;default:throw new Error(`Unsupported LERC additional compression method identifier: ${I}`)}return tg.decode(g,{returnPixelInterleavedDims:1===this.parameters.planarConfiguration}).pixels[0].buffer}}});let Lg,Ug,fg,Yg;const Kg={env:{emscripten_notify_memory_growth:A=>{fg=new Uint8Array(Ug.exports.memory.buffer),Yg=new DataView(fg.buffer)}}};const ug=\"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QQhyIQBBACEDA0AgACADTQ0DIANBQGshAwwACwALQWwhCiAOIA5B/ABqIA5B+ABqIAUgBhAGIgJBiH9LDQEgDigCeCIDIARLDQEgACAOIA4oAnwgByAIIAMgDRAlIAEgADYCACACIQoMAQtBbCEKCyAOQYABaiQAIAoLcAEEfyAAQgA3AgAgAgRAIAFBCmohBiABKAIEIQRBACECQQAhAQNAIAEgBHZFBEAgAiAGIAFBA3RqLQAAIgUgAiAFSxshAiABQQFqIQEgAyAFQRZLaiEDDAELCyAAIAI2AgQgACADQQggBGt0NgIACwuuAQEEfyABIAIoAgQiAyABKAIEaiIENgIEIAAgA0ECdEGwGWooAgAgASgCAEEAIARrdnE2AgACQCAEQSFPBEAgAUGwGjYCCAwBCyABKAIIIgMgASgCEE8EQCABEAwMAQsgAyABKAIMIgVGDQAgASADIAMgBWsgBEEDdiIGIAMgBmsgBUkbIgNrIgU2AgggASAEIANBA3RrNgIEIAEgBSgAADYCAAsgACACQQhqNgIEC40CAgN/AX4gACACaiEEAkACQCACQQhOBEAgACABayICQXlIDQELA0AgACAETw0CIAAgAS0AADoAACAAQQFqIQAgAUEBaiEBDAALAAsCQAJAIAJBb0sNACAAIARBIGsiAksNACABKQAAIQYgACABKQAINwAIIAAgBjcAACACIABrIgVBEU4EQCAAQRBqIQAgASEDA0AgAykAECEGIAAgAykAGDcACCAAIAY3AAAgAykAICEGIAAgAykAKDcAGCAAIAY3ABAgA0EgaiEDIABBIGoiACACSQ0ACwsgASAFaiEBDAELIAAhAgsDQCACIARPDQEgAiABLQAAOgAAIAJBAWohAiABQQFqIQEMAAsACwvfAQEGf0G6fyEKAkAgAigCBCIIIAIoAgAiCWoiDSABIABrSw0AQWwhCiAJIAQgAygCACILa0sNACAAIAlqIgQgAigCCCIMayECIAAgAUEgayIBIAsgCUEAEDMgAyAJIAtqNgIAAkACQCAEIAVrIAxPBEAgAiEFDAELIAwgBCAGa0sNAiAHIAcgAiAFayIDaiICIAhqTwRAIAhFDQIgBCACIAj8CgAADAILQQAgA2siAARAIAQgAiAA/AoAAAsgAyAIaiEIIAQgA2shBAsgBCABIAUgCEEBEDML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\",Mg=new class{init(){return Lg||(Lg=\"undefined\"!=typeof fetch?fetch(`data:application/wasm;base64,${ug}`).then((A=>A.arrayBuffer())).then((A=>WebAssembly.instantiate(A,Kg))).then(this._init):WebAssembly.instantiate(Buffer.from(ug,\"base64\"),Kg).then(this._init),Lg)}_init(A){Ug=A.instance,Kg.env.emscripten_notify_memory_growth(0)}decode(A,I=0){if(!Ug)throw new Error(\"ZSTDDecoder: Await .init() before decoding.\");const g=A.byteLength,B=Ug.exports.malloc(g);if(fg.set(A,B),0===I&&(I=Number(Ug.exports.ZSTD_findDecompressedSize(B,g))),-1===I){Ug.exports.free(B);const I=[];for(const g of this.decodeStreaming([A]))I.push(g);if(1===I.length)return I[0];const g=I.reduce(((A,I)=>A+I.byteLength),0),C=new Uint8Array(g);let Q=0;for(const A of I)C.set(A,Q),Q+=A.byteLength;return C}const C=Ug.exports.malloc(I),Q=Ug.exports.ZSTD_decompress(C,I,B,g),E=fg.slice(C,C+Q);return Ug.exports.free(B),Ug.exports.free(C),E}*decodeStreaming(A){if(!Ug)throw new Error(\"ZSTDDecoder: Await .init() before decoding.\");const I=Ug.exports.ZSTD_DStreamInSize(),g=Ug.exports.malloc(I),B=Ug.exports.ZSTD_DStreamOutSize(),C=Ug.exports.malloc(B),Q=Ug.exports.ZSTD_createDCtx(),E=Ug.exports.malloc(12),i=Ug.exports.malloc(12);let e=0;for(const I of A){const A=Ug.exports.malloc(I.byteLength);for(fg.set(I,A),Yg.setInt32(E,A,!0),Yg.setInt32(E+4,I.byteLength,!0),Yg.setInt32(E+4+4,0,!0);Yg.getUint32(E+4+4,!0)<Yg.getUint32(E+4,!0);){Yg.setInt32(i,C,!0),Yg.setInt32(i+4,B,!0),Yg.setInt32(i+4+4,0,!0),e=Ug.exports.ZSTD_decompressStream(Q,i,E);const A=Yg.getUint32(i+4+4,!0);yield fg.slice(C,C+A)}Ug.exports.free(A)}if(Ug.exports.ZSTD_freeDCtx(Q),Ug.exports.free(g),Ug.exports.free(C),Ug.exports.free(E),Ug.exports.free(i),0!==e)throw new Error(\"Incomplete stream, more data expected.\")}};var Jg=Object.freeze({__proto__:null,zstd:Mg,default:class extends i{decodeBlock(A){return Mg.decode(new Uint8Array(A)).buffer}}});var Hg=Object.freeze({__proto__:null,default:class extends i{constructor(A){if(super(A),\"undefined\"==typeof createImageBitmap)throw new Error(\"Cannot decode WebImage as `createImageBitmap` is not available\");if(\"undefined\"==typeof document&&\"undefined\"==typeof OffscreenCanvas)throw new Error(\"Cannot decode WebImage as neither `document` nor `OffscreenCanvas` is not available\")}async decodeBlock(A){const I=new Blob([A]),g=await createImageBitmap(I);let B;\"undefined\"!=typeof document?(B=document.createElement(\"canvas\"),B.width=g.width,B.height=g.height):B=new OffscreenCanvas(g.width,g.height);const C=B.getContext(\"2d\");C.drawImage(g,0,0);const Q=C.getImageData(0,0,g.width,g.height).data,E=this.parameters.samplesPerPixel||4;if(4===E)return Q.buffer;if(3===E){const A=new Uint8ClampedArray(g.width*g.height*3);for(let I=0,g=0;I<A.length;I+=3,g+=4)A[I]=Q[g],A[I+1]=Q[g+1],A[I+2]=Q[g+2];return A.buffer}throw new Error(`Unsupported SamplesPerPixel value: ${E}`)}}});";
 	return new browser_default(typeof Buffer !== "undefined" ? "data:application/javascript;base64," + Buffer.from(source, "binary").toString("base64") : URL.createObjectURL(new Blob([source], { type: "application/javascript" })));
 }
-//#endregion
-//#region node_modules/geotiff/dist-module/pool.js
+// node_modules/geotiff/dist-module/pool.js
 var defaultPoolSize = typeof navigator !== "undefined" ? navigator.hardwareConcurrency || 2 : 2;
 /**
 * @module pool
@@ -55713,8 +56180,7 @@ var Pool = class {
 		}
 	}
 };
-//#endregion
-//#region node_modules/geotiff/dist-module/source/httputils.js
+// node_modules/geotiff/dist-module/source/httputils.js
 var CRLFCRLF = "\r\n\r\n";
 /**
 * Shim for 'Object.fromEntries'
@@ -55816,8 +56282,7 @@ function parseByteRanges(responseArrayBuffer, boundary) {
 	}
 	return out;
 }
-//#endregion
-//#region node_modules/geotiff/dist-module/source/basesource.js
+// node_modules/geotiff/dist-module/source/basesource.js
 /**
 * @typedef {Object} Slice
 * @property {number} offset
@@ -55850,8 +56315,7 @@ var BaseSource = class {
 	}
 	async close() {}
 };
-//#endregion
-//#region node_modules/quick-lru/index.js
+// node_modules/quick-lru/index.js
 var QuickLRU = class extends Map {
 	constructor(options = {}) {
 		super();
@@ -56022,8 +56486,7 @@ var QuickLRU = class extends Map {
 		return JSON.stringify([...this.entriesAscending()]);
 	}
 };
-//#endregion
-//#region node_modules/geotiff/dist-module/utils.js
+// node_modules/geotiff/dist-module/utils.js
 /**
 * Promisified wrapper around 'setTimeout' to allow 'await'
 * @param {number} [milliseconds]
@@ -56054,8 +56517,7 @@ var CustomAggregateError = class extends Error {
 	}
 };
 var AggregateError = CustomAggregateError;
-//#endregion
-//#region node_modules/geotiff/dist-module/source/blockedsource.js
+// node_modules/geotiff/dist-module/source/blockedsource.js
 var Block = class {
 	/**
 	*
@@ -56256,8 +56718,7 @@ var BlockedSource = class extends BaseSource {
 		});
 	}
 };
-//#endregion
-//#region node_modules/geotiff/dist-module/source/client/base.js
+// node_modules/geotiff/dist-module/source/client/base.js
 var BaseResponse = class {
 	/**
 	* Returns whether the response has an ok'ish status code
@@ -56301,8 +56762,7 @@ var BaseClient = class {
 		throw new Error("request is not implemented");
 	}
 };
-//#endregion
-//#region node_modules/geotiff/dist-module/source/client/fetch.js
+// node_modules/geotiff/dist-module/source/client/fetch.js
 var FetchResponse = class extends BaseResponse {
 	/**
 	* BaseResponse facade for fetch API Response
@@ -56347,8 +56807,7 @@ var FetchClient = class extends BaseClient {
 		}));
 	}
 };
-//#endregion
-//#region node_modules/geotiff/dist-module/source/client/xhr.js
+// node_modules/geotiff/dist-module/source/client/xhr.js
 var XHRResponse = class extends BaseResponse {
 	/**
 	* BaseResponse facade for XMLHttpRequest
@@ -56403,8 +56862,7 @@ var XHRClient = class extends BaseClient {
 		return await this.constructRequest(headers, signal);
 	}
 };
-//#endregion
-//#region node_modules/geotiff/dist-module/source/client/http.js
+// node_modules/geotiff/dist-module/source/client/http.js
 var import___vite_browser_external = /* @__PURE__ */ __toESM((/* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = {};
 })))(), 1);
@@ -56476,8 +56934,7 @@ var HttpClient = class extends BaseClient {
 		return await this.constructRequest(headers, signal);
 	}
 };
-//#endregion
-//#region node_modules/geotiff/dist-module/source/remote.js
+// node_modules/geotiff/dist-module/source/remote.js
 /**
 * @typedef {Object} RemoteSourceOptions
 * @property {Record<string, string>} [headers={}] Additional headers to add to each request
@@ -56668,8 +57125,7 @@ function makeRemoteSource(url, { forceXHR = false, ...clientOptions } = {}) {
 	if (typeof XMLHttpRequest !== "undefined") return makeXHRSource(url, clientOptions);
 	return makeHttpSource(url, clientOptions);
 }
-//#endregion
-//#region node_modules/geotiff/dist-module/source/filereader.js
+// node_modules/geotiff/dist-module/source/filereader.js
 var FileReaderSource = class extends BaseSource {
 	/**
 	* @param {Blob} file
@@ -56707,8 +57163,7 @@ var FileReaderSource = class extends BaseSource {
 function makeFileReaderSource(file) {
 	return new FileReaderSource(file);
 }
-//#endregion
-//#region node_modules/geotiff/dist-module/imagefiledirectory.js
+// node_modules/geotiff/dist-module/imagefiledirectory.js
 /**
 * Allocates an appropriate TypedArray based on the TIFF field type.
 * @param {number} fieldType - TIFF field type constant from fieldTypes
@@ -57101,8 +57556,7 @@ var ImageFileDirectoryParser = class {
 		return new ImageFileDirectory(actualizedFields, deferredFields, deferredArrays, dataSlice.readOffset(offset + offsetSize + entrySize * numDirEntries));
 	}
 };
-//#endregion
-//#region node_modules/geotiff/dist-module/predictor.js
+// node_modules/geotiff/dist-module/predictor.js
 /**
 * @param {Uint8Array|Uint16Array|Uint32Array} row
 * @param {number} stride
@@ -57178,8 +57632,7 @@ function applyPredictor(block, predictor, width, height, bitsPerSample, planarCo
 	}
 	return block;
 }
-//#endregion
-//#region node_modules/geotiff/dist-module/compression/basedecoder.js
+// node_modules/geotiff/dist-module/compression/basedecoder.js
 /**
 * @typedef {Object} BaseDecoderParameters
 * @property {number} tileWidth
@@ -57215,8 +57668,7 @@ var BaseDecoder = class {
 		return decoded;
 	}
 };
-//#endregion
-//#region node_modules/geotiff/dist-module/geotiff.js
+// node_modules/geotiff/dist-module/geotiff.js
 /** @module geotiff */
 /**
 * @typedef {Uint8Array | Int8Array | Uint16Array | Int16Array | Uint32Array | Int32Array | Float32Array | Float64Array}
@@ -57807,8 +58259,7 @@ async function fromUrls(mainUrl, overviewUrls = [], options = {}, signal) {
 	};
 	return new MultiGeoTIFF(await GeoTIFF.fromSource(makeRemoteSource(mainUrl, remoteOptions), void 0, signal), await Promise.all(overviewUrls.map((url) => GeoTIFF.fromSource(makeRemoteSource(url, remoteOptions), void 0, signal))));
 }
-//#endregion
-//#region node_modules/ol/source/GeoTIFF.js
+// node_modules/ol/source/GeoTIFF.js
 /**
 * @module ol/source/GeoTIFF
 */
@@ -57954,6 +58405,7 @@ async function getProjectionFromKeys(geoKeys, geoKey, unitKey, loadMissingProjec
 		}
 		return projection || null;
 	}
+	return null;
 }
 /**
 * @param {GeoTIFFImage} image A GeoTIFF.
@@ -57986,11 +58438,11 @@ function getImagesForTIFF(tiff) {
 var createCustomClient = (url, loader) => ({
 	url,
 	request: async (options) => {
-		const response = Object.assign(await loader(url, options?.headers, options?.signal), {
+		const response = await loader(url, options?.headers || {}, options?.signal || new AbortController().signal);
+		return Object.assign(response, {
 			getHeader: (name) => response.headers.get(name),
 			getData: () => response.arrayBuffer()
 		});
-		return response;
 	}
 });
 /**
@@ -58026,14 +58478,14 @@ function getImagesForSource(source, options) {
 * @param {number|Array<number>|Array<Array<number>>} got Actual value.
 * @param {number} tolerance Accepted tolerance in fraction of expected between expected and got.
 * @param {string} message The error message.
-* @param {function(Error):void} rejector A function to be called with any error.
+* @param {((function(Error): void)|null|undefined)} rejector A function to be called with any error.
 */
 function assertEqual(expected, got, tolerance, message, rejector) {
 	if (Array.isArray(expected)) {
 		const length = expected.length;
 		if (!Array.isArray(got) || length != got.length) {
 			const error = new Error(message);
-			rejector(error);
+			rejector?.(error);
 			throw error;
 		}
 		for (let i = 0; i < length; ++i) assertEqual(expected[i], got[i], tolerance, message, rejector);
@@ -58043,7 +58495,7 @@ function assertEqual(expected, got, tolerance, message, rejector) {
 	if (Math.abs(expected - got) > tolerance * expected) throw new Error(message);
 }
 /**
-* @param {Array} array The data array.
+* @param {Array<number>|Int8Array|Int16Array|Int32Array|Float32Array|Uint8Array|Uint16Array|Uint32Array} array The data array.
 * @return {number} The minimum value.
 */
 function getMinForDataType$1(array) {
@@ -58054,7 +58506,7 @@ function getMinForDataType$1(array) {
 	return 0;
 }
 /**
-* @param {Array} array The data array.
+* @param {Array<number>|Int8Array|Int16Array|Int32Array|Float32Array|Uint8Array|Uint16Array|Uint32Array|Uint8ClampedArray} array The data array.
 * @return {number} The maximum value.
 */
 function getMaxForDataType$1(array) {
@@ -58127,7 +58579,7 @@ var GeoTIFFSource = class extends DataTileSource {
 		super({
 			attributions: options.attributions,
 			state: "loading",
-			tileGrid: null,
+			tileGrid: void 0,
 			projection: options.projection || null,
 			transition: options.transition,
 			interpolate: options.interpolate !== false,
@@ -58141,7 +58593,7 @@ var GeoTIFFSource = class extends DataTileSource {
 		this.sourceInfo_ = options.sources;
 		const numSources = this.sourceInfo_.length;
 		/**
-		* @type {Object}
+		* @type {GeoTIFFSourceOptions|undefined}
 		* @private
 		*/
 		this.sourceOptions_ = options.sourceOptions;
@@ -58181,7 +58633,7 @@ var GeoTIFFSource = class extends DataTileSource {
 		*/
 		this.normalize_ = options.normalize !== false;
 		/**
-		* @type {Error}
+		* @type {Error|null}
 		* @private
 		*/
 		this.error_ = null;
@@ -58198,7 +58650,7 @@ var GeoTIFFSource = class extends DataTileSource {
 		this.setKey(this.sourceInfo_.map((source) => source.url).join(","));
 		const self = this;
 		const requests = new Array(numSources);
-		for (let i = 0; i < numSources; ++i) requests[i] = getImagesForSource(this.sourceInfo_[i], this.sourceOptions_);
+		for (let i = 0; i < numSources; ++i) requests[i] = getImagesForSource(this.sourceInfo_[i], this.sourceOptions_ || {});
 		Promise.all(requests).then(function(sources) {
 			self.configure_(sources);
 		}).catch(function(error$1) {
@@ -58208,7 +58660,7 @@ var GeoTIFFSource = class extends DataTileSource {
 		});
 	}
 	/**
-	* @return {Error} A source loading error. When the source state is `error`, use this function
+	* @return {Error|null} A source loading error. When the source state is `error`, use this function
 	* to get more information about the error. To debug a faulty configuration, you may want to use
 	* a listener like
 	* ```js
@@ -58290,10 +58742,15 @@ var GeoTIFFSource = class extends DataTileSource {
 	* @private
 	*/
 	async configure_(sources) {
+		/** @type {Array<number>|undefined} */
 		let extent;
+		/** @type {Array<number>|undefined} */
 		let origin;
+		/** @type {Array<import("../size.js").Size>|undefined} */
 		let commonRenderTileSizes;
+		/** @type {Array<import("../size.js").Size>|undefined} */
 		let commonSourceTileSizes;
+		/** @type {Array<number>|undefined} */
 		let resolutions;
 		const samplesPerPixel = new Array(sources.length);
 		const nodataValues = new Array(sources.length);
@@ -58301,7 +58758,9 @@ var GeoTIFFSource = class extends DataTileSource {
 		let minZoom = 0;
 		const sourceCount = sources.length;
 		for (let sourceIndex = 0; sourceIndex < sourceCount; ++sourceIndex) {
+			/** @type {Array<GeoTIFFImage>} */
 			const images = [];
+			/** @type {Array<GeoTIFFImage>} */
 			const masks = [];
 			sources[sourceIndex].forEach((item) => {
 				if (isMask(item)) masks.push(item);
@@ -58415,15 +58874,16 @@ var GeoTIFFSource = class extends DataTileSource {
 		this.setLoader(this.loadTile_.bind(this));
 		this.setState("ready");
 		const zoom = 1;
-		if (resolutions.length === 2) resolutions = [
-			resolutions[0],
-			resolutions[1],
-			resolutions[1] / 2
+		const configuredResolutions = resolutions;
+		if (configuredResolutions.length === 2) resolutions = [
+			configuredResolutions[0],
+			configuredResolutions[1],
+			configuredResolutions[1] / 2
 		];
-		else if (resolutions.length === 1) resolutions = [
-			resolutions[0] * 2,
-			resolutions[0],
-			resolutions[0] / 2
+		else if (configuredResolutions.length === 1) resolutions = [
+			configuredResolutions[0] * 2,
+			configuredResolutions[0],
+			configuredResolutions[0] / 2
 		];
 		let viewExtent = extent;
 		if (this.transformMatrix) {
@@ -58431,12 +58891,13 @@ var GeoTIFFSource = class extends DataTileSource {
 			const transformFn = createTransformFromCoordinateTransform((input) => apply(matrix, input));
 			viewExtent = applyTransform(extent, transformFn);
 		}
-		this.viewResolver({
+		const projection = this.getProjection();
+		this.viewResolver?.({
 			showFullExtent: true,
-			projection: this.projection,
+			projection,
 			resolutions,
-			center: toUserCoordinate(getCenter(viewExtent), this.projection),
-			extent: toUserExtent(viewExtent, this.projection),
+			center: toUserCoordinate(getCenter(viewExtent), projection),
+			extent: toUserExtent(viewExtent, projection),
 			zoom
 		});
 	}
@@ -58445,7 +58906,7 @@ var GeoTIFFSource = class extends DataTileSource {
 	* @param {number} x The x tile index.
 	* @param {number} y The y tile index.
 	* @param {import('./DataTile.js').LoaderOptions} options The loader options.
-	* @return {Promise} The composed tile data.
+	* @return {Promise<import("../DataTile.js").Data>} The composed tile data.
 	* @private
 	*/
 	loadTile_(z, x, y, options) {
@@ -58471,10 +58932,11 @@ var GeoTIFFSource = class extends DataTileSource {
 			});
 			/** @type {number|Array<number>} */
 			let fillValue;
-			if ("nodata" in source && source.nodata !== null) {
+			if ("nodata" in source && source.nodata !== null && source.nodata !== void 0) {
 				if (Array.isArray(source.nodata)) {
 					if (samples) fillValue = samples.map(function(sampleIndex) {
-						const v = source.nodata[sampleIndex];
+						const nodata = source.nodata;
+						const v = Array.isArray(nodata) && nodata[sampleIndex] !== void 0 ? nodata[sampleIndex] : void 0;
 						return v !== void 0 ? v : nodataValues[sourceIndex][sampleIndex];
 					});
 					else fillValue = source.nodata.map(function(v, i) {
@@ -58519,7 +58981,7 @@ var GeoTIFFSource = class extends DataTileSource {
 	}
 	/**
 	* @param {import("../size.js").Size} sourceTileSize The source tile size.
-	* @param {Array} sourceSamples The source samples.
+	* @param {Array<Array<Int8Array|Uint8Array|Uint16Array|Uint32Array|Int16Array|Int32Array|Float32Array|null>|null>} sourceSamples The source samples.
 	* @return {import("../DataTile.js").Data} The composed tile data.
 	* @private
 	*/
@@ -58556,11 +59018,19 @@ var GeoTIFFSource = class extends DataTileSource {
 					let max = Array.isArray(source.max) ? source.max[bandIndex] : source.max;
 					if (min === void 0) {
 						if (stats && STATISTICS_MINIMUM in stats) min = parseFloat(stats[STATISTICS_MINIMUM]);
-						else min = getMinForDataType$1(sourceSamples[sourceIndex][0]);
+						else {
+							const sampleData = sourceSamples[sourceIndex];
+							const firstBand = sampleData && sampleData[0];
+							min = firstBand ? getMinForDataType$1(firstBand) : 0;
+						}
 					}
 					if (max === void 0) {
 						if (stats && STATISTICS_MAXIMUM in stats) max = parseFloat(stats[STATISTICS_MAXIMUM]);
-						else max = getMaxForDataType$1(sourceSamples[sourceIndex][0]);
+						else {
+							const sampleData = sourceSamples[sourceIndex];
+							const firstBand = sampleData && sampleData[0];
+							max = firstBand ? getMaxForDataType$1(firstBand) : 255;
+						}
 					}
 					gains[sampleIndex] = 255 / (max - min);
 					biases[sampleIndex] = -min * gains[sampleIndex];
@@ -58638,8 +59108,7 @@ var GeoTIFFSource = class extends DataTileSource {
 *
 */
 GeoTIFFSource.prototype.getView;
-//#endregion
-//#region node_modules/ol/resolution.js
+// node_modules/ol/resolution.js
 /**
 * @module ol/resolution
 */
@@ -58654,13 +59123,12 @@ function fromResolutionLike(resolution) {
 	if (Array.isArray(resolution)) return Math.min(...resolution);
 	return resolution;
 }
-//#endregion
-//#region node_modules/ol/reproj/Image.js
+// node_modules/ol/reproj/Image.js
 /**
 * @module ol/reproj/Image
 */
 /**
-* @typedef {function(import("../extent.js").Extent, number, number) : import("../Image.js").default} FunctionType
+* @typedef {function(import("../extent.js").Extent, number, number) : import("../Image.js").default|null} FunctionType
 */
 /**
 * @classdesc
@@ -58726,7 +59194,7 @@ var ReprojImage = class extends ImageWrapper {
 		this.targetExtent_ = targetExtent;
 		/**
 		* @private
-		* @type {import("../Image.js").default}
+		* @type {import("../Image.js").default|null}
 		*/
 		this.sourceImage_ = sourceImage;
 		/**
@@ -58741,7 +59209,7 @@ var ReprojImage = class extends ImageWrapper {
 		this.interpolate_ = interpolate;
 		/**
 		* @private
-		* @type {HTMLCanvasElement|OffscreenCanvas}
+		* @type {HTMLCanvasElement|OffscreenCanvas|null}
 		*/
 		this.canvas_ = null;
 		/**
@@ -58759,7 +59227,7 @@ var ReprojImage = class extends ImageWrapper {
 		super.disposeInternal();
 	}
 	/**
-	* @return {HTMLCanvasElement|OffscreenCanvas} Image.
+	* @return {HTMLCanvasElement|OffscreenCanvas|null} Image.
 	* @override
 	*/
 	getImage() {
@@ -58775,13 +59243,17 @@ var ReprojImage = class extends ImageWrapper {
 	* @private
 	*/
 	reproject_() {
-		const sourceState = this.sourceImage_.getState();
+		const sourceImage = this.sourceImage_;
+		if (!sourceImage) return;
+		const sourceState = sourceImage.getState();
 		if (sourceState == ImageState_default.LOADED) {
 			const width = getWidth(this.targetExtent_) / this.targetResolution_;
 			const height = getHeight(this.targetExtent_) / this.targetResolution_;
-			this.canvas_ = render$1(width, height, this.sourcePixelRatio_, fromResolutionLike(this.sourceImage_.getResolution()), this.maxSourceExtent_, this.targetResolution_, this.targetExtent_, this.triangulation_, [{
-				extent: this.sourceImage_.getExtent(),
-				image: this.sourceImage_.getImage()
+			const image = sourceImage.getImage();
+			if (!image) return;
+			this.canvas_ = render$1(width, height, this.sourcePixelRatio_, fromResolutionLike(sourceImage.getResolution()), this.maxSourceExtent_, this.targetResolution_, this.targetExtent_, this.triangulation_, [{
+				extent: sourceImage.getExtent(),
+				image
 			}], 0, void 0, this.interpolate_, true);
 		}
 		this.state = sourceState;
@@ -58793,19 +59265,21 @@ var ReprojImage = class extends ImageWrapper {
 	*/
 	load() {
 		if (this.state == ImageState_default.IDLE) {
+			const sourceImage = this.sourceImage_;
+			if (!sourceImage) return;
 			this.state = ImageState_default.LOADING;
 			this.changed();
-			const sourceState = this.sourceImage_.getState();
+			const sourceState = sourceImage.getState();
 			if (sourceState == ImageState_default.LOADED || sourceState == ImageState_default.ERROR) this.reproject_();
 			else {
-				this.sourceListenerKey_ = listen(this.sourceImage_, EventType_default$2.CHANGE, (e) => {
-					const sourceState = this.sourceImage_.getState();
+				this.sourceListenerKey_ = listen(sourceImage, EventType_default$2.CHANGE, () => {
+					const sourceState = sourceImage.getState();
 					if (sourceState == ImageState_default.LOADED || sourceState == ImageState_default.ERROR) {
 						this.unlistenSource_();
 						this.reproject_();
 					}
 				});
-				this.sourceImage_.load();
+				sourceImage.load();
 			}
 		}
 	}
@@ -58817,8 +59291,7 @@ var ReprojImage = class extends ImageWrapper {
 		this.sourceListenerKey_ = null;
 	}
 };
-//#endregion
-//#region node_modules/ol/source/Image.js
+// node_modules/ol/source/Image.js
 /**
 * @module ol/source/Image
 */
@@ -58920,7 +59393,7 @@ var ImageSource = class extends Source {
 		this.un;
 		/**
 		* @protected
-		* @type {import("../Image.js").Loader}
+		* @type {import("../Image.js").Loader|null}
 		*/
 		this.loader = options.loader || null;
 		/**
@@ -58930,7 +59403,7 @@ var ImageSource = class extends Source {
 		this.resolutions_ = options.resolutions !== void 0 ? options.resolutions : null;
 		/**
 		* @private
-		* @type {import("../reproj/Image.js").default}
+		* @type {import("../reproj/Image.js").default|null}
 		*/
 		this.reprojectedImage_ = null;
 		/**
@@ -58940,7 +59413,7 @@ var ImageSource = class extends Source {
 		this.reprojectedRevision_ = 0;
 		/**
 		* @protected
-		* @type {import("../Image.js").default}
+		* @type {import("../Image.js").default|null}
 		*/
 		this.image = null;
 		/**
@@ -58960,7 +59433,7 @@ var ImageSource = class extends Source {
 		this.static_ = options.loader ? options.loader.length === 0 : false;
 		/**
 		* @private
-		* @type {import("../proj/Projection.js").default}
+		* @type {import("../proj/Projection.js").default|null}
 		*/
 		this.wantedProjection_ = null;
 	}
@@ -58992,7 +59465,7 @@ var ImageSource = class extends Source {
 	* @param {number} resolution Resolution.
 	* @param {number} pixelRatio Pixel ratio.
 	* @param {import("../proj/Projection.js").default} projection Projection.
-	* @return {import("../Image.js").default} Single image.
+	* @return {import("../Image.js").default|null} Single image.
 	*/
 	getImage(extent, resolution, pixelRatio, projection) {
 		const sourceProjection = this.getProjection();
@@ -59015,7 +59488,7 @@ var ImageSource = class extends Source {
 	* @param {number} resolution Resolution.
 	* @param {number} pixelRatio Pixel ratio.
 	* @param {import("../proj/Projection.js").default} projection Projection.
-	* @return {import("../Image.js").default} Single image.
+	* @return {import("../Image.js").default|null} Single image.
 	* @protected
 	*/
 	getImageInternal(extent, resolution, pixelRatio, projection) {
@@ -59081,8 +59554,7 @@ function getRequestExtent(extent, resolution, pixelRatio, ratio) {
 	const viewHeight = ceil(getHeight(extent) / imageResolution, 4);
 	return getForViewAndSize(center, imageResolution, 0, [viewWidth + 2 * ceil((ratio - 1) * viewWidth / 2, 4), viewHeight + 2 * ceil((ratio - 1) * viewHeight / 2, 4)]);
 }
-//#endregion
-//#region node_modules/ol/source/static.js
+// node_modules/ol/source/static.js
 /**
 * @module ol/source/static
 */
@@ -59126,8 +59598,7 @@ function createLoader(options) {
 		});
 	};
 }
-//#endregion
-//#region node_modules/ol/source/ImageStatic.js
+// node_modules/ol/source/ImageStatic.js
 /**
 * @module ol/source/ImageStatic
 */
@@ -59161,7 +59632,7 @@ var Static = class extends ImageSource {
 		super({
 			attributions: options.attributions,
 			interpolate: options.interpolate,
-			projection: get$4(options.projection)
+			projection: options.projection
 		});
 		/**
 		* @private
@@ -59175,7 +59646,7 @@ var Static = class extends ImageSource {
 		this.imageExtent_ = options.imageExtent;
 		/**
 		* @private
-		* @type {import("../Image.js").default}
+		* @type {import("../Image.js").default|null}
 		*/
 		this.image = null;
 		this.image = new ImageWrapper(this.imageExtent_, void 0, 1, createLoader({
@@ -59184,8 +59655,9 @@ var Static = class extends ImageSource {
 			crossOrigin,
 			referrerPolicy: options.referrerPolicy,
 			load: (image, src) => {
-				this.image.setImage(image);
-				imageLoadFunction(this.image, src);
+				const wrapper = this.image;
+				wrapper.setImage(image);
+				imageLoadFunction(wrapper, src);
 				return decode$1(image);
 			}
 		}));
@@ -59204,11 +59676,12 @@ var Static = class extends ImageSource {
 	* @param {number} resolution Resolution.
 	* @param {number} pixelRatio Pixel ratio.
 	* @param {import("../proj/Projection.js").default} projection Projection.
-	* @return {import("../Image.js").default} Single image.
+	* @return {import("../Image.js").default|null} Single image.
 	* @override
 	*/
 	getImageInternal(extent, resolution, pixelRatio, projection) {
-		if (intersects$1(extent, this.image.getExtent())) return this.image;
+		const image = this.image;
+		if (image && intersects$1(extent, image.getExtent())) return image;
 		return null;
 	}
 	/**
@@ -59220,8 +59693,7 @@ var Static = class extends ImageSource {
 		return this.url_;
 	}
 };
-//#endregion
-//#region node_modules/ol/net.js
+// node_modules/ol/net.js
 /**
 * @module ol/net
 */
@@ -59241,7 +59713,8 @@ function jsonp(url, callback, errback, callbackParam) {
 	const key = "olc_" + getUid(callback);
 	function cleanup() {
 		delete window[key];
-		script.parentNode.removeChild(script);
+		const parent = script.parentNode;
+		if (parent) parent.removeChild(script);
 	}
 	script.async = true;
 	script.src = url + (url.includes("?") ? "&" : "?") + (callbackParam || "callback") + "=" + key;
@@ -59249,7 +59722,7 @@ function jsonp(url, callback, errback, callbackParam) {
 		cleanup();
 		if (errback) errback();
 	}, 1e4);
-	window[key] = function(data) {
+	/** @type {Record<string, function(*): void>} */ window[key] = function(data) {
 		clearTimeout(timer);
 		cleanup();
 		callback(data);
@@ -59265,8 +59738,7 @@ function resolveUrl(base, url) {
 	if (url.includes("://")) return url;
 	return new URL(url, base).href;
 }
-//#endregion
-//#region node_modules/ol/source/TileJSON.js
+// node_modules/ol/source/TileJSON.js
 /**
 * @module ol/source/TileJSON
 */
@@ -59344,12 +59816,12 @@ var TileJSON = class extends TileImage {
 			zDirection: options.zDirection
 		});
 		/**
-		* @type {Config}
+		* @type {Config|null}
 		* @private
 		*/
 		this.tileJSON_ = null;
 		/**
-		* @type {number|import("../size.js").Size}
+		* @type {number|import("../size.js").Size|undefined}
 		* @private
 		*/
 		this.tileSize_ = options.tileSize;
@@ -59390,7 +59862,7 @@ var TileJSON = class extends TileImage {
 		this.handleTileJSONError();
 	}
 	/**
-	* @return {Config} The tilejson object.
+	* @return {Config|null} The tilejson object.
 	* @api
 	*/
 	getTileJSON() {
@@ -59403,9 +59875,17 @@ var TileJSON = class extends TileImage {
 	handleTileJSONResponse(tileJSON) {
 		const epsg4326Projection = get$4("EPSG:4326");
 		const sourceProjection = this.getProjection();
+		if (!sourceProjection || !epsg4326Projection) {
+			this.handleTileJSONError();
+			return;
+		}
 		let extent;
 		if (tileJSON["bounds"] !== void 0) {
 			const transform = getTransformFromProjections(epsg4326Projection, sourceProjection);
+			if (!transform) {
+				this.handleTileJSONError();
+				return;
+			}
 			extent = applyTransform(tileJSON["bounds"], transform);
 		}
 		const gridExtent = extentFromProjection(sourceProjection);
@@ -59420,10 +59900,10 @@ var TileJSON = class extends TileImage {
 		this.tileUrlFunction = createFromTemplates(tileJSON["tiles"], tileGrid);
 		if (tileJSON["attribution"] && !this.getAttributions()) {
 			const attributionExtent = extent !== void 0 ? extent : gridExtent;
-			this.setAttributions(function(frameState) {
+			this.setAttributions((function(frameState) {
 				if (intersects$1(attributionExtent, frameState.extent)) return [tileJSON["attribution"]];
 				return null;
-			});
+			}));
 		}
 		this.tileJSON_ = tileJSON;
 		this.setState("ready");
@@ -59435,8 +59915,7 @@ var TileJSON = class extends TileImage {
 		this.setState("error");
 	}
 };
-//#endregion
-//#region node_modules/ol/source/wms.js
+// node_modules/ol/source/wms.js
 /**
 * Default WMS version.
 * @type {string}
@@ -59456,7 +59935,7 @@ var DEFAULT_VERSION = "1.3.0";
 * @param {import("../extent.js").Extent} extent Extent.
 * @param {import("../size.js").Size} size Size.
 * @param {import("../proj/Projection.js").default} projection Projection.
-* @param {Object} params WMS params. Will be modified in place.
+* @param {Object<string, *>} params WMS params. Will be modified in place.
 * @return {string} Request URL.
 */
 function getRequestUrl(baseUrl, extent, size, projection, params) {
@@ -59479,7 +59958,7 @@ function getRequestUrl(baseUrl, extent, size, projection, params) {
 * @param {number} pixelRatio pixel ratio.
 * @param {import("../proj.js").Projection} projection Projection.
 * @param {string} url WMS service url.
-* @param {Object} params WMS params.
+* @param {Object<string, *>} params WMS params.
 * @param {import("./wms.js").ServerType} serverType The type of the remote WMS server.
 * @return {string} Image src.
 */
@@ -59505,9 +59984,9 @@ function getImageSrc(extent, resolution, pixelRatio, projection, url, params, se
 	return getRequestUrl(url, extent, imageSize, projection, params);
 }
 /**
-* @param {Object} params WMS params.
+* @param {Object<string, *>} params WMS params.
 * @param {string} request WMS `REQUEST`.
-* @return {Object} WMS params with required properties set.
+* @return {Object<string, *>} WMS params with required properties set.
 */
 function getRequestParams(params, request) {
 	return Object.assign({
@@ -59517,10 +59996,9 @@ function getRequestParams(params, request) {
 		"FORMAT": "image/png",
 		"STYLES": "",
 		"TRANSPARENT": "TRUE"
-	}, params);
+	}, params || {});
 }
-//#endregion
-//#region node_modules/ol/source/TileWMS.js
+// node_modules/ol/source/TileWMS.js
 /**
 * @module ol/source/TileWMS
 */
@@ -59617,7 +60095,7 @@ var TileWMS = class extends TileImage {
 		this.gutter_ = options.gutter !== void 0 ? options.gutter : 0;
 		/**
 		* @private
-		* @type {!Object}
+		* @type {!Object<string, *>}
 		*/
 		this.params_ = params;
 		/**
@@ -59627,7 +60105,7 @@ var TileWMS = class extends TileImage {
 		this.v13_ = true;
 		/**
 		* @private
-		* @type {import("./wms.js").ServerType}
+		* @type {import("./wms.js").ServerType|undefined}
 		*/
 		this.serverType_ = options.serverType;
 		/**
@@ -59671,13 +60149,14 @@ var TileWMS = class extends TileImage {
 		let tileExtent = tileGrid.getTileCoordExtent(tileCoord, this.tmpExtent_);
 		const gutter = this.gutter_;
 		if (gutter !== 0) tileExtent = buffer$1(tileExtent, tileResolution * gutter, tileExtent);
+		/** @type {Object<string, *>} */
 		const baseParams = { "QUERY_LAYERS": this.params_["LAYERS"] };
 		Object.assign(baseParams, getRequestParams(this.params_, "GetFeatureInfo"), params);
 		const x = Math.floor((sourceProjCoord[0] - tileExtent[0]) / tileResolution);
 		const y = Math.floor((tileExtent[3] - sourceProjCoord[1]) / tileResolution);
 		baseParams[this.v13_ ? "I" : "X"] = x;
 		baseParams[this.v13_ ? "J" : "Y"] = y;
-		return this.getRequestUrl_(tileCoord, tileExtent, 1, sourceProjectionObj || projectionObj, baseParams);
+		return this.getRequestUrl_(tileCoord, tileExtent, 1, sourceProjectionObj, baseParams);
 	}
 	/**
 	* Return the GetLegendGraphic URL, optionally optimized for the passed
@@ -59686,7 +60165,7 @@ var TileWMS = class extends TileImage {
 	*
 	* @param {number} [resolution] Resolution. If set to undefined, `SCALE`
 	*     will not be calculated and included in URL.
-	* @param {Object} [params] GetLegendGraphic params. If `LAYER` is set, the
+	* @param {Object<string, *>} [params] GetLegendGraphic params. If `LAYER` is set, the
 	*     request is generated for this wms layer, else it will try to use the
 	*     configured wms layer. Default `FORMAT` is `image/png`.
 	*     `VERSION` should not be specified here.
@@ -59694,7 +60173,9 @@ var TileWMS = class extends TileImage {
 	* @api
 	*/
 	getLegendUrl(resolution, params) {
-		if (this.urls[0] === void 0) return;
+		const urls = this.urls;
+		if (!urls || urls[0] === void 0) return;
+		/** @type {Object<string, *>} */
 		const baseParams = {
 			"SERVICE": "WMS",
 			"VERSION": DEFAULT_VERSION,
@@ -59702,13 +60183,18 @@ var TileWMS = class extends TileImage {
 			"FORMAT": "image/png"
 		};
 		if (params === void 0 || params["LAYER"] === void 0) {
-			const layers = this.params_.LAYERS;
+			const layers = this.params_["LAYERS"];
 			if (!(!Array.isArray(layers) || layers.length === 1)) return;
 			baseParams["LAYER"] = layers;
 		}
-		if (resolution !== void 0) baseParams["SCALE"] = resolution * (this.getProjection() ? this.getProjection().getMetersPerUnit() : 1) / 28e-5;
+		if (resolution !== void 0) {
+			const sourceProjection = this.getProjection();
+			baseParams["SCALE"] = resolution * (sourceProjection ? sourceProjection.getMetersPerUnit() || 1 : 1) / 28e-5;
+		}
 		Object.assign(baseParams, params);
-		return appendParams(this.urls[0], baseParams);
+		const url = urls[0];
+		if (!url) return;
+		return appendParams(url, baseParams);
 	}
 	/**
 	* @return {number} Gutter.
@@ -59763,7 +60249,7 @@ var TileWMS = class extends TileImage {
 		return res.join("/");
 	}
 	/**
-	* @param {Object} params New URL paremeters.
+	* @param {Object<string, *>} params New URL paremeters.
 	* @private
 	*/
 	setParams_(params) {
@@ -59773,7 +60259,7 @@ var TileWMS = class extends TileImage {
 	}
 	/**
 	* Set the URL parameters passed to the WMS source.
-	* @param {Object} params New URL paremeters.
+	* @param {Object<string, *>} params New URL paremeters.
 	* @api
 	*/
 	setParams(params) {
@@ -59782,7 +60268,7 @@ var TileWMS = class extends TileImage {
 	/**
 	* Update the URL parameters. This method can be used to update a subset of the WMS
 	* parameters. Call `setParams` to set all of the parameters.
-	* @param {Object} params Updated URL parameters.
+	* @param {Object<string, *>} params Updated URL parameters.
 	* @api
 	*/
 	updateParams(params) {
@@ -59815,8 +60301,7 @@ var TileWMS = class extends TileImage {
 		return this.getRequestUrl_(tileCoord, tileExtent, pixelRatio, projection, baseParams);
 	}
 };
-//#endregion
-//#region node_modules/ol/loadingstrategy.js
+// node_modules/ol/loadingstrategy.js
 /**
 * Strategy function for loading all features with a single request.
 * @param {import("./extent.js").Extent} extent Extent.
@@ -59832,8 +60317,7 @@ function all(extent, resolution) {
 		Infinity
 	]];
 }
-//#endregion
-//#region node_modules/ol/structs/RBush.js
+// node_modules/ol/structs/RBush.js
 /**
 * @module ol/structs/RBush
 */
@@ -60025,8 +60509,7 @@ var RBush$1 = class {
 		for (const i in rbush.items_) this.items_[i] = rbush.items_[i];
 	}
 };
-//#endregion
-//#region node_modules/ol/source/VectorEventType.js
+// node_modules/ol/source/VectorEventType.js
 /**
 * @module ol/source/VectorEventType
 */
@@ -60081,8 +60564,7 @@ var VectorEventType_default = {
 /**
 * @typedef {'addfeature'|'changefeature'|'clear'|'removefeature'|'featuresloadstart'|'featuresloadend'|'featuresloaderror'} VectorSourceEventTypes
 */
-//#endregion
-//#region node_modules/ol/source/Vector.js
+// node_modules/ol/source/Vector.js
 /**
 * @module ol/source/Vector
 */
@@ -60247,6 +60729,7 @@ var VectorSource = class extends Source {
 			state: "ready",
 			wrapX: options.wrapX !== void 0 ? options.wrapX : true
 		});
+		this.canRotate = true;
 		/***
 		* @type {VectorSourceOnSignature<import("../events.js").EventsKey, FeatureType>}
 		*/
@@ -60292,7 +60775,7 @@ var VectorSource = class extends Source {
 		const useSpatialIndex = options.useSpatialIndex !== void 0 ? options.useSpatialIndex : true;
 		/**
 		* @private
-		* @type {RBush<FeatureType>}
+		* @type {RBush<FeatureType>|null}
 		*/
 		this.featuresRtree_ = useSpatialIndex ? new RBush$1() : null;
 		/**
@@ -60327,9 +60810,9 @@ var VectorSource = class extends Source {
 		* @type {Collection<FeatureType>|null}
 		*/
 		this.featuresCollection_ = null;
-		/** @type {Collection<FeatureType>} */
+		/** @type {Collection<FeatureType>|undefined} */
 		let collection;
-		/** @type {Array<FeatureType>} */
+		/** @type {Array<FeatureType>|undefined} */
 		let features;
 		if (Array.isArray(options.features)) features = options.features;
 		else if (options.features) {
@@ -60454,58 +60937,34 @@ var VectorSource = class extends Source {
 	*/
 	bindFeaturesCollection_(collection) {
 		let modifyingCollection = false;
-		this.addEventListener(
-			VectorEventType_default.ADDFEATURE,
-			/**
-			* @param {VectorSourceEvent<FeatureType>} evt The vector source event
-			*/
-			function(evt) {
-				if (!modifyingCollection) {
-					modifyingCollection = true;
-					collection.push(evt.feature);
-					modifyingCollection = false;
-				}
+		this.addEventListener(VectorEventType_default.ADDFEATURE, (function(evt) {
+			if (!modifyingCollection && evt.feature) {
+				modifyingCollection = true;
+				collection.push(evt.feature);
+				modifyingCollection = false;
 			}
-		);
-		this.addEventListener(
-			VectorEventType_default.REMOVEFEATURE,
-			/**
-			* @param {VectorSourceEvent<FeatureType>} evt The vector source event
-			*/
-			function(evt) {
-				if (!modifyingCollection) {
-					modifyingCollection = true;
-					collection.remove(evt.feature);
-					modifyingCollection = false;
-				}
+		}));
+		this.addEventListener(VectorEventType_default.REMOVEFEATURE, (function(evt) {
+			if (!modifyingCollection && evt.feature) {
+				modifyingCollection = true;
+				collection.remove(evt.feature);
+				modifyingCollection = false;
 			}
-		);
-		collection.addEventListener(
-			CollectionEventType_default.ADD,
-			/**
-			* @param {import("../Collection.js").CollectionEvent<FeatureType>} evt The collection event
-			*/
-			(evt) => {
-				if (!modifyingCollection) {
-					modifyingCollection = true;
-					this.addFeature(evt.element);
-					modifyingCollection = false;
-				}
+		}));
+		collection.addEventListener(CollectionEventType_default.ADD, ((evt) => {
+			if (!modifyingCollection) {
+				modifyingCollection = true;
+				this.addFeature(evt.element);
+				modifyingCollection = false;
 			}
-		);
-		collection.addEventListener(
-			CollectionEventType_default.REMOVE,
-			/**
-			* @param {import("../Collection.js").CollectionEvent<FeatureType>} evt The collection event
-			*/
-			(evt) => {
-				if (!modifyingCollection) {
-					modifyingCollection = true;
-					this.removeFeature(evt.element);
-					modifyingCollection = false;
-				}
+		}));
+		collection.addEventListener(CollectionEventType_default.REMOVE, ((evt) => {
+			if (!modifyingCollection) {
+				modifyingCollection = true;
+				this.removeFeature(evt.element);
+				modifyingCollection = false;
 			}
-		);
+		}));
 		this.featuresCollection_ = collection;
 	}
 	/**
@@ -60574,7 +61033,7 @@ var VectorSource = class extends Source {
 		];
 		return this.forEachFeatureInExtent(extent, function(feature) {
 			const geometry = feature.getGeometry();
-			if (geometry instanceof RenderFeature || geometry.intersectsCoordinate(coordinate)) return callback(feature);
+			if (geometry instanceof RenderFeature || geometry && geometry.intersectsCoordinate(coordinate)) return callback(feature);
 		});
 	}
 	/**
@@ -60624,7 +61083,7 @@ var VectorSource = class extends Source {
 			*/
 			function(feature) {
 				const geometry = feature.getGeometry();
-				if (geometry instanceof RenderFeature || geometry.intersectsExtent(extent)) {
+				if (geometry instanceof RenderFeature || geometry && geometry.intersectsExtent(extent)) {
 					const result = callback(feature);
 					if (result) return result;
 				}
@@ -60654,7 +61113,7 @@ var VectorSource = class extends Source {
 			features = this.featuresRtree_.getAll();
 			if (!isEmpty$1(this.nullGeometryFeatures_)) extend$2(features, Object.values(this.nullGeometryFeatures_));
 		}
-		return features;
+		return features || [];
 	}
 	/**
 	* Get all features whose geometry intersects the provided coordinate.
@@ -60687,8 +61146,8 @@ var VectorSource = class extends Source {
 	getFeaturesInExtent(extent, projection) {
 		if (this.featuresRtree_) {
 			if (!(projection && projection.canWrapX() && this.getWrapX())) return this.featuresRtree_.getInExtent(extent);
-			const extents = wrapAndSliceX(extent, projection);
-			return [].concat(...extents.map((anExtent) => this.featuresRtree_.getInExtent(anExtent)));
+			const rtree = this.featuresRtree_;
+			return wrapAndSliceX(extent, projection).flatMap((anExtent) => rtree.getInExtent(anExtent));
 		}
 		if (this.featuresCollection_) return this.featuresCollection_.getArray().slice(0);
 		return [];
@@ -60719,7 +61178,9 @@ var VectorSource = class extends Source {
 			Infinity
 		];
 		filter = filter ? filter : TRUE;
-		this.featuresRtree_.forEachInExtent(
+		const rtree = this.featuresRtree_;
+		if (!rtree) return null;
+		rtree.forEachInExtent(
 			extent,
 			/**
 			* @param {FeatureType} feature Feature.
@@ -60727,6 +61188,7 @@ var VectorSource = class extends Source {
 			function(feature) {
 				if (filter(feature)) {
 					const geometry = feature.getGeometry();
+					if (!geometry) return;
 					const previousMinSquaredDistance = minSquaredDistance;
 					minSquaredDistance = geometry instanceof RenderFeature ? 0 : geometry.closestPointXY(x, y, closestPoint, minSquaredDistance);
 					if (minSquaredDistance < previousMinSquaredDistance) {
@@ -60898,11 +61360,12 @@ var VectorSource = class extends Source {
 				};
 				let disableCallbacks = false;
 				const loaded = this.loader_.call(this, extentToLoad, resolution, projection, (features) => disableCallbacks || success(features), () => disableCallbacks || failure());
-				if (loaded instanceof Promise) {
+				if (isThenable(loaded)) {
 					disableCallbacks = true;
 					loaded.then((features) => {
-						this.addFeatures(features);
-						success(features);
+						const typedFeatures = features;
+						this.addFeatures(typedFeatures);
+						success(typedFeatures);
 					}).catch(failure);
 				} else if (this.loader_.length < 4) this.loading = false;
 				loadedExtentsRtree.insert(extentToLoad, { extent: extentToLoad.slice() });
@@ -60929,6 +61392,7 @@ var VectorSource = class extends Source {
 	*/
 	removeLoadedExtent(extent) {
 		const loadedExtentsRtree = this.loadedExtentsRtree_;
+		/** @type {Array<{extent: import("../extent.js").Extent}>} */
 		const intersectingExtents = [];
 		loadedExtentsRtree.forEachInExtent(extent, function(object) {
 			intersectingExtents.push(object);
@@ -61028,8 +61492,7 @@ var VectorSource = class extends Source {
 		this.changed();
 	}
 };
-//#endregion
-//#region node_modules/ol/source/WMTS.js
+// node_modules/ol/source/WMTS.js
 /**
 * @module ol/source/WMTS
 */
@@ -61129,7 +61592,7 @@ var WMTS = class extends TileImage {
 		this.format_ = options.format !== void 0 ? options.format : "image/jpeg";
 		/**
 		* @private
-		* @type {!Object}
+		* @type {!Object<string, *>}
 		*/
 		this.dimensions_ = options.dimensions !== void 0 ? options.dimensions : {};
 		/**
@@ -61170,7 +61633,7 @@ var WMTS = class extends TileImage {
 	* Get the dimensions, i.e. those passed to the constructor through the
 	* "dimensions" option, and possibly updated using the updateDimensions
 	* method.
-	* @return {!Object} Dimensions.
+	* @return {!Object<string, *>} Dimensions.
 	* @api
 	*/
 	getDimensions() {
@@ -61235,7 +61698,7 @@ var WMTS = class extends TileImage {
 	}
 	/**
 	* Update the dimensions.
-	* @param {Object} dimensions Dimensions.
+	* @param {Object<string, *>} dimensions Dimensions.
 	* @api
 	*/
 	updateDimensions(dimensions) {
@@ -61282,7 +61745,7 @@ var WMTS = class extends TileImage {
 			let url = template;
 			if (requestEncoding == "KVP") url = appendParams(url, localContext);
 			else url = url.replace(/\{(\w+?)\}/g, function(m, p) {
-				return encodeURIComponent(localContext[p]);
+				return encodeURIComponent(String(localContext[p]));
 			});
 			return url;
 		});
@@ -61290,8 +61753,8 @@ var WMTS = class extends TileImage {
 };
 /**
 * Generate source options from a capabilities object.
-* @param {Object} wmtsCap An object representing the capabilities document.
-* @param {!Object} config Configuration properties for the layer.  Defaults for
+* @param {Object<string, *>} wmtsCap An object representing the capabilities document.
+* @param {Object<string, *>} config Configuration properties for the layer.  Defaults for
 *                  the layer will apply if not provided.
 *
 * Required config properties:
@@ -61313,25 +61776,29 @@ var WMTS = class extends TileImage {
 * @api
 */
 function optionsFromCapabilities(wmtsCap, config) {
-	const l = wmtsCap["Contents"]["Layer"]?.find(function(elt) {
+	const contents = wmtsCap["Contents"];
+	const l = contents["Layer"]?.find(function(elt) {
 		return elt["Identifier"] == config["layer"];
 	});
 	if (!l) return null;
-	const tileMatrixSets = wmtsCap["Contents"]["TileMatrixSet"];
+	const tileMatrixSets = contents["TileMatrixSet"];
 	let idx;
 	if (l["TileMatrixSetLink"].length > 1) {
-		if ("projection" in config) idx = l["TileMatrixSetLink"].findIndex(function(elt) {
-			const supportedCRS = tileMatrixSets.find(function(el) {
+		if ("matrixSet" in config) idx = l["TileMatrixSetLink"].findIndex(function(elt) {
+			return elt["TileMatrixSet"] == config["matrixSet"];
+		});
+		else if ("projection" in config) idx = l["TileMatrixSetLink"].findIndex(function(elt) {
+			const tileMatrixSet = tileMatrixSets.find(function(el) {
 				return el["Identifier"] == elt["TileMatrixSet"];
-			})["SupportedCRS"];
+			});
+			if (!tileMatrixSet || !("SupportedCRS" in tileMatrixSet)) return false;
+			const supportedCRS = tileMatrixSet["SupportedCRS"];
 			const proj1 = get$4(supportedCRS);
 			const proj2 = get$4(config["projection"]);
 			if (proj1 && proj2) return equivalent$1(proj1, proj2);
 			return supportedCRS == config["projection"];
 		});
-		else idx = l["TileMatrixSetLink"].findIndex(function(elt) {
-			return elt["TileMatrixSet"] == config["matrixSet"];
-		});
+		else idx = 0;
 	} else idx = 0;
 	if (idx < 0) idx = 0;
 	const matrixSet = l["TileMatrixSetLink"][idx]["TileMatrixSet"];
@@ -61344,6 +61811,7 @@ function optionsFromCapabilities(wmtsCap, config) {
 	});
 	if (idx < 0) idx = 0;
 	const style = l["Style"][idx]["Identifier"];
+	/** @type {Object<string, *>} */
 	const dimensions = {};
 	if ("Dimension" in l) l["Dimension"].forEach(function(elt, index, array) {
 		const key = elt["Identifier"];
@@ -61351,9 +61819,10 @@ function optionsFromCapabilities(wmtsCap, config) {
 		if (value === void 0) value = elt["Value"][0];
 		dimensions[key] = value;
 	});
-	const matrixSetObj = wmtsCap["Contents"]["TileMatrixSet"].find(function(elt) {
+	const matrixSetObj = contents["TileMatrixSet"].find(function(elt) {
 		return elt["Identifier"] == matrixSet;
 	});
+	if (!matrixSetObj) return null;
 	let projection;
 	const code = matrixSetObj["SupportedCRS"];
 	if (code) projection = get$4(code);
@@ -61363,47 +61832,25 @@ function optionsFromCapabilities(wmtsCap, config) {
 			if (!projection || equivalent$1(projConfig, projection)) projection = projConfig;
 		}
 	}
+	if (!projection) return null;
 	let wrapX = false;
 	const switchXY = projection.getAxisOrientation().startsWith("ne");
-	let matrix = matrixSetObj.TileMatrix[0];
-	let selectedMatrixLimit = {
-		MinTileCol: 0,
-		MinTileRow: 0,
-		MaxTileCol: matrix.MatrixWidth - 1,
-		MaxTileRow: matrix.MatrixHeight - 1
-	};
-	if (matrixLimits) {
-		selectedMatrixLimit = matrixLimits[matrixLimits.length - 1];
-		const m = matrixSetObj.TileMatrix.find((tileMatrixValue) => tileMatrixValue.Identifier === selectedMatrixLimit.TileMatrix || matrixSetObj.Identifier + ":" + tileMatrixValue.Identifier === selectedMatrixLimit.TileMatrix);
-		if (m) matrix = m;
-	}
-	const layerExtent = l["BoundingBox"]?.find((bbox) => get$4(bbox.crs) && equivalent$1(get$4(bbox.crs), projection));
-	const resolution = matrix.ScaleDenominator * 28e-5 / projection.getMetersPerUnit();
-	const origin = switchXY ? [matrix.TopLeftCorner[1], matrix.TopLeftCorner[0]] : matrix.TopLeftCorner;
-	const tileSpanX = matrix.TileWidth * resolution;
-	const tileSpanY = matrix.TileHeight * resolution;
-	let matrixSetExtent = layerExtent?.extent ?? matrixSetObj["BoundingBox"];
-	if (matrixSetExtent && switchXY) matrixSetExtent = [
-		matrixSetExtent[1],
-		matrixSetExtent[0],
-		matrixSetExtent[3],
-		matrixSetExtent[2]
+	const matrix = matrixSetObj.TileMatrix[0];
+	let extent = (l["BoundingBox"]?.find((bbox) => {
+		const bboxProjection = get$4(bbox["crs"]);
+		return bboxProjection && equivalent$1(bboxProjection, projection);
+	}))?.extent ?? matrixSetObj["BoundingBox"];
+	if (extent && switchXY) extent = [
+		extent[1],
+		extent[0],
+		extent[3],
+		extent[2]
 	];
-	let extent = [
-		origin[0] + tileSpanX * selectedMatrixLimit.MinTileCol,
-		origin[1] - tileSpanY * (1 + selectedMatrixLimit.MaxTileRow),
-		origin[0] + tileSpanX * (1 + selectedMatrixLimit.MaxTileCol),
-		origin[1] - tileSpanY * selectedMatrixLimit.MinTileRow
-	];
-	if (matrixSetExtent !== void 0 && !containsExtent(matrixSetExtent, extent)) {
-		const wgs84BoundingBox = l["WGS84BoundingBox"];
-		const wgs84ProjectionExtent = get$4("EPSG:4326").getExtent();
-		extent = matrixSetExtent;
-		if (wgs84BoundingBox) wrapX = wgs84BoundingBox[0] === wgs84ProjectionExtent[0] && wgs84BoundingBox[2] === wgs84ProjectionExtent[2];
-		else {
-			const wgs84MatrixSetExtent = transformExtent(matrixSetExtent, matrixSetObj["SupportedCRS"], "EPSG:4326");
-			wrapX = wgs84MatrixSetExtent[0] - 1e-10 <= wgs84ProjectionExtent[0] && wgs84MatrixSetExtent[2] + 1e-10 >= wgs84ProjectionExtent[2];
-		}
+	const projectionExtent = projection.getExtent();
+	if (projection.canWrapX() && projectionExtent) {
+		const origin = switchXY ? [matrix.TopLeftCorner[1], matrix.TopLeftCorner[0]] : matrix.TopLeftCorner;
+		const pixelWidth = getWidth(projectionExtent) / (matrix.MatrixWidth * matrix.TileWidth);
+		wrapX = Math.abs(origin[0] - projectionExtent[0]) < pixelWidth;
 	}
 	const tileGrid = createFromCapabilitiesMatrixSet(matrixSetObj, extent, matrixLimits);
 	/** @type {!Array<string>} */
@@ -61415,7 +61862,7 @@ function optionsFromCapabilities(wmtsCap, config) {
 		for (let i = 0, ii = gets.length; i < ii; ++i) if (gets[i]["Constraint"]) {
 			const encodings = gets[i]["Constraint"].find(function(element) {
 				return element["name"] == "GetEncoding";
-			})["AllowedValues"]["Value"];
+			})?.["AllowedValues"]["Value"];
 			if (requestEncoding === "") requestEncoding = encodings[0];
 			if (requestEncoding === "KVP") {
 				if (encodings.includes("KVP")) urls.push(gets[i]["href"]);
@@ -61427,7 +61874,7 @@ function optionsFromCapabilities(wmtsCap, config) {
 	}
 	if (urls.length === 0) {
 		requestEncoding = "REST";
-		l["ResourceURL"].forEach(function(element) {
+		/** @type {Array<Object<string, *>>} */ l["ResourceURL"].forEach(function(element) {
 			if (element["resourceType"] === "tile") {
 				format = element["format"];
 				urls.push(element["template"]);
@@ -61448,15 +61895,14 @@ function optionsFromCapabilities(wmtsCap, config) {
 		crossOrigin: config["crossOrigin"]
 	};
 }
-//#endregion
-//#region node_modules/compare-versions/index.js
-var require_compare_versions = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+// node_modules/compare-versions/index.js
+var require_compare_versions = /* @__PURE__ */ __commonJSMin(((exports, module, this$6) => {
 	(function(root, factory) {
 		/* istanbul ignore next */
 		if (typeof define === "function" && define.amd) define([], factory);
 		else if (typeof exports === "object") module.exports = factory();
 		else root.compareVersions = factory();
-	})(exports, function() {
+	})(this$6, function() {
 		var semver = /^v?(?:\d+)(\.(?:[x*]|\d+)(\.(?:[x*]|\d+)(\.(?:[x*]|\d+))?(?:-[\da-z\-]+(?:\.[\da-z\-]+)*)?(?:\+[\da-z\-]+(?:\.[\da-z\-]+)*)?)?)?$/i;
 		function indexOrEnd(str, q) {
 			return str.indexOf(q) === -1 ? str.length : str.indexOf(q);
@@ -61528,8 +61974,7 @@ var require_compare_versions = /* @__PURE__ */ __commonJSMin(((exports, module) 
 		return compareVersions;
 	});
 }));
-//#endregion
-//#region node_modules/@turf/helpers/dist/esm/index.js
+// node_modules/@turf/helpers/dist/esm/index.js
 var import_migrate = /* @__PURE__ */ __toESM((/* @__PURE__ */ __commonJSMin(((exports, module) => {
 	var compareVersions = require_compare_versions();
 	var LATEST_VERSION = "1.1.0";
@@ -62336,8 +62781,7 @@ function isNumber(num) {
 function isObject$1(input) {
 	return input !== null && typeof input === "object" && !Array.isArray(input);
 }
-//#endregion
-//#region node_modules/@turf/invariant/dist/esm/index.js
+// node_modules/@turf/invariant/dist/esm/index.js
 function getCoord(coord) {
 	if (!coord) throw new Error("coord is required");
 	if (!Array.isArray(coord)) {
@@ -62364,8 +62808,7 @@ function getType(geojson, _name) {
 	if (geojson.type === "Feature" && geojson.geometry !== null) return geojson.geometry.type;
 	return geojson.type;
 }
-//#endregion
-//#region node_modules/@turf/boolean-clockwise/dist/esm/index.js
+// node_modules/@turf/boolean-clockwise/dist/esm/index.js
 function booleanClockwise(line) {
 	const ring = getCoords(line);
 	let sum = 0;
@@ -62380,8 +62823,7 @@ function booleanClockwise(line) {
 	}
 	return sum > 0;
 }
-//#endregion
-//#region node_modules/@turf/meta/dist/esm/index.js
+// node_modules/@turf/meta/dist/esm/index.js
 function coordEach(geojson, callback, excludeWrapCoord) {
 	if (geojson === null) return;
 	var j, k, l, geometry, stopG, coords, geometryMaybeCollection, wrapShrink = 0, coordIndex = 0, isGeometryCollection, type = geojson.type, isFeatureCollection = type === "FeatureCollection", isFeature = type === "Feature", stop = isFeatureCollection ? geojson.features.length : 1;
@@ -62526,8 +62968,7 @@ function flattenEach(geojson, callback) {
 		}
 	});
 }
-//#endregion
-//#region node_modules/@turf/bbox/dist/esm/index.js
+// node_modules/@turf/bbox/dist/esm/index.js
 function bbox$1(geojson, options = {}) {
 	if (geojson.bbox != null && true !== options.recompute) return geojson.bbox;
 	const result = [
@@ -62544,8 +62985,7 @@ function bbox$1(geojson, options = {}) {
 	});
 	return result;
 }
-//#endregion
-//#region node_modules/point-in-polygon-hao/node_modules/robust-predicates/esm/util.js
+// node_modules/point-in-polygon-hao/node_modules/robust-predicates/esm/util.js
 var epsilon$1 = 11102230246251565e-32;
 var splitter$1 = 134217729;
 var resulterrbound$1 = 3.000000000000001 * epsilon$1;
@@ -62618,8 +63058,7 @@ function estimate$1(elen, e) {
 function vec$1(n) {
 	return new Float64Array(n);
 }
-//#endregion
-//#region node_modules/point-in-polygon-hao/node_modules/robust-predicates/esm/orient2d.js
+// node_modules/point-in-polygon-hao/node_modules/robust-predicates/esm/orient2d.js
 var ccwerrboundA$1 = (3 + 16 * epsilon$1) * epsilon$1;
 var ccwerrboundB$1 = (2 + 12 * epsilon$1) * epsilon$1;
 var ccwerrboundC$1 = (9 + 64 * epsilon$1) * epsilon$1 * epsilon$1;
@@ -62778,9 +63217,6 @@ function orient2d$1(ax, ay, bx, by, cx, cy) {
 	if (Math.abs(det) >= ccwerrboundA$1 * detsum) return det;
 	return -orient2dadapt$1(ax, ay, bx, by, cx, cy, detsum);
 }
-(7 + 56 * epsilon$1) * epsilon$1;
-(3 + 28 * epsilon$1) * epsilon$1;
-(26 + 288 * epsilon$1) * epsilon$1 * epsilon$1;
 vec$1(4);
 vec$1(4);
 vec$1(4);
@@ -62800,9 +63236,6 @@ vec$1(16);
 vec$1(12);
 vec$1(192);
 vec$1(192);
-(10 + 96 * epsilon$1) * epsilon$1;
-(4 + 48 * epsilon$1) * epsilon$1;
-(44 + 576 * epsilon$1) * epsilon$1 * epsilon$1;
 vec$1(4);
 vec$1(4);
 vec$1(4);
@@ -62833,9 +63266,6 @@ vec$1(48);
 vec$1(64);
 vec$1(1152);
 vec$1(1152);
-(16 + 224 * epsilon$1) * epsilon$1;
-(5 + 72 * epsilon$1) * epsilon$1;
-(71 + 1408 * epsilon$1) * epsilon$1 * epsilon$1;
 vec$1(4);
 vec$1(4);
 vec$1(4);
@@ -62882,8 +63312,7 @@ vec$1(96);
 vec$1(96);
 vec$1(96);
 vec$1(1152);
-//#endregion
-//#region node_modules/point-in-polygon-hao/dist/esm/index.js
+// node_modules/point-in-polygon-hao/dist/esm/index.js
 function pointInPolygon(p, polygon) {
 	var i;
 	var ii;
@@ -62925,8 +63354,7 @@ function pointInPolygon(p, polygon) {
 	if (k % 2 === 0) return false;
 	return true;
 }
-//#endregion
-//#region node_modules/@turf/boolean-point-in-polygon/dist/esm/index.js
+// node_modules/@turf/boolean-point-in-polygon/dist/esm/index.js
 function booleanPointInPolygon(point, polygon, options = {}) {
 	if (!point) throw new Error("point is required");
 	if (!polygon) throw new Error("polygon is required");
@@ -62947,8 +63375,7 @@ function booleanPointInPolygon(point, polygon, options = {}) {
 function inBBox(pt, bbox) {
 	return bbox[0] <= pt[0] && bbox[1] <= pt[1] && bbox[2] >= pt[0] && bbox[3] >= pt[1];
 }
-//#endregion
-//#region node_modules/@turf/boolean-point-on-line/dist/esm/index.js
+// node_modules/@turf/boolean-point-on-line/dist/esm/index.js
 function booleanPointOnLine(pt, line, options = {}) {
 	const ptCoords = getCoord(pt);
 	const lineCoords = getCoords(line);
@@ -62998,12 +63425,11 @@ function isPointOnLineSegment(lineSegmentStart, lineSegmentEnd, pt, excludeBound
 	}
 	return false;
 }
-//#endregion
-//#region node_modules/@turf/geojson-rbush/dist/esm/index.js
-var import_rbush_min = /* @__PURE__ */ __toESM((/* @__PURE__ */ __commonJSMin(((exports, module) => {
+// node_modules/@turf/geojson-rbush/dist/esm/index.js
+var import_rbush_min = /* @__PURE__ */ __toESM((/* @__PURE__ */ __commonJSMin(((exports, module, this$5) => {
 	(function(t, i) {
 		"object" == typeof exports && "undefined" != typeof module ? module.exports = i() : "function" == typeof define && define.amd ? define(i) : (t = t || self).RBush = i();
-	})(exports, function() {
+	})(this$5, function() {
 		"use strict";
 		function t(t, r, e, a, h) {
 			(function t(n, r, e, a, h) {
@@ -63404,8 +63830,7 @@ var RBush = class {
 function geojsonRbush(maxEntries) {
 	return new RBush(maxEntries);
 }
-//#endregion
-//#region node_modules/@turf/truncate/dist/esm/index.js
+// node_modules/@turf/truncate/dist/esm/index.js
 function truncate(geojson, options) {
 	options = options != null ? options : {};
 	if (!isObject$1(options)) throw new Error("options is invalid");
@@ -63429,8 +63854,7 @@ function truncateCoords(coords, factor, coordinates) {
 	for (var i = 0; i < coords.length; i++) coords[i] = Math.round(coords[i] * factor) / factor;
 	return coords;
 }
-//#endregion
-//#region node_modules/@turf/line-segment/dist/esm/index.js
+// node_modules/@turf/line-segment/dist/esm/index.js
 function lineSegment(geojson) {
 	if (!geojson) throw new Error("geojson is required");
 	const results = [];
@@ -63479,8 +63903,7 @@ function bbox(coords1, coords2) {
 		y1 > y2 ? y1 : y2
 	];
 }
-//#endregion
-//#region node_modules/tinyqueue/index.js
+// node_modules/tinyqueue/index.js
 var TinyQueue = class {
 	constructor(data = [], compare = defaultCompare) {
 		this.data = data;
@@ -63541,8 +63964,7 @@ var TinyQueue = class {
 function defaultCompare(a, b) {
 	return a < b ? -1 : a > b ? 1 : 0;
 }
-//#endregion
-//#region node_modules/robust-predicates/esm/util.js
+// node_modules/robust-predicates/esm/util.js
 var epsilon = 11102230246251565e-32;
 var splitter = 134217729;
 var resulterrbound = 3.000000000000001 * epsilon;
@@ -63615,8 +64037,7 @@ function estimate(elen, e) {
 function vec(n) {
 	return new Float64Array(n);
 }
-//#endregion
-//#region node_modules/robust-predicates/esm/orient2d.js
+// node_modules/robust-predicates/esm/orient2d.js
 var ccwerrboundA = (3 + 16 * epsilon) * epsilon;
 var ccwerrboundB = (2 + 12 * epsilon) * epsilon;
 var ccwerrboundC = (9 + 64 * epsilon) * epsilon * epsilon;
@@ -63776,9 +64197,6 @@ function orient2d(ax, ay, bx, by, cx, cy) {
 	if (Math.abs(det) >= ccwerrboundA * detsum) return det;
 	return -orient2dadapt(ax, ay, bx, by, cx, cy, detsum);
 }
-(7 + 56 * epsilon) * epsilon;
-(3 + 28 * epsilon) * epsilon;
-(26 + 288 * epsilon) * epsilon * epsilon;
 vec(4);
 vec(4);
 vec(4);
@@ -63798,9 +64216,6 @@ vec(8);
 vec(12);
 vec(192);
 vec(192);
-(10 + 96 * epsilon) * epsilon;
-(4 + 48 * epsilon) * epsilon;
-(44 + 576 * epsilon) * epsilon * epsilon;
 vec(4);
 vec(4);
 vec(4);
@@ -63831,9 +64246,6 @@ vec(48);
 vec(64);
 vec(1152);
 vec(1152);
-(16 + 224 * epsilon) * epsilon;
-(5 + 72 * epsilon) * epsilon;
-(71 + 1408 * epsilon) * epsilon * epsilon;
 vec(4);
 vec(4);
 vec(4);
@@ -63880,8 +64292,7 @@ vec(96);
 vec(96);
 vec(96);
 vec(1152);
-//#endregion
-//#region node_modules/@turf/line-intersect/dist/esm/index.js
+// node_modules/@turf/line-intersect/dist/esm/index.js
 function sweeplineIntersections(geojson, ignoreSelfIntersections) {
 	const eventQueue = new TinyQueue([], checkWhichEventIsLeft);
 	fillEventQueue(geojson, eventQueue);
@@ -64044,8 +64455,7 @@ function lineIntersect(line1, line2, options = {}) {
 	} else results = intersections;
 	return featureCollection(results.map((r) => point(r)));
 }
-//#endregion
-//#region node_modules/@turf/distance/dist/esm/index.js
+// node_modules/@turf/distance/dist/esm/index.js
 function distance(from, to, options = {}) {
 	var coordinates1 = getCoord(from);
 	var coordinates2 = getCoord(to);
@@ -64056,8 +64466,7 @@ function distance(from, to, options = {}) {
 	var a = Math.pow(Math.sin(dLat / 2), 2) + Math.pow(Math.sin(dLon / 2), 2) * Math.cos(lat1) * Math.cos(lat2);
 	return radiansToLength(2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)), options.units);
 }
-//#endregion
-//#region node_modules/@turf/nearest-point-on-line/dist/esm/index.js
+// node_modules/@turf/nearest-point-on-line/dist/esm/index.js
 var __defProp = Object.defineProperty;
 var __defProps = Object.defineProperties;
 var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
@@ -64205,8 +64614,7 @@ function nearestPointOnSegment(posA, posB, posC) {
 	if (dot(A, C) > dot(B, C)) return [[...posA], false];
 	else return [[...posB], true];
 }
-//#endregion
-//#region node_modules/@turf/line-split/dist/esm/index.js
+// node_modules/@turf/line-split/dist/esm/index.js
 function lineSplit(line, splitter) {
 	if (!line) throw new Error("line is required");
 	if (!splitter) throw new Error("splitter is required");
@@ -64297,8 +64705,7 @@ function findClosestFeature(point, lines) {
 function pointsEquals(pt1, pt2) {
 	return pt1[0] === pt2[0] && pt1[1] === pt2[1];
 }
-//#endregion
-//#region node_modules/@turf/boolean-contains/dist/esm/index.js
+// node_modules/@turf/boolean-contains/dist/esm/index.js
 function booleanContains(feature1, feature2) {
 	const geom1 = getGeom(feature1);
 	const geom2 = getGeom(feature2);
@@ -64541,8 +64948,7 @@ function compareCoords(pair1, pair2) {
 function getMidpoint(pair1, pair2) {
 	return [(pair1[0] + pair2[0]) / 2, (pair1[1] + pair2[1]) / 2];
 }
-//#endregion
-//#region node_modules/@turf/clone/dist/esm/index.js
+// node_modules/@turf/clone/dist/esm/index.js
 function clone(geojson) {
 	if (!geojson) throw new Error("geojson is required");
 	switch (geojson.type) {
@@ -64621,8 +65027,7 @@ function deepSlice(coords) {
 		return deepSlice(coord);
 	});
 }
-//#endregion
-//#region node_modules/@turf/rewind/dist/esm/index.js
+// node_modules/@turf/rewind/dist/esm/index.js
 function rewind(geojson, options = {}) {
 	var _a, _b;
 	options = options || {};
@@ -64684,8 +65089,7 @@ function rewindPolygon(coords, reverse) {
 	if (booleanClockwise(coords[0]) !== reverse) coords[0].reverse();
 	for (let i = 1; i < coords.length; i++) if (booleanClockwise(coords[i]) === reverse) coords[i].reverse();
 }
-//#endregion
-//#region node_modules/stac-js/src/antimeridian.js
+// node_modules/stac-js/src/antimeridian.js
 /**
 * Fix GeoJSON geometries that cross the antimeridian (180th meridian / dateline)
 * by splitting them into valid multi-geometries.
@@ -65288,9 +65692,8 @@ function isSelfClosing(seg) {
 	const isRight = seg[seg.length - 1][0] === 180;
 	return seg[0][0] === seg[seg.length - 1][0] && (isRight && seg[0][1] > seg[seg.length - 1][1] || !isRight && seg[0][1] < seg[seg.length - 1][1]);
 }
-//#endregion
-//#region node_modules/urijs/src/punycode.js
-var require_punycode = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+// node_modules/urijs/src/punycode.js
+var require_punycode = /* @__PURE__ */ __commonJSMin(((exports, module, this$4) => {
 	/*! https://mths.be/punycode v1.4.0 by @mathias */
 	(function(root) {
 		/** Detect free variables */
@@ -65592,11 +65995,10 @@ var require_punycode = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			if (module.exports == freeExports) freeModule.exports = punycode;
 			else for (key in punycode) punycode.hasOwnProperty(key) && (freeExports[key] = punycode[key]);
 		} else root.punycode = punycode;
-	})(exports);
+	})(this$4);
 }));
-//#endregion
-//#region node_modules/urijs/src/IPv6.js
-var require_IPv6 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+// node_modules/urijs/src/IPv6.js
+var require_IPv6 = /* @__PURE__ */ __commonJSMin(((exports, module, this$3) => {
 	/*!
 	* URI.js - Mutating URLs
 	* IPv6 Support
@@ -65615,7 +66017,7 @@ var require_IPv6 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 		if (typeof module === "object" && module.exports) module.exports = factory();
 		else if (typeof define === "function" && define.amd) define(factory);
 		else root.IPv6 = factory(root);
-	})(exports, function(root) {
+	})(this$3, function(root) {
 		"use strict";
 		var _IPv6 = root && root.IPv6;
 		function bestPresentation(address) {
@@ -65687,9 +66089,8 @@ var require_IPv6 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 		};
 	});
 }));
-//#endregion
-//#region node_modules/urijs/src/SecondLevelDomains.js
-var require_SecondLevelDomains = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+// node_modules/urijs/src/SecondLevelDomains.js
+var require_SecondLevelDomains = /* @__PURE__ */ __commonJSMin(((exports, module, this$2) => {
 	/*!
 	* URI.js - Mutating URLs
 	* Second Level Domain (SLD) Support
@@ -65708,7 +66109,7 @@ var require_SecondLevelDomains = /* @__PURE__ */ __commonJSMin(((exports, module
 		if (typeof module === "object" && module.exports) module.exports = factory();
 		else if (typeof define === "function" && define.amd) define(factory);
 		else root.SecondLevelDomains = factory(root);
-	})(exports, function(root) {
+	})(this$2, function(root) {
 		"use strict";
 		var _SecondLevelDomains = root && root.SecondLevelDomains;
 		var SLD = {
@@ -65899,9 +66300,8 @@ var require_SecondLevelDomains = /* @__PURE__ */ __commonJSMin(((exports, module
 *   MIT License http://www.opensource.org/licenses/mit-license
 *
 */
-//#endregion
-//#region node_modules/stac-js/src/utils.js
-var import_URI = /* @__PURE__ */ __toESM((/* @__PURE__ */ __commonJSMin(((exports, module) => {
+// node_modules/stac-js/src/utils.js
+var import_URI = /* @__PURE__ */ __toESM((/* @__PURE__ */ __commonJSMin(((exports, module, this$1) => {
 	(function(root, factory) {
 		"use strict";
 		if (typeof module === "object" && module.exports) module.exports = factory(require_punycode(), require_IPv6(), require_SecondLevelDomains());
@@ -65911,7 +66311,7 @@ var import_URI = /* @__PURE__ */ __toESM((/* @__PURE__ */ __commonJSMin(((export
 			"./SecondLevelDomains"
 		], factory);
 		else root.URI = factory(root.punycode, root.IPv6, root.SecondLevelDomains, root);
-	})(exports, function(punycode, IPv6, SLD, root) {
+	})(this$1, function(punycode, IPv6, SLD, root) {
 		"use strict";
 		var _URI = root && root.URI;
 		function URI(url, base) {
@@ -67449,8 +67849,7 @@ function getNoDataValues$1(object) {
 		else return value;
 	});
 }
-//#endregion
-//#region node_modules/stac-js/src/geo.js
+// node_modules/stac-js/src/geo.js
 /**
 * Applies the antimeridian fix to a GeoJSON object if requested.
 *
@@ -67755,8 +68154,7 @@ function unionBoundingBox(bboxes) {
 		north
 	]);
 }
-//#endregion
-//#region node_modules/stac-js/src/object.js
+// node_modules/stac-js/src/object.js
 /**
 * Base class for STAC objects.
 *
@@ -67971,7 +68369,7 @@ var STACObject = class STACObject {
 			let v = this[key];
 			if (key in this._keyMap) {
 				let v2 = Array.isArray(v) ? [] : {};
-				for (let key in v) if (typeof v[key].toJSON === "function") v2[key] = v[key].toJSON();
+				for (let key in v) if (typeof v[key]?.toJSON === "function") v2[key] = v[key].toJSON();
 				else v2[key] = v[key];
 				v = v2;
 			}
@@ -67980,8 +68378,7 @@ var STACObject = class STACObject {
 		return obj;
 	}
 };
-//#endregion
-//#region node_modules/stac-js/src/http.js
+// node_modules/stac-js/src/http.js
 /**
 * Protocols supported by browsers (http and https).
 *
@@ -68019,8 +68416,7 @@ function normalizeUri(href, baseUrl = null, noParams = false, stringify = true) 
 	}
 	return stringify ? uri.toString() : uri;
 }
-//#endregion
-//#region node_modules/stac-js/src/mediatypes.js
+// node_modules/stac-js/src/mediatypes.js
 /**
 * The GeoJSON media type.
 *
@@ -68038,7 +68434,15 @@ var stacMediaTypes = [
 	"text/json"
 ];
 /**
-* All image media types that Web Browsers can show (GIF, JPEG, PNG, WebP).
+* The SVG media type.
+*
+* @type {string}
+*/
+var svgMediaType = "image/svg+xml";
+/**
+* All image media types that Web Browsers can show (GIF, JPEG, APNG, PNG, WebP, AVIF, SVG).
+*
+* SVG is included because browsers render it in `<img>` elements with scripts and external resources disabled.
 *
 * @type {Array.<string>}
 */
@@ -68048,7 +68452,8 @@ var browserImageTypes = [
 	"image/apng",
 	"image/png",
 	"image/webp",
-	"image/avif"
+	"image/avif",
+	svgMediaType
 ];
 /**
 * All Cloud Optimized GeoTiff media types.
@@ -68115,8 +68520,7 @@ function isMediaType(type, allowedTypes, allowUndefined = false) {
 function isStacMediaType(type, allowUndefined = false) {
 	return isMediaType(type, stacMediaTypes, allowUndefined);
 }
-//#endregion
-//#region node_modules/stac-js/src/reference.js
+// node_modules/stac-js/src/reference.js
 /**
 * A STAC reference as base for Assets and Links.
 *
@@ -68172,7 +68576,7 @@ var STACReference = class extends STACObject {
 		const extension = uri.suffix().toLowerCase();
 		if (hasText(protocol) && !browserProtocols.includes(protocol)) return false;
 		else if (hasText(this.type) && browserImageTypes.includes(this.type.toLowerCase())) return true;
-		else if (typeof this.type === "undefined" && hasText(extension) && (extension === "jpg" || browserImageTypes.includes("image/" + extension))) return true;
+		else if (typeof this.type === "undefined" && hasText(extension) && (extension === "jpg" || extension === "svg" || browserImageTypes.includes("image/" + extension))) return true;
 		else return false;
 	}
 	/**
@@ -68236,8 +68640,7 @@ var STACReference = class extends STACObject {
 		return false;
 	}
 };
-//#endregion
-//#region node_modules/stac-js/src/link.js
+// node_modules/stac-js/src/link.js
 /**
 * A STAC Link object.
 *
@@ -68293,11 +68696,10 @@ var Link = class Link extends STACReference {
 	*/
 	static fromLinks(links, context = null) {
 		if (!Array.isArray(links)) return [];
-		return links.map((link) => isObject(link) ? new Link(link, context) : link);
+		return links.filter((link) => isObject(link)).map((link) => link instanceof Link ? link : new Link(link, context));
 	}
 };
-//#endregion
-//#region node_modules/stac-js/src/hypermedia.js
+// node_modules/stac-js/src/hypermedia.js
 /**
 * STAC Hypermedia class for STAC objects.
 *
@@ -68430,8 +68832,7 @@ var STACHypermedia = class extends STACObject {
 		return this.getStacLinkWithRel("parent");
 	}
 };
-//#endregion
-//#region node_modules/stac-js/src/relationtypes.js
+// node_modules/stac-js/src/relationtypes.js
 /**
 * All relation types used by STAC for pagination.
 *
@@ -68460,8 +68861,7 @@ var queryables = [
 * @type {Array.<string>}
 */
 var sortables = ["http://www.opengis.net/def/rel/ogc/1.0/sortables", "ogc-rel:sortables"];
-//#endregion
-//#region node_modules/stac-js/src/apicollection.js
+// node_modules/stac-js/src/apicollection.js
 /**
 * A STAC API Collection (i.e. an ItemCollection, a CollectionCollection or a ChildrenCollection)
 *
@@ -68525,8 +68925,7 @@ var APICollection = class extends STACHypermedia {
 		return pages;
 	}
 };
-//#endregion
-//#region node_modules/stac-js/src/band.js
+// node_modules/stac-js/src/band.js
 /**
 * A STAC Band.
 *
@@ -68631,14 +69030,13 @@ var Band = class Band extends STACObject {
 		let newBands = [];
 		if (Array.isArray(bands)) for (let i in bands) {
 			const b = bands[i];
-			const newBand = b instanceof Band ? b : new Band(b, i, context);
-			newBands.push(newBand);
+			if (b instanceof Band) newBands.push(b);
+			else if (isObject(b)) newBands.push(new Band(b, i, context));
 		}
 		return newBands;
 	}
 };
-//#endregion
-//#region node_modules/stac-js/src/asset.js
+// node_modules/stac-js/src/asset.js
 var NO_INHERITANCE = [
 	"created",
 	"updated",
@@ -68920,13 +69318,13 @@ var Asset = class Asset extends STACReference {
 		let newAssets = {};
 		if (isObject(assets)) for (let i in assets) {
 			const a = assets[i];
-			newAssets[i] = a instanceof Asset ? a : new Asset(a, i, context);
+			if (a instanceof Asset) newAssets[i] = a;
+			else if (isObject(a)) newAssets[i] = new Asset(a, i, context);
 		}
 		return newAssets;
 	}
 };
-//#endregion
-//#region node_modules/stac-js/src/locales.js
+// node_modules/stac-js/src/locales.js
 function parse(locale) {
 	if (!locale) return;
 	const stringLocale = String(locale);
@@ -68993,8 +69391,7 @@ function getBest(supported, locale, defaultLocale, getAnyCountry) {
 	if (getAnyCountry && firstCountry) return countries[country] ? countries[country] : firstCountry;
 	return countries[country] ? countries[country] : main;
 }
-//#endregion
-//#region node_modules/stac-js/src/stac.js
+// node_modules/stac-js/src/stac.js
 /**
 * Class for STAC spec entities (Item, Catalog and Collection).
 *
@@ -69064,12 +69461,14 @@ var STAC = class STAC extends STACHypermedia {
 	* Get the thumbnails from the assets and links in a STAC entity.
 	*
 	* If `browserOnly` is enabled and an asset can't be shown in a browser
-	* (e.g. it is not served over HTTP/S), its alternate assets are checked and
+	* (e.g. it is not served over HTTP/S) or is an SVG, its alternate assets are checked and
 	* the first alternate asset that a browser can show is returned instead.
 	* Such an asset is merged with the metadata of its parent asset (see
 	* `Asset.fillAlternate`) and `getContext()` returns the parent asset.
 	*
-	* @param {boolean} browserOnly - Return only images that can be shown in a browser natively (PNG/JPG/GIF/WEBP + HTTP/S).
+	* SVG images are sorted after raster images.
+	*
+	* @param {boolean} browserOnly - Return only images that can be shown in a browser natively (GIF/JPEG/PNG/WebP/AVIF/SVG + HTTP/S).
 	* @param {string|null} prefer - If not `null` (default), prefers a role over the other. Either `thumbnail` or `overview`.
 	* @param {boolean} includeGraphic - Also include assets with the role `graphic`.
 	* @returns {Array.<STACReference>} Asset or Link
@@ -69081,11 +69480,16 @@ var STAC = class STAC extends STACHypermedia {
 			const thumbnail = this.getAsset("thumbnail");
 			if (thumbnail) thumbnails.push(thumbnail);
 		}
+		const isSvg = (img) => img.isType(svgMediaType);
 		if (browserOnly) thumbnails = thumbnails.map((img) => {
-			if (img.canBrowserDisplayImage()) return img;
-			else if (img.isAsset) return img.getAlternates(true).find((alt) => alt.canBrowserDisplayImage()) || null;
-			return null;
+			if (img.canBrowserDisplayImage() && !isSvg(img)) return img;
+			else if (img.isAsset) {
+				const alternate = img.getAlternates(true).find((alt) => alt.canBrowserDisplayImage());
+				if (alternate) return alternate;
+			}
+			return img.canBrowserDisplayImage() ? img : null;
 		}).filter((img) => img !== null);
+		thumbnails = thumbnails.filter((img) => !isSvg(img)).concat(thumbnails.filter(isSvg));
 		if (prefer && thumbnails.length > 1) {
 			let preferFilter = (img) => Array.isArray(img.roles) && img.roles.includes(prefer) || img.getKey() === prefer;
 			thumbnails = thumbnails.filter(preferFilter).concat(thumbnails.filter((img) => !preferFilter(img)));
@@ -69225,8 +69629,8 @@ var STAC = class STAC extends STACHypermedia {
 	* @returns {Asset|null} The matching asset, or `null` if not found.
 	*/
 	getAsset(key) {
-		if (!isObject(this.assets)) return null;
-		return this.assets[key] || null;
+		if (!(this.isItem || this.isCollection) || !isObject(this.assets)) return null;
+		return this.assets[key] instanceof Asset ? this.assets[key] : null;
 	}
 	/**
 	* Returns all assets as an array.
@@ -69234,8 +69638,8 @@ var STAC = class STAC extends STACHypermedia {
 	* @returns {Array.<Asset>} An array of all assets.
 	*/
 	getAssets() {
-		if (!isObject(this.assets)) return [];
-		return Object.values(this.assets);
+		if (!(this.isItem || this.isCollection) || !isObject(this.assets)) return [];
+		return Object.values(this.assets).filter((asset) => asset instanceof Asset);
 	}
 	/**
 	* Returns all assets that contain at least one of the given roles.
@@ -69304,8 +69708,7 @@ var STAC = class STAC extends STACHypermedia {
 		return this.stac_extensions.some((uri) => regexp.test(uri));
 	}
 };
-//#endregion
-//#region node_modules/stac-js/src/datetime.js
+// node_modules/stac-js/src/datetime.js
 /**
 * Parses a UTC-based ISO8601 date and time string to a Date object.
 *
@@ -69353,8 +69756,7 @@ function unionDateTime(list) {
 	});
 	return [min === null ? null : new Date(min), max === null ? null : new Date(max)];
 }
-//#endregion
-//#region node_modules/stac-js/src/cataloglike.js
+// node_modules/stac-js/src/cataloglike.js
 /**
 * Class for common parts of Catalogs and Collections.
 *
@@ -69526,8 +69928,7 @@ var CatalogLike = class extends STAC {
 		return this.getStacLinksWithRel("item");
 	}
 };
-//#endregion
-//#region node_modules/stac-js/src/catalog.js
+// node_modules/stac-js/src/catalog.js
 /**
 * A STAC Catalog.
 *
@@ -69550,8 +69951,7 @@ var Catalog = class extends CatalogLike {
 		super(data, absoluteUrl);
 	}
 };
-//#endregion
-//#region node_modules/stac-js/src/collection.js
+// node_modules/stac-js/src/collection.js
 /**
 * Extents
 *
@@ -69623,8 +70023,7 @@ var Collection = class extends CatalogLike {
 		return Band.fromBands(bands, this);
 	}
 };
-//#endregion
-//#region node_modules/stac-js/src/childrencollection.js
+// node_modules/stac-js/src/childrencollection.js
 /**
 * Represents a list of children (Catalogs and Collections) as returned by the
 * `/children` endpoint of the STAC API - Children extension.
@@ -69647,10 +70046,10 @@ var ChildrenCollection = class extends APICollection {
 		return isObject(data) && Array.isArray(data.children);
 	}
 	constructor(data, absoluteUrl = null) {
-		super(data, absoluteUrl, { children: (children) => children.map((child) => {
+		super(data, absoluteUrl, { children: (children) => Array.isArray(children) ? children.filter((child) => isObject(child)).map((child) => {
 			if (child instanceof STAC) return child;
-			return child?.type === "Collection" ? new Collection(child) : new Catalog(child);
-		}) });
+			return child.type === "Collection" ? new Collection(child) : new Catalog(child);
+		}) : [] });
 	}
 	/**
 	* Returns the type of the STAC object, here: 'ChildrenCollection'.
@@ -69666,7 +70065,7 @@ var ChildrenCollection = class extends APICollection {
 	* @returns {Array.<Catalog|Collection>} All child Catalogs and Collections
 	*/
 	getAll() {
-		return this.children;
+		return Array.isArray(this.children) ? this.children.filter((child) => child instanceof STAC) : [];
 	}
 	/**
 	* Check whether this given object is a list of children (i.e. API Children).
@@ -69687,7 +70086,7 @@ var ChildrenCollection = class extends APICollection {
 	toGeoJSON(fixAntimeridian = false) {
 		return {
 			type: "FeatureCollection",
-			features: this.children.map((child) => child.toGeoJSON(fixAntimeridian)).filter((geojson) => geojson !== null)
+			features: this.getAll().map((child) => child.toGeoJSON(fixAntimeridian)).filter((geojson) => geojson !== null)
 		};
 	}
 	/**
@@ -69705,7 +70104,7 @@ var ChildrenCollection = class extends APICollection {
 	* @returns {Array.<BoundingBox>}
 	*/
 	getBoundingBoxes() {
-		return this.children.map((child) => child.getBoundingBox()).filter((bbox) => bbox !== null);
+		return this.getAll().map((child) => child.getBoundingBox()).filter((bbox) => bbox !== null);
 	}
 	/**
 	* Returns a single temporal extent for all the children.
@@ -69722,11 +70121,10 @@ var ChildrenCollection = class extends APICollection {
 	* @returns {Array.<Array.<Date|null>>}
 	*/
 	getTemporalExtents() {
-		return this.children.map((child) => child.getTemporalExtent()).filter((extent) => extent !== null);
+		return this.getAll().map((child) => child.getTemporalExtent()).filter((extent) => extent !== null);
 	}
 };
-//#endregion
-//#region node_modules/stac-js/src/collectioncollection.js
+// node_modules/stac-js/src/collectioncollection.js
 /**
 * Represents an Collections containing Collections.
 *
@@ -69748,7 +70146,7 @@ var CollectionCollection = class extends APICollection {
 		return isObject(data) && Array.isArray(data.collections);
 	}
 	constructor(data, absoluteUrl = null) {
-		super(data, absoluteUrl, { collections: (collections) => collections.map((collection) => collection instanceof Collection ? collection : new Collection(collection)) });
+		super(data, absoluteUrl, { collections: (collections) => Array.isArray(collections) ? collections.filter((collection) => isObject(collection)).map((collection) => collection instanceof Collection ? collection : new Collection(collection)) : [] });
 	}
 	/**
 	* Returns the type of the STAC object, here: 'CollectionCollection'.
@@ -69764,7 +70162,7 @@ var CollectionCollection = class extends APICollection {
 	* @returns {Array.<Collection>} All STAC Collections
 	*/
 	getAll() {
-		return this.collections;
+		return Array.isArray(this.collections) ? this.collections.filter((collection) => collection instanceof Collection) : [];
 	}
 	/**
 	* Check whether this given object is a STAC Collection of Collections (i.e. API Collections).
@@ -69783,7 +70181,7 @@ var CollectionCollection = class extends APICollection {
 	toGeoJSON(fixAntimeridian = false) {
 		return {
 			type: "FeatureCollection",
-			features: this.collections.map((collection) => collection.toGeoJSON(fixAntimeridian)).filter((geojson) => geojson !== null)
+			features: this.getAll().map((collection) => collection.toGeoJSON(fixAntimeridian)).filter((geojson) => geojson !== null)
 		};
 	}
 	/**
@@ -69800,7 +70198,7 @@ var CollectionCollection = class extends APICollection {
 	* @returns {Array.<BoundingBox>}
 	*/
 	getBoundingBoxes() {
-		return this.collections.map((collection) => collection.getBoundingBox());
+		return this.getAll().map((collection) => collection.getBoundingBox());
 	}
 	/**
 	* Returns a single temporal extent for the all the STAC collections.
@@ -69816,7 +70214,7 @@ var CollectionCollection = class extends APICollection {
 	* @returns {Array.<Array.<Date|null>>}
 	*/
 	getTemporalExtents() {
-		return this.collections.map((collection) => collection.getTemporalExtent());
+		return this.getAll().map((collection) => collection.getTemporalExtent());
 	}
 	/**
 	* Returns the link for queryables.
@@ -69835,8 +70233,7 @@ var CollectionCollection = class extends APICollection {
 		return this.getSchemaLinkWithRels(sortables);
 	}
 };
-//#endregion
-//#region node_modules/stac-js/src/item.js
+// node_modules/stac-js/src/item.js
 /**
 * Metadata for an item, the item properties.
 *
@@ -69966,8 +70363,7 @@ var Item = class extends STAC {
 		return this.getStacLinkWithRel("collection");
 	}
 };
-//#endregion
-//#region node_modules/stac-js/src/itemcollection.js
+// node_modules/stac-js/src/itemcollection.js
 /**
 * Represents an ItemCollection containing Items.
 *
@@ -69990,7 +70386,7 @@ var ItemCollection = class extends APICollection {
 		return isObject(data) && data.type === "FeatureCollection" && Array.isArray(data.features);
 	}
 	constructor(data, absoluteUrl = null) {
-		super(data, absoluteUrl, { features: (features) => features.map((feature) => feature instanceof Item ? feature : new Item(feature)) });
+		super(data, absoluteUrl, { features: (features) => Array.isArray(features) ? features.filter((feature) => isObject(feature)).map((feature) => feature instanceof Item ? feature : new Item(feature)) : [] });
 	}
 	/**
 	* Returns the type of the STAC object, here: 'ItemCollection'.
@@ -70006,7 +70402,7 @@ var ItemCollection = class extends APICollection {
 	* @returns {Array.<Item>} All STAC Items
 	*/
 	getAll() {
-		return this.features;
+		return Array.isArray(this.features) ? this.features.filter((item) => item instanceof Item) : [];
 	}
 	/**
 	* Returns a GeoJSON FeatureCollection for this STAC object.
@@ -70031,7 +70427,7 @@ var ItemCollection = class extends APICollection {
 	* @returns {Array.<BoundingBox>}
 	*/
 	getBoundingBoxes() {
-		return this.features.map((item) => item.getBoundingBox());
+		return this.getAll().map((item) => item.getBoundingBox());
 	}
 	/**
 	* Returns a single temporal extent for all the STAC items.
@@ -70047,11 +70443,10 @@ var ItemCollection = class extends APICollection {
 	* @returns {Array.<Array.<Date|null>>}
 	*/
 	getTemporalExtents() {
-		return this.features.map((item) => item.getTemporalExtent());
+		return this.getAll().map((item) => item.getTemporalExtent());
 	}
 };
-//#endregion
-//#region node_modules/stac-js/src/index.js
+// node_modules/stac-js/src/index.js
 /**
 * Creates the corresponding object for a object that conforms to the STAC specification.
 *
@@ -70064,16 +70459,19 @@ var ItemCollection = class extends APICollection {
 * @returns {Catalog|Collection|CollectionCollection|ChildrenCollection|Item|ItemCollection} The created object instance.
 */
 function create(data, migrate = true, updateVersionNumber = false) {
+	if (!data.type || !data.stac_version && (data.type === "Catalog" || data.type === "Collection")) {
+		if (ChildrenCollection.isResponse(data)) {
+			if (migrate) data.children = data.children.map((child) => isObject(child) ? import_migrate.default.stac(child, updateVersionNumber) : child);
+			return new ChildrenCollection(data);
+		} else if (CollectionCollection.isResponse(data)) return new CollectionCollection(migrate ? import_migrate.default.collectionCollection(data, updateVersionNumber) : data);
+	}
 	if (migrate) data = import_migrate.default.stac(data, updateVersionNumber);
 	if (data.type === "Feature") return new Item(data);
 	else if (data.type === "FeatureCollection") return new ItemCollection(data);
 	else if (data.type === "Collection" || !data.type && typeof data.extent !== "undefined" && typeof data.license !== "undefined") return new Collection(data);
-	else if (!data.type && Array.isArray(data.children)) return new ChildrenCollection(data);
-	else if (!data.type && Array.isArray(data.collections)) return new CollectionCollection(data);
 	else return new Catalog(data);
 }
-//#endregion
-//#region src/ol/events/ErrorEvent.js
+// src/ol/events/ErrorEvent.js
 /**
 * @module ol/events/ErrorEvent
 */
@@ -70096,8 +70494,7 @@ var ErrorEvent = class extends BaseEvent {
 		this.error = error;
 	}
 };
-//#endregion
-//#region src/ol/http.js
+// src/ol/http.js
 /**
 * @module ol/http
 */
@@ -70186,8 +70583,7 @@ function createTileLoadFunction(getHeaders, onError = null) {
 		load(tile.getImage(), src, getHeaders, onError);
 	};
 }
-//#endregion
-//#region src/ol/proj.js
+// src/ol/proj.js
 /**
 * @module ol/proj
 */
@@ -70290,8 +70686,7 @@ async function getLookupFn() {
 	} catch {}
 	return null;
 }
-//#endregion
-//#region src/ol/source/type.js
+// src/ol/source/type.js
 /**
 * @module ol/source/type
 */
@@ -71626,8 +72021,7 @@ function getGeoTiffStyleFromAsset(asset, sourceInfo, defaultColormap = null) {
 	if (bandCount !== 1) return null;
 	return createSingleBandStyle(asset, getRenderedBandSources(asset, selected)[0], defaultColormap);
 }
-//#endregion
-//#region src/ol/layer/type.js
+// src/ol/layer/type.js
 /**
 * @module ol/layer/type
 */
@@ -71709,8 +72103,7 @@ var LayerType = class LayerType {
 		return this.name;
 	}
 };
-//#endregion
-//#region src/ol/layer/STAC.js
+// src/ol/layer/STAC.js
 /**
 * @module ol/layer/STAC
 */
@@ -72941,8 +73334,7 @@ var STACLayer = class STACLayer extends LayerGroup {
 		}
 	}
 };
-//#endregion
-//#region node_modules/pako/dist/pako.esm.mjs
+// node_modules/pako/dist/pako.esm.mjs
 /*! pako 2.2.0 https://github.com/nodeca/pako @license (MIT AND Zlib) */
 var Z_FIXED$1 = 4;
 var Z_BINARY = 0;
@@ -73744,8 +74136,8 @@ var longest_match = (s, cur_match) => {
 		if (_win[match + best_len] !== scan_end || _win[match + best_len - 1] !== scan_end1 || _win[match] !== _win[scan] || _win[++match] !== _win[scan + 1]) continue;
 		scan += 2;
 		match++;
-		do		;
-while (_win[++scan] === _win[++match] && _win[++scan] === _win[++match] && _win[++scan] === _win[++match] && _win[++scan] === _win[++match] && _win[++scan] === _win[++match] && _win[++scan] === _win[++match] && _win[++scan] === _win[++match] && _win[++scan] === _win[++match] && scan < strend);
+		do;
+		while (_win[++scan] === _win[++match] && _win[++scan] === _win[++match] && _win[++scan] === _win[++match] && _win[++scan] === _win[++match] && _win[++scan] === _win[++match] && _win[++scan] === _win[++match] && _win[++scan] === _win[++match] && _win[++scan] === _win[++match] && scan < strend);
 		len = MAX_MATCH - (strend - scan);
 		scan = strend - MAX_MATCH;
 		if (len > best_len) {
@@ -74033,8 +74425,8 @@ var deflate_rle = (s, flush) => {
 			prev = _win[scan];
 			if (prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan]) {
 				strend = s.strstart + MAX_MATCH;
-				do				;
-while (prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && scan < strend);
+				do;
+				while (prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && scan < strend);
 				s.match_length = MAX_MATCH - (strend - scan);
 				if (s.match_length > s.lookahead) s.match_length = s.lookahead;
 			}
@@ -76776,8 +77168,7 @@ var inflate_1$1 = {
 var { Deflate, deflate, deflateRaw, gzip } = deflate_1$1;
 var { Inflate, inflate, inflateRaw, ungzip } = inflate_1$1;
 var inflate_1 = inflate;
-//#endregion
-//#region node_modules/geotiff/dist-module/compression/deflate.js
+// node_modules/geotiff/dist-module/compression/deflate.js
 var deflate_exports = /* @__PURE__ */ __exportAll({ default: () => DeflateDecoder });
 var DeflateDecoder = class extends BaseDecoder {
 	/** @param {ArrayBuffer} buffer */
@@ -76785,8 +77176,7 @@ var DeflateDecoder = class extends BaseDecoder {
 		return inflate_1(new Uint8Array(buffer)).buffer;
 	}
 };
-//#endregion
-//#region node_modules/geotiff/dist-module/compression/jpeg.js
+// node_modules/geotiff/dist-module/compression/jpeg.js
 var jpeg_exports = /* @__PURE__ */ __exportAll({ default: () => JpegDecoder });
 var dctZigZag = new Int32Array([
 	0,
@@ -77682,8 +78072,7 @@ var JpegDecoder = class extends BaseDecoder {
 	}
 };
 /* Copyright 2015-2021 Esri. Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 @preserve */
-//#endregion
-//#region node_modules/zstddec/dist/zstddec.modern.js
+// node_modules/zstddec/dist/zstddec.modern.js
 var import_LercDecode = /* @__PURE__ */ __toESM((/* @__PURE__ */ __commonJSMin(((exports, module) => {
 	/**
 	* a module for decoding LERC blobs
@@ -79416,8 +79805,7 @@ var ZSTDDecoder$1 = class {
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 var wasm$1 = "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AikACDcACCAHIDo3AAAgEUEZSA0BIARBGGohBANAIAIpABAhOiAEIAIpABg3AAggBCA6NwAAIAIpACAhOiAEIAIpACg3ABggBCA6NwAQIAJBIGohAiAEQSBqIgQgCkkNAAsMAQsCQAJAIAUoAswCIhEgBUHgAWogJUEHcUEMbGoiDygCACICaiIHIBxLDQAgCSAPKAIEIgogAmoiBmogG0sNACAGQSBqIBQgCWtNDQELIAUgDygCCDYCoAEgBSAPKQIANwOYASAJIBQgBUGYAWogBUHMAmogHCALIBcgIhAgIQYMAQsgAiAJaiEEIA8oAgghFSARKQAAITogCSARKQAINwAIIAkgOjcAAAJAIAJBEUkNACARKQAQITogCSARKQAYNwAYIAkgOjcAECACQRBrQRFIDQAgEUEQaiECIAlBIGohEgNAIAIpABAhOiASIAIpABg3AAggEiA6NwAAIAIpACAhOiASIAIpACg3ABggEiA6NwAQIAJBIGohAiASQSBqIhIgBEkNAAsLIAQgFWshAiAFIAc2AswCIAQgC2sgFUkEQCAVIAQgF2tLDQwgIiAiIAIgC2siD2oiByAKak8EQCAKRQ0CIAQgByAK/AoAAAwCC0EAIA9rIgIEQCAEIAcgAvwKAAALIAogD2ohCiAEIA9rIQQgCyECCyAVQRBPBEAgAikAACE6IAQgAikACDcACCAEIDo3AAAgCkERSA0BIAQgCmohByAEQRBqIQQDQCACKQAQITogBCACKQAYNwAIIAQgOjcAACACKQAgITogBCACKQAoNwAYIAQgOjcAECACQSBqIQIgBEEgaiIEIAdJDQALDAELAkAgFUEHTQRAIAQgAi0AADoAACAEIAItAAE6AAEgBCACLQACOgACIAQgAi0AAzoAAyAEIAIgFUECdCIHQeAaaigCAGoiAigAADYABCACIAdBgBtqKAIAayECDAELIAQgAikAADcAAAsgCkEJSQ0AIAQgCmohDyAEQQhqIgcgAkEIaiICa0EPTARAA0AgByACKQAANwAAIAJBCGohAiAHQQhqIgcgD0kNAAwCCwALIAIpAAAhOiAHIAIpAAg3AAggByA6NwAAIApBGUgNACAEQRhqIQQDQCACKQAQITogBCACKQAYNwAIIAQgOjcAACACKQAgITogBCACKQAoNwAYIAQgOjcAECACQSBqIQIgBEEgaiIEIA9JDQALCyAGQYh/SwRAIAYhAwwLCyAFQeABaiAlQQdxQQxsaiICIA02AgggAiAMNgIEIAIgEDYCAAsgBiAJaiEJICVBAWohJSAQIC1qIAxqIS0MAQsLIAUoArABIAUoArQBRw0HIAUoAqwBQSBHDQcgDiAoayEQA0ACQCAOIBBMBEBBACECA0AgAkEDRg0CIDIgAkECdCIDaiADICZqKAIANgIAIAJBAWohAgwACwALIAVB4AFqIBBBB3FBDGxqIQoCfwJAIAgoAoTsAUECRgRAIAUoAswCIg8gCigCACIEaiIHIAgoAoDsASICSwRAIAIgD0cEQCACIA9rIgIgFCAJa0sNCyAJIA8gAhAfIAogBCACayIENgIAIAIgCWohCQsgBSAWNgLMAiAIQQA2AoTsAQJAAkACQCAEQYCABEoNACAJIAooAgQiDSAEaiIGaiAbSw0AIAZBIGogFCAJa00NAQsgBSAKKAIINgJQIAUgCikCADcDSCAJIBQgBUHIAGogBUHMAmogGSALIBcgIhAgIQYMAQsgBCAWaiEHIAQgCWohDCAKKAIIIQogFikAACE6IAkgFikACDcACCAJIDo3AAACQCAEQRFJDQAgHikAACE6IAkgHikACDcAGCAJIDo3ABAgBEEQa0ERSA0AIAlBIGohAiAeIQQDQCAEKQAQITogAiAEKQAYNwAIIAIgOjcAACAEKQAgITogAiAEKQAoNwAYIAIgOjcAECAEQSBqIQQgAkEgaiICIAxJDQALCyAMIAprIQIgBSAHNgLMAiAMIAtrIApJBEAgCiAMIBdrSw0PICIgIiACIAtrIgdqIgQgDWpPBEAgDUUNAiAMIAQgDfwKAAAMAgtBACAHayICBEAgDCAEIAL8CgAACyAHIA1qIQ0gDCAHayEMIAshAgsgCkEQTwRAIAIpAAAhOiAMIAIpAAg3AAggDCA6NwAAIA1BEUgNASAMIA1qIQcgDEEQaiEEA0AgAikAECE6IAQgAikAGDcACCAEIDo3AAAgAikAICE6IAQgAikAKDcAGCAEIDo3ABAgAkEgaiECIARBIGoiBCAHSQ0ACwwBCwJAIApBB00EQCAMIAItAAA6AAAgDCACLQABOgABIAwgAi0AAjoAAiAMIAItAAM6AAMgDCACIApBAnQiBEHgGmooAgBqIgIoAAA2AAQgAiAEQYAbaigCAGshAgwBCyAMIAIpAAA3AAALIA1BCUkNACAMIA1qIQcgDEEIaiIEIAJBCGoiAmtBD0wEQANAIAQgAikAADcAACACQQhqIQIgBEEIaiIEIAdJDQAMAgsACyACKQAAITogBCACKQAINwAIIAQgOjcAACANQRlIDQAgDEEYaiEEA0AgAikAECE6IAQgAikAGDcACCAEIDo3AAAgAikAICE6IAQgAikAKDcAGCAEIDo3ABAgAkEgaiECIARBIGoiBCAHSQ0ACwsgBkGJf08EQCAGIQMMDgsgGSEcIAYgCWoMAwsgB0EgayECAkACQCAHIBxLDQAgCSAKKAIEIhIgBGoiDGogAksNACAMQSBqIBQgCWtNDQELIAUgCigCCDYCYCAFIAopAgA3A1ggCSAUIAIgBUHYAGogBUHMAmogHCALIBcgIhAhIQwMAgsgBCAJaiEGIAooAgghCiAPKQAAITogCSAPKQAINwAIIAkgOjcAAAJAIARBEUkNACAPKQAQITogCSAPKQAYNwAYIAkgOjcAECAEQRBrQRFIDQAgD0EQaiECIAlBIGohBANAIAIpABAhOiAEIAIpABg3AAggBCA6NwAAIAIpACAhOiAEIAIpACg3ABggBCA6NwAQIAJBIGohAiAEQSBqIgQgBkkNAAsLIAYgCmshAiAFIAc2AswCIAYgC2sgCkkEQCAKIAYgF2tLDQ0gIiAiIAIgC2siB2oiBCASak8EQCASRQ0DIAYgBCAS/AoAAAwDC0EAIAdrIgIEQCAGIAQgAvwKAAALIAcgEmohEiAGIAdrIQYgCyECCyAKQRBPBEAgAikAACE6IAYgAikACDcACCAGIDo3AAAgEkERSA0CIAYgEmohByAGQRBqIQQDQCACKQAQITogBCACKQAYNwAIIAQgOjcAACACKQAgITogBCACKQAoNwAYIAQgOjcAECACQSBqIQIgBEEgaiIEIAdJDQALDAILAkAgCkEHTQRAIAYgAi0AADoAACAGIAItAAE6AAEgBiACLQACOgACIAYgAi0AAzoAAyAGIAIgCkECdCIEQeAaaigCAGoiAigAADYABCACIARBgBtqKAIAayECDAELIAYgAikAADcAAAsgEkEJSQ0BIAYgEmohByAGQQhqIgQgAkEIaiICa0EPTARAA0AgBCACKQAANwAAIAJBCGohAiAE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";
-//#endregion
-//#region node_modules/geotiff/dist-module/compression/lerc.js
+// node_modules/geotiff/dist-module/compression/lerc.js
 var lerc_exports = /* @__PURE__ */ __exportAll({
 	default: () => LercDecoder,
 	zstd: () => zstd$1
@@ -79448,8 +79836,7 @@ var LercDecoder = class extends BaseDecoder {
 		return import_LercDecode.default.decode(decoded, { returnPixelInterleavedDims: this.parameters.planarConfiguration === 1 }).pixels[0].buffer;
 	}
 };
-//#endregion
-//#region node_modules/geotiff/dist-module/compression/lzw.js
+// node_modules/geotiff/dist-module/compression/lzw.js
 var lzw_exports = /* @__PURE__ */ __exportAll({ default: () => LZWDecoder });
 var MIN_BITS = 9;
 var CLEAR_CODE = 256;
@@ -79581,8 +79968,7 @@ var LZWDecoder = class extends BaseDecoder {
 		return decompress$1(buffer).buffer;
 	}
 };
-//#endregion
-//#region node_modules/geotiff/dist-module/compression/packbits.js
+// node_modules/geotiff/dist-module/compression/packbits.js
 var packbits_exports = /* @__PURE__ */ __exportAll({ default: () => PackbitsDecoder });
 var PackbitsDecoder = class extends BaseDecoder {
 	/** @param {ArrayBuffer} buffer */
@@ -79604,8 +79990,7 @@ var PackbitsDecoder = class extends BaseDecoder {
 		return new Uint8Array(out).buffer;
 	}
 };
-//#endregion
-//#region node_modules/geotiff/dist-module/compression/raw.js
+// node_modules/geotiff/dist-module/compression/raw.js
 var raw_exports = /* @__PURE__ */ __exportAll({ default: () => RawDecoder });
 var RawDecoder = class extends BaseDecoder {
 	/** @param {ArrayBuffer} buffer */
@@ -79613,8 +79998,7 @@ var RawDecoder = class extends BaseDecoder {
 		return buffer;
 	}
 };
-//#endregion
-//#region node_modules/geotiff/dist-module/compression/webimage.js
+// node_modules/geotiff/dist-module/compression/webimage.js
 var webimage_exports = /* @__PURE__ */ __exportAll({ default: () => WebImageDecoder });
 /**
 * class WebImageDecoder
@@ -79657,8 +80041,7 @@ var WebImageDecoder = class extends BaseDecoder {
 		} else throw new Error(`Unsupported SamplesPerPixel value: ${samplesPerPixel}`);
 	}
 };
-//#endregion
-//#region node_modules/zstddec/dist/zstddec-stream.modern.js
+// node_modules/zstddec/dist/zstddec-stream.modern.js
 /**
 * Some C structs for reference:
 typedef struct ZSTD_inBuffer_s {
@@ -79791,8 +80174,7 @@ var ZSTDDecoder = class {
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 var wasm = "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QQhyIQBBACEDA0AgACADTQ0DIANBQGshAwwACwALQWwhCiAOIA5B/ABqIA5B+ABqIAUgBhAGIgJBiH9LDQEgDigCeCIDIARLDQEgACAOIA4oAnwgByAIIAMgDRAlIAEgADYCACACIQoMAQtBbCEKCyAOQYABaiQAIAoLcAEEfyAAQgA3AgAgAgRAIAFBCmohBiABKAIEIQRBACECQQAhAQNAIAEgBHZFBEAgAiAGIAFBA3RqLQAAIgUgAiAFSxshAiABQQFqIQEgAyAFQRZLaiEDDAELCyAAIAI2AgQgACADQQggBGt0NgIACwuuAQEEfyABIAIoAgQiAyABKAIEaiIENgIEIAAgA0ECdEGwGWooAgAgASgCAEEAIARrdnE2AgACQCAEQSFPBEAgAUGwGjYCCAwBCyABKAIIIgMgASgCEE8EQCABEAwMAQsgAyABKAIMIgVGDQAgASADIAMgBWsgBEEDdiIGIAMgBmsgBUkbIgNrIgU2AgggASAEIANBA3RrNgIEIAEgBSgAADYCAAsgACACQQhqNgIEC40CAgN/AX4gACACaiEEAkACQCACQQhOBEAgACABayICQXlIDQELA0AgACAETw0CIAAgAS0AADoAACAAQQFqIQAgAUEBaiEBDAALAAsCQAJAIAJBb0sNACAAIARBIGsiAksNACABKQAAIQYgACABKQAINwAIIAAgBjcAACACIABrIgVBEU4EQCAAQRBqIQAgASEDA0AgAykAECEGIAAgAykAGDcACCAAIAY3AAAgAykAICEGIAAgAykAKDcAGCAAIAY3ABAgA0EgaiEDIABBIGoiACACSQ0ACwsgASAFaiEBDAELIAAhAgsDQCACIARPDQEgAiABLQAAOgAAIAJBAWohAiABQQFqIQEMAAsACwvfAQEGf0G6fyEKAkAgAigCBCIIIAIoAgAiCWoiDSABIABrSw0AQWwhCiAJIAQgAygCACILa0sNACAAIAlqIgQgAigCCCIMayECIAAgAUEgayIBIAsgCUEAEDMgAyAJIAtqNgIAAkACQCAEIAVrIAxPBEAgAiEFDAELIAwgBCAGa0sNAiAHIAcgAiAFayIDaiICIAhqTwRAIAhFDQIgBCACIAj8CgAADAILQQAgA2siAARAIAQgAiAA/AoAAAsgAyAIaiEIIAQgA2shBAsgBCABIAUgCEEBEDML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";
-//#endregion
-//#region node_modules/geotiff/dist-module/compression/zstd.js
+// node_modules/geotiff/dist-module/compression/zstd.js
 var zstd_exports$1 = /* @__PURE__ */ __exportAll({
 	default: () => ZstdDecoder,
 	zstd: () => zstd
@@ -79804,8 +80186,7 @@ var ZstdDecoder = class extends BaseDecoder {
 		return zstd.decode(new Uint8Array(buffer)).buffer;
 	}
 };
-//#endregion
-//#region node_modules/numcodecs/dist/chunk-INHXZS53.js
+// node_modules/numcodecs/dist/chunk-INHXZS53.js
 var __toBinary = /* @__PURE__ */ (() => {
 	var table = /* @__PURE__ */ new Uint8Array(128);
 	for (var i = 0; i < 64; i++) table[i < 26 ? i + 65 : i < 52 ? i + 71 : i < 62 ? i - 4 : i * 4 - 205] = i;
@@ -79821,8 +80202,7 @@ var __toBinary = /* @__PURE__ */ (() => {
 		return bytes;
 	};
 })();
-//#endregion
-//#region node_modules/numcodecs/dist/blosc.js
+// node_modules/numcodecs/dist/blosc.js
 var blosc_exports = /* @__PURE__ */ __exportAll({ default: () => blosc_default });
 var blosc_codec_default = (() => {
 	typeof document !== "undefined" && document.currentScript && document.currentScript.src;
@@ -80680,8 +81060,7 @@ var blosc_default = class Blosc2 {
 		return result;
 	}
 };
-//#endregion
-//#region node_modules/numcodecs/dist/lz4.js
+// node_modules/numcodecs/dist/lz4.js
 var lz4_exports = /* @__PURE__ */ __exportAll({ default: () => lz4_default });
 var lz4_codec_default = (() => {
 	typeof document !== "undefined" && document.currentScript && document.currentScript.src;
@@ -81466,8 +81845,7 @@ var lz4_default = class LZ42 {
 		return result;
 	}
 };
-//#endregion
-//#region node_modules/numcodecs/dist/zstd.js
+// node_modules/numcodecs/dist/zstd.js
 var zstd_exports = /* @__PURE__ */ __exportAll({ default: () => zstd_default });
 var zstd_codec_default = (() => {
 	typeof document != "undefined" && document.currentScript?.src;
@@ -82212,8 +82590,7 @@ var zstd_default = class Zstd2 {
 		}
 	}
 };
-//#endregion
-//#region node_modules/@zarrita/storage/dist/src/util.js
+// node_modules/@zarrita/storage/dist/src/util.js
 function mergeInit(storeOverrides, requestOverrides) {
 	return {
 		...storeOverrides,
@@ -82224,8 +82601,7 @@ function mergeInit(storeOverrides, requestOverrides) {
 		}
 	};
 }
-//#endregion
-//#region node_modules/@zarrita/storage/dist/src/fetch.js
+// node_modules/@zarrita/storage/dist/src/fetch.js
 function resolve(root, path) {
 	const base = typeof root === "string" ? new URL(root) : root;
 	if (!base.pathname.endsWith("/")) base.pathname += "/";
@@ -82343,8 +82719,7 @@ var FetchStore = class {
 		return this.#fetch(this.#buildRequest(url, rangeInit));
 	}
 };
-//#endregion
-//#region node_modules/zarrita/dist/src/errors.js
+// node_modules/zarrita/dist/src/errors.js
 /**
 * @module
 *
@@ -82462,15 +82837,13 @@ var UnsupportedError = class extends ZarritaError {
 		this.feature = feature;
 	}
 };
-//#endregion
-//#region node_modules/zarrita/dist/src/codecs/_shared.js
+// node_modules/zarrita/dist/src/codecs/_shared.js
 function unimplementedEncode(codecName) {
 	return () => {
 		throw new UnsupportedError(`${codecName} encode`);
 	};
 }
-//#endregion
-//#region node_modules/zarrita/dist/src/codecs/bitround.js
+// node_modules/zarrita/dist/src/codecs/bitround.js
 /**
 * A codec for bit-rounding.
 *
@@ -82505,8 +82878,7 @@ var BitroundCodec = class BitroundCodec {
 		return arr;
 	}
 };
-//#endregion
-//#region node_modules/zarrita/dist/src/typedarray.js
+// node_modules/zarrita/dist/src/typedarray.js
 /**
 * Custom array-like views (i.e., TypedArrays) for Zarr binary data buffers.
 *
@@ -82671,8 +83043,7 @@ var UnicodeStringArray = class UnicodeStringArray {
 		for (let i = 0; i < this.length; i++) yield this.get(i);
 	}
 };
-//#endregion
-//#region node_modules/zarrita/dist/src/util.js
+// node_modules/zarrita/dist/src/util.js
 function assertSharedArrayBufferAvailable() {
 	if (typeof SharedArrayBuffer === "undefined") throw new Error("SharedArrayBuffer is not available. In browsers, this requires Cross-Origin-Opener-Policy and Cross-Origin-Embedder-Policy headers to be set.");
 }
@@ -82958,8 +83329,7 @@ async function decompress(data, { format, signal }) {
 		throw new Error(`Failed to decode ${format}`);
 	}
 }
-//#endregion
-//#region node_modules/zarrita/dist/src/codecs/bytes.js
+// node_modules/zarrita/dist/src/codecs/bytes.js
 var LITTLE_ENDIAN_OS = systemIsLittleEndian();
 function systemIsLittleEndian() {
 	const a = new Uint32Array([305419896]);
@@ -83011,8 +83381,7 @@ var BytesCodec = class BytesCodec {
 		};
 	}
 };
-//#endregion
-//#region node_modules/zarrita/dist/src/codecs/json-scalar.js
+// node_modules/zarrita/dist/src/codecs/json-scalar.js
 var SPECIAL_FLOATS = {
 	NaN: NaN,
 	Infinity: Infinity,
@@ -83066,8 +83435,7 @@ function parseJsonScalar(dataType, value) {
 	if (value in SPECIAL_FLOATS) return SPECIAL_FLOATS[value];
 	return hexToFloat(value, FLOAT_BYTES[dataType]);
 }
-//#endregion
-//#region node_modules/zarrita/dist/src/codecs/cast_value.js
+// node_modules/zarrita/dist/src/codecs/cast_value.js
 var SUPPORTED$2 = /* @__PURE__ */ new Set([
 	"int8",
 	"uint8",
@@ -83251,8 +83619,7 @@ function buildConverter(sourceType, targetType, rounding, outOfRange, mapEntries
 	};
 	return fn;
 }
-//#endregion
-//#region node_modules/zarrita/dist/src/codecs/crc32c.js
+// node_modules/zarrita/dist/src/codecs/crc32c.js
 var Crc32cCodec = class Crc32cCodec {
 	kind = "bytes_to_bytes";
 	static fromConfig() {
@@ -83266,8 +83633,7 @@ var Crc32cCodec = class Crc32cCodec {
 		return decodedSize + 4;
 	}
 };
-//#endregion
-//#region node_modules/zarrita/dist/src/codecs/delta.js
+// node_modules/zarrita/dist/src/codecs/delta.js
 var SUPPORTED$1 = /* @__PURE__ */ new Set([
 	"int8",
 	"uint8",
@@ -83326,8 +83692,7 @@ var DeltaCodec = class DeltaCodec {
 		};
 	}
 };
-//#endregion
-//#region node_modules/zarrita/dist/src/codecs/gzip.js
+// node_modules/zarrita/dist/src/codecs/gzip.js
 var GzipCodec = class GzipCodec {
 	kind = "bytes_to_bytes";
 	static fromConfig(_) {
@@ -83339,8 +83704,7 @@ var GzipCodec = class GzipCodec {
 		return new Uint8Array(buffer);
 	}
 };
-//#endregion
-//#region node_modules/zarrita/dist/src/codecs/json2.js
+// node_modules/zarrita/dist/src/codecs/json2.js
 function throwOnNanReplacer(_key, value) {
 	assert(!Number.isNaN(value), "JsonCodec allow_nan is false but NaN was encountered during encoding.");
 	assert(value !== Number.POSITIVE_INFINITY, "JsonCodec allow_nan is false but Infinity was encountered during encoding.");
@@ -83418,8 +83782,7 @@ var JsonCodec = class JsonCodec {
 		};
 	}
 };
-//#endregion
-//#region node_modules/zarrita/dist/src/codecs/scale_offset.js
+// node_modules/zarrita/dist/src/codecs/scale_offset.js
 var SUPPORTED = /* @__PURE__ */ new Set([
 	"int8",
 	"uint8",
@@ -83459,8 +83822,7 @@ var ScaleOffsetCodec = class ScaleOffsetCodec {
 		};
 	}
 };
-//#endregion
-//#region node_modules/zarrita/dist/src/codecs/shuffle.js
+// node_modules/zarrita/dist/src/codecs/shuffle.js
 /**
 * Shuffle filter codec (numcodecs compat).
 *
@@ -83501,8 +83863,7 @@ function unshuffle(data, elementSize) {
 	for (let byte = 0; byte < elementSize; byte++) for (let i = 0; i < nElements; i++) result[i * elementSize + byte] = data[byte * nElements + i];
 	return result;
 }
-//#endregion
-//#region node_modules/zarrita/dist/src/codecs/transpose.js
+// node_modules/zarrita/dist/src/codecs/transpose.js
 function proxy(arr) {
 	if (arr instanceof BoolArray || arr instanceof ByteStringArray || arr instanceof UnicodeStringArray) return new Proxy(arr, {
 		get(target, prop) {
@@ -83597,8 +83958,7 @@ var TransposeCodec = class TransposeCodec {
 		};
 	}
 };
-//#endregion
-//#region node_modules/zarrita/dist/src/codecs/vlen-utf8.js
+// node_modules/zarrita/dist/src/codecs/vlen-utf8.js
 var VLenUTF8 = class VLenUTF8 {
 	kind = "array_to_bytes";
 	#shape;
@@ -83629,8 +83989,7 @@ var VLenUTF8 = class VLenUTF8 {
 		};
 	}
 };
-//#endregion
-//#region node_modules/zarrita/dist/src/codecs/zlib.js
+// node_modules/zarrita/dist/src/codecs/zlib.js
 var ZlibCodec = class ZlibCodec {
 	kind = "bytes_to_bytes";
 	static fromConfig(_) {
@@ -83642,8 +84001,7 @@ var ZlibCodec = class ZlibCodec {
 		return new Uint8Array(buffer);
 	}
 };
-//#endregion
-//#region node_modules/zarrita/dist/src/codecs.js
+// node_modules/zarrita/dist/src/codecs.js
 function createDefaultRegistry() {
 	let blosc = () => __vitePreload(() => Promise.resolve().then(() => blosc_exports).then((m) => m.default), void 0, import.meta.url);
 	let lz4 = () => __vitePreload(() => Promise.resolve().then(() => lz4_exports).then((m) => m.default), void 0, import.meta.url);
@@ -83754,8 +84112,7 @@ async function loadCodecs(chunkMeta) {
 function isTypedArrayLikeMeta(meta) {
 	return meta.dataType !== "v2:object" && meta.dataType !== "string";
 }
-//#endregion
-//#region node_modules/zarrita/dist/src/codecs/sharding.js
+// node_modules/zarrita/dist/src/codecs/sharding.js
 var MAX_BIG_UINT = 18446744073709551615n;
 function createShardedChunkGetter(location, shardShape, encodeShardKey, shardingConfig) {
 	if (!location.store.getRange) throw new UnsupportedError("sharding requires a store with getRange");
@@ -83793,8 +84150,7 @@ function createShardedChunkGetter(location, shardShape, encodeShardKey, sharding
 		}, options);
 	};
 }
-//#endregion
-//#region node_modules/zarrita/dist/src/hierarchy.js
+// node_modules/zarrita/dist/src/hierarchy.js
 var Location = class Location {
 	store;
 	path;
@@ -83960,8 +84316,7 @@ var Array$1 = class extends Location {
 		return isDataType(this.dtype, query);
 	}
 };
-//#endregion
-//#region node_modules/zarrita/dist/src/extension/define.js
+// node_modules/zarrita/dist/src/extension/define.js
 /**
 * Build a Proxy that serves `overrides` for listed keys and delegates the
 * rest to `target`. Getters and methods run with `this = target` so that
@@ -84033,8 +84388,7 @@ function defineStoreExtension(factory) {
 		return createProxy(store, mergeArrayExtensions(store, result));
 	};
 }
-//#endregion
-//#region node_modules/zarrita/dist/src/extension/extend.js
+// node_modules/zarrita/dist/src/extension/extend.js
 /**
 * Walk a list of extensions, calling each synchronously until one returns a
 * `Promise`. From that point on, chain the remaining extensions with `.then`
@@ -84047,13 +84401,11 @@ function applyExtensions(value, extensions) {
 	else result = ext(result);
 	return result;
 }
-//#endregion
-//#region node_modules/zarrita/dist/src/extension/extend-array.js
+// node_modules/zarrita/dist/src/extension/extend-array.js
 function extendArray(array, ...extensions) {
 	return applyExtensions(array, extensions);
 }
-//#endregion
-//#region node_modules/zarrita/dist/src/open.js
+// node_modules/zarrita/dist/src/open.js
 /**
 * Open Zarr arrays and groups from a {@link Readable} store.
 *
@@ -84198,8 +84550,7 @@ open.v2 = openV2;
 * @category Read
 */
 open.v3 = openV3;
-//#endregion
-//#region node_modules/zarrita/dist/src/extension/range-coalescing.js
+// node_modules/zarrita/dist/src/extension/range-coalescing.js
 function assertRangeCapable(store) {
 	if (!store.getRange) throw new UnsupportedError("`zarr.withRangeCoalescing` requires a store with getRange");
 }
@@ -84340,8 +84691,7 @@ var withRangeCoalescing = defineStoreExtension((_store, opts = {}) => {
 		});
 	} };
 });
-//#endregion
-//#region node_modules/zarrita/dist/src/indexing/util.js
+// node_modules/zarrita/dist/src/indexing/util.js
 /** Similar to python's `range` function. Supports positive ranges only. */
 function* range(start, stop, step = 1) {
 	if (stop === void 0) {
@@ -84419,8 +84769,7 @@ function createQueue() {
 		onIdle: () => Promise.all(promises)
 	};
 }
-//#endregion
-//#region node_modules/zarrita/dist/src/indexing/indexer.js
+// node_modules/zarrita/dist/src/indexing/indexer.js
 function errTooManyIndices(selection, shape) {
 	throw new InvalidSelectionError(`too many indicies for array; expected ${shape.length}, got ${selection.length}`);
 }
@@ -84558,8 +84907,7 @@ var BasicIndexer = class {
 		};
 	}
 };
-//#endregion
-//#region node_modules/zarrita/dist/src/indexing/get.js
+// node_modules/zarrita/dist/src/indexing/get.js
 function unwrap(arr, idx) {
 	return "get" in arr ? arr.get(idx) : arr[idx];
 }
@@ -84599,8 +84947,7 @@ async function get$1(arr, selection, opts, setter) {
 	await queue.onIdle();
 	return indexer.shape.length === 0 ? unwrap(out.data, 0) : out;
 }
-//#endregion
-//#region node_modules/zarrita/dist/src/indexing/ops.js
+// node_modules/zarrita/dist/src/indexing/ops.js
 /** A 1D view of an array. Use it to set values in the array. */
 function objectArrayView(arr, offset = 0, size) {
 	let length = size ?? arr.length - offset;
@@ -84794,8 +85141,7 @@ function setFromChunkBinary(dest, src, bytesPerElement, projections) {
 		stride: sstrides
 	}, bytesPerElement, projs);
 }
-//#endregion
-//#region src/ol/shim/proj4.js
+// src/ol/shim/proj4.js
 /**
 * @module ol/shim/proj4
 */
@@ -84816,8 +85162,7 @@ function fromProjectionDefinition(def) {
 	}
 	return get$4(code);
 }
-//#endregion
-//#region node_modules/ol/source/ogcTileUtil.js
+// node_modules/ol/source/ogcTileUtil.js
 /**
 * @param {SourceInfo} sourceInfo The source info.
 * @param {TileMatrixSet} tileMatrixSet Tile matrix set.
@@ -84828,8 +85173,8 @@ function fromProjectionDefinition(def) {
 function parseTileMatrixSet$1(sourceInfo, tileMatrixSet, tileUrlTemplate, tileMatrixSetLimits) {
 	let projection = sourceInfo.projection;
 	if (!projection) {
-		if (typeof tileMatrixSet.crs === "string") projection = get$4(tileMatrixSet.crs);
-		else if ("uri" in tileMatrixSet.crs) projection = get$4(tileMatrixSet.crs.uri);
+		if (typeof tileMatrixSet.crs === "string") projection = get$4(tileMatrixSet.crs) ?? void 0;
+		else if ("uri" in tileMatrixSet.crs) projection = get$4(tileMatrixSet.crs.uri) ?? void 0;
 		if (!projection) throw new Error(`Unsupported CRS: ${JSON.stringify(tileMatrixSet.crs)}`);
 	}
 	const orderedAxes = tileMatrixSet.orderedAxes;
@@ -84930,22 +85275,26 @@ function parseTileMatrixSet$1(sourceInfo, tileMatrixSet, tileUrlTemplate, tileMa
 		const id = matrixIds[tileCoord[0]];
 		const matrix = matrixLookup[id];
 		const upsideDown = matrix.cornerOfOrigin === "bottomLeft";
+		const tileCol = tileCoord[1];
+		const tileRow = upsideDown ? -tileCoord[2] - 1 : tileCoord[2];
+		/** @type {Record<string, string | number>} */
 		const localContext = {
 			tileMatrix: id,
-			tileCol: tileCoord[1],
-			tileRow: upsideDown ? -tileCoord[2] - 1 : tileCoord[2]
+			tileCol,
+			tileRow
 		};
 		if (tileMatrixSetLimits) {
 			const limit = limitLookup[matrix.id];
-			if (localContext.tileCol < limit.minTileCol || localContext.tileCol > limit.maxTileCol || localContext.tileRow < limit.minTileRow || localContext.tileRow > limit.maxTileRow) return;
+			if (tileCol < limit.minTileCol || tileCol > limit.maxTileCol || tileRow < limit.minTileRow || tileRow > limit.maxTileRow) return;
 		}
 		Object.assign(localContext, {
 			z: localContext.tileMatrix,
 			x: localContext.tileCol,
 			y: localContext.tileRow
 		}, context);
+		if (!tileUrlTemplate || base === void 0) return;
 		const url = tileUrlTemplate.replace(/\{(\w+?)\}/g, function(m, p) {
-			return localContext[p];
+			return String(localContext[p]);
 		});
 		return resolveUrl(base, url);
 	}
@@ -84956,8 +85305,7 @@ function parseTileMatrixSet$1(sourceInfo, tileMatrixSet, tileUrlTemplate, tileMa
 		urlFunction: tileUrlFunction
 	};
 }
-//#endregion
-//#region src/ol/shim/ogcTileUtil.js
+// src/ol/shim/ogcTileUtil.js
 /**
 * @module ol/shim/ogcTileUtil
 */
@@ -84974,8 +85322,7 @@ function parseTileMatrixSet(sourceInfo, tileMatrixSet, tileUrlTemplate, tileMatr
 	if (!parseTileMatrixSet$1) throw new Error("GeoZarr stores with a legacy `tile_matrix_set` attribute require a newer OpenLayers version");
 	return parseTileMatrixSet$1(sourceInfo, tileMatrixSet, tileUrlTemplate, tileMatrixSetLimits);
 }
-//#endregion
-//#region src/ol/source/GeoZarr.js
+// src/ol/source/GeoZarr.js
 /**
 * @module ol/source/GeoZarr
 */
@@ -86463,7 +86810,6 @@ function flipChunkRows(chunk) {
 		stride: [colCount, 1]
 	};
 }
-//#endregion
 export { SourceType as a, register as c, Style as d, Stroke as f, fromLonLat as h, getStacObjectsForEvent as i, WebGLTileLayer as l, View as m, LayerType as n, proj4 as o, Fill as p, getClassificationClasses as r, OSM as s, STACLayer as t, Map$1 as u };
 
 //# sourceMappingURL=common.js.map

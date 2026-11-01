@@ -1,5 +1,5 @@
 import { c as register, l as WebGLTileLayer, m as View, n as LayerType, o as proj4, s as OSM, t as STACLayer, u as Map } from "./common.js";
-//#region examples/geozarr-ndvi.js
+// examples/geozarr-ndvi.js
 register(proj4);
 var selectedBands = ["b04", "b08"];
 /**
@@ -72,6 +72,5 @@ var map = new Map({
 layer.on("sourceready", () => {
 	map.getView().fit(layer.getExtent());
 });
-//#endregion
 
 //# sourceMappingURL=geozarr-ndvi.js.map
