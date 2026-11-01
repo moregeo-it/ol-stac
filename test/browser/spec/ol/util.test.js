@@ -475,6 +475,187 @@ describe('ol/util', function () {
       });
     });
 
+    it('resolves band objects of the source options by name', function () {
+      const asset = getAsset({
+        type: 'application/vnd.zarr',
+        bands: [
+          {name: 'b1', statistics: {minimum: 1, maximum: 10}},
+          {name: 'b2', statistics: {minimum: 2, maximum: 20}},
+        ],
+      });
+      const options = {
+        url: 'https://example.com/data',
+        bands: [{name: 'b2', group: 'measurements'}],
+      };
+      expect(getGeoZarrStyleFromAsset(asset, options)).toEqual({
+        color: ['color', gray(2, 20), gray(2, 20), gray(2, 20)],
+      });
+    });
+
+    it('stretches several slices of a non-bands dimension as RGB', function () {
+      const asset = getAsset({
+        type: 'application/vnd.zarr',
+        statistics: {minimum: 0, maximum: 50},
+        'cube:dimensions': {
+          time: {type: 'temporal', extent: [null, null]},
+          y: {type: 'spatial', axis: 'y', extent: [0, 10]},
+          x: {type: 'spatial', axis: 'x', extent: [0, 10]},
+        },
+        'cube:variables': {
+          temperature: {type: 'data', dimensions: ['time', 'y', 'x']},
+        },
+      });
+      const options = {
+        url: 'https://example.com/data',
+        variable: 'temperature',
+        dimensions: {time: [0, 1, 2]},
+      };
+      expect(getGeoZarrStyleFromAsset(asset, options)).toEqual(
+        rgb([
+          [0, 50],
+          [0, 50],
+          [0, 50],
+        ]),
+      );
+    });
+
+    it('stretches several slices of a variable without datacube metadata as RGB', function () {
+      const asset = getAsset({
+        type: 'application/vnd.zarr',
+        statistics: {minimum: 0, maximum: 50},
+      });
+      const options = {
+        url: 'https://example.com/data',
+        variable: 'temperature',
+        dimensions: {time: [0, 1, 2]},
+      };
+      expect(getGeoZarrStyleFromAsset(asset, options)).toEqual(
+        rgb([
+          [0, 50],
+          [0, 50],
+          [0, 50],
+        ]),
+      );
+    });
+
+    it('uses the selected band for several slices of another dimension', function () {
+      const asset = getAsset({
+        type: 'application/vnd.zarr',
+        bands: [
+          {name: 'a', statistics: {minimum: 1, maximum: 10}},
+          {name: 'b', statistics: {minimum: 2, maximum: 20}},
+        ],
+        'cube:dimensions': {
+          time: {type: 'temporal', extent: [null, null]},
+          band: {type: 'bands', values: ['a', 'b']},
+          y: {type: 'spatial', axis: 'y', extent: [0, 10]},
+          x: {type: 'spatial', axis: 'x', extent: [0, 10]},
+        },
+        'cube:variables': {
+          data: {type: 'data', dimensions: ['time', 'band', 'y', 'x']},
+        },
+      });
+      const options = {
+        url: 'https://example.com/data',
+        variable: 'data',
+        dimensions: {time: [0, 1, 2], band: 'b'},
+      };
+      expect(getGeoZarrStyleFromAsset(asset, options)).toEqual(
+        rgb([
+          [2, 20],
+          [2, 20],
+          [2, 20],
+        ]),
+      );
+    });
+
+    it('resolves a single index of the bands dimension', function () {
+      const asset = getAsset({
+        type: 'application/vnd.zarr',
+        bands: [
+          {name: 'a', statistics: {minimum: 1, maximum: 10}},
+          {name: 'b', statistics: {minimum: 2, maximum: 20}},
+        ],
+        ...datacube(['a', 'b']),
+      });
+      const options = {
+        url: 'https://example.com/data',
+        variable: 'rgba',
+        dimensions: {band: 1},
+      };
+      expect(getGeoZarrStyleFromAsset(asset, options)).toEqual({
+        color: ['color', gray(2, 20), gray(2, 20), gray(2, 20)],
+      });
+    });
+
+    it('defaults to the first index of an unlisted bands dimension', function () {
+      const asset = getAsset({
+        type: 'application/vnd.zarr',
+        bands: [
+          {name: 'a', statistics: {minimum: 1, maximum: 10}},
+          {name: 'b', statistics: {minimum: 2, maximum: 20}},
+        ],
+        ...datacube(['a', 'b']),
+      });
+      const options = {url: 'https://example.com/data', variable: 'rgba'};
+      expect(getGeoZarrStyleFromAsset(asset, options)).toEqual({
+        color: ['color', gray(1, 10), gray(1, 10), gray(1, 10)],
+      });
+    });
+
+    it('resolves labels of the bands dimension', function () {
+      const asset = getAsset({
+        type: 'application/vnd.zarr',
+        bands: [
+          {name: 'rgba[band=red]', statistics: {minimum: 1, maximum: 10}},
+          {name: 'rgba[band=green]', statistics: {minimum: 2, maximum: 20}},
+          {name: 'rgba[band=blue]', statistics: {minimum: 3, maximum: 30}},
+        ],
+        ...datacube(['red', 'green', 'blue']),
+      });
+      const options = {
+        url: 'https://example.com/data',
+        variable: 'rgba',
+        dimensions: {band: ['blue', 'red', 'green']},
+      };
+      expect(getGeoZarrStyleFromAsset(asset, options)).toEqual(
+        rgb([
+          [3, 30],
+          [1, 10],
+          [2, 20],
+        ]),
+      );
+    });
+
+    it('resolves band names for the rendered variable', function () {
+      const asset = getAsset({
+        type: 'application/vnd.zarr',
+        bands: [
+          {name: 'rgba[band=a]', statistics: {minimum: 1, maximum: 10}},
+          {name: 'rgba[band=b]', statistics: {minimum: 2, maximum: 20}},
+          {name: 'other[band=a]', statistics: {minimum: 5, maximum: 50}},
+          {name: 'other[band=b]', statistics: {minimum: 6, maximum: 60}},
+        ],
+        'cube:dimensions': {
+          band: {type: 'bands', values: ['a', 'b']},
+          y: {type: 'spatial', axis: 'y', extent: [0, 10]},
+          x: {type: 'spatial', axis: 'x', extent: [0, 10]},
+        },
+        'cube:variables': {
+          rgba: {type: 'data', dimensions: ['band', 'y', 'x']},
+          other: {type: 'data', dimensions: ['band', 'y', 'x']},
+        },
+      });
+      const options = {
+        url: 'https://example.com/data',
+        variable: 'other',
+        dimensions: {band: [1]},
+      };
+      expect(getGeoZarrStyleFromAsset(asset, options)).toEqual({
+        color: ['color', gray(6, 60), gray(6, 60), gray(6, 60)],
+      });
+    });
+
     it('applies a render rescale to all bands', function () {
       const asset = getAsset({
         type: 'application/vnd.zarr',

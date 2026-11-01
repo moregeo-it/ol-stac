@@ -287,7 +287,9 @@ function getRenderedBandSources(asset, bands) {
     } else if (typeof band === 'string') {
       band = asset.findBand(band);
     }
-    return band || asset;
+    return isObject(band) && typeof band.getMetadata === 'function'
+      ? band
+      : asset;
   });
 }
 
@@ -952,10 +954,11 @@ export function getGeoZarrStyleFromAsset(
 /**
  * Returns the bands that a GeoZarr source renders.
  *
- * For a datacube, the selected values of the bands dimension are matched to
- * the STAC bands by name (e.g. `red`), by the name pattern from the Zarr best
- * practices (e.g. `rgba[band=red]`) or, if the number of bands matches the
- * number of values, by position.
+ * For a variable, the selection of its bands dimension (indices or labels)
+ * is matched to the STAC bands by name (e.g. `red`), by the name pattern from
+ * the Zarr best practices (e.g. `rgba[band=red]`) or, if the number of bands
+ * matches the number of values, by position. Several slices of another
+ * dimension are rendered as separate bands that show the selected band.
  *
  * @param {Asset} asset The asset.
  * @param {Object} sourceOptions The GeoZarr source options.
@@ -963,32 +966,68 @@ export function getGeoZarrStyleFromAsset(
  */
 function getGeoZarrRenderedBands(asset, sourceOptions) {
   if (!sourceOptions.variable) {
-    return Array.isArray(sourceOptions.bands) ? sourceOptions.bands : [];
+    if (!Array.isArray(sourceOptions.bands)) {
+      return [];
+    }
+    // The GeoZarr source also accepts {name, group} objects
+    return sourceOptions.bands.map((band) =>
+      isObject(band) && typeof band.name === 'string' ? band.name : band,
+    );
   }
-  const cube = getDatacubeRenderingInfo(asset);
-  const dimension = cube && cube.bandDimension;
-  const indices =
-    dimension && isObject(sourceOptions.dimensions)
-      ? sourceOptions.dimensions[dimension.name]
-      : null;
-  if (!Array.isArray(indices)) {
-    return [];
+
+  const selections = isObject(sourceOptions.dimensions)
+    ? sourceOptions.dimensions
+    : {};
+  const cubeDimensions = asset.getMetadata('cube:dimensions');
+  const cubeVariable = (asset.getMetadata('cube:variables') || {})[
+    sourceOptions.variable
+  ];
+  let bandDimension;
+  if (
+    isObject(cubeDimensions) &&
+    isObject(cubeVariable) &&
+    Array.isArray(cubeVariable.dimensions)
+  ) {
+    bandDimension = cubeVariable.dimensions.find(
+      (name) =>
+        isObject(cubeDimensions[name]) && cubeDimensions[name].type === 'bands',
+    );
   }
+  // At most one dimension selects several slices, rendered as separate bands
+  const multiple = Object.keys(selections).find((name) =>
+    Array.isArray(selections[name]),
+  );
+  if (!bandDimension) {
+    return multiple ? selections[multiple].map(() => null) : [];
+  }
+
+  const values = Array.isArray(cubeDimensions[bandDimension].values)
+    ? cubeDimensions[bandDimension].values
+    : [];
   const bands = asset.getBands();
-  return indices.map((index) => {
-    const value = dimension.values[index];
+  const resolve = (entry) => {
+    const index = typeof entry === 'string' ? values.indexOf(entry) : entry;
+    const value = typeof entry === 'string' ? entry : values[index];
     const band =
       value !== undefined
         ? asset.findBand([
             value,
-            `${cube.variable}[${dimension.name}=${value}]`,
+            `${sourceOptions.variable}[${bandDimension}=${value}]`,
           ])
         : null;
     if (band) {
       return band;
     }
-    return bands.length === dimension.values.length ? bands[index] : null;
-  });
+    return bands.length === values.length ? bands[index] || null : null;
+  };
+  // Unlisted dimensions default to the first index
+  const selection = selections[bandDimension] ?? 0;
+  if (Array.isArray(selection)) {
+    return selection.map(resolve);
+  }
+  // All slices of another dimension show the same band
+  const band = resolve(selection);
+  return multiple ? selections[multiple].map(() => band) : [band];
 }
 
 /**
