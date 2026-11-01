@@ -1,5 +1,5 @@
 import { c as register, d as Style, f as Stroke, h as fromLonLat, l as WebGLTileLayer, m as View, n as LayerType, o as proj4, p as Fill, s as OSM, t as STACLayer, u as Map } from "./common.js";
-//#region examples/stac-collection-pmtiles-vector.js
+// examples/stac-collection-pmtiles-vector.js
 register(proj4);
 var layer = new STACLayer({
 	displayWebMapLink: "pmtiles",
@@ -48,6 +48,5 @@ new Map({
 		zoom: 15
 	})
 });
-//#endregion
 
 //# sourceMappingURL=stac-collection-pmtiles-vector.js.map

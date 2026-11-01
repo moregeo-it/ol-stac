@@ -1,0 +1,34 @@
+{
+  "name": "ol-stac",
+  "version": "1.8.0",
+  "description": "An \"automagical\" STAC LayerGroup for OpenLayers",
+  "homepage": "https://moregeo.it",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "layer/STAC.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/moregeo-it/ol-stac.git"
+  },
+  "bugs": {
+    "url": "https://github.com/moregeo-it/ol-stac/issues"
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/m-mohr"
+  },
+  "dependencies": {
+    "ol-pmtiles": "^2.0.0",
+    "proj4": "^2.16.1",
+    "stac-js": "^0.5.6",
+    "zarrita": "^0.7.3"
+  },
+  "peerDependencies": {
+    "ol": ">=9.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}

@@ -1,5 +1,5 @@
 import { c as register, i as getStacObjectsForEvent, l as WebGLTileLayer, m as View, o as proj4, s as OSM, t as STACLayer, u as Map } from "./common.js";
-//#region examples/stac-itemcollection.js
+// examples/stac-itemcollection.js
 register(proj4);
 var layer = new STACLayer({
 	url: "https://earth-search.aws.element84.com/v1/search?bbox=-16.9,12.85,-14.9,13.97&collections=sentinel-2-c1-l2a&limit=12",
@@ -24,6 +24,5 @@ map.on("singleclick", async (event) => {
 layer.on("sourceready", () => {
 	map.getView().fit(layer.getExtent());
 });
-//#endregion
 
 //# sourceMappingURL=stac-itemcollection.js.map

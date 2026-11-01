@@ -1,0 +1,1606 @@
+/**
+ * @module ol/layer/STAC
+ */
+import { PMTilesRasterSource, PMTilesVectorSource } from 'ol-pmtiles';
+import { isEmpty } from 'ol/extent.js';
+import GeoJSON from 'ol/format/GeoJSON.js';
+import WMTSCapabilities from 'ol/format/WMTSCapabilities.js';
+import LayerGroup from 'ol/layer/Group.js';
+import ImageLayer from 'ol/layer/Image.js';
+import TileLayer from 'ol/layer/Tile.js';
+import VectorLayer from 'ol/layer/Vector.js';
+import VectorTileLayer from 'ol/layer/VectorTile.js';
+import WebGLTileLayer from 'ol/layer/WebGLTile.js';
+import GeoTIFF from 'ol/source/GeoTIFF.js';
+import StaticImage from 'ol/source/ImageStatic.js';
+import TileJSON from 'ol/source/TileJSON.js';
+import WMS from 'ol/source/TileWMS.js';
+import VectorSource from 'ol/source/Vector.js';
+import VectorTileSource from 'ol/source/VectorTile.js';
+import WMTS, { optionsFromCapabilities } from 'ol/source/WMTS.js';
+import XYZ from 'ol/source/XYZ.js';
+import * as pmtiles from 'pmtiles';
+import create, { Asset } from 'stac-js';
+import { fixGeoJson, toGeoJSON, unionBoundingBox } from 'stac-js/src/geo.js';
+import { geojsonMediaType, geotiffMediaTypes, wozMediaTypes, zarrMediaTypes, } from 'stac-js/src/mediatypes.js';
+import { isObject } from 'stac-js/src/utils.js';
+import ErrorEvent from '../events/ErrorEvent.js';
+import { createImageLoadFunction, createTileLoadFunction } from '../http.js';
+import { getProjection } from '../proj.js';
+import SourceType from '../source/type.js';
+import { LABEL_EXTENSION, defaultBoundsStyle, defaultCollectionStyle, exceedsDisplayLimit, getBoundsStyle, getDisplayPixels, getGeoTiffSourceInfoFromAsset, getGeoTiffStyleFromAsset, getGeoZarrSourceOptionsFromAsset, getGeoZarrStyleFromAsset, getSpecificWebMapUrl, getWebMapLinks, isScalar, toContinuousBBox, toOlExtent, } from '../util.js';
+import LayerType from './type.js';
+/**
+ * @typedef {import("ol/extent.js").Extent} Extent
+ */
+/**
+ * @typedef {import("ol/layer/Layer.js").default} Layer
+ */
+/**
+ * @typedef {import('stac-js').APICollection} APICollection
+ */
+/**
+ * @typedef {import("stac-js").Link} Link
+ */
+/**
+ * @typedef {import('stac-js').STAC} STAC
+ */
+/**
+ * @typedef {import('stac-js').STACObject} STACObject
+ */
+/**
+ * @typedef {import("ol/Map.js").default} Map
+ */
+/**
+ * @typedef {import('ol/style/Style.js').default} Style
+ */
+/**
+ * @typedef {import('../source/type.js').SourceOptions} SourceOptions
+ */
+/**
+ * @typedef {import('./type.js').LayerOptions} LayerOptions
+ */
+/**
+ * @typedef {import('../http.js').GetHeadersFn} GetHeadersFn
+ */
+/**
+ * @typedef {import('../http.js').OnErrorFn} OnErrorFn
+ */
+/**
+ * @typedef {function((import("ol/Image.js").default|import("ol/Tile.js").default), string): void} LoadFunction
+ */
+/**
+ * @typedef {Object} Options
+ * @property {string} [url] The STAC URL. Any of `url` and `data` must be provided.
+ * Can also be used as url for data, if it is absolute and doesn't contain a self link.
+ * Don't use this is you pass in a stac-js object as `data`, set the url manually through
+ * `setAbsoluteUrl` on the stac-js object before passing it in.
+ * @property {STAC|Asset|Object} [data] The STAC metadata. Any of `url` and `data` must be provided.
+ * `data` take precedence over `url`.
+ * @property {APICollection|Object|Array<STAC|Object>|null} [children=null] For STAC Catalogs and Collections, any child entites
+ * to show. Can be STAC ItemCollections (as ItemCollection or GeoJSON FeatureCollection) or a list of STAC entities.
+ * @property {Options} [childrenOptions={}] The the given children, apply the given options.
+ * By default, the children inherit the following options from this layer: `crossOrigin`, `collectionStyle` (as `boundsStyle`),
+ * `displayGeoTiffByDefault`, `displayOverview`, `displayPreview`, `displayFootprint`, `useTileLayerAsFallback`,
+ * `buildTileUrlTemplate`, `maxDisplayPixels`, `getSourceOptions`, `getLayerOptions`, `getRequestHeaders`,
+ * `getRequestUrl` and `httpRequestFn`.
+ * @property {Array<string|Asset>|null} [assets=null] The selector for the assets to be rendered,
+ * only for STAC Items and Collections.
+ * This can be an array of strings corresponding to asset keys or Asset objects.
+ * null shows the default asset, an empty array shows no asset.
+ * @property {Array<number|string>} [bands] The bands to show. One-based index of the band, or the name of the band.
+ * @property {function(SourceType, SourceOptions, (Asset|Link)):(SourceOptions|Promise<SourceOptions>)} [getSourceOptions]
+ * Optional function that can be used to configure the underlying sources. The function can do any additional work
+ * and return the completed options or a promise for the same. The function will be called with the current source options
+ * and the STAC Asset or Link.
+ * This can be useful for advanced per-source customization such as signed URLs.
+ * To add credentials via query parameters, use the `getRequestUrl` option instead;
+ * to send credentials via HTTP headers, use the `getRequestHeaders` option instead.
+ * @property {function(LayerType, LayerOptions, (Asset|Link)):(LayerOptions|Promise<LayerOptions>)} [getLayerOptions]
+ * Optional function that can be used to configure the individual layers that are created for the assets and links.
+ * The function can do any additional (asynchronous) work and return the completed options or a promise for the same.
+ * The function will be called with the layer type, the current layer options and the STAC Asset or Link.
+ * This can be useful to customize the layers, e.g. to apply a style to a GeoTIFF or GeoZarr layer that is
+ * loaded from the STAC metadata.
+ * @property {boolean} [displayFootprint=true] Allows to hide the footprints (bounding box/geometry) of the STAC object
+ * by default.
+ * @property {boolean} [displayGeoTiffByDefault=false] Allow to choose non-cloud-optimized GeoTiffs as default image to show,
+ * which might not work well for larger files or larger amounts of files.
+ * @property {boolean} [displayPreview=false] Allow to display preview images that a browser can display (e.g. PNG, JPEG),
+ * i.e. assets with any of the roles `thumbnail`, `overview`, or a link with relation type `preview`.
+ * The previews are usually not covering the full extents and as such may be placed incorrectly on the map.
+ * For performance reasons, it is recommended to enable this option if you pass in STAC API Items instead of `displayOverview`.
+ * @property {boolean} [displayOverview=true] Allow to display COGs, Zarr and, if `displayGeoTiffByDefault` is enabled, GeoTiffs,
+ * usually an asset with role `overview` or `visual`.
+ * Zarr assets other than Web-Optimized Zarr are only displayed if the STAC metadata declares what to render
+ * (see the datacube extension) and the store is within the `maxDisplayPixels` limit.
+ * @property {number} [maxDisplayPixels=16777216] The maximum number of pixels the coarsest resolution level
+ * of a GeoTIFF or Zarr asset may have to be displayed client-side, as displaying the full extent of an asset
+ * loads every tile of that level. Files without (sufficient) overviews can easily exceed this limit.
+ * Larger assets are not chosen for the default visualization, and selecting one explicitly through `assets`
+ * reports an error through the `error` event (or renders through the tile server if `buildTileUrlTemplate`
+ * and `useTileLayerAsFallback` are set). Set to `Infinity` to display assets of any size.
+ * @property {string|boolean|Array<Link|string>} [displayWebMapLink=false] Allow to display a layer
+ * based on the information provided through the web map links extension.
+ * If an array of links or link ids (property `id` in a Link Object) is provided, all corresponding layers will be shown.
+ * If set to true or to a specific type of web map link (`pmtiles`, `tilejson`, `wms`, `wmts`, `xyz`),
+ * it lets this library choose a web map link to show, but only if no other data is shown.
+ * To disable the functionality set this to `false`.
+ * @property {import("ol/layer/WebGLTile.js").Style|null} [style=null] The style for GeoTIFF and GeoZarr layers (WebGLTileLayer style).
+ * @property {Array<import("ol/color.js").Color|string>|null} [defaultColormap=null] The colors of the colormap
+ * that is used for continuous single-band data when neither the STAC metadata nor the `style` option define
+ * a coloring. The colors are evenly distributed over the value range of the data (e.g. from the STAC
+ * `statistics`). If not set, the data is stretched to grayscale.
+ * @property {Style} [boundsStyle] The style for the overall bounds / footprint.
+ * @property {Style} [collectionStyle] The style for individual children in a list of STAC Items or Collections.
+ * @property {null|string} [crossOrigin] For thumbnails: The `crossOrigin` attribute for loaded images / tiles.
+ * See https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image for more detail.
+ * @property {function((Asset|Link)):Promise<string|null>|string|null} [buildTileUrlTemplate=null] A function that generates a URL template for a tile server (XYZ),
+ * which will be used instead of the client-side GeoTIFF rendering (except if `useTileLayerAsFallback` is `true`).
+ * The function provided can return a promise (i.e. be async) or a string.
+ * The function can return `null` to not pass the given asset or link to the tile server,
+ * e.g. to filter by media type or protocol. In this case client-side rendering is used instead.
+ * @property {boolean} [useTileLayerAsFallback=false] Uses the given URL template only when the client-side GeoTIFF rendering fails.
+ * @property {number} [opacity=1] Opacity (0, 1).
+ * @property {boolean} [visible=true] Visibility.
+ * @property {Extent} [extent] The bounding extent for layer rendering.  The layer will not be
+ * rendered outside of this extent.
+ * @property {number} [zIndex] The z-index for layer rendering.  At rendering time, the layers
+ * will be ordered, first by Z-index and then by position. When `undefined`, a `zIndex` of 0 is assumed
+ * for layers that are added to the map's `layers` collection, or `Infinity` when the layer's `setMap()`
+ * method was used.
+ * @property {number} [minResolution] The minimum resolution (inclusive) at which this layer will be
+ * visible.
+ * @property {number} [maxResolution] The maximum resolution (exclusive) below which this layer will
+ * be visible.
+ * @property {number} [minZoom] The minimum view zoom level (exclusive) above which this layer will be
+ * visible.
+ * @property {number} [maxZoom] The maximum view zoom level (inclusive) at which this layer will
+ * be visible.
+ * @property {Object<string, *>} [properties] Arbitrary observable properties. Can be accessed with `#get()` and `#set()`. `stac` and `bounds` are reserved and may be overridden.
+ * @property {boolean} [disableMigration=false] Disable the migration of the STAC object to the latest version.
+ * Only enable this if you are sure that the STAC object is already in the latest version.
+ * @property {function(string,string):(*)} [httpRequestFn=null] Sets a custom function to make HTTP requests with.
+ * The first parameter is the URL to request and the output is a promise that resolves with the response body.
+ * The second parameter is the return type, either `json` (default) or `text`.
+ * The STAC Asset or Link the request is made for is passed as third parameter, if available.
+ * @property {Object<string, string>|function((Asset|Link|STACObject|null), string):(Object<string, string>|null)} [getRequestHeaders=null]
+ * The HTTP headers (e.g. for authentication) to send with the requests made by this layer,
+ * either as a plain object or as a function that returns the headers (or `null` for none) and
+ * is called with the STAC Asset or Link that is shown (if available) and the URL that is requested.
+ * Use a function to restrict the headers to specific hosts, as tile server URLs and asset URLs
+ * may point to hosts that should not receive the credentials.
+ * The headers are attached to requests made by the default `httpRequestFn`, to GeoTIFF, GeoZarr
+ * and PMTiles requests, and via image/tile load functions (through the Fetch API and object URLs)
+ * to preview images and XYZ, TileJSON, WMS and WMTS tiles.
+ * @property {function((Asset|Link|STACObject|null), string, boolean):(string|null)} [getRequestUrl=null]
+ * Rewrites a URL before a request is made or a source is created, e.g. to append query
+ * parameters for authentication (signed URLs, API keys). The function is called with the
+ * STAC Asset or Link that is shown (if available), the URL, and whether the URL is a
+ * tile URL template. It returns the new URL or `null` to keep the URL unchanged.
+ * The rewrite is applied to the initial source URL before `getSourceOptions` is called;
+ * templates discovered in fetched documents (TileJSON manifests, WMTS capabilities) are
+ * rewritten afterwards and are not passed to `getSourceOptions`.
+ * For tiled sources the tile URL template is rewritten, not the individual tile URLs.
+ * URL templates originate from XYZ web map links, TileJSON manifests, WMTS links
+ * (`uriTemplate`) and capabilities, and `buildTileUrlTemplate`. The returned URL must keep
+ * the template placeholders such as `{z}` unchanged, i.e. they must not be percent-encoded
+ * (e.g. through URL normalization).
+ */
+/**
+ * @classdesc
+ * Renders STAC entities such as STAC Items, Collectons or lists of them as returned by APIs.
+ * The layers created by this LayerGroup all have a 'stac' value that can be retrieved using `layer.get('stac')`.
+ *
+ * @extends LayerGroup
+ * @fires sourceready
+ * @fires layersready
+ * @fires ErorEvent#event:error
+ * @api
+ */
+class STACLayer extends LayerGroup {
+    /**
+     * @param {Options} options Layer options.
+     * @api
+     */
+    constructor(options) {
+        const superOptions = {};
+        [
+            'opacity',
+            'visible',
+            'zIndex',
+            'minResolution',
+            'maxResolution',
+            'minZoom',
+            'maxZoom',
+            'properties',
+        ].forEach((key) => (superOptions[key] = options[key]));
+        super(superOptions);
+        /**
+         * @type {function(SourceType, SourceOptions, (Asset|Link)):(SourceOptions|Promise<SourceOptions>)}
+         * @private
+         */
+        this.getSourceOptions_ = options.getSourceOptions;
+        /**
+         * @type {function(LayerType, LayerOptions, (Asset|Link)):(LayerOptions|Promise<LayerOptions>)}
+         * @private
+         */
+        this.getLayerOptions_ = options.getLayerOptions;
+        /**
+         * @type {Object<string, string>|function((Asset|Link|STACObject|null), string):(Object<string, string>|null)|null}
+         * @private
+         */
+        this.getRequestHeaders_ = options.getRequestHeaders || null;
+        /**
+         * @type {function((Asset|Link|STACObject|null), string, boolean):(string|null)|null}
+         * @private
+         */
+        this.getRequestUrl_ = options.getRequestUrl || null;
+        /**
+         * @type {Array<STAC>|null}
+         * @private
+         */
+        this.children_ = null;
+        /**
+         * @type {Options}
+         * @private
+         */
+        this.childrenOptions_ = options.childrenOptions || {};
+        /**
+         * @type {Array<Asset>|null}
+         * @private
+         */
+        this.assets_ = null;
+        /**
+         * @type {Array<number|string>}
+         * @private
+         */
+        this.bands_ = [];
+        /**
+         * @type {string|null}
+         * @private
+         */
+        this.crossOrigin_ = options.crossOrigin || null;
+        /**
+         * @type {boolean}
+         * @private
+         */
+        this.displayFootprint_ = options.displayFootprint === false ? false : true;
+        /**
+         * @type {boolean}
+         * @private
+         */
+        this.displayGeoTiffByDefault_ = Boolean(options.displayGeoTiffByDefault);
+        /**
+         * @type {boolean}
+         * @private
+         */
+        this.displayPreview_ = Boolean(options.displayPreview);
+        /**
+         * @type {boolean}
+         * @private
+         */
+        this.displayOverview_ = options.displayOverview === false ? false : true;
+        /**
+         * @type {string|boolean|Array<Link|string>}
+         */
+        this.displayWebMapLink_ = options.displayWebMapLink || false;
+        /**
+         * @type {number|undefined}
+         * @private
+         */
+        this.maxDisplayPixels_ = options.maxDisplayPixels;
+        /**
+         * @type {function((Asset|Link)):Promise<string|null>|string|null}
+         * @private
+         */
+        this.buildTileUrlTemplate_ = options.buildTileUrlTemplate || null;
+        /**
+         * @type {boolean}
+         * @private
+         */
+        this.useTileLayerAsFallback_ = options.useTileLayerAsFallback || false;
+        /**
+         * @type {import("ol/layer/WebGLTile.js").Style|null}
+         * @private
+         */
+        this.style_ = options.style || null;
+        /**
+         * @type {Array<import("ol/color.js").Color|string>|null}
+         * @private
+         */
+        this.defaultColormap_ = options.defaultColormap || null;
+        /**
+         * @type {Style}
+         * @private
+         */
+        this.boundsStyle_ = options.boundsStyle || defaultBoundsStyle;
+        /**
+         * @type {Style}
+         * @private
+         */
+        this.collectionStyle_ = options.collectionStyle || defaultCollectionStyle;
+        /**
+         * @type {VectorLayer|null}
+         * @private
+         */
+        this.boundsLayer_ = null;
+        /**
+         * @type {boolean}
+         * @private
+         */
+        this.disableMigration_ = options.disableMigration || false;
+        /**
+         * @type {Map|null}
+         * @private
+         */
+        this.map_ = null;
+        /**
+         * @type {Array<string|ErrorEvent>}
+         * @private
+         */
+        this.eventQueue_ = [];
+        /**
+         * @type {function(string,string):(*)|null}
+         * @private
+         */
+        this.httpRequestFn_ = options.httpRequestFn || null;
+        if (this.httpRequestFn_) {
+            this.fetch_ = this.httpRequestFn_;
+        }
+        if (options.data) {
+            try {
+                this.configure_(options.data, options.url, options.children, options.assets, options.bands);
+            }
+            catch (error) {
+                this.handleError_(error);
+            }
+            return;
+        }
+        if (!options.url) {
+            throw new Error('Either url or data must be provided');
+        }
+        this.fetch_(this.getRequestUrlFor_(options.url))
+            .then((data) => this.configure_(data, options.url, options.children, options.assets, options.bands))
+            .catch((error) => this.handleError_(error));
+    }
+    /**
+     * Rewrites the given URL based on the `getRequestUrl` option.
+     *
+     * @param {string} url The URL that is requested.
+     * @param {Asset|Link|STACObject|null} [ref] The STAC Asset or Link that is shown, if available.
+     * @param {boolean} [isTemplate] Whether the URL is a tile URL template with placeholders such as `{z}`.
+     * @return {string} The rewritten URL, or the given URL if it is not rewritten.
+     */
+    getRequestUrlFor_(url, ref = null, isTemplate = false) {
+        if (typeof this.getRequestUrl_ === 'function' && typeof url === 'string') {
+            const newUrl = this.getRequestUrl_(ref, url, isTemplate);
+            if (typeof newUrl === 'string' && newUrl.length > 0) {
+                return newUrl;
+            }
+        }
+        return url;
+    }
+    /**
+     * Returns the HTTP headers to send for the given URL, based on the
+     * `getRequestHeaders` option.
+     *
+     * @param {string} url The URL that is requested.
+     * @param {Asset|Link|STACObject|null} [ref] The STAC Asset or Link that is shown, if available.
+     * @return {Object<string, string>|null} The headers, or `null` if there are none.
+     */
+    getRequestHeadersFor_(url, ref = null) {
+        let headers = this.getRequestHeaders_;
+        if (typeof headers === 'function') {
+            headers = headers(ref, url);
+        }
+        if (isObject(headers) && Object.keys(headers).length > 0) {
+            return /** @type {Object<string, string>} */ (headers);
+        }
+        return null;
+    }
+    /**
+     * Creates a load function for images or tiles that attaches the headers
+     * from the `getRequestHeaders` option and reports errors through the
+     * layer's error event, or `undefined` if no headers are configured.
+     *
+     * @param {function(GetHeadersFn, OnErrorFn=):LoadFunction} factory `createImageLoadFunction` or `createTileLoadFunction`.
+     * @param {Asset|Link|STACObject|null} ref The STAC Asset or Link that is shown, if available.
+     * @return {LoadFunction|undefined} The load function.
+     */
+    createLoadFunction_(factory, ref) {
+        if (!this.getRequestHeaders_) {
+            return undefined;
+        }
+        return factory((url) => this.getRequestHeadersFor_(url, ref), (error) => this.handleError_(error));
+    }
+    /**
+     * Default function make HTTP requests with.
+     *
+     * @param {string} url The URL to request and the output is a promise that resolves with the response body.
+     * @param {string} responseType The return type, either `json` (default) or `text`.
+     * @param {Asset|Link|STACObject|null} [ref] The STAC Asset or Link the request is made for, if available.
+     * @return {Promise<*>} The (parsed) response body.
+     */
+    async fetch_(url, responseType = 'json', ref = null) {
+        const headers = this.getRequestHeadersFor_(url, ref);
+        const response = await fetch(url, headers ? { headers } : undefined);
+        if (!response.ok) {
+            throw new Error(`Unexpected response from ${url}: ${response.status}`);
+        }
+        if (responseType === 'json') {
+            return await response.json();
+        }
+        if (responseType === 'text') {
+            return await response.text();
+        }
+        return null;
+    }
+    /**
+     * Returns the vector layer that visualizes the bounds / footprint.
+     * @return {VectorLayer|null} The vector layer for the bounds
+     * @api
+     */
+    getBoundsLayer() {
+        return this.boundsLayer_;
+    }
+    /**
+     * Returns `true` if the layer shows nothing.
+     *
+     * This method should be called after the layersready event only.
+     *
+     * @return {boolean} Is the layer empty?
+     * @api
+     */
+    isEmpty() {
+        const count = this.getLayers().getLength();
+        if (count > 1) {
+            return false;
+        }
+        const bbox = this.getData().getBoundingBox();
+        if (!bbox || isEmpty(toContinuousBBox(bbox))) {
+            return true;
+        }
+        return !this.boundsLayer_ || !this.displayFootprint_;
+    }
+    /**
+     * @param {Error} error The error.
+     * @private
+     */
+    handleError_(error) {
+        const listeners = this.getListeners('error');
+        if (!Array.isArray(listeners) || listeners.length === 0) {
+            // To avoid swallowing errors when no listener is registered, log them to the console.
+            console.error(error); // eslint-disable-line no-console
+        }
+        /**
+         * Error event.
+         *
+         * @event ErorEvent#event:error
+         * @type {Object}
+         * @property {Error} error - Provides the original error.
+         */
+        this.dispatch_(new ErrorEvent(error));
+    }
+    /**
+     * @param {STAC|Asset|Object} data The STAC data.
+     * @param {string} url The url to the data.
+     * @param {APICollection|Object|Array<STAC>|string|null} children The child STAC entities to show.
+     * @param {Array<Asset|string>|null} assets The assets to show.
+     * @param {Array<number|string>} bands The bands to show.
+     * @private
+     */
+    configure_(data, url = null, children = null, assets = null, bands = []) {
+        let stac;
+        if (data.isAsset || data.isSTAC) {
+            stac = data;
+        }
+        else {
+            stac = create(data, !this.disableMigration_);
+            if (url && url.includes('://')) {
+                stac.setAbsoluteUrl(url);
+            }
+        }
+        this.set('stac', stac);
+        this.bands_ = bands;
+        try {
+            this.boundsLayer_ = this.addFootprint_();
+        }
+        catch (error) {
+            // Don't fail the whole layer if the footprint can't be shown,
+            // the map can still zoom to the bounding box of the STAC entity
+            this.handleError_(error);
+        }
+        const updateBoundsStyle = () => {
+            if (this.boundsLayer_) {
+                this.boundsLayer_.setStyle(getBoundsStyle(this.boundsStyle_, this));
+            }
+        };
+        this.getLayers().on('add', updateBoundsStyle);
+        this.getLayers().on('remove', updateBoundsStyle);
+        const errorHandler = (error) => this.handleError_(error);
+        const promises = [];
+        if (children) {
+            promises.push(this.setChildren(children, null, false).catch(errorHandler));
+        }
+        if (assets) {
+            promises.push(this.setAssets(assets, false).catch(errorHandler));
+        }
+        Promise.all(promises).then(() => this.updateLayers().catch(errorHandler));
+        /**
+         * Invoked once the STAC entity is loaded and available.
+         *
+         * @event sourceready
+         */
+        this.dispatch_('sourceready');
+    }
+    /**
+     * Dispatch an event.
+     * Move it to the queue if the map is not yet set.
+     * This is necessary as otherwise some events would be
+     * dispatched before someone could listen to them.
+     *
+     * @param {string|ErrorEvent} event The event.
+     * @private
+     */
+    dispatch_(event) {
+        this.eventQueue_.push(event);
+        this.flush_();
+    }
+    /**
+     * Flush all events.
+     * @private
+     */
+    flush_() {
+        if (this.map_) {
+            for (const event of this.eventQueue_) {
+                this.dispatchEvent(event);
+            }
+            this.eventQueue_ = [];
+        }
+    }
+    /**
+     * Set the map and flush all events.
+     * The events should only be flushed once the map is set, otherwise some
+     * functions such as getExtent() return no meaningul values.
+     *
+     * @param {Map} map The map
+     */
+    setMap_(map) {
+        if (this.map_ === map) {
+            return;
+        }
+        this.map_ = map;
+        this.flush_();
+    }
+    /**
+     * @param {Array<STAC>} collection The list of STAC entities to show.
+     * @param {Options} [options] Options for the children.
+     * @return {Promise} Resolves when complete.
+     * @private
+     */
+    async addChildren_(collection, options = {}) {
+        const promises = collection.map((obj) => {
+            const defaultOptions = {
+                data: obj,
+                crossOrigin: this.crossOrigin_,
+                boundsStyle: this.collectionStyle_,
+                displayGeoTiffByDefault: this.displayGeoTiffByDefault_,
+                displayOverview: this.displayOverview_,
+                displayPreview: this.displayPreview_,
+                displayFootprint: this.displayFootprint_,
+                useTileLayerAsFallback: this.useTileLayerAsFallback_,
+                buildTileUrlTemplate: this.buildTileUrlTemplate_,
+                maxDisplayPixels: this.maxDisplayPixels_,
+                getSourceOptions: this.getSourceOptions_,
+                getLayerOptions: this.getLayerOptions_,
+                getRequestHeaders: this.getRequestHeaders_,
+                getRequestUrl: this.getRequestUrl_,
+                httpRequestFn: this.httpRequestFn_,
+            };
+            const subgroup = new STACLayer(Object.assign(defaultOptions, options));
+            // If no data is given, but items are provided, then we don't get a map from the
+            // footprint layer so we need to get it from this new STAC Layer so that extent
+            // calculations etc. work.
+            // @ts-ignore
+            subgroup.on('sourceready', () => {
+                if (subgroup.map_) {
+                    this.setMap_(subgroup.map_);
+                }
+            });
+            this.addLayer_(subgroup, null);
+            return subgroup;
+        });
+        return await Promise.all(promises);
+    }
+    /**
+     * @param {Asset|Link} [image] A STAC Link or Asset
+     * @return {Promise<ImageLayer|undefined>} Resolves with am ImageLayer or udnefined when complete.
+     * @private
+     */
+    async addPreviewImage_(image) {
+        const projection = await getProjection(image, 'EPSG:4326');
+        // For alternate assets (e.g. as returned by getThumbnails), the context
+        // is the parent asset, so walk up until we reach the STAC entity.
+        let context = image.getContext();
+        while (context instanceof Asset) {
+            context = context.getContext();
+        }
+        const bboxes = context ? context.getBoundingBoxes() : [];
+        if (bboxes.length !== 1) {
+            return;
+        }
+        const bbox = bboxes[0];
+        /**
+         * @type {import("ol/source/ImageStatic.js").Options}
+         */
+        let options = {
+            url: this.getRequestUrlFor_(image.getAbsoluteUrl(), image),
+            projection,
+            imageExtent: toOlExtent(bbox, projection),
+            crossOrigin: this.crossOrigin_,
+        };
+        const imageLoadFunction = this.createLoadFunction_(createImageLoadFunction, image);
+        if (imageLoadFunction) {
+            options.imageLoadFunction = imageLoadFunction;
+        }
+        if (this.getSourceOptions_) {
+            // @ts-ignore
+            options = await this.getSourceOptions_(SourceType.ImageStatic, options, image);
+        }
+        const layerOptions = await this.updateLayerOptions_(LayerType.Image, { source: new StaticImage(options) }, image);
+        const layer = new ImageLayer(layerOptions);
+        this.addLayer_(layer, image);
+        return layer;
+    }
+    /**
+     * Adds a layer for a link that implements the web-map-links extension.
+     * Supports: PMTiles, TileJSON, WMS, WMTS, XYZ
+     * @see https://github.com/stac-extensions/web-map-links
+     * @param {Link} link A web map link
+     * @return {Promise<Array<Layer>|undefined>} Resolves with a list of layers or undefined when complete.
+     * @api
+     */
+    async addLayerForLink(link) {
+        // Replace any occurances of {s} if possible, otherwise return
+        let url = getSpecificWebMapUrl(link);
+        if (!url) {
+            return;
+        }
+        url = this.getRequestUrlFor_(url, link, link.rel === 'xyz');
+        const options = {
+            attributions: link.getMetadata('attribution') ||
+                this.getData().getMetadata('attribution'),
+            crossOrigin: this.crossOrigin_,
+            url,
+        };
+        const tileLoadFunction = this.createLoadFunction_(createTileLoadFunction, link);
+        if (tileLoadFunction && link.rel !== 'pmtiles') {
+            options.tileLoadFunction = tileLoadFunction;
+        }
+        const updateOptions = async (type, options) => {
+            if (this.getSourceOptions_) {
+                options = await this.getSourceOptions_(type, options, link);
+            }
+            return options;
+        };
+        const sources = [];
+        switch (link.rel) {
+            case 'pmtiles': {
+                const snapshot = JSON.stringify(options);
+                /** @type {*} */
+                let pmOptions = await updateOptions(SourceType.PMTiles, options);
+                // Whether getSourceOptions reacted to SourceType.PMTiles,
+                // see the backward compatibility handling below
+                const handled = JSON.stringify(pmOptions) !== snapshot;
+                const headers = this.getRequestHeadersFor_(pmOptions.url, link);
+                const withHeaders = (url) => headers && typeof url === 'string'
+                    ? new pmtiles.FetchSource(url, new Headers(headers))
+                    : url;
+                let pmtilesHeader;
+                try {
+                    const p = new pmtiles.PMTiles(withHeaders(pmOptions.url));
+                    pmtilesHeader = await p.getHeader();
+                }
+                catch (error) {
+                    this.handleError_(error);
+                    return;
+                }
+                let type;
+                switch (pmtilesHeader.tileType) {
+                    case pmtiles.TileType.Mvt:
+                        type = SourceType.PMTilesVector;
+                        break;
+                    case pmtiles.TileType.Avif:
+                    case pmtiles.TileType.Jpeg:
+                    case pmtiles.TileType.Png:
+                    case pmtiles.TileType.Webp:
+                        type = SourceType.PMTilesRaster;
+                        break;
+                    default:
+                        return; // Unsupported
+                }
+                if (!handled) {
+                    // Backward compatibility for getSourceOptions callbacks that don't
+                    // handle SourceType.PMTiles yet: call them with the deprecated
+                    // type-specific source type once the tile type is known.
+                    // As before v1.6.0, these rewrites don't apply to the tile type
+                    // sniff above. TODO: Remove in 2.0.0
+                    pmOptions = await updateOptions(type, pmOptions);
+                }
+                pmOptions.url = withHeaders(pmOptions.url);
+                const source = type === SourceType.PMTilesVector
+                    ? new PMTilesVectorSource(pmOptions)
+                    : new PMTilesRasterSource(pmOptions);
+                sources.push(source);
+                break;
+            }
+            case 'tilejson': {
+                /** @type {*} */
+                const tjOptions = await updateOptions(SourceType.TileJSON, options);
+                if (tjOptions.jsonp || tjOptions.tileJSON) {
+                    // Let the source load the manifest itself (e.g. via JSONP)
+                    sources.push(new TileJSON(tjOptions));
+                    break;
+                }
+                // Load the manifest through the request function so that
+                // credentials are attached
+                let tileJSON;
+                try {
+                    tileJSON = await this.fetch_(tjOptions.url, 'json', link);
+                }
+                catch (error) {
+                    this.handleError_(error);
+                    return;
+                }
+                if (isObject(tileJSON) && Array.isArray(tileJSON.tiles)) {
+                    // The tile templates from the manifest must be rewritten as well
+                    tileJSON.tiles = tileJSON.tiles.map((template) => this.getRequestUrlFor_(template, link, true));
+                }
+                delete tjOptions.url;
+                tjOptions.tileJSON = tileJSON;
+                sources.push(new TileJSON(tjOptions));
+                break;
+            }
+            case 'wms':
+                if (!Array.isArray(link['wms:layers'])) {
+                    break;
+                }
+                for (const i in link['wms:layers']) {
+                    const layers = link['wms:layers'][i] || '';
+                    let styles = '';
+                    if (Array.isArray(link['wms:styles']) &&
+                        typeof link['wms:styles'][i] === 'string') {
+                        styles = link['wms:styles'][i];
+                    }
+                    const params = Object.assign({
+                        LAYERS: layers,
+                        STYLES: styles,
+                    }, link['wms:dimensions']);
+                    if (typeof link['wms:transparent'] === 'boolean') {
+                        params.TRANSPARENT = String(link['wms:transparent']);
+                    }
+                    if (typeof link.type === 'string' && link.type.startsWith('image/')) {
+                        params.FORMAT = link.type;
+                    }
+                    const wmsOptions = await updateOptions(SourceType.TileWMS, Object.assign({}, options, { params }));
+                    sources.push(new WMS(wmsOptions));
+                }
+                break;
+            case 'wmts':
+                const wmtsCapabilities = await this.getWmtsCapabilities_(url, link, link['wmts:encoding']);
+                if (!wmtsCapabilities) {
+                    return;
+                }
+                let layers = [];
+                if (Array.isArray(link['wmts:layer'])) {
+                    layers = link['wmts:layer'];
+                }
+                else if (typeof link['wmts:layer'] === 'string') {
+                    layers = [link['wmts:layer']];
+                }
+                layers: for (const layer of layers) {
+                    let wmtsOptions = Object.assign({}, options, {
+                        layer,
+                        requestEncoding: link['wmts:encoding'] === 'rest' ? 'REST' : 'KVP',
+                    });
+                    if (typeof link.type === 'string' && link.type.startsWith('image/')) {
+                        wmtsOptions.format = link.type;
+                    }
+                    wmtsOptions = await updateOptions(SourceType.WMTS, wmtsOptions);
+                    const opts = optionsFromCapabilities(wmtsCapabilities, wmtsOptions);
+                    if (opts === null) {
+                        continue;
+                    }
+                    if (wmtsOptions.tileLoadFunction) {
+                        // Not passed through by optionsFromCapabilities
+                        opts.tileLoadFunction = wmtsOptions.tileLoadFunction;
+                    }
+                    if (typeof link.uriTemplate === 'string') {
+                        let uriTemplate = link.uriTemplate;
+                        const vars = isObject(link.variables) ? link.variables : {};
+                        for (const key in vars) {
+                            const schema = vars[key];
+                            let value;
+                            if (isScalar(schema.const)) {
+                                value = schema.const;
+                            }
+                            else if (isScalar(schema.default)) {
+                                value = schema.default;
+                            }
+                            else if (Array.isArray(schema.enum) && schema.enum.length > 0) {
+                                value = schema.enum[0];
+                            }
+                            if (typeof value !== 'undefined') {
+                                uriTemplate = uriTemplate.replaceAll(`{${key}}`, String(value));
+                            }
+                            else {
+                                // We don't know which value to use, so we can't visualize the layer
+                                continue layers;
+                            }
+                        }
+                        delete opts.urls;
+                        opts.url = this.getRequestUrlFor_(uriTemplate, link, true);
+                    }
+                    else if (Array.isArray(opts.urls)) {
+                        opts.urls = opts.urls.map((u) => this.getRequestUrlFor_(u, link, opts.requestEncoding === 'REST'));
+                    }
+                    sources.push(new WMTS(opts));
+                }
+                break;
+            case 'xyz':
+                sources.push(new XYZ(await updateOptions(SourceType.XYZ, options)));
+                break;
+            default:
+                return;
+        }
+        return await Promise.all(sources.map(async (source) => {
+            let layer;
+            if (source instanceof VectorTileSource) {
+                const layerOptions = await this.updateLayerOptions_(LayerType.VectorTile, { source, declutter: true }, link);
+                layer = new VectorTileLayer(layerOptions);
+            }
+            else if (source instanceof PMTilesRasterSource) {
+                const layerOptions = await this.updateLayerOptions_(LayerType.WebGLTile, { source }, link);
+                layer = new WebGLTileLayer(layerOptions);
+            }
+            else {
+                const layerOptions = await this.updateLayerOptions_(LayerType.Tile, { source }, link);
+                layer = new TileLayer(layerOptions);
+            }
+            this.addLayer_(layer, link);
+            return layer;
+        }));
+    }
+    /**
+     * @param {Asset} [asset] A STAC Asset
+     * @param {boolean} [autoDisplay] Whether the asset was chosen automatically
+     * (not explicitly requested): skip it silently instead of reporting an
+     * error when it can't be displayed within the configured limits.
+     * @return {Promise<Layer|undefined>} Resolves with a Layer or undefined when complete.
+     * @private
+     */
+    async addGeoTiff_(asset, autoDisplay = false) {
+        if (this.buildTileUrlTemplate_ && !this.useTileLayerAsFallback_) {
+            const layer = await this.addTileLayerForImagery_(asset);
+            // If no tile server URL was provided for the asset, continue with client-side rendering
+            if (layer) {
+                return layer;
+            }
+        }
+        const sourceInfo = getGeoTiffSourceInfoFromAsset(asset, this.bands_);
+        sourceInfo.url = this.getRequestUrlFor_(sourceInfo.url, asset);
+        /**
+         * @type {import("ol/source/GeoTIFF.js").Options}
+         */
+        let options = {
+            sources: [sourceInfo],
+            convertToRGB: 'auto',
+            loadMissingProjection: true,
+        };
+        const projection = await getProjection(asset);
+        if (projection) {
+            options.projection = projection;
+        }
+        const metadataStyle = getGeoTiffStyleFromAsset(asset, sourceInfo, this.defaultColormap_);
+        if (metadataStyle) {
+            options.normalize = false;
+        }
+        const headers = this.getRequestHeadersFor_(sourceInfo.url, asset);
+        if (headers) {
+            options.sourceOptions = { headers };
+        }
+        if (this.getSourceOptions_) {
+            // @ts-ignore
+            options = await this.getSourceOptions_(SourceType.GeoTIFF, options, asset);
+        }
+        const source = new GeoTIFF(options);
+        const status = new Promise((resolve, reject) => {
+            source.on('error', reject);
+            source.on('change', () => {
+                // see https://github.com/openlayers/openlayers/issues/14926
+                if (source.getState() === 'error') {
+                    reject(source.getError());
+                }
+                else {
+                    resolve();
+                }
+            });
+        });
+        try {
+            await status;
+            if (this.checkDisplayLimit_(source, asset, autoDisplay)) {
+                return;
+            }
+            /**
+             * @type {import("ol/layer/WebGLTile.js").Options}
+             */
+            let layerOptions = { source };
+            if (this.style_) {
+                layerOptions.style = this.style_;
+            }
+            else if (metadataStyle) {
+                layerOptions.style = metadataStyle;
+            }
+            layerOptions = await this.updateLayerOptions_(LayerType.WebGLTile, layerOptions, asset);
+            const layer = new WebGLTileLayer(layerOptions);
+            this.addLayer_(layer, asset);
+            return layer;
+        }
+        catch (error) {
+            if (this.useTileLayerAsFallback_) {
+                const layer = await this.addTileLayerForImagery_(asset);
+                if (layer) {
+                    return layer;
+                }
+            }
+            this.handleError_(error);
+        }
+    }
+    /**
+     * @param {Asset|Link} [data] A STAC Asset or Link
+     * @return {Promise<TileLayer|undefined>} Resolves with a TileLayer, or undefined if no tile server URL was provided.
+     * @private
+     */
+    async addTileLayerForImagery_(data) {
+        if (typeof this.buildTileUrlTemplate_ !== 'function') {
+            return;
+        }
+        let url = this.buildTileUrlTemplate_(data);
+        if (url instanceof Promise) {
+            url = await url;
+        }
+        if (!url) {
+            return;
+        }
+        url = this.getRequestUrlFor_(url, data, true);
+        /**
+         * @type {import("ol/source/XYZ.js").Options}
+         */
+        let options = {
+            crossOrigin: this.crossOrigin_,
+            url,
+        };
+        const tileLoadFunction = this.createLoadFunction_(createTileLoadFunction, data);
+        if (tileLoadFunction) {
+            options.tileLoadFunction = tileLoadFunction;
+        }
+        if (this.getSourceOptions_) {
+            options = await this.getSourceOptions_(SourceType.XYZ, options, data);
+        }
+        const layerOptions = await this.updateLayerOptions_(LayerType.Tile, { source: new XYZ(options) }, data);
+        const layer = new TileLayer(layerOptions);
+        this.addLayer_(layer, data);
+        return layer;
+    }
+    /**
+     * Passes the layer options through the `getLayerOptions` function, if given.
+     *
+     * @param {LayerType} type The type of the layer that is going to be created.
+     * @param {LayerOptions} options The layer options.
+     * @param {Asset|Link} reference The STAC Asset or Link the layer is created for.
+     * @return {Promise<*>} The updated layer options.
+     * @private
+     */
+    async updateLayerOptions_(type, options, reference) {
+        if (this.getLayerOptions_) {
+            options = await this.getLayerOptions_(type, options, reference);
+        }
+        return options;
+    }
+    /**
+     * @param {Layer|LayerGroup} [layer] A Layer to add to the LayerGroup
+     * @param {STACObject} [data] The STAC object, can be any class exposed by stac-js
+     * @param {number} [zIndex] The z-index for the layer
+     * @private
+     */
+    addLayer_(layer, data = null, zIndex = 0) {
+        if (data) {
+            layer.set('stac', data);
+        }
+        layer.setZIndex(zIndex);
+        this.getLayers().push(layer);
+    }
+    /**
+     * @return {VectorLayer|null} The vector layer showing the geometry/bbox.
+     * @private
+     */
+    addFootprint_() {
+        let geojson = null;
+        const data = this.getData();
+        // Split geometries that cross the antimeridian into multi-geometries
+        // so that they render correctly on the map.
+        // Uses flat interpolation for the crossing points, which corresponds to
+        // how the straight edges between the vertices are rendered by OpenLayers.
+        const fixAntimeridian = { greatCircle: false };
+        if (data.isApiCollection) {
+            geojson = toGeoJSON(data.getBoundingBox(), fixAntimeridian);
+        }
+        else {
+            geojson = data.toGeoJSON(fixAntimeridian);
+        }
+        if (geojson) {
+            const layer = new VectorLayer(this.getGeoJsonLayerOptions_(geojson, getBoundsStyle(this.boundsStyle_, this), this.displayFootprint_));
+            layer.set('bounds', true);
+            layer.on('change', () => this.setMap_(layer.getMapInternal()));
+            this.addLayer_(layer, data, 1);
+            return layer;
+        }
+        return null;
+    }
+    /**
+     * @param {Asset} [asset] A STAC Asset
+     * @return {Promise<Layer|undefined>} Resolves with a Layer or undefined when complete.
+     * @private
+     */
+    async addGeoJson_(asset) {
+        try {
+            const geojson = await this.fetch_(this.getRequestUrlFor_(asset.getAbsoluteUrl(), asset), 'json', asset);
+            const layerOptions = await this.updateLayerOptions_(LayerType.Vector, this.getGeoJsonLayerOptions_(geojson), asset);
+            const layer = new VectorLayer(layerOptions);
+            this.addLayer_(layer, asset);
+            return layer;
+        }
+        catch (error) {
+            this.handleError_(error);
+        }
+    }
+    /**
+     * Creates the options for a GeoJSON vector layer from the given GeoJSON object.
+     *
+     * @param {GeoJSON} [geojson] The GeoJSON object.
+     * @param {Style} [style] The style for the layer.
+     * @param {boolean} [visible] Whether the layer is visible.
+     * @return {import("ol/layer/Vector.js").Options} The vector layer options.
+     * @private
+     */
+    getGeoJsonLayerOptions_(geojson, style = null, visible = true) {
+        const format = new GeoJSON();
+        const source = new VectorSource({
+            format,
+            loader: (extent, resolution, projection) => {
+                geojson = fixGeoJson(geojson);
+                const features = format.readFeatures(geojson, {
+                    featureProjection: projection,
+                });
+                source.addFeatures(features);
+            },
+        });
+        if (!style) {
+            style = defaultCollectionStyle;
+        }
+        return { source, style, visible };
+    }
+    /**
+     * Adds GeoJSON labels and GeoTIFF source imagery to the map based on the label extension.
+     *
+     * @return {Promise<Layer|undefined>} The layer added to the map.
+     * @private
+     */
+    async addLabelExtension_() {
+        const data = this.getData();
+        if (!data || !data.isItem) {
+            return;
+        }
+        // determine the asset with the geojson labels
+        let assets = data.getAssetsWithRoles(['labels', 'labels-vector'], true);
+        let labelAsset;
+        if (assets.length > 1) {
+            labelAsset = assets.find((asset) => asset.roles.includes('labels-vector'));
+        }
+        if (!labelAsset) {
+            labelAsset = data.getAsset('vector_labels');
+        }
+        if (!labelAsset) {
+            assets = data
+                .getAssets()
+                .filter((asset) => asset.type === geojsonMediaType && !asset.roles);
+            if (assets.length === 1) {
+                labelAsset = assets[0];
+            }
+        }
+        // Add the source imagery
+        const sourceLinks = data.getLinksWithRels(['source']);
+        if (labelAsset && sourceLinks.length > 0) {
+            const promises = sourceLinks.map(async (link) => {
+                try {
+                    const response = await this.fetch_(this.getRequestUrlFor_(link.getAbsoluteUrl(), link), 'json', link);
+                    const stac = create(response);
+                    return stac;
+                }
+                catch (error) {
+                    this.handleError_(error);
+                    return null;
+                }
+            });
+            const items = (await Promise.all(promises)).filter((item) => item && item.isSTAC);
+            await this.addChildren_(items, { displayFootprint: false });
+        }
+        // Add the GeoJSON labels
+        try {
+            await this.addGeoJson_(labelAsset);
+        }
+        catch (error) {
+            this.handleError_(error);
+        }
+    }
+    /**
+     * Checks the `maxDisplayPixels` limit for the given source.
+     * Returns `true` when the layer must not be added: automatically chosen
+     * assets are limited silently, for explicitly requested assets an error
+     * is thrown so that callers can fall back or report it.
+     * @param {import('ol/source/Tile.js').default} source The configured (ready) source.
+     * @param {Asset} asset The asset the source was created for.
+     * @param {boolean} autoDisplay Whether the asset was chosen automatically.
+     * @return {boolean} `true` if the asset must not be displayed.
+     * @private
+     */
+    checkDisplayLimit_(source, asset, autoDisplay) {
+        if (!exceedsDisplayLimit(source, this.maxDisplayPixels_)) {
+            return false;
+        }
+        if (!autoDisplay) {
+            const megapixels = Math.ceil(getDisplayPixels(source) / 1048576);
+            const error = new Error(`Asset ${asset.getKey()} is too large to display safely` +
+                ` (~${megapixels} megapixels at the coarsest resolution);` +
+                ` set the maxDisplayPixels option to display it anyway`);
+            // Allows applications to detect the error without matching the message
+            error.name = 'DisplayLimitError';
+            throw error;
+        }
+        return true;
+    }
+    /**
+     * Adds a layer for a GeoZarr asset.
+     * @param {Asset} asset The Zarr asset to show.
+     * @param {boolean} [autoDisplay] Whether the asset was chosen automatically
+     * (not explicitly requested): skip it silently instead of reporting an
+     * error when it doesn't declare what to render or can't be displayed
+     * within the configured limits.
+     * @return {Promise<Layer|undefined>} The layer, if one was added.
+     * @private
+     */
+    async addGeoZarr_(asset, autoDisplay = false) {
+        if (this.buildTileUrlTemplate_ && !this.useTileLayerAsFallback_) {
+            const layer = await this.addTileLayerForImagery_(asset);
+            // If no tile server URL was provided for the asset, continue with client-side rendering
+            if (layer) {
+                return layer;
+            }
+        }
+        let options = getGeoZarrSourceOptionsFromAsset(asset, this.bands_);
+        // Web-Optimized Zarr describes its bands in the store metadata,
+        // everything else must declare what to render in the STAC metadata
+        // (or provide it through getSourceOptions for explicitly selected assets)
+        const declaresRendering = () => asset.isType(wozMediaTypes) ||
+            Boolean(options.variable) ||
+            Boolean(options.bands && options.bands.length > 0);
+        if (autoDisplay && !declaresRendering()) {
+            return;
+        }
+        options.url = this.getRequestUrlFor_(options.url, asset);
+        const projection = await getProjection(asset);
+        if (projection) {
+            options.projection = projection;
+        }
+        const headers = this.getRequestHeadersFor_(options.url, asset);
+        if (headers) {
+            options.storeOptions = { headers };
+        }
+        if (this.getSourceOptions_) {
+            // @ts-ignore
+            options = await this.getSourceOptions_(SourceType.GeoZarr, options, asset);
+        }
+        try {
+            if (!declaresRendering()) {
+                throw new Error(`Asset ${asset.getKey()} declares neither bands nor a datacube variable to render`);
+            }
+            const GeoZarr = (await import('../source/GeoZarr.js')).default;
+            const source = new GeoZarr(options);
+            await new Promise((resolve, reject) => {
+                source.on('change', () => {
+                    if (source.getState() === 'error') {
+                        reject(source.error_);
+                    }
+                    else {
+                        resolve();
+                    }
+                });
+            });
+            if (this.checkDisplayLimit_(source, asset, autoDisplay)) {
+                return;
+            }
+            /**
+             * @type {import("ol/layer/WebGLTile.js").Options}
+             */
+            let layerOptions = { source };
+            if (this.style_) {
+                layerOptions.style = this.style_;
+            }
+            else {
+                const style = getGeoZarrStyleFromAsset(asset, options, this.defaultColormap_);
+                if (style) {
+                    layerOptions.style = style;
+                }
+            }
+            layerOptions = await this.updateLayerOptions_(LayerType.WebGLTile, layerOptions, asset);
+            const layer = new WebGLTileLayer(layerOptions);
+            this.addLayer_(layer, asset);
+            return layer;
+        }
+        catch (error) {
+            if (this.useTileLayerAsFallback_) {
+                const layer = await this.addTileLayerForImagery_(asset);
+                if (layer) {
+                    return layer;
+                }
+            }
+            this.handleError_(error);
+        }
+    }
+    /**
+     * Update the layers shown manually based on the current configuration.
+     * Usually this doesn't need to be called manually.
+     * @param {boolean} [emit] Whether to emit the `layersready` event once the layers are updated.
+     * @return {Promise} Resolves once the layers are updated.
+     * @api
+     */
+    async updateLayers(emit = true) {
+        // Remove old layers
+        const oldLayers = this.getLayers();
+        for (let i = oldLayers.getLength() - 1; i >= 0; i--) {
+            const layer = oldLayers.item(i);
+            if (layer.get('stac') && !layer.get('bounds')) {
+                oldLayers.removeAt(i);
+            }
+        }
+        // Add layers by priority
+        const data = this.getData();
+        // Show the web map links provided by the user
+        if (Array.isArray(this.displayWebMapLink_)) {
+            const promises = this.getWebMapLinks().map(async (link) => await this.addLayerForLink(link));
+            await Promise.all(promises);
+        }
+        // Show children if provided
+        if (this.children_) {
+            await this.addChildren_(this.children_, this.childrenOptions_);
+        }
+        // Show the assets provided by the user
+        const assets = this.getAssets();
+        if (assets) {
+            const promises = assets.map(async (ref) => {
+                if (!ref) {
+                    return;
+                }
+                if (ref.isType(geojsonMediaType)) {
+                    return await this.addGeoJson_(ref);
+                }
+                if (ref.isType(geotiffMediaTypes)) {
+                    return await this.addGeoTiff_(ref);
+                }
+                if (ref.isType(zarrMediaTypes)) {
+                    return await this.addGeoZarr_(ref);
+                }
+                if (ref.canBrowserDisplayImage()) {
+                    return await this.addPreviewImage_(ref);
+                }
+            });
+            await Promise.all(promises);
+        }
+        // If the user didn't provide any specific asset/map link/children to show,
+        // choose a sensible default visualization
+        if (this.hasOnlyBounds()) {
+            // Show the ItemCollection/CollectionCollection entries
+            if (data.isApiCollection) {
+                await this.addChildren_(data.getAll(), this.childrenOptions_);
+            }
+            else if (data.isSTAC) {
+                // Show label extension
+                if (data.isItem &&
+                    data.supportsExtension(LABEL_EXTENSION) &&
+                    data.getMetadata('label:type') === 'vector') {
+                    await this.addLabelExtension_();
+                    if (emit) {
+                        this.dispatch_('layersready');
+                    }
+                    return;
+                }
+                let layer;
+                if (this.displayOverview_ && !layer) {
+                    // Find a GeoTiff asset that we can visualize
+                    const geotiff = data.getDefaultGeoFile('geotiff', true, !this.displayGeoTiffByDefault_);
+                    if (geotiff) {
+                        layer = await this.addGeoTiff_(geotiff, true);
+                    }
+                }
+                if (this.displayOverview_ && !layer) {
+                    const geozarr = data.getDefaultGeoFile('geozarr', true, false);
+                    if (geozarr) {
+                        layer = await this.addGeoZarr_(geozarr, true);
+                    }
+                }
+                // Show web map links if available
+                const links = this.getWebMapLinks();
+                if (!layer && links.length > 0) {
+                    layer = await this.addLayerForLink(links[0]);
+                }
+                // If no other layer is available, try to visualize the default thumbnail
+                if (this.displayPreview_ && !layer) {
+                    // This may return Links or Assets
+                    const thumbnails = data.getThumbnails(true, 'overview');
+                    if (thumbnails.length > 0) {
+                        await this.addPreviewImage_(thumbnails[0]);
+                    }
+                }
+            }
+        }
+        if (emit) {
+            this.dispatch_('layersready');
+        }
+    }
+    /**
+     * Indicates whether the LayerGroup shows only the bounds layer (i.e. no imagery/tile layers).
+     * @return {boolean} `true` if only the bounds layer is shown, `false` otherwise.
+     * @api
+     */
+    hasOnlyBounds() {
+        const boundsLayer = this.getBoundsLayer();
+        const imgLayer = this.getLayersArray().find((layer) => layer !== boundsLayer);
+        return typeof imgLayer === 'undefined';
+    }
+    /**
+     * Returns all potential web map links based on the given value for `displayWebMapLink`.
+     * @return {Array<Link>} An array of links.
+     * @api
+     */
+    getWebMapLinks() {
+        return getWebMapLinks(this.getData(), this.displayWebMapLink_);
+    }
+    /**
+     * Set the style for GeoTIFF and GeoZarr layers (WebGLTileLayer style).
+     * @param {import("ol/layer/WebGLTile.js").Style|null} style The style to apply.
+     * @api
+     */
+    setStyle(style) {
+        this.style_ = style || null;
+        for (const layer of this.getLayersArray()) {
+            if (layer instanceof WebGLTileLayer) {
+                layer.setStyle(this.style_);
+            }
+        }
+    }
+    /**
+     * Set the colors of the colormap that is used for continuous single-band
+     * data when neither the STAC metadata nor the `style` option define a
+     * coloring. The colors are evenly distributed over the value range of the
+     * data (e.g. from the STAC `statistics`). Set to `null` to stretch the
+     * data to grayscale instead.
+     * @param {Array<import("ol/color.js").Color|string>|null} colormap The colors of the colormap.
+     * @return {Promise} Resolves once the layers are updated.
+     * @api
+     */
+    async setDefaultColormap(colormap) {
+        if (colormap === this.defaultColormap_) {
+            return;
+        }
+        this.defaultColormap_ = colormap || null;
+        // The layers are recreated, as switching between a styled and an
+        // unstyled visualization also changes how the sources are configured
+        // (e.g. the normalization of GeoTIFF sources)
+        await this.updateLayers();
+    }
+    /**
+     * Update the assets to be rendered.
+     * @param {Array<string|Asset>|null} assets The assets to show.
+     * @param {boolean} [updateLayers] Whether to update the layers right away.
+     * @return {Promise} Resolves when all assets are rendered.
+     * @api
+     */
+    async setAssets(assets, updateLayers = true) {
+        if (assets === this.assets_) {
+            return;
+        }
+        if (Array.isArray(assets)) {
+            const data = this.getData();
+            this.assets_ = assets.map((asset) => {
+                const isStr = typeof asset === 'string';
+                if (data.isSTAC && isStr) {
+                    return data.getAsset(asset);
+                }
+                if (!isStr && !asset.isAsset) {
+                    return new Asset(asset);
+                }
+                return asset;
+            });
+        }
+        else {
+            this.assets_ = null;
+        }
+        if (updateLayers) {
+            await this.updateLayers();
+        }
+    }
+    /**
+     * Updates the children STAC entities to be rendered.
+     *
+     * If an object is passed, it must be a GeoJSON FeatureCollection.
+     *
+     * @param {APICollection|Object|Array<STAC|Object>|null} childs The children to show.
+     * @param {Options|null} [options] Optionally, new STACLayer options for the children. Only applies if `children` are given.
+     * @param {boolean} [updateLayers] Whether to update the layers right away.
+     * @return {Promise} Resolves when all items are rendered.
+     * @api
+     */
+    async setChildren(childs, options = null, updateLayers = true) {
+        const childsIsObj = isObject(childs);
+        if (childsIsObj && childs.isItemCollection) {
+            this.children_ = childs.getAll();
+        }
+        else if (childsIsObj && childs.isCollectionCollection) {
+            this.children_ = childs.getAll();
+        }
+        else if (childsIsObj && childs.type === 'FeatureCollection') {
+            this.children_ = create(childs, !this.disableMigration_).getAll();
+        }
+        else if (Array.isArray(childs)) {
+            this.children_ = childs.map((child) => {
+                if (child.isSTAC) {
+                    return child;
+                }
+                return create(child, !this.disableMigration_);
+            });
+        }
+        else {
+            this.children_ = null; // Invalid input
+        }
+        if (this.children_ && this.children_.length === 0) {
+            this.children_ = null;
+        }
+        if (this.children_ && isObject(options)) {
+            this.childrenOptions_ = options;
+        }
+        if (updateLayers) {
+            await this.updateLayers();
+        }
+    }
+    /**
+     * Get the STAC object.
+     *
+     * @return {STAC|Asset} The STAC object.
+     * @api
+     */
+    getData() {
+        return this.get('stac');
+    }
+    /**
+     * Get the children STAC entities.
+     *
+     * @return {Array<STAC>} The STAC child entities.
+     * @api
+     */
+    getChildren() {
+        return this.children_;
+    }
+    /**
+     * Get the STAC assets shown.
+     *
+     * @return {Array<Asset>} The STAC assets.
+     * @api
+     */
+    getAssets() {
+        return this.assets_;
+    }
+    /**
+     * Get the extent of the layer.
+     * If `displayFootprint` is set to `false`, the extent is always returned in
+     * EPSG:4326 instead of the map projection. Make sure to transform it with the
+     * ol.proj.transformExtent function if needed.
+     *
+     * @return {Extent|undefined} The layer extent.
+     * @api
+     */
+    getExtent() {
+        if (!this.map_) {
+            return;
+        }
+        const view = this.map_.getView();
+        if (!view) {
+            return;
+        }
+        // todo: In general it might be better to get the actual extent of the layers/sources.
+        // Unfortunately, the extent is requested before it is available
+        // at least for the footprint layer due to the use of the GeoJSON loader.
+        // So we stick to the bounding box of the STAC entity for now,
+        // which sometimes is too small.
+        // See https://github.com/radiantearth/stac-browser/issues/634 for details.
+        let bbox;
+        const data = this.getData();
+        if (data) {
+            bbox = data.getBoundingBox();
+        }
+        const items = this.getChildren();
+        if (items) {
+            const bboxes = items.map((item) => item.getBoundingBox());
+            bbox = unionBoundingBox(bboxes);
+        }
+        if (bbox) {
+            return toOlExtent(bbox, view.getProjection());
+        }
+    }
+    getLayerState() {
+        const state = super.getLayerState();
+        // Fixes the issue that the view is clipped based on the extent of the layer.
+        // The extent is usually the bbox, but sometimes there are even items outside of the bbox.
+        // See https://github.com/radiantearth/stac-browser/issues/634 for details.
+        state.extent = undefined;
+        return state;
+    }
+    /**
+     * Get the attributions of the STAC entity assigned to this layer.
+     *
+     * @return {Array<string>} Attributions for this layer.
+     * @api
+     */
+    getAttributions() {
+        const attribution = [];
+        const stac = this.getData();
+        if (stac) {
+            const attribution = stac.getMetadata('attribution');
+            if (attribution) {
+                attribution.push(attribution);
+            }
+        }
+        return attribution;
+    }
+    /**
+     * Get the layer source.
+     * @return {SourceType|null} The layer source (or `null` if not yet set).
+     */
+    getSource() {
+        return null;
+    }
+    /**
+     * Gets the WMTS capabilities from the given web-map-links URL.
+     * @param {string} url Base URL for the WMTS
+     * @param {Link} link The web map link the request is made for.
+     * @param {string} [encoding] The request encoding, either `kvp` (default) or `rest`.
+     * @return {Promise<Object|null>} Resolves with the WMTS Capabilities object
+     * @private
+     */
+    async getWmtsCapabilities_(url, link, encoding = 'kvp') {
+        try {
+            const urlObj = new URL(url);
+            if (encoding !== 'rest') {
+                urlObj.searchParams.set('service', 'wmts');
+                urlObj.searchParams.set('request', 'GetCapabilities');
+            }
+            const response = await this.fetch_(urlObj.toString(), 'text', link);
+            return new WMTSCapabilities().read(response);
+        }
+        catch (_) {
+            return null;
+        }
+    }
+}
+export default STACLayer;
+//# sourceMappingURL=STAC.js.map

@@ -1,5 +1,5 @@
 import { c as register, l as WebGLTileLayer, o as proj4, s as OSM, t as STACLayer, u as Map } from "./common.js";
-//#region examples/stac-item-from-object.js
+// examples/stac-item-from-object.js
 register(proj4);
 var layer = new STACLayer({
 	url: "https://www.planet.com/data/stac/open-skysat-data/angkor-wat/dsm.json",
@@ -83,6 +83,5 @@ var map = new Map({
 layer.on("sourceready", () => {
 	map.getView().fit(layer.getExtent());
 });
-//#endregion
 
 //# sourceMappingURL=stac-item-from-object.js.map

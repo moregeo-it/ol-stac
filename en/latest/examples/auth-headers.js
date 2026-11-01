@@ -1,5 +1,5 @@
 import { c as register, l as WebGLTileLayer, m as View, o as proj4, s as OSM, t as STACLayer, u as Map } from "./common.js";
-//#region examples/auth-headers.js
+// examples/auth-headers.js
 register(proj4);
 var trustedHosts = ["example.com"];
 var layer = new STACLayer({
@@ -24,6 +24,5 @@ layer.on("sourceready", () => {
 layer.on("error", (event) => {
 	console.error(event.error);
 });
-//#endregion
 
 //# sourceMappingURL=auth-headers.js.map

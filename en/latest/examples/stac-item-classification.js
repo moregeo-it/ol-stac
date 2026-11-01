@@ -1,5 +1,5 @@
 import { c as register, o as proj4, r as getClassificationClasses, t as STACLayer, u as Map } from "./common.js";
-//#region examples/stac-item-classification.js
+// examples/stac-item-classification.js
 register(proj4);
 var layer = new STACLayer({
 	url: "https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items/S2A_31SBD_20260312_1_L2A",
@@ -156,6 +156,5 @@ layer.on("sourceready", () => {
 		legend.appendChild(row);
 	}
 });
-//#endregion
 
 //# sourceMappingURL=stac-item-classification.js.map

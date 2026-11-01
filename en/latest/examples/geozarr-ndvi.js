@@ -1,5 +1,5 @@
 import { c as register, l as WebGLTileLayer, m as View, n as LayerType, o as proj4, s as OSM, t as STACLayer, u as Map } from "./common.js";
-//#region examples/geozarr-ndvi.js
+// examples/geozarr-ndvi.js
 register(proj4);
 var selectedBands = ["b04", "b08"];
 /**
@@ -49,7 +49,7 @@ function createNdviStyle(asset) {
 	] };
 }
 var layer = new STACLayer({
-	url: "https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2C_MSIL2A_20260414T114351_N0512_R123_T30VVK_20260414T164110",
+	url: "https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2A_MSIL2A_20260913T114401_N0512_R123_T30VVK_20260913T175010",
 	assets: ["reflectance"],
 	bands: selectedBands,
 	async getLayerOptions(type, options, asset) {
@@ -72,6 +72,5 @@ var map = new Map({
 layer.on("sourceready", () => {
 	map.getView().fit(layer.getExtent());
 });
-//#endregion
 
 //# sourceMappingURL=geozarr-ndvi.js.map

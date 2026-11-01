@@ -1,5 +1,5 @@
 import { c as register, l as WebGLTileLayer, m as View, o as proj4, s as OSM, t as STACLayer, u as Map } from "./common.js";
-//#region examples/custom.js
+// examples/custom.js
 register(proj4);
 var background = new WebGLTileLayer({ source: new OSM() });
 var map = new Map({
@@ -42,6 +42,5 @@ function showUrl() {
 	});
 	map.addLayer(layer);
 }
-//#endregion
 
 //# sourceMappingURL=custom.js.map

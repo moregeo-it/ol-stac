@@ -1,0 +1,1829 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>OL STAC v1.8.0 API - Module: ol/layer/STAC</title>
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/fontawesome.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/solid.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/brands.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="styles/prettify-tomorrow.css">
+    <link rel="stylesheet" type="text/css" href="styles/jaguar.css">
+    <link rel="stylesheet" type="text/css" href="styles/carbon.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/ol/ol.css">
+    <link rel="stylesheet" type="text/css" href="/theme/site.css">
+  </head>
+  <body>
+    <header class="navbar navbar-expand-sm navbar-dark mb-3 px-3 py-0 fixed-top" role="navigation">
+      <a class="navbar-brand" href="/">OL STAC</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#olmenu" aria-controls="olmenu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- menu items that get hidden below 768px width -->
+      <nav class="collapse navbar-collapse" id="olmenu">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="docdropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Docs</a>
+            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="docdropdown">
+              <a class="dropdown-item" href="/doc/">Docs</a>
+              <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="/doc/quickstart.html"><i class="fa fa-check fa-fw me-2 fa-lg"></i>Quick Start</a>
+                <a class="dropdown-item" href="/doc/faq.html"><i class="fa fa-question fa-fw me-2 fa-lg"></i>FAQ</a>
+                <a class="dropdown-item" href="/doc/tutorials/"><i class="fa fa-book fa-fw me-2 fa-lg"></i>Tutorials</a>
+            </div>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="../examples/"><i class="fa fa-map me-1"></i>Examples</a></li>
+          <li class="nav-item active"><a class="nav-link" href="../apidoc/"><i class="fa fa-code me-1"></i>API</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="codedropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Code</a>
+            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="codedropdown">
+              <a class="dropdown-item" href="https://github.com/moregeo-it/ol-stac"><i class="fab fa-github fa-fw me-2 fa-lg"></i>Repository</a>
+              <a class="dropdown-item" href="/download/"><i class="fa fa-download fa-fw me-2 fa-lg"></i>Download</a>
+            </div>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <div class="container-fluid">
+      <div id="wrap" class="row">
+        <div class="navigation col-md-4 col-lg-3">
+          <div class="search-wrapper">
+            <div class="search">
+              <input id="search" type="text" autocomplete="off" class="form-control input-sm" placeholder="Search Documentation">
+            </div>
+          </div>
+          <div class="navigation-list-wrapper">
+            <ul class="navigation-list search-empty">
+<li class="item item-module toggle-manual toggle-manual-show" data-longname="module:ol/layer/STAC" data-name="ol/layer/stac">
+    <span class="title toggle">
+        <span class="fa fa-plus me-2 mt-1"></span>
+        <span><a href="module-ol_layer_STAC.html">ol​/layer​/STAC</a></span>
+    </span>
+    <div class="member-list" data-type="typedefs">
+        <span class="subtitle">Typedefs</span>
+        <ul>
+            <li data-name="apicollection"><a href="module-ol_layer_STAC.html#~APICollection">APICollection</a>
+            <li data-name="extent"><a href="module-ol_layer_STAC.html#~Extent">Extent</a>
+            <li data-name="getheadersfn"><a href="module-ol_layer_STAC.html#~GetHeadersFn">GetHeadersFn</a>
+            <li data-name="layer"><a href="module-ol_layer_STAC.html#~Layer">Layer</a>
+            <li data-name="layeroptions"><a href="module-ol_layer_STAC.html#~LayerOptions">LayerOptions</a>
+            <li data-name="link"><a href="module-ol_layer_STAC.html#~Link">Link</a>
+            <li data-name="loadfunction"><a href="module-ol_layer_STAC.html#~LoadFunction">LoadFunction</a>
+            <li data-name="map"><a href="module-ol_layer_STAC.html#~Map">Map</a>
+            <li data-name="onerrorfn"><a href="module-ol_layer_STAC.html#~OnErrorFn">OnErrorFn</a>
+            <li data-name="options"><a href="module-ol_layer_STAC.html#~Options">Options</a>
+            <li data-name="stac"><a href="module-ol_layer_STAC.html#~STAC">STAC</a>
+            <li data-name="stacobject"><a href="module-ol_layer_STAC.html#~STACObject">STACObject</a>
+            <li data-name="sourceoptions"><a href="module-ol_layer_STAC.html#~SourceOptions">SourceOptions</a>
+            <li data-name="style"><a href="module-ol_layer_STAC.html#~Style">Style</a>
+        </ul>
+    </div>
+              <li class="loading">Loading …
+            </ul>
+          </div>
+        </div>
+
+        <div class="main col-md-8 col-lg-9">
+          <h1 class="page-title" data-filename="module-ol_layer_STAC.html">Module: ol/layer/STAC</h1>
+          <div id="latest-check" class="alert alert-warning alert-dismissible" role="alert" style="display:none">
+            <button id="latest-dismiss" type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            This documentation is for OL STAC v<span id="package-version">1.8.0</span>. The <a id="latest-link" href="#" class="alert-link">latest</a> is v<span id="latest-version"></span>.
+          </div>
+          
+
+
+
+<section class="content">
+
+<header>
+    <h2 class="my-3">ol/layer/STAC
+    </h2>
+    <br>
+    
+      
+      
+    
+    <div class="row p-3 ">
+    
+    </div>
+</header>
+
+<article>
+    <div class="container-overview">
+    
+
+    
+        
+
+        
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Classes</h3>
+
+        <dl>
+            <dt><a href="module-ol_layer_STAC-STACLayer.html">STACLayer</a></dt>
+            <dd></dd>
+        </dl>
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Type Definitions</h3>
+
+        <dl>
+                
+<dt class="">
+    <div class="nameContainer">
+        <div class="anchor" id="~APICollection">
+        </div>
+        <h4 class="name">
+            APICollection<span class="type-signature type module:stac-js~apicollection">{module:stac-js~APICollection}</span> 
+            
+
+        </h4>
+    </div>
+    
+</dt>
+<dd class="">
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+</dd>
+
+            
+                
+<dt class="">
+    <div class="nameContainer">
+        <div class="anchor" id="~Extent">
+        </div>
+        <h4 class="name">
+            Extent<span class="type-signature type module:ol/extent.js~extent">{Extent}</span> 
+            
+
+        </h4>
+    </div>
+    
+</dt>
+<dd class="">
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+</dd>
+
+            
+                
+<dt class="">
+    <div class="nameContainer">
+        <div class="anchor" id="~GetHeadersFn">
+        </div>
+        <h4 class="name">
+            GetHeadersFn<span class="type-signature type module:ol/http~getheadersfn">{<a href="module-ol_http.html#~GetHeadersFn">GetHeadersFn</a>}</span> 
+            
+
+        </h4>
+    </div>
+    
+</dt>
+<dd class="">
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+</dd>
+
+            
+                
+<dt class="">
+    <div class="nameContainer">
+        <div class="anchor" id="~Layer">
+        </div>
+        <h4 class="name">
+            Layer<span class="type-signature type module:ol/layer/layer.js">{js}</span> 
+            
+
+        </h4>
+    </div>
+    
+</dt>
+<dd class="">
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+</dd>
+
+            
+                
+<dt class="">
+    <div class="nameContainer">
+        <div class="anchor" id="~LayerOptions">
+        </div>
+        <h4 class="name">
+            LayerOptions<span class="type-signature type module:ol/layer/type~layeroptions">{<a href="module-ol_layer_type.html#~LayerOptions">LayerOptions</a>}</span> 
+            
+
+        </h4>
+    </div>
+    
+</dt>
+<dd class="">
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+</dd>
+
+            
+                
+<dt class="">
+    <div class="nameContainer">
+        <div class="anchor" id="~Link">
+        </div>
+        <h4 class="name">
+            Link<span class="type-signature type module:stac-js~link">{module:stac-js~Link}</span> 
+            
+
+        </h4>
+    </div>
+    
+</dt>
+<dd class="">
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+</dd>
+
+            
+                
+<dt class="">
+    
+    <div class="nameContainer">
+        <div class="anchor" id="~LoadFunction">
+        </div>
+        <h4 class="name">
+            LoadFunction<span class="signature">()</span>
+            
+            
+
+        </h4>
+        
+        <div class="tag-source">
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.0/src/ol/layer/STAC.js#L90">line 90</a>
+        </div>
+        
+    </div>
+    
+    
+</dt>
+<dd class="">
+
+
+
+    
+
+    
+
+    
+
+    
+    
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+            
+                
+<dt class="">
+    <div class="nameContainer">
+        <div class="anchor" id="~Map">
+        </div>
+        <h4 class="name">
+            Map<span class="type-signature type module:ol/map.js">{js}</span> 
+            
+
+        </h4>
+    </div>
+    
+</dt>
+<dd class="">
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+</dd>
+
+            
+                
+<dt class="">
+    <div class="nameContainer">
+        <div class="anchor" id="~OnErrorFn">
+        </div>
+        <h4 class="name">
+            OnErrorFn<span class="type-signature type module:ol/http~onerrorfn">{<a href="module-ol_http.html#~OnErrorFn">OnErrorFn</a>}</span> 
+            
+
+        </h4>
+    </div>
+    
+</dt>
+<dd class="">
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+</dd>
+
+            
+                
+<dt class="">
+    <div class="nameContainer">
+        <div class="anchor" id="~Options">
+        </div>
+        <h4 class="name">
+            Options<span class="type-signature type object">{Object}</span> 
+            
+
+        </h4>
+    </div>
+    
+</dt>
+<dd class="">
+    
+
+    
+<dl class="details">
+    
+        
+        <h5 class="subsection-title">Properties:</h5>
+        
+        <dl>
+
+<table class="props">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>url</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+ | undefined
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The STAC URL. Any of <code>url</code> and <code>data</code> must be provided.
+Can also be used as url for data, if it is absolute and doesn't contain a self link.
+Don't use this is you pass in a stac-js object as <code>data</code>, set the url manually through
+<code>setAbsoluteUrl</code> on the stac-js object before passing it in.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-ol_layer_STAC.html#~STAC">STAC</a></span>
+|
+
+<span class="param-type">Asset</span>
+|
+
+<span class="param-type">Object</span>
+
+ | undefined
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The STAC metadata. Any of <code>url</code> and <code>data</code> must be provided.
+<code>data</code> take precedence over <code>url</code>.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>children</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-ol_layer_STAC.html#~APICollection">APICollection</a></span>
+|
+
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">Array.&lt;(<a href="module-ol_layer_STAC.html#~STAC">module:ol/layer/STAC~STAC</a>|Object)></span>
+|
+
+<span class="param-type">null</span>
+
+
+                
+                    <br>(defaults to null)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>For STAC Catalogs and Collections, any child entites
+to show. Can be STAC ItemCollections (as ItemCollection or GeoJSON FeatureCollection) or a list of STAC entities.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>childrenOptions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-ol_layer_STAC.html#~Options">Options</a></span>
+
+
+                
+                    <br>(defaults to {})
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The the given children, apply the given options.
+By default, the children inherit the following options from this layer: <code>crossOrigin</code>, <code>collectionStyle</code> (as <code>boundsStyle</code>),
+<code>displayGeoTiffByDefault</code>, <code>displayOverview</code>, <code>displayPreview</code>, <code>displayFootprint</code>, <code>useTileLayerAsFallback</code>,
+<code>buildTileUrlTemplate</code>, <code>maxDisplayPixels</code>, <code>getSourceOptions</code>, <code>getLayerOptions</code>, <code>getRequestHeaders</code>,
+<code>getRequestUrl</code> and <code>httpRequestFn</code>.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>assets</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;(string|Asset)></span>
+|
+
+<span class="param-type">null</span>
+
+
+                
+                    <br>(defaults to null)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The selector for the assets to be rendered,
+only for STAC Items and Collections.
+This can be an array of strings corresponding to asset keys or Asset objects.
+null shows the default asset, an empty array shows no asset.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>bands</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;(number|string)></span>
+
+ | undefined
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The bands to show. One-based index of the band, or the name of the band.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>getSourceOptions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+ | undefined
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>Optional function that can be used to configure the underlying sources. The function can do any additional work
+and return the completed options or a promise for the same. The function will be called with the current source options
+and the STAC Asset or Link.
+This can be useful for advanced per-source customization such as signed URLs.
+To add credentials via query parameters, use the <code>getRequestUrl</code> option instead;
+to send credentials via HTTP headers, use the <code>getRequestHeaders</code> option instead.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>getLayerOptions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+ | undefined
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>Optional function that can be used to configure the individual layers that are created for the assets and links.
+The function can do any additional (asynchronous) work and return the completed options or a promise for the same.
+The function will be called with the layer type, the current layer options and the STAC Asset or Link.
+This can be useful to customize the layers, e.g. to apply a style to a GeoTIFF or GeoZarr layer that is
+loaded from the STAC metadata.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>displayFootprint</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+                
+                    <br>(defaults to true)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>Allows to hide the footprints (bounding box/geometry) of the STAC object
+by default.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>displayGeoTiffByDefault</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+                
+                    <br>(defaults to false)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>Allow to choose non-cloud-optimized GeoTiffs as default image to show,
+which might not work well for larger files or larger amounts of files.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>displayPreview</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+                
+                    <br>(defaults to false)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>Allow to display preview images that a browser can display (e.g. PNG, JPEG),
+i.e. assets with any of the roles <code>thumbnail</code>, <code>overview</code>, or a link with relation type <code>preview</code>.
+The previews are usually not covering the full extents and as such may be placed incorrectly on the map.
+For performance reasons, it is recommended to enable this option if you pass in STAC API Items instead of <code>displayOverview</code>.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>displayOverview</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+                
+                    <br>(defaults to true)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>Allow to display COGs, Zarr and, if <code>displayGeoTiffByDefault</code> is enabled, GeoTiffs,
+usually an asset with role <code>overview</code> or <code>visual</code>.
+Zarr assets other than Web-Optimized Zarr are only displayed if the STAC metadata declares what to render
+(see the datacube extension) and the store is within the <code>maxDisplayPixels</code> limit.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>maxDisplayPixels</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+                
+                    <br>(defaults to 16777216)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The maximum number of pixels the coarsest resolution level
+of a GeoTIFF or Zarr asset may have to be displayed client-side, as displaying the full extent of an asset
+loads every tile of that level. Files without (sufficient) overviews can easily exceed this limit.
+Larger assets are not chosen for the default visualization, and selecting one explicitly through <code>assets</code>
+reports an error through the <code>error</code> event (or renders through the tile server if <code>buildTileUrlTemplate</code>
+and <code>useTileLayerAsFallback</code> are set). Set to <code>Infinity</code> to display assets of any size.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>displayWebMapLink</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">boolean</span>
+|
+
+<span class="param-type">Array.&lt;(<a href="module-ol_layer_STAC.html#~Link">module:ol/layer/STAC~Link</a>|string)></span>
+
+
+                
+                    <br>(defaults to false)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>Allow to display a layer
+based on the information provided through the web map links extension.
+If an array of links or link ids (property <code>id</code> in a Link Object) is provided, all corresponding layers will be shown.
+If set to true or to a specific type of web map link (<code>pmtiles</code>, <code>tilejson</code>, <code>wms</code>, <code>wmts</code>, <code>xyz</code>),
+it lets this library choose a web map link to show, but only if no other data is shown.
+To disable the functionality set this to <code>false</code>.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>style</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Style</span>
+|
+
+<span class="param-type">null</span>
+
+
+                
+                    <br>(defaults to null)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The style for GeoTIFF and GeoZarr layers (WebGLTileLayer style).</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>defaultColormap</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;(module:ol/color.js~Color|string)></span>
+|
+
+<span class="param-type">null</span>
+
+
+                
+                    <br>(defaults to null)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The colors of the colormap
+that is used for continuous single-band data when neither the STAC metadata nor the <code>style</code> option define
+a coloring. The colors are evenly distributed over the value range of the data (e.g. from the STAC
+<code>statistics</code>). If not set, the data is stretched to grayscale.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>boundsStyle</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-ol_layer_STAC.html#~Style">Style</a></span>
+
+ | undefined
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The style for the overall bounds / footprint.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>collectionStyle</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-ol_layer_STAC.html#~Style">Style</a></span>
+
+ | undefined
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The style for individual children in a list of STAC Items or Collections.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>crossOrigin</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">null</span>
+|
+
+<span class="param-type">string</span>
+
+ | undefined
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>For thumbnails: The <code>crossOrigin</code> attribute for loaded images / tiles.
+See <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image">https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image</a> for more detail.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>buildTileUrlTemplate</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+                
+                    <br>(defaults to null)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>A function that generates a URL template for a tile server (XYZ),
+which will be used instead of the client-side GeoTIFF rendering (except if <code>useTileLayerAsFallback</code> is <code>true</code>).
+The function provided can return a promise (i.e. be async) or a string.
+The function can return <code>null</code> to not pass the given asset or link to the tile server,
+e.g. to filter by media type or protocol. In this case client-side rendering is used instead.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>useTileLayerAsFallback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+                
+                    <br>(defaults to false)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>Uses the given URL template only when the client-side GeoTIFF rendering fails.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>opacity</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+                
+                    <br>(defaults to 1)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>Opacity (0, 1).</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>visible</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+                
+                    <br>(defaults to true)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>Visibility.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>extent</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-ol_layer_STAC.html#~Extent">Extent</a></span>
+
+ | undefined
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The bounding extent for layer rendering.  The layer will not be
+rendered outside of this extent.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>zIndex</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+ | undefined
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The z-index for layer rendering.  At rendering time, the layers
+will be ordered, first by Z-index and then by position. When <code>undefined</code>, a <code>zIndex</code> of 0 is assumed
+for layers that are added to the map's <code>layers</code> collection, or <code>Infinity</code> when the layer's <code>setMap()</code>
+method was used.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>minResolution</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+ | undefined
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The minimum resolution (inclusive) at which this layer will be
+visible.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>maxResolution</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+ | undefined
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The maximum resolution (exclusive) below which this layer will
+be visible.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>minZoom</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+ | undefined
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The minimum view zoom level (exclusive) above which this layer will be
+visible.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>maxZoom</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+ | undefined
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The maximum view zoom level (inclusive) at which this layer will
+be visible.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>properties</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object.&lt;string, *></span>
+
+ | undefined
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>Arbitrary observable properties. Can be accessed with <code>#get()</code> and <code>#set()</code>. <code>stac</code> and <code>bounds</code> are reserved and may be overridden.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>disableMigration</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+                
+                    <br>(defaults to false)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>Disable the migration of the STAC object to the latest version.
+Only enable this if you are sure that the STAC object is already in the latest version.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>httpRequestFn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+                
+                    <br>(defaults to null)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>Sets a custom function to make HTTP requests with.
+The first parameter is the URL to request and the output is a promise that resolves with the response body.
+The second parameter is the return type, either <code>json</code> (default) or <code>text</code>.
+The STAC Asset or Link the request is made for is passed as third parameter, if available.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>getRequestHeaders</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object.&lt;string, string></span>
+|
+
+<span class="param-type">function</span>
+
+
+                
+                    <br>(defaults to null)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The HTTP headers (e.g. for authentication) to send with the requests made by this layer,
+either as a plain object or as a function that returns the headers (or <code>null</code> for none) and
+is called with the STAC Asset or Link that is shown (if available) and the URL that is requested.
+Use a function to restrict the headers to specific hosts, as tile server URLs and asset URLs
+may point to hosts that should not receive the credentials.
+The headers are attached to requests made by the default <code>httpRequestFn</code>, to GeoTIFF, GeoZarr
+and PMTiles requests, and via image/tile load functions (through the Fetch API and object URLs)
+to preview images and XYZ, TileJSON, WMS and WMTS tiles.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>getRequestUrl</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+                
+                    <br>(defaults to null)
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>Rewrites a URL before a request is made or a source is created, e.g. to append query
+parameters for authentication (signed URLs, API keys). The function is called with the
+STAC Asset or Link that is shown (if available), the URL, and whether the URL is a
+tile URL template. It returns the new URL or <code>null</code> to keep the URL unchanged.
+The rewrite is applied to the initial source URL before <code>getSourceOptions</code> is called;
+templates discovered in fetched documents (TileJSON manifests, WMTS capabilities) are
+rewritten afterwards and are not passed to <code>getSourceOptions</code>.
+For tiled sources the tile URL template is rewritten, not the individual tile URLs.
+URL templates originate from XYZ web map links, TileJSON manifests, WMTS links
+(<code>uriTemplate</code>) and capabilities, and <code>buildTileUrlTemplate</code>. The returned URL must keep
+the template placeholders such as <code>{z}</code> unchanged, i.e. they must not be percent-encoded
+(e.g. through URL normalization).</p>
+                
+            </td>
+        </tr>
+
+	
+	</tbody>
+</table></dl>
+        
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+</dd>
+
+            
+                
+<dt class="">
+    <div class="nameContainer">
+        <div class="anchor" id="~STAC">
+        </div>
+        <h4 class="name">
+            STAC<span class="type-signature type module:stac-js~stac">{module:stac-js~STAC}</span> 
+            
+
+        </h4>
+    </div>
+    
+</dt>
+<dd class="">
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+</dd>
+
+            
+                
+<dt class="">
+    <div class="nameContainer">
+        <div class="anchor" id="~STACObject">
+        </div>
+        <h4 class="name">
+            STACObject<span class="type-signature type module:stac-js~stacobject">{module:stac-js~STACObject}</span> 
+            
+
+        </h4>
+    </div>
+    
+</dt>
+<dd class="">
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+</dd>
+
+            
+                
+<dt class="">
+    <div class="nameContainer">
+        <div class="anchor" id="~SourceOptions">
+        </div>
+        <h4 class="name">
+            SourceOptions<span class="type-signature type module:ol/source/type~sourceoptions">{<a href="module-ol_source_type.html#~SourceOptions">SourceOptions</a>}</span> 
+            
+
+        </h4>
+    </div>
+    
+</dt>
+<dd class="">
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+</dd>
+
+            
+                
+<dt class="">
+    <div class="nameContainer">
+        <div class="anchor" id="~Style">
+        </div>
+        <h4 class="name">
+            Style<span class="type-signature type module:ol/style/style.js">{js}</span> 
+            
+
+        </h4>
+    </div>
+    
+</dt>
+<dd class="">
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+</dd>
+
+            </dl>
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+        </div>
+      </div>
+    </div>
+    <script>prettyPrint();</script>
+    <script src="scripts/linenumber.js"></script>
+    <script src="scripts/main.js"></script>
+  </body>
+</html>

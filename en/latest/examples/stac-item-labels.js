@@ -1,5 +1,5 @@
 import { c as register, l as WebGLTileLayer, m as View, o as proj4, s as OSM, t as STACLayer, u as Map } from "./common.js";
-//#region examples/stac-item-labels.js
+// examples/stac-item-labels.js
 register(proj4);
 var layer = new STACLayer({
 	url: "https://raw.githubusercontent.com/stac-extensions/label/refs/heads/main/examples/spacenet-roads/roads_item.json",
@@ -17,6 +17,5 @@ var map = new Map({
 layer.on("sourceready", () => {
 	map.getView().fit(layer.getExtent());
 });
-//#endregion
 
 //# sourceMappingURL=stac-item-labels.js.map

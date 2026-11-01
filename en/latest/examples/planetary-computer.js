@@ -1,5 +1,5 @@
 import { a as SourceType, c as register, l as WebGLTileLayer, m as View, o as proj4, s as OSM, t as STACLayer, u as Map } from "./common.js";
-//#region examples/planetary-computer.js
+// examples/planetary-computer.js
 register(proj4);
 /**
 * Get a Shared Access Signature Token to authorize asset requests.
@@ -31,6 +31,5 @@ var map = new Map({
 layer.on("sourceready", () => {
 	map.getView().fit(layer.getExtent());
 });
-//#endregion
 
 //# sourceMappingURL=planetary-computer.js.map

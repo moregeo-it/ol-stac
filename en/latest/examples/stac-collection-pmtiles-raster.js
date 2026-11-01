@@ -1,5 +1,5 @@
 import { c as register, l as WebGLTileLayer, m as View, o as proj4, s as OSM, t as STACLayer, u as Map } from "./common.js";
-//#region examples/stac-collection-pmtiles-raster.js
+// examples/stac-collection-pmtiles-raster.js
 register(proj4);
 var layer = new STACLayer({
 	displayWebMapLink: "pmtiles",
@@ -40,6 +40,5 @@ var map = new Map({
 layer.on("sourceready", () => {
 	map.getView().fit(layer.getExtent());
 });
-//#endregion
 
 //# sourceMappingURL=stac-collection-pmtiles-raster.js.map

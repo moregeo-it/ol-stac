@@ -1,5 +1,5 @@
 import { l as WebGLTileLayer, m as View, s as OSM, t as STACLayer, u as Map } from "./common.js";
-//#region examples/stac-item-antimeridian.js
+// examples/stac-item-antimeridian.js
 var layer = new STACLayer({ data: {
 	"stac_version": "1.1.0",
 	"type": "Feature",
@@ -105,6 +105,5 @@ layer.on("sourceready", () => {
 		50
 	] });
 });
-//#endregion
 
 //# sourceMappingURL=stac-item-antimeridian.js.map
