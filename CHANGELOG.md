@@ -7,9 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- GeoZarr layers apply the nodata values from STAC and the render extension
+
+### Changed
+
+- Colormaps from the render extension only apply if a single band is shown
+
 ### Fixed
 
 - GeoZarr datacubes use the metadata of their bands for styling
+- GeoZarr datacubes recognize the STAC band names in band selections, renders and for the RGB detection
+- GeoTIFF layers apply the `rescale` of the render extension per band
 
 ## [1.7.1] - 2026-10-05
 

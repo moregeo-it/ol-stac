@@ -116,6 +116,47 @@ describe('ol/util', function () {
       expect(info.bands).toBeUndefined();
     });
 
+    it('applies the render rescale per rendered band', function () {
+      const asset = getAsset({
+        type: 'image/tiff',
+        bands: rgbBands,
+        renders: {
+          default: {
+            bands: ['blue', 'green', 'red'],
+            rescale: [
+              [0, 10],
+              [0, 20],
+              [0, 30],
+            ],
+          },
+        },
+      });
+      const info = getGeoTiffSourceInfoFromAsset(asset, []);
+      expect(info.bands).toEqual([3, 2, 1]);
+      expect(info.min).toEqual([0, 0, 0]);
+      expect(info.max).toEqual([30, 20, 10]);
+    });
+
+    it('applies a single render rescale to all bands', function () {
+      const asset = getAsset({
+        type: 'image/tiff',
+        bands: rgbBands,
+        renders: {default: {rescale: [[0, 100]]}},
+      });
+      const info = getGeoTiffSourceInfoFromAsset(asset, []);
+      expect(info.min).toBe(0);
+      expect(info.max).toBe(100);
+    });
+
+    it('falls back to the render nodata', function () {
+      const asset = getAsset({
+        type: 'image/tiff',
+        renders: {default: {nodata: 0, rescale: [[0, 1]]}},
+      });
+      const info = getGeoTiffSourceInfoFromAsset(asset, []);
+      expect(info.nodata).toBe(0);
+    });
+
     it('leaves the range to OpenLayers without metadata', function () {
       const asset = getAsset({type: 'image/tiff'});
       const info = getGeoTiffSourceInfoFromAsset(asset, []);
@@ -654,6 +695,124 @@ describe('ol/util', function () {
       expect(getGeoZarrStyleFromAsset(asset, options)).toEqual({
         color: ['color', gray(6, 60), gray(6, 60), gray(6, 60)],
       });
+    });
+
+    it('makes pixels transparent in which all bands are nodata', function () {
+      const asset = getAsset({
+        type: 'application/vnd.zarr',
+        bands: rgbBands.map((band) => ({...band, nodata: 0})),
+      });
+      expect(style(asset)).toEqual({
+        color: [
+          'case',
+          [
+            'all',
+            ['==', ['band', 1], 0],
+            ['==', ['band', 2], 0],
+            ['==', ['band', 3], 0],
+          ],
+          [0, 0, 0, 0],
+          rgb([
+            [0, 255],
+            [0, 255],
+            [0, 255],
+          ]).color,
+        ],
+      });
+    });
+
+    it('applies the asset nodata to a single band', function () {
+      const asset = getAsset({
+        type: 'application/vnd.zarr',
+        nodata: 5,
+        bands: [{name: 'b1', statistics: {minimum: 0, maximum: 100}}],
+      });
+      expect(style(asset, ['b1'])).toEqual({
+        color: [
+          'case',
+          ['==', ['band', 1], 5],
+          [0, 0, 0, 0],
+          ['color', gray(0, 100), gray(0, 100), gray(0, 100)],
+        ],
+      });
+    });
+
+    it('ignores nodata unless all bands have a finite nodata value', function () {
+      const partial = getAsset({
+        type: 'application/vnd.zarr',
+        bands: [{...rgbBands[0], nodata: 0}, rgbBands[1], rgbBands[2]],
+      });
+      const nan = getAsset({
+        type: 'application/vnd.zarr',
+        bands: [{name: 'b1', data_type: 'uint8', nodata: 'nan'}],
+      });
+      expect(style(partial).color[0]).toBe('color');
+      expect(style(nan, ['b1']).color[0]).toBe('color');
+    });
+
+    it('falls back to the render nodata', function () {
+      const asset = getAsset({
+        type: 'application/vnd.zarr',
+        bands: rgbBands,
+        renders: {default: {nodata: 0}},
+      });
+      expect(style(asset).color.slice(0, 3)).toEqual([
+        'case',
+        [
+          'all',
+          ['==', ['band', 1], 0],
+          ['==', ['band', 2], 0],
+          ['==', ['band', 3], 0],
+        ],
+        [0, 0, 0, 0],
+      ]);
+    });
+
+    it('applies a render colormap to a single band only', function () {
+      const asset = getAsset({
+        type: 'application/vnd.zarr',
+        bands: [
+          {name: 'b1', data_type: 'uint8'},
+          {name: 'b2', data_type: 'uint8'},
+        ],
+        renders: {
+          default: {rescale: [[0, 100]], colormap: {1: [255, 0, 0]}},
+        },
+      });
+      expect(style(asset, ['b1', 'b2'])).toEqual({
+        color: ['color', gray(0, 100), gray(0, 100), gray(0, 100)],
+      });
+      expect(style(asset, ['b1']).color[0]).toBe('case');
+    });
+
+    it('resolves render bands of a datacube by the STAC band names', function () {
+      const asset = getAsset({
+        type: 'application/vnd.zarr',
+        bands: ['red', 'green', 'blue'].map((value) => ({
+          name: `rgba[band=${value}]`,
+          data_type: 'uint8',
+        })),
+        renders: {
+          default: {bands: ['rgba[band=blue]', 'rgba[band=green]']},
+        },
+        ...datacube(['red', 'green', 'blue']),
+      });
+      const options = getGeoZarrSourceOptionsFromAsset(asset, []);
+      expect(options.dimensions).toEqual({band: [2, 1]});
+    });
+
+    it('resolves the RGB bands of a datacube by the STAC band names', function () {
+      const asset = getAsset({
+        type: 'application/vnd.zarr',
+        bands: ['alpha', 'red', 'green', 'blue'].map((value) => ({
+          name: `rgba[band=${value}]`,
+          'eo:common_name': value === 'alpha' ? undefined : value,
+          data_type: 'uint8',
+        })),
+        ...datacube(['alpha', 'red', 'green', 'blue']),
+      });
+      const options = getGeoZarrSourceOptionsFromAsset(asset, []);
+      expect(options.dimensions).toEqual({band: [1, 2, 3]});
     });
 
     it('applies a render rescale to all bands', function () {
