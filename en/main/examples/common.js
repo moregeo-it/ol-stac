@@ -67430,7 +67430,7 @@ function computeHistogramStats(histogram) {
 * @param {StacObject} object
 * @returns {Array.<*>}
 */
-function getNoDataValues(object) {
+function getNoDataValues$1(object) {
 	let nodata = [];
 	const common = object.getMetadata("nodata");
 	if (typeof common !== "undefined") nodata.push(common);
@@ -68618,7 +68618,7 @@ var Band = class Band extends STACObject {
 	* @returns {Array.<*>}
 	*/
 	getNoDataValues() {
-		return getNoDataValues(this);
+		return getNoDataValues$1(this);
 	}
 	/**
 	* Converts an object of STAC Bands into an array of stac-js Bands.
@@ -68822,7 +68822,7 @@ var Asset = class Asset extends STACReference {
 	* @returns {Array.<*>}
 	*/
 	getNoDataValues() {
-		return getNoDataValues(this);
+		return getNoDataValues$1(this);
 	}
 	/**
 	* Returns whether this asset is an Item Asset definition (i.e., doesn't have an href) or not.
@@ -70624,6 +70624,20 @@ function getRenderedBandSources(asset, bands) {
 	});
 }
 /**
+* Returns the nodata value of each rendered band from the STAC metadata,
+* falling back to the asset.
+* @param {Array<Asset|Band>} sources The bands (or the asset) that describe the rendered bands.
+* @param {Asset} asset The asset.
+* @return {Array<number|undefined>} The nodata values.
+*/
+function getNoDataValues(sources, asset) {
+	return sources.map((source) => {
+		let nodata = source.getNoDataValues();
+		if (nodata.length === 0 && source !== asset) nodata = asset.getNoDataValues();
+		return nodata.length > 0 ? nodata[0] : void 0;
+	});
+}
+/**
 * Parses a nodata value from render extension metadata, which may be a
 * number or a string (`nan`, `inf` and `-inf`, as titiler accepts them).
 * @param {*} value The nodata value.
@@ -70649,45 +70663,7 @@ function parseNoDataValue(value) {
 */
 function getGeoTiffSourceInfoFromAsset(asset, selectedBands) {
 	const sourceInfo = { url: asset.getAbsoluteUrl() };
-	const bands = asset.getBands();
-	const sources = bands.length > 0 ? bands : [asset];
-	const perBand = sources.length > 1 && olVersionAtLeast("10.9.0");
-	const assetNodata = asset.getNoDataValues();
-	const bandCount = perBand ? Math.max(...bands.map((b) => b.getIndex())) + 1 : 1;
-	const minValues = new Array(bandCount).fill(void 0);
-	const maxValues = new Array(bandCount).fill(void 0);
-	const nodataValues = new Array(bandCount).fill(void 0);
-	let index = 0;
-	for (const source of sources) {
-		const { minimum, maximum } = getStatisticsStretch(source.getStatistics());
-		if (typeof minimum === "number") minValues[index] = minimum;
-		if (typeof maximum === "number") maxValues[index] = maximum;
-		const nodata = source.getNoDataValues();
-		if (nodata.length > 0) nodataValues[index] = nodata[0];
-		else if (assetNodata.length > 0) nodataValues[index] = assetNodata[0];
-		index++;
-	}
-	const render = getRenderForAsset(asset);
-	const usableRender = isUsableRender(render);
-	const rescale = usableRender && Array.isArray(render.rescale) ? render.rescale : [];
-	const defined = (v) => v !== void 0;
-	if (Array.isArray(rescale[0]) && rescale[0].length >= 2) {
-		sourceInfo.min = rescale[0][0];
-		sourceInfo.max = rescale[0][1];
-	} else {
-		if (minValues.some(defined)) sourceInfo.min = perBand ? minValues : Math.min(...minValues.filter(defined));
-		if (maxValues.some(defined)) sourceInfo.max = perBand ? maxValues : Math.max(...maxValues.filter(defined));
-	}
-	if (nodataValues.some(defined)) {
-		if (perBand) sourceInfo.nodata = nodataValues;
-		else {
-			const unique = new Set(nodataValues.filter(defined));
-			if (unique.size === 1) sourceInfo.nodata = [...unique][0];
-		}
-	} else if (usableRender) {
-		const nodata = parseNoDataValue(render.nodata);
-		if (nodata !== void 0) sourceInfo.nodata = nodata;
-	}
+	const render = getRenderInfo(asset);
 	if (selectedBands.length > 0) sourceInfo.bands = selectedBands.map((band) => {
 		if (typeof band === "number") return band;
 		const b = asset.findBand(band);
@@ -70696,8 +70672,12 @@ function getGeoTiffSourceInfoFromAsset(asset, selectedBands) {
 		return null;
 	}).filter((band) => band !== null);
 	else {
-		if (usableRender && Array.isArray(render.bands)) {
-			const indices = render.bands.map((name) => asset.findBand(name)).filter(isObject).map((band) => band.getIndex() + 1);
+		if (render && render.bidx) {
+			const indices = render.bidx.map((band) => {
+				if (typeof band === "number") return band;
+				const b = asset.findBand(band);
+				return b ? b.getIndex() + 1 : null;
+			}).filter((band) => band !== null);
 			if (indices.length > 0) sourceInfo.bands = indices;
 		}
 		if (!sourceInfo.bands) {
@@ -70707,6 +70687,46 @@ function getGeoTiffSourceInfoFromAsset(asset, selectedBands) {
 				visualBands.green.getIndex() + 1,
 				visualBands.blue.getIndex() + 1
 			];
+		}
+	}
+	const bands = asset.getBands();
+	const sources = bands.length > 0 ? bands : [asset];
+	const perBand = sources.length > 1 && olVersionAtLeast("10.9.0");
+	const bandCount = perBand ? Math.max(...bands.map((b) => b.getIndex())) + 1 : 1;
+	const minValues = new Array(bandCount).fill(void 0);
+	const maxValues = new Array(bandCount).fill(void 0);
+	sources.forEach((source, index) => {
+		const { minimum, maximum } = getStatisticsStretch(source.getStatistics());
+		if (typeof minimum === "number") minValues[index] = minimum;
+		if (typeof maximum === "number") maxValues[index] = maximum;
+	});
+	const defined = (v) => v !== void 0;
+	if (render && render.rescale[0]) {
+		const [min, max] = render.rescale[0];
+		if (render.rescale.length > 1 && olVersionAtLeast("10.9.0")) {
+			const size = Math.max(bandCount, render.rescale.length, ...sourceInfo.bands || []);
+			const ranges = Array.from({ length: size }, (_, index) => getRescaleRange(render, index, getBandIndexOf(asset)));
+			sourceInfo.min = ranges.map((range) => range[0]);
+			sourceInfo.max = ranges.map((range) => range[1]);
+		} else {
+			sourceInfo.min = min;
+			sourceInfo.max = max;
+		}
+	} else {
+		if (minValues.some(defined)) sourceInfo.min = perBand ? minValues : Math.min(...minValues.filter(defined));
+		if (maxValues.some(defined)) sourceInfo.max = perBand ? maxValues : Math.max(...maxValues.filter(defined));
+	}
+	const nodataValues = getNoDataValues(sources, asset);
+	if (render && render.nodata !== void 0) sourceInfo.nodata = render.nodata;
+	else if (nodataValues.some(defined)) {
+		if (perBand) {
+			sourceInfo.nodata = new Array(bandCount).fill(void 0);
+			nodataValues.forEach((nodata, index) => {
+				sourceInfo.nodata[index] = nodata;
+			});
+		} else {
+			const unique = new Set(nodataValues.filter(defined));
+			if (unique.size === 1) sourceInfo.nodata = [...unique][0];
 		}
 	}
 	return sourceInfo;
@@ -70747,7 +70767,7 @@ function getGeoZarrSourceOptionsFromAsset(asset, selectedBands) {
 		options.variable = cube.variable;
 		options.dimensions = {};
 		if (cube.bandDimension) {
-			const indices = getDatacubeBandIndices(cube.bandDimension.values, selectedBands, asset);
+			const indices = getDatacubeBandIndices(cube, selectedBands, asset);
 			if (indices.length > 0) options.dimensions[cube.bandDimension.name] = indices;
 		}
 		for (const dimension of cube.extraDimensions) options.dimensions[dimension.name] = dimension.defaultIndex;
@@ -70770,8 +70790,9 @@ function getGeoZarrSourceOptionsFromAsset(asset, selectedBands) {
 		return null;
 	}).filter(Boolean);
 	else {
-		const render = getRenderForAsset(asset);
-		if (isUsableRender(render) && Array.isArray(render.bands) && render.bands.length > 0) options.bands = render.bands;
+		const render = getRenderInfo(asset);
+		const names = (render && render.bidx ? render.bidx : []).map((band) => typeof band === "number" ? (asset.getBand(band - 1) || {}).name : band).filter((name) => typeof name === "string");
+		if (names.length > 0) options.bands = names;
 		else {
 			const bands = asset.findVisualBands();
 			if (bands) options.bands = [
@@ -70828,8 +70849,9 @@ function exceedsDisplayLimit(source, maxPixels = MAX_DEFAULT_DISPLAY_PIXELS) {
 }
 /**
 * Returns the render (from the render extension's `renders` field) that
-* applies to the given asset: the first render that lists the asset's key
-* in its `assets` field, or the first render without an `assets` field.
+* applies to the given asset: the first render whose `assets` field only
+* lists the asset's key. Renders that combine several assets are not
+* supported.
 *
 * @param {Asset} asset The asset to find the render for.
 * @return {Object|null} The render object, or `null`.
@@ -70839,31 +70861,73 @@ function getRenderForAsset(asset) {
 	const renders = asset.getMetadata("renders");
 	if (!isObject(renders)) return null;
 	const key = asset.getKey();
-	let fallback = null;
 	for (const name in renders) {
 		const render = renders[name];
-		if (!isObject(render)) continue;
-		if (Array.isArray(render.assets)) {
-			if (render.assets.includes(key)) return render;
-		} else if (!fallback) fallback = render;
+		if (isObject(render) && Array.isArray(render.assets) && render.assets.length === 1 && render.assets[0] === key) return render;
 	}
-	return fallback;
+	return null;
+}
+/**
+* Returns the band selectors from the `bidx` of a render for a single asset:
+* 1-based band indices or band names. Also supports the flat array of band
+* indices from versions up to 2.1.0.
+* @param {Object} render The render object.
+* @return {Array<number|string>|null} The band selectors, or `null` if none.
+*/
+function getBandSelectors(render) {
+	const bidx = render.bidx;
+	if (!Array.isArray(bidx) || bidx.length === 0) return null;
+	const selectors = (Array.isArray(bidx[0]) ? bidx[0] : bidx).filter((selector) => Number.isInteger(selector) && selector >= 1 || typeof selector === "string" && selector.length > 0);
+	return selectors.length > 0 ? selectors : null;
 }
 /**
 * Checks whether a render (from the render extension) can be implemented:
 * a render defines a complete visualization, so it is only used when it
-* defines at least one aspect that is supported (`bands`, `rescale`,
+* defines at least one aspect that is supported (`bidx`, `rescale`,
 * `colormap`, `nodata`) and none that can't be implemented reliably
-* (band math expressions, color formulas, and named colormaps, which are
-* not interoperable). Otherwise the default visualization derived from the
-* general STAC metadata applies.
+* (band math expressions, color formulas, and named colormaps without a
+* `colormap`, as the names are not interoperable). Otherwise the default
+* visualization derived from the general STAC metadata applies.
 * @param {Object|null} render The render object.
 * @return {boolean} `true` if the render can be used.
 */
 function isUsableRender(render) {
 	if (!isObject(render)) return false;
-	if (typeof render.expression === "string" || typeof render["color_formula"] === "string" || typeof render["colormap_name"] === "string") return false;
-	return Boolean(Array.isArray(render.bands) && render.bands.length > 0 || Array.isArray(render.rescale) && render.rescale.length > 0 || isObject(render["colormap"]) || Array.isArray(render["colormap"]) || render.nodata !== void 0);
+	const hasColormap = isObject(render["colormap"]) || Array.isArray(render["colormap"]);
+	if (render.expression !== void 0 && render.expression !== null || typeof render["color_formula"] === "string" || typeof render["colormap_name"] === "string" && !hasColormap) return false;
+	return Boolean(getBandSelectors(render) || Array.isArray(render.rescale) && render.rescale.length > 0 || hasColormap || render.nodata !== void 0);
+}
+/**
+* The aspects of a render (from the render extension) that are applied.
+*
+* @typedef {Object} RenderInfo
+* @property {Array<number|string>|null} bidx The bands to show (1-based
+* indices or band names), if given.
+* @property {Array<Array<number>|null>} rescale The [min, max] value range
+* per rendered band (`null` if invalid), empty if not given.
+* @property {Object|Array|null} colormap The colormap, if given.
+* @property {number|undefined} nodata The nodata value, if given.
+* @property {boolean} styles Whether the render defines the styling of the
+* data (`rescale` or `colormap`), otherwise the default visualization applies.
+*/
+/**
+* Returns the aspects of the usable render (see {@link isUsableRender}) that
+* applies to the given asset.
+* @param {Asset} asset The asset.
+* @return {RenderInfo|null} The render info, or `null` if no render is usable.
+*/
+function getRenderInfo(asset) {
+	const render = getRenderForAsset(asset);
+	if (!isUsableRender(render)) return null;
+	const rescale = Array.isArray(render.rescale) ? render.rescale.map((range) => Array.isArray(range) && range.length >= 2 ? range : null) : [];
+	const colormap = isObject(render["colormap"]) || Array.isArray(render["colormap"]) ? render["colormap"] : null;
+	return {
+		bidx: getBandSelectors(render),
+		rescale,
+		colormap,
+		nodata: parseNoDataValue(render.nodata),
+		styles: rescale.length > 0 || colormap !== null
+	};
 }
 /**
 * Checks whether a band or asset declares a floating point data type.
@@ -70960,16 +71024,60 @@ function createSingleBandStyle(asset, source, defaultColormap) {
 	return null;
 }
 /**
-* Returns the value range from the `rescale` of a render (from the render
-* extension) for a rendered band, falling back to the range of the first band.
-* @param {Object} render The render object.
-* @param {number} index The zero-based rendered band.
+* Returns the value range from the `rescale` of a render for a band of the
+* asset: each range applies to the band at the same position in `bidx`,
+* otherwise in the asset. Falls back to the range of the first band.
+* @param {RenderInfo} render The render info.
+* @param {number} index The zero-based index of the band in the asset.
+* @param {function(string): number} indexOf Resolves a band name to its zero-based index.
 * @return {Array<number>|null} The [min, max] range, or `null`.
 */
-function getRescaleRange(render, index) {
-	const rescale = Array.isArray(render.rescale) ? render.rescale : [];
-	for (const range of [rescale[index], rescale[0]]) if (Array.isArray(range) && range.length >= 2) return range;
-	return null;
+function getRescaleRange(render, index, indexOf) {
+	const position = render.bidx ? render.bidx.findIndex((selector) => (typeof selector === "number" ? selector - 1 : indexOf(selector)) === index) : index;
+	return render.rescale[position] || render.rescale[0] || null;
+}
+/**
+* Returns a function that resolves a band name to the zero-based index of
+* the STAC band in the asset.
+* @param {Asset} asset The asset.
+* @return {function(string): number} The function, returns -1 if not found.
+*/
+function getBandIndexOf(asset) {
+	return (name) => {
+		const band = asset.findBand(name);
+		return band ? band.getIndex() : -1;
+	};
+}
+/**
+* Makes the pixels transparent in which all rendered bands have their nodata
+* value (consistent with the GeoTIFF source). Only applies if all rendered
+* bands have a finite nodata value, as NaN values don't reach the style.
+* @param {Object|null} style The WebGLTileLayer style.
+* @param {Array<number|undefined>} nodata The nodata value per rendered band.
+* @return {Object|null} The WebGLTileLayer style.
+*/
+function applyNoData(style, nodata) {
+	if (!style || nodata.length === 0 || !nodata.every(Number.isFinite)) return style;
+	const conditions = nodata.map((value, i) => [
+		"==",
+		["band", i + 1],
+		value
+	]);
+	const condition = conditions.length > 1 ? ["all", ...conditions] : conditions[0];
+	return {
+		...style,
+		color: [
+			"case",
+			condition,
+			[
+				0,
+				0,
+				0,
+				0
+			],
+			style.color
+		]
+	};
 }
 /**
 * Creates a WebGLTileLayer color expression from a render extension
@@ -71086,22 +71194,25 @@ function createColormapStyle(colormap, range) {
 * @api
 */
 function getGeoZarrStyleFromAsset(asset, sourceOptions, defaultColormap = null) {
-	const sources = getRenderedBandSources(asset, getGeoZarrRenderedBands(asset, sourceOptions));
-	const render = getRenderForAsset(asset);
-	if (isUsableRender(render)) {
-		if (Array.isArray(render.rescale) && render.rescale.length > 0 || render["colormap"]) {
-			if (sources.length < 3 && render["colormap"]) {
-				const style = createColormapStyle(render["colormap"], getRescaleRange(render, 0));
-				if (style) return style;
-			}
-			return createStretchStyle(sources.map((_, index) => getRescaleRange(render, index)));
-		}
+	const rendered = getGeoZarrRenderedBands(asset, sourceOptions);
+	const sources = getRenderedBandSources(asset, rendered.bands);
+	const render = getRenderInfo(asset);
+	const nodata = render && render.nodata !== void 0 ? sources.map(() => render.nodata) : getNoDataValues(sources, asset);
+	let style = null;
+	if (render && render.styles) {
+		const indexOf = rendered.indexOf || getBandIndexOf(asset);
+		const ranges = sources.map((source, i) => {
+			let index = source !== asset ? source.getIndex() : i;
+			if (rendered.indices) index = rendered.indices[i];
+			return getRescaleRange(render, index, indexOf);
+		});
+		if (sources.length === 1 && render.colormap) style = createColormapStyle(render.colormap, ranges[0]);
+		if (!style) style = createStretchStyle(ranges);
+	} else {
+		if (sources.length < 3) style = createSingleBandStyle(asset, sources[0], defaultColormap);
+		if (!style) style = createStretchStyle(sources.map((source) => getValueRange(source, asset)));
 	}
-	if (sources.length < 3) {
-		const style = createSingleBandStyle(asset, sources[0], defaultColormap);
-		if (style) return style;
-	}
-	return createStretchStyle(sources.map((source) => getValueRange(source, asset)));
+	return applyNoData(style, nodata);
 }
 /**
 * Returns the bands that a GeoZarr source renders.
@@ -71114,12 +71225,19 @@ function getGeoZarrStyleFromAsset(asset, sourceOptions, defaultColormap = null) 
 *
 * @param {Asset} asset The asset.
 * @param {Object} sourceOptions The GeoZarr source options.
-* @return {Array<string|Band|null>} The band names (or bands, `null` if unknown).
+* @return {{bands: Array<string|Band|null>, indices: (Array<number>|null), indexOf: (function(string): number|null)}}
+* The band names (or bands, `null` if unknown), and for a bands dimension
+* the selected indices and a function that resolves band names to indices.
 */
 function getGeoZarrRenderedBands(asset, sourceOptions) {
+	const result = {
+		bands: [],
+		indices: null,
+		indexOf: null
+	};
 	if (!sourceOptions.variable) {
-		if (!Array.isArray(sourceOptions.bands)) return [];
-		return sourceOptions.bands.map((band) => isObject(band) && typeof band.name === "string" ? band.name : band);
+		if (Array.isArray(sourceOptions.bands)) result.bands = sourceOptions.bands.map((band) => isObject(band) && typeof band.name === "string" ? band.name : band);
+		return result;
 	}
 	const selections = isObject(sourceOptions.dimensions) ? sourceOptions.dimensions : {};
 	const cubeDimensions = asset.getMetadata("cube:dimensions");
@@ -71127,20 +71245,27 @@ function getGeoZarrRenderedBands(asset, sourceOptions) {
 	let bandDimension;
 	if (isObject(cubeDimensions) && isObject(cubeVariable) && Array.isArray(cubeVariable.dimensions)) bandDimension = cubeVariable.dimensions.find((name) => isObject(cubeDimensions[name]) && cubeDimensions[name].type === "bands");
 	const multiple = Object.keys(selections).find((name) => Array.isArray(selections[name]));
-	if (!bandDimension) return multiple ? selections[multiple].map(() => null) : [];
+	if (!bandDimension) {
+		if (multiple) result.bands = selections[multiple].map(() => null);
+		return result;
+	}
 	const values = Array.isArray(cubeDimensions[bandDimension].values) ? cubeDimensions[bandDimension].values : [];
 	const bands = asset.getBands();
+	const toIndex = (entry) => typeof entry === "string" ? values.indexOf(entry) : entry;
 	const resolve = (entry) => {
-		const index = typeof entry === "string" ? values.indexOf(entry) : entry;
+		const index = toIndex(entry);
 		const value = typeof entry === "string" ? entry : values[index];
 		const band = value !== void 0 ? asset.findBand([value, `${sourceOptions.variable}[${bandDimension}=${value}]`]) : null;
 		if (band) return band;
-		return bands.length === values.length ? bands[index] || null : null;
+		const positional = bands.length === values.length ? bands[index] || null : null;
+		return positional && !parseDatacubeBandName(positional.name) ? positional : null;
 	};
-	const selection = selections[bandDimension] ?? 0;
-	if (Array.isArray(selection)) return selection.map(resolve);
-	const band = resolve(selection);
-	return multiple ? selections[multiple].map(() => band) : [band];
+	let selection = selections[bandDimension] ?? 0;
+	if (!Array.isArray(selection)) selection = multiple ? selections[multiple].map(() => selection) : [selection];
+	result.bands = selection.map(resolve);
+	result.indices = selection.map(toIndex);
+	result.indexOf = getDatacubeIndexOf(asset, sourceOptions.variable, bandDimension, values);
+	return result;
 }
 /**
 * Normalizes a color from render extension metadata (alpha in 0-255, as in
@@ -71249,27 +71374,64 @@ function getDatacubeRenderingInfo(asset) {
 	};
 }
 /**
+* Parses a band name in the form `variable[dimension=value]` from the Zarr
+* best practices.
+* @param {string} name The band name.
+* @return {{variable: string, dimension: string, value: string}|null} The parts, or `null`.
+*/
+function parseDatacubeBandName(name) {
+	const match = /^(.+)\[([^=\]]+)=(.+)\]$/.exec(name);
+	return match ? {
+		variable: match[1],
+		dimension: match[2],
+		value: match[3]
+	} : null;
+}
+/**
+* Returns a function that resolves a value of the bands dimension of a
+* datacube variable, or the name of a STAC band, to the zero-based index in
+* the dimension: band names in the form `variable[dimension=value]` by their
+* value, other band names by their position.
+* @param {Asset} asset The asset.
+* @param {string} variable The name of the variable.
+* @param {string} dimension The name of the bands dimension.
+* @param {Array<string>} values The values of the bands dimension.
+* @return {function(string): number} The function, returns -1 if not found.
+*/
+function getDatacubeIndexOf(asset, variable, dimension, values) {
+	const bands = asset.getBands();
+	return (name) => {
+		const index = values.indexOf(name);
+		if (index >= 0) return index;
+		const parsed = parseDatacubeBandName(name);
+		if (parsed) return parsed.variable === variable && parsed.dimension === dimension ? values.indexOf(parsed.value) : -1;
+		return bands.length === values.length ? bands.findIndex((band) => band.name === name) : -1;
+	};
+}
+/**
 * Determines the (0-based) indices into the bands dimension of a datacube
 * to render.
 *
-* @param {Array<string>} values The ordered values of the bands dimension.
+* @param {DatacubeRenderingInfo} cube The datacube rendering info (with a bands dimension).
 * @param {Array<number|string>} selectedBands The bands to show. One-based index of the band, or the name of the band.
 * @param {Asset} asset The asset, for finding the RGB bands.
 * @return {Array<number>} The band indices.
 */
-function getDatacubeBandIndices(values, selectedBands, asset) {
+function getDatacubeBandIndices(cube, selectedBands, asset) {
+	const { name: dimension, values } = cube.bandDimension;
 	const isValid = (index) => index >= 0 && (values.length === 0 || index < values.length);
+	const indexOf = getDatacubeIndexOf(asset, cube.variable, dimension, values);
 	if (selectedBands.length > 0) return selectedBands.map((band) => {
-		const index = typeof band === "number" ? band - 1 : values.indexOf(band);
+		const index = typeof band === "number" ? band - 1 : indexOf(band);
 		if (!isValid(index)) {
 			console.error(`Band ${band} not found in asset ${asset.getKey()}`);
 			return -1;
 		}
 		return index;
 	}).filter((index) => index >= 0);
-	const render = getRenderForAsset(asset);
-	if (isUsableRender(render) && Array.isArray(render.bands) && render.bands.length > 0) {
-		const indices = render.bands.map((name) => values.indexOf(name)).filter((index) => index >= 0);
+	const render = getRenderInfo(asset);
+	if (render && render.bidx) {
+		const indices = render.bidx.map((band) => typeof band === "number" ? band - 1 : indexOf(band)).filter(isValid);
 		if (indices.length > 0) return indices;
 	}
 	const visual = asset.findVisualBands();
@@ -71278,7 +71440,7 @@ function getDatacubeBandIndices(values, selectedBands, asset) {
 			visual.red.name,
 			visual.green.name,
 			visual.blue.name
-		].map((name) => values.indexOf(name)).filter((index) => index >= 0);
+		].map((name) => indexOf(name)).filter((index) => index >= 0);
 		if (indices.length === 3) return indices;
 	}
 	return values.slice(0, 3).map((_, index) => index);
@@ -71425,11 +71587,12 @@ function getClassificationStyle(asset, bands, styleBand = null) {
 * Creates a WebGLTileLayer style for a GeoTIFF layer from the STAC metadata.
 *
 * A usable render from the render extension (see {@link isUsableRender})
-* defines the complete visualization: for single-band data its `colormap`
-* provides the colors (see {@link createColormapStyle} for the supported
-* forms), applied over the range from its `rescale`.
+* that defines the styling (`rescale` or `colormap`) defines the complete
+* visualization: for single-band data its `colormap` provides the colors
+* (see {@link createColormapStyle} for the supported forms), applied over the
+* range from its `rescale`.
 *
-* Without a usable render, the classification extension
+* Otherwise, the classification extension
 * (`classification:classes`) provides the coloring for single-band
 * categorical data (not applied to floating point data, which is assumed
 * to be continuous), and continuous single-band data is colored with the
@@ -71452,9 +71615,12 @@ function getClassificationStyle(asset, bands, styleBand = null) {
 function getGeoTiffStyleFromAsset(asset, sourceInfo, defaultColormap = null) {
 	const selected = Array.isArray(sourceInfo.bands) ? sourceInfo.bands : [];
 	const bandCount = selected.length > 0 ? selected.length : Math.max(asset.getBands().length, 1);
-	const render = getRenderForAsset(asset);
-	if (isUsableRender(render)) {
-		if (bandCount === 1 && render["colormap"]) return createColormapStyle(render["colormap"], getRescaleRange(render, 0));
+	const render = getRenderInfo(asset);
+	if (render && render.styles) {
+		if (bandCount === 1 && render.colormap) {
+			const band = selected.length > 0 ? selected[0] - 1 : 0;
+			return createColormapStyle(render.colormap, getRescaleRange(render, band, getBandIndexOf(asset)));
+		}
 		return null;
 	}
 	if (bandCount !== 1) return null;

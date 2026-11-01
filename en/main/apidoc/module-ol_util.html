@@ -81,6 +81,7 @@
             <li data-name="colorlike"><a href="module-ol_util.html#~ColorLike">ColorLike</a>
             <li data-name="datacuberenderinginfo"><a href="module-ol_util.html#~DatacubeRenderingInfo">DatacubeRenderingInfo</a>
             <li data-name="feature"><a href="module-ol_util.html#~Feature">Feature</a>
+            <li data-name="renderinfo"><a href="module-ol_util.html#~RenderInfo">RenderInfo</a>
             <li data-name="stac"><a href="module-ol_util.html#~STAC">STAC</a>
         </ul>
     </div>
@@ -310,7 +311,7 @@
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js#L623">line 623</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js#L644">line 644</a>
         </div>
         
     </div>
@@ -474,7 +475,7 @@ the coarsest available resolution requires excessive tile loads.</p>
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js#L458">line 458</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js#L481">line 481</a>
         </div>
         
     </div>
@@ -638,7 +639,7 @@ The adapted style for the footprint.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js#L1360">line 1360</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js#L1545">line 1545</a>
         </div>
         
     </div>
@@ -802,7 +803,7 @@ The classification classes, or null
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js#L1400">line 1400</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js#L1585">line 1585</a>
         </div>
         
     </div>
@@ -993,7 +994,7 @@ A WebGL tile layer style object, or null
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js#L584">line 584</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js#L605">line 605</a>
         </div>
         
     </div>
@@ -1133,7 +1134,7 @@ The number of pixels, or <code>Infinity</code> if unknown.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js#L1467">line 1467</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js#L1653">line 1653</a>
         </div>
         
     </div>
@@ -1151,10 +1152,11 @@ The number of pixels, or <code>Infinity</code> if unknown.
     <div class="description">
         <p>Creates a WebGLTileLayer style for a GeoTIFF layer from the STAC metadata.</p>
 <p>A usable render from the render extension (see <code>isUsableRender</code>)
-defines the complete visualization: for single-band data its <code>colormap</code>
-provides the colors (see <code>createColormapStyle</code> for the supported
-forms), applied over the range from its <code>rescale</code>.</p>
-<p>Without a usable render, the classification extension
+that defines the styling (<code>rescale</code> or <code>colormap</code>) defines the complete
+visualization: for single-band data its <code>colormap</code> provides the colors
+(see <code>createColormapStyle</code> for the supported forms), applied over the
+range from its <code>rescale</code>.</p>
+<p>Otherwise, the classification extension
 (<code>classification:classes</code>) provides the coloring for single-band
 categorical data (not applied to floating point data, which is assumed
 to be continuous), and continuous single-band data is colored with the
@@ -1340,7 +1342,7 @@ A WebGL tile layer style object, or null
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js#L481">line 481</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js#L504">line 504</a>
         </div>
         
     </div>
@@ -1509,7 +1511,7 @@ The GeoZarr source options
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js#L908">line 908</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js#L1025">line 1025</a>
         </div>
         
     </div>
@@ -1713,7 +1715,7 @@ A WebGLTileLayer style, or <code>null</code> if the metadata provides none.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js#L639">line 639</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js#L661">line 661</a>
         </div>
         
     </div>
@@ -1730,8 +1732,9 @@ A WebGLTileLayer style, or <code>null</code> if the metadata provides none.
     
     <div class="description">
         <p>Returns the render (from the render extension's <code>renders</code> field) that
-applies to the given asset: the first render that lists the asset's key
-in its <code>assets</code> field, or the first render without an <code>assets</code> field.</p>
+applies to the given asset: the first render whose <code>assets</code> field only
+lists the asset's key. Renders that combine several assets are not
+supported.</p>
     </div>
     
 
@@ -2279,7 +2282,7 @@ The style for visualization.
         
         <div class="tag-source">
             <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js">util.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js#L1281">line 1281</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.7.1/src/ol/util.js#L1466">line 1466</a>
         </div>
         
     </div>
@@ -3166,6 +3169,210 @@ default (the most recent value for temporal dimensions, otherwise 0).</p>
 
     
 <dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+</dd>
+
+            
+                
+<dt class="">
+    <div class="nameContainer">
+        <div class="anchor" id="~RenderInfo">
+        </div>
+        <h4 class="name">
+            RenderInfo<span class="type-signature type object">{Object}</span> 
+            
+
+        </h4>
+    </div>
+    
+</dt>
+<dd class="">
+    
+    <div class="description">
+        <p>The aspects of a render (from the render extension) that are applied.</p>
+    </div>
+    
+
+    
+<dl class="details">
+    
+        
+        <h5 class="subsection-title">Properties:</h5>
+        
+        <dl>
+
+<table class="props">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>bidx</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;(number|string)></span>
+|
+
+<span class="param-type">null</span>
+
+
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The bands to show (1-based
+indices or band names), if given.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>rescale</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;(Array.&lt;number>|null)></span>
+
+
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The [min, max] value range
+per rendered band (<code>null</code> if invalid), empty if not given.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>colormap</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">Array</span>
+|
+
+<span class="param-type">null</span>
+
+
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The colormap, if given.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>nodata</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>The nodata value, if given.</p>
+                
+            </td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>styles</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+                
+            
+            </td>
+
+            <td class="description last">
+                <p>Whether the render defines the styling of the
+data (<code>rescale</code> or <code>colormap</code>), otherwise the default visualization applies.</p>
+                
+            </td>
+        </tr>
+
+	
+	</tbody>
+</table></dl>
+        
     
         
     

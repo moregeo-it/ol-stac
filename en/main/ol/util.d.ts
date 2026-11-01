@@ -105,8 +105,9 @@ export function getDisplayPixels(source: import("ol/source/Tile.js").default): n
 export function exceedsDisplayLimit(source: import("ol/source/Tile.js").default, maxPixels?: number): boolean;
 /**
  * Returns the render (from the render extension's `renders` field) that
- * applies to the given asset: the first render that lists the asset's key
- * in its `assets` field, or the first render without an `assets` field.
+ * applies to the given asset: the first render whose `assets` field only
+ * lists the asset's key. Renders that combine several assets are not
+ * supported.
  *
  * @param {Asset} asset The asset to find the render for.
  * @return {Object|null} The render object, or `null`.
@@ -193,11 +194,12 @@ export function getClassificationStyle(asset: any, bands?: Array<number>, styleB
  * Creates a WebGLTileLayer style for a GeoTIFF layer from the STAC metadata.
  *
  * A usable render from the render extension (see {@link isUsableRender})
- * defines the complete visualization: for single-band data its `colormap`
- * provides the colors (see {@link createColormapStyle} for the supported
- * forms), applied over the range from its `rescale`.
+ * that defines the styling (`rescale` or `colormap`) defines the complete
+ * visualization: for single-band data its `colormap` provides the colors
+ * (see {@link createColormapStyle} for the supported forms), applied over the
+ * range from its `rescale`.
  *
- * Without a usable render, the classification extension
+ * Otherwise, the classification extension
  * (`classification:classes`) provides the coloring for single-band
  * categorical data (not applied to floating point data, which is assumed
  * to be continuous), and continuous single-band data is colored with the
@@ -263,6 +265,34 @@ export const defaultCollectionStyle: Style;
  * @type {number}
  */
 export const MAX_DEFAULT_DISPLAY_PIXELS: number;
+/**
+ * The aspects of a render (from the render extension) that are applied.
+ */
+export type RenderInfo = {
+    /**
+     * The bands to show (1-based
+     * indices or band names), if given.
+     */
+    bidx: Array<number | string> | null;
+    /**
+     * The [min, max] value range
+     * per rendered band (`null` if invalid), empty if not given.
+     */
+    rescale: Array<Array<number> | null>;
+    /**
+     * The colormap, if given.
+     */
+    colormap: any | any[] | null;
+    /**
+     * The nodata value, if given.
+     */
+    nodata: number | undefined;
+    /**
+     * Whether the render defines the styling of the
+     * data (`rescale` or `colormap`), otherwise the default visualization applies.
+     */
+    styles: boolean;
+};
 /**
  * Information for rendering a datacube asset.
  */
