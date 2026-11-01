@@ -7,9 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- GeoZarr layers apply the nodata values from STAC and the render extension
+
+### Changed
+
+- Render extension support follows the current draft of the extension:
+  - Renders only apply if their `assets` field only lists the asset
+  - Bands are selected through `bidx` (1-based indices or band names) instead of `bands`
+  - The `nodata` of a render overrides the nodata values from STAC
+  - `rescale` applies per band, also for GeoTIFF layers
+  - `colormap` only applies if a single band is shown and takes precedence over `colormap_name`
+  - Renders with an `expression` of any type are ignored
+  - Renders that only select bands or set nodata keep the default visualization (e.g. classification colors)
+
 ### Fixed
 
-- GeoZarr datacubes use the metadata of their bands for styling
+- GeoZarr datacubes use the metadata of their bands for styling and recognize the STAC band names
+  in band selections, renders and for the RGB detection
 
 ## [1.7.1] - 2026-10-05
 
