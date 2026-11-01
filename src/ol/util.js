@@ -369,11 +369,16 @@ export function getGeoTiffSourceInfoFromAsset(asset, selectedBands) {
   } else {
     // A usable render defines the complete visualization, including the
     // bands to show (paired with its value ranges)
-    if (render && render.bands) {
-      const indices = render.bands
-        .map((name) => asset.findBand(name))
-        .filter(isObject)
-        .map((band) => band.getIndex() + 1);
+    if (render && render.bidx) {
+      const indices = render.bidx
+        .map((band) => {
+          if (typeof band === 'number') {
+            return band;
+          }
+          const b = asset.findBand(band);
+          return b ? b.getIndex() + 1 : null;
+        })
+        .filter((band) => band !== null);
       if (indices.length > 0) {
         sourceInfo.bands = indices;
       }
@@ -443,7 +448,10 @@ export function getGeoTiffSourceInfoFromAsset(asset, selectedBands) {
   }
 
   const nodataValues = getNoDataValues(sources, asset);
-  if (nodataValues.some(defined)) {
+  if (render && render.nodata !== undefined) {
+    // The nodata value of a render overrides the STAC metadata
+    sourceInfo.nodata = render.nodata;
+  } else if (nodataValues.some(defined)) {
     if (perBand) {
       sourceInfo.nodata = new Array(bandCount).fill(undefined);
       nodataValues.forEach((nodata, index) => {
@@ -455,9 +463,6 @@ export function getGeoTiffSourceInfoFromAsset(asset, selectedBands) {
         sourceInfo.nodata = [...unique][0];
       }
     }
-  } else if (render && render.nodata !== undefined) {
-    // As a last resort, use the nodata value from the render extension
-    sourceInfo.nodata = render.nodata;
   }
 
   return sourceInfo;
@@ -505,11 +510,7 @@ export function getGeoZarrSourceOptionsFromAsset(asset, selectedBands) {
     options.variable = cube.variable;
     options.dimensions = {};
     if (cube.bandDimension) {
-      const indices = getDatacubeBandIndices(
-        cube.bandDimension.values,
-        selectedBands,
-        asset,
-      );
+      const indices = getDatacubeBandIndices(cube, selectedBands, asset);
       if (indices.length > 0) {
         options.dimensions[cube.bandDimension.name] = indices;
       }
@@ -557,8 +558,14 @@ export function getGeoZarrSourceOptionsFromAsset(asset, selectedBands) {
     // A usable render defines the complete visualization, including the
     // bands to show (paired with its value ranges)
     const render = getRenderInfo(asset);
-    if (render && render.bands) {
-      options.bands = render.bands;
+    const renderBands = render && render.bidx ? render.bidx : [];
+    const names = renderBands
+      .map((band) =>
+        typeof band === 'number' ? (asset.getBand(band - 1) || {}).name : band,
+      )
+      .filter((name) => typeof name === 'string');
+    if (names.length > 0) {
+      options.bands = names;
     } else {
       const bands = asset.findVisualBands();
       if (bands) {
@@ -642,8 +649,9 @@ export function exceedsDisplayLimit(
 
 /**
  * Returns the render (from the render extension's `renders` field) that
- * applies to the given asset: the first render that lists the asset's key
- * in its `assets` field, or the first render without an `assets` field.
+ * applies to the given asset: the first render whose `assets` field only
+ * lists the asset's key. Renders that combine several assets are not
+ * supported.
  *
  * @param {Asset} asset The asset to find the render for.
  * @return {Object|null} The render object, or `null`.
@@ -655,31 +663,48 @@ export function getRenderForAsset(asset) {
     return null;
   }
   const key = asset.getKey();
-  let fallback = null;
   for (const name in renders) {
     const render = renders[name];
-    if (!isObject(render)) {
-      continue;
-    }
-    if (Array.isArray(render.assets)) {
-      if (render.assets.includes(key)) {
-        return render;
-      }
-    } else if (!fallback) {
-      fallback = render;
+    if (
+      isObject(render) &&
+      Array.isArray(render.assets) &&
+      render.assets.length === 1 &&
+      render.assets[0] === key
+    ) {
+      return render;
     }
   }
-  return fallback;
+  return null;
+}
+
+/**
+ * Returns the band selectors from the `bidx` of a render for a single asset:
+ * 1-based band indices or band names. Also supports the flat array of band
+ * indices from versions up to 2.1.0.
+ * @param {Object} render The render object.
+ * @return {Array<number|string>|null} The band selectors, or `null` if none.
+ */
+function getBandSelectors(render) {
+  const bidx = render.bidx;
+  if (!Array.isArray(bidx) || bidx.length === 0) {
+    return null;
+  }
+  const selectors = (Array.isArray(bidx[0]) ? bidx[0] : bidx).filter(
+    (selector) =>
+      (Number.isInteger(selector) && selector >= 1) ||
+      (typeof selector === 'string' && selector.length > 0),
+  );
+  return selectors.length > 0 ? selectors : null;
 }
 
 /**
  * Checks whether a render (from the render extension) can be implemented:
  * a render defines a complete visualization, so it is only used when it
- * defines at least one aspect that is supported (`bands`, `rescale`,
+ * defines at least one aspect that is supported (`bidx`, `rescale`,
  * `colormap`, `nodata`) and none that can't be implemented reliably
- * (band math expressions, color formulas, and named colormaps, which are
- * not interoperable). Otherwise the default visualization derived from the
- * general STAC metadata applies.
+ * (band math expressions, color formulas, and named colormaps without a
+ * `colormap`, as the names are not interoperable). Otherwise the default
+ * visualization derived from the general STAC metadata applies.
  * @param {Object|null} render The render object.
  * @return {boolean} `true` if the render can be used.
  */
@@ -687,18 +712,19 @@ function isUsableRender(render) {
   if (!isObject(render)) {
     return false;
   }
+  const hasColormap =
+    isObject(render['colormap']) || Array.isArray(render['colormap']);
   if (
-    typeof render.expression === 'string' ||
+    (render.expression !== undefined && render.expression !== null) ||
     typeof render['color_formula'] === 'string' ||
-    typeof render['colormap_name'] === 'string'
+    (typeof render['colormap_name'] === 'string' && !hasColormap)
   ) {
     return false;
   }
   return Boolean(
-    (Array.isArray(render.bands) && render.bands.length > 0) ||
+    getBandSelectors(render) ||
     (Array.isArray(render.rescale) && render.rescale.length > 0) ||
-    isObject(render['colormap']) ||
-    Array.isArray(render['colormap']) ||
+    hasColormap ||
     render.nodata !== undefined,
   );
 }
@@ -707,7 +733,8 @@ function isUsableRender(render) {
  * The aspects of a render (from the render extension) that are applied.
  *
  * @typedef {Object} RenderInfo
- * @property {Array<string>|null} bands The names of the bands to show, if given.
+ * @property {Array<number|string>|null} bidx The bands to show (1-based
+ * indices or band names), if given.
  * @property {Array<Array<number>|null>} rescale The [min, max] value range
  * per rendered band (`null` if invalid), empty if not given.
  * @property {Object|Array|null} colormap The colormap, if given.
@@ -737,10 +764,7 @@ function getRenderInfo(asset) {
       ? render['colormap']
       : null;
   return {
-    bands:
-      Array.isArray(render.bands) && render.bands.length > 0
-        ? render.bands
-        : null,
+    bidx: getBandSelectors(render),
     rescale,
     colormap,
     nodata: parseNoDataValue(render.nodata),
@@ -986,14 +1010,11 @@ export function getGeoZarrStyleFromAsset(
   );
 
   const render = getRenderInfo(asset);
-  let nodata = getNoDataValues(sources, asset);
-  if (
-    render &&
-    render.nodata !== undefined &&
-    nodata.every((value) => value === undefined)
-  ) {
-    nodata = nodata.map(() => render.nodata);
-  }
+  // The nodata value of a render overrides the STAC metadata
+  const nodata =
+    render && render.nodata !== undefined
+      ? sources.map(() => render.nodata)
+      : getNoDataValues(sources, asset);
 
   let style = null;
   if (render && render.styles) {
@@ -1091,7 +1112,12 @@ function getGeoZarrRenderedBands(asset, sourceOptions) {
     if (band) {
       return band;
     }
-    return bands.length === values.length ? bands[index] || null : null;
+    // Bands named in the form `variable[dimension=value]` only match by name
+    const positional =
+      bands.length === values.length ? bands[index] || null : null;
+    return positional && !parseDatacubeBandName(positional.name)
+      ? positional
+      : null;
   };
   // Unlisted dimensions default to the first index
   const selection = selections[bandDimension] ?? 0;
@@ -1262,26 +1288,48 @@ function getDatacubeRenderingInfo(asset) {
 }
 
 /**
+ * Parses a band name in the form `variable[dimension=value]` from the Zarr
+ * best practices.
+ * @param {string} name The band name.
+ * @return {{variable: string, dimension: string, value: string}|null} The parts, or `null`.
+ */
+function parseDatacubeBandName(name) {
+  const match = /^(.+)\[([^=\]]+)=(.+)\]$/.exec(name);
+  return match
+    ? {variable: match[1], dimension: match[2], value: match[3]}
+    : null;
+}
+
+/**
  * Determines the (0-based) indices into the bands dimension of a datacube
  * to render.
  *
- * @param {Array<string>} values The ordered values of the bands dimension.
+ * @param {DatacubeRenderingInfo} cube The datacube rendering info (with a bands dimension).
  * @param {Array<number|string>} selectedBands The bands to show. One-based index of the band, or the name of the band.
  * @param {Asset} asset The asset, for finding the RGB bands.
  * @return {Array<number>} The band indices.
  */
-function getDatacubeBandIndices(values, selectedBands, asset) {
+function getDatacubeBandIndices(cube, selectedBands, asset) {
+  const {name: dimension, values} = cube.bandDimension;
   const isValid = (index) =>
     index >= 0 && (values.length === 0 || index < values.length);
   const bands = asset.getBands();
-  // A value of the bands dimension, or the name of the STAC band at its
-  // position (e.g. `rgba[band=red]`)
+  // A value of the bands dimension, or the name of a STAC band: in the form
+  // `variable[dimension=value]` if given, otherwise matched by position
   const indexOf = (name) => {
     const index = values.indexOf(name);
-    if (index >= 0 || bands.length !== values.length) {
+    if (index >= 0) {
       return index;
     }
-    return bands.findIndex((band) => band.name === name);
+    const parsed = parseDatacubeBandName(name);
+    if (parsed) {
+      return parsed.variable === cube.variable && parsed.dimension === dimension
+        ? values.indexOf(parsed.value)
+        : -1;
+    }
+    return bands.length === values.length
+      ? bands.findIndex((band) => band.name === name)
+      : -1;
   };
   if (selectedBands.length > 0) {
     return selectedBands
@@ -1299,10 +1347,10 @@ function getDatacubeBandIndices(values, selectedBands, asset) {
   // A usable render defines the complete visualization, including the bands
   // to show (paired with its value ranges)
   const render = getRenderInfo(asset);
-  if (render && render.bands) {
-    const indices = render.bands
-      .map((name) => indexOf(name))
-      .filter((index) => index >= 0);
+  if (render && render.bidx) {
+    const indices = render.bidx
+      .map((band) => (typeof band === 'number' ? band - 1 : indexOf(band)))
+      .filter(isValid);
     if (indices.length > 0) {
       return indices;
     }
@@ -1518,11 +1566,12 @@ export function getClassificationStyle(asset, bands, styleBand = null) {
  * Creates a WebGLTileLayer style for a GeoTIFF layer from the STAC metadata.
  *
  * A usable render from the render extension (see {@link isUsableRender})
- * defines the complete visualization: for single-band data its `colormap`
- * provides the colors (see {@link createColormapStyle} for the supported
- * forms), applied over the range from its `rescale`.
+ * that defines the styling (`rescale` or `colormap`) defines the complete
+ * visualization: for single-band data its `colormap` provides the colors
+ * (see {@link createColormapStyle} for the supported forms), applied over the
+ * range from its `rescale`.
  *
- * Without a usable render, the classification extension
+ * Otherwise, the classification extension
  * (`classification:classes`) provides the coloring for single-band
  * categorical data (not applied to floating point data, which is assumed
  * to be continuous), and continuous single-band data is colored with the
@@ -1554,7 +1603,9 @@ export function getGeoTiffStyleFromAsset(
       : Math.max(asset.getBands().length, 1);
 
   const render = getRenderInfo(asset);
-  if (render) {
+  // A render that only selects bands (or sets nodata) leaves the styling to
+  // the default visualization
+  if (render && render.styles) {
     if (bandCount === 1 && render.colormap) {
       return createColormapStyle(render.colormap, getRescaleRange(render, 0));
     }

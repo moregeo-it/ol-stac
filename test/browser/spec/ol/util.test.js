@@ -122,7 +122,8 @@ describe('ol/util', function () {
         bands: rgbBands,
         renders: {
           default: {
-            bands: ['blue', 'green', 'red'],
+            assets: ['data'],
+            bidx: [['blue', 'green', 'red']],
             rescale: [
               [0, 10],
               [0, 20],
@@ -141,20 +142,97 @@ describe('ol/util', function () {
       const asset = getAsset({
         type: 'image/tiff',
         bands: rgbBands,
-        renders: {default: {rescale: [[0, 100]]}},
+        renders: {default: {assets: ['data'], rescale: [[0, 100]]}},
       });
       const info = getGeoTiffSourceInfoFromAsset(asset, []);
       expect(info.min).toBe(0);
       expect(info.max).toBe(100);
     });
 
-    it('falls back to the render nodata', function () {
+    it('prefers the render nodata', function () {
       const asset = getAsset({
         type: 'image/tiff',
-        renders: {default: {nodata: 0, rescale: [[0, 1]]}},
+        nodata: 5,
+        renders: {default: {assets: ['data'], nodata: 0, rescale: [[0, 1]]}},
       });
       const info = getGeoTiffSourceInfoFromAsset(asset, []);
       expect(info.nodata).toBe(0);
+    });
+
+    it('selects the bands of a render by index or name', function () {
+      const asset = getAsset({
+        type: 'image/tiff',
+        bands: rgbBands,
+        renders: {default: {assets: ['data'], bidx: [[3, 'green']]}},
+      });
+      expect(getGeoTiffSourceInfoFromAsset(asset, []).bands).toEqual([3, 2]);
+    });
+
+    it('selects the bands of a render with a flat bidx', function () {
+      const asset = getAsset({
+        type: 'image/tiff',
+        bands: rgbBands,
+        renders: {default: {assets: ['data'], bidx: [3, 2, 1]}},
+      });
+      expect(getGeoTiffSourceInfoFromAsset(asset, []).bands).toEqual([3, 2, 1]);
+    });
+
+    it('ignores renders that do not only reference the asset', function () {
+      const several = getAsset({
+        type: 'image/tiff',
+        statistics: {minimum: 1, maximum: 2},
+        renders: {default: {assets: ['data', 'other'], rescale: [[0, 100]]}},
+      });
+      const none = getAsset({
+        type: 'image/tiff',
+        statistics: {minimum: 1, maximum: 2},
+        renders: {default: {rescale: [[0, 100]]}},
+      });
+      expect(getGeoTiffSourceInfoFromAsset(several, []).max).toBe(2);
+      expect(getGeoTiffSourceInfoFromAsset(none, []).max).toBe(2);
+    });
+
+    it('ignores renders with an expression', function () {
+      const asset = getAsset({
+        type: 'image/tiff',
+        statistics: {minimum: 1, maximum: 2},
+        renders: {
+          default: {
+            assets: ['data'],
+            rescale: [[0, 100]],
+            expression: ['*', ['band', 1], 2],
+          },
+        },
+      });
+      expect(getGeoTiffSourceInfoFromAsset(asset, []).max).toBe(2);
+    });
+
+    it('ignores named colormaps unless a colormap is given', function () {
+      const named = getAsset({
+        type: 'image/tiff',
+        statistics: {minimum: 1, maximum: 2},
+        renders: {
+          default: {
+            assets: ['data'],
+            rescale: [[0, 100]],
+            colormap_name: 'viridis',
+          },
+        },
+      });
+      const both = getAsset({
+        type: 'image/tiff',
+        statistics: {minimum: 1, maximum: 2},
+        renders: {
+          default: {
+            assets: ['data'],
+            rescale: [[0, 100]],
+            colormap_name: 'viridis',
+            colormap: {1: [255, 0, 0]},
+          },
+        },
+      });
+      expect(getGeoTiffSourceInfoFromAsset(named, []).max).toBe(2);
+      expect(getGeoTiffSourceInfoFromAsset(both, []).max).toBe(100);
     });
 
     it('leaves the range to OpenLayers without metadata', function () {
@@ -314,6 +392,7 @@ describe('ol/util', function () {
         bands: [{name: 'b1', data_type: 'uint16'}],
         renders: {
           default: {
+            assets: ['data'],
             rescale: [[0, 1000]],
             colormap: {1: [255, 0, 0], 2: [0, 255, 0, 128]},
           },
@@ -332,11 +411,33 @@ describe('ol/util', function () {
       });
     });
 
+    it('keeps the default visualization for renders that do not style', function () {
+      const asset = getAsset({
+        type: 'image/tiff',
+        bands: [
+          {name: 'b1', data_type: 'uint8'},
+          {name: 'b2', data_type: 'uint8', 'classification:classes': classes},
+        ],
+        renders: {default: {assets: ['data'], bidx: [[2]], nodata: 0}},
+      });
+      expect(style(asset)).toEqual({
+        color: [
+          'match',
+          ['band', 1],
+          1,
+          ['color', 0, 0, 255, 1],
+          2,
+          ['color', 0, 255, 0, 1],
+          ['color', 0, 0, 0, 0],
+        ],
+      });
+    });
+
     it('leaves a render rescale to the source info', function () {
       const asset = getAsset({
         type: 'image/tiff',
         bands: [{name: 'b1', 'classification:classes': classes}],
-        renders: {default: {rescale: [[0, 1000]]}},
+        renders: {default: {assets: ['data'], rescale: [[0, 1000]]}},
       });
       const info = getGeoTiffSourceInfoFromAsset(asset, []);
       expect(info.min).toBe(0);
@@ -750,11 +851,11 @@ describe('ol/util', function () {
       expect(style(nan, ['b1']).color[0]).toBe('color');
     });
 
-    it('falls back to the render nodata', function () {
+    it('prefers the render nodata', function () {
       const asset = getAsset({
         type: 'application/vnd.zarr',
-        bands: rgbBands,
-        renders: {default: {nodata: 0}},
+        bands: rgbBands.map((band) => ({...band, nodata: 5})),
+        renders: {default: {assets: ['data'], nodata: 0}},
       });
       expect(style(asset).color.slice(0, 3)).toEqual([
         'case',
@@ -776,7 +877,11 @@ describe('ol/util', function () {
           {name: 'b2', data_type: 'uint8'},
         ],
         renders: {
-          default: {rescale: [[0, 100]], colormap: {1: [255, 0, 0]}},
+          default: {
+            assets: ['data'],
+            rescale: [[0, 100]],
+            colormap: {1: [255, 0, 0]},
+          },
         },
       });
       expect(style(asset, ['b1', 'b2'])).toEqual({
@@ -793,7 +898,10 @@ describe('ol/util', function () {
           data_type: 'uint8',
         })),
         renders: {
-          default: {bands: ['rgba[band=blue]', 'rgba[band=green]']},
+          default: {
+            assets: ['data'],
+            bidx: [['rgba[band=blue]', 'rgba[band=green]']],
+          },
         },
         ...datacube(['red', 'green', 'blue']),
       });
@@ -815,11 +923,80 @@ describe('ol/util', function () {
       expect(options.dimensions).toEqual({band: [1, 2, 3]});
     });
 
+    it('selects the bands of a render by index', function () {
+      const asset = getAsset({
+        type: 'application/vnd.zarr',
+        bands: rgbBands,
+        renders: {default: {assets: ['data'], bidx: [[3]]}},
+      });
+      expect(getGeoZarrSourceOptionsFromAsset(asset, []).bands).toEqual([
+        'blue',
+      ]);
+    });
+
+    it('resolves reordered STAC band names of a datacube by their value', function () {
+      const asset = getAsset({
+        type: 'application/vnd.zarr',
+        bands: [
+          {
+            name: 'rgba[band=blue]',
+            'eo:common_name': 'blue',
+            statistics: {minimum: 3, maximum: 30},
+          },
+          {
+            name: 'rgba[band=green]',
+            'eo:common_name': 'green',
+            statistics: {minimum: 2, maximum: 20},
+          },
+          {
+            name: 'rgba[band=red]',
+            'eo:common_name': 'red',
+            statistics: {minimum: 1, maximum: 10},
+          },
+        ],
+        ...datacube(['red', 'green', 'blue']),
+      });
+      const options = getGeoZarrSourceOptionsFromAsset(asset, []);
+      expect(options.dimensions).toEqual({band: [0, 1, 2]});
+      expect(getGeoZarrStyleFromAsset(asset, options)).toEqual(
+        rgb([
+          [1, 10],
+          [2, 20],
+          [3, 30],
+        ]),
+      );
+      const blue = getGeoZarrSourceOptionsFromAsset(asset, ['rgba[band=blue]']);
+      expect(blue.dimensions).toEqual({band: [2]});
+    });
+
+    it('does not match STAC bands of another variable by position', function () {
+      const asset = getAsset({
+        type: 'application/vnd.zarr',
+        bands: [
+          {name: 'other[band=a]', statistics: {minimum: 5, maximum: 50}},
+          {name: 'other[band=b]', statistics: {minimum: 6, maximum: 60}},
+        ],
+        statistics: {minimum: 0, maximum: 1},
+        ...datacube(['a', 'b']),
+      });
+      expect(
+        getGeoZarrSourceOptionsFromAsset(asset, ['other[band=b]']).dimensions,
+      ).toEqual({});
+      const options = {
+        url: 'https://example.com/data',
+        variable: 'rgba',
+        dimensions: {band: [1]},
+      };
+      expect(getGeoZarrStyleFromAsset(asset, options)).toEqual({
+        color: ['color', gray(0, 1), gray(0, 1), gray(0, 1)],
+      });
+    });
+
     it('applies a render rescale to all bands', function () {
       const asset = getAsset({
         type: 'application/vnd.zarr',
         bands: rgbBands,
-        renders: {default: {rescale: [[0, 100]]}},
+        renders: {default: {assets: ['data'], rescale: [[0, 100]]}},
       });
       expect(style(asset)).toEqual(
         rgb([
