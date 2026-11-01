@@ -85,6 +85,10 @@ const presets = {
     sourceOptions: {dimensions: {time: 0}}, // 2024 instead of the latest year
     colormap: false, // no STAC statistics, so there is no range to color over
   },
+  'italy-aerial': {
+    url: 'https://raw.githubusercontent.com/cholmes/italy-aerial-catalog/refs/heads/main/catalog/agea-orthophoto/collection.json',
+    colormap: false,
+  },
   'usgs-dem': {
     data: zarrCollection(
       'usgs-conus-dem',

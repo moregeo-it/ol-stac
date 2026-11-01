@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- GeoZarr datacubes use the metadata of their bands for styling
+
 ## [1.7.1] - 2026-10-05
 
 ### Fixed
