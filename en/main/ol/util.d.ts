@@ -123,12 +123,12 @@ export function getRenderForAsset(asset: Asset): any | null;
  *
  * Without a usable render, a default visualization is derived from the
  * general STAC metadata: the value range to stretch comes from the
- * `statistics` of the rendered bands (or the asset), the classification
- * extension (`classification:classes`) provides the coloring for
- * single-band categorical data (not applied to floating point data, which
- * is assumed to be continuous), and continuous data is colored with the
- * given default colormap or stretched to grayscale (consistent with
- * single-band COGs).
+ * `statistics` (or, if missing, the `data_type`) of the rendered bands
+ * (or the asset), the classification extension (`classification:classes`)
+ * provides the coloring for single-band categorical data (not applied to
+ * floating point data, which is assumed to be continuous), and continuous
+ * data is colored with the given default colormap or stretched to grayscale
+ * (consistent with single-band COGs).
  *
  * @param {Asset} asset The asset to read the metadata from.
  * @param {Object} sourceOptions The GeoZarr source options (to determine the rendered bands).

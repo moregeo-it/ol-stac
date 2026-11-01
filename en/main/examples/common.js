@@ -70583,14 +70583,45 @@ function getStatisticsStretch(stats) {
 }
 /**
 * Determines the value range for a visualization stretch from the STAC
-* statistics of a band or asset, if complete.
-* @param {Asset|Band} source The band or asset to read the statistics from.
+* metadata of a band or asset, if complete. stac-js derives it from the
+* statistics, other extensions or, as a last resort, the data type.
+* @param {Asset|Band} source The band or asset to read the metadata from.
 * @return {Array<number>|null} The [min, max] range, or `null`.
 */
 function getStatisticsRange(source) {
 	const { minimum, maximum } = getStatisticsStretch(source.getStatistics());
 	if (typeof minimum === "number" && typeof maximum === "number") return [minimum, maximum];
 	return null;
+}
+/**
+* Determines the value range for a visualization stretch of a rendered band,
+* falling back to the asset.
+* @param {Asset|Band} source The band (or asset) that describes the rendered band.
+* @param {Asset} asset The asset.
+* @return {Array<number>|null} The [min, max] range, or `null`.
+*/
+function getValueRange(source, asset) {
+	return getStatisticsRange(source) || (source !== asset ? getStatisticsRange(asset) : null);
+}
+/**
+* Returns the band that describes each rendered band, or the asset if no
+* band describes it.
+* Without rendered bands, the asset's only band describes the data, if any.
+* @param {Asset} asset The asset.
+* @param {Array<number|string|Band|null>} bands The rendered bands: one-based
+* index or name of the band, or the band itself.
+* @return {Array<Asset|Band>} The bands (or the asset).
+*/
+function getRenderedBandSources(asset, bands) {
+	if (bands.length === 0) {
+		const assetBands = asset.getBands();
+		return [assetBands.length === 1 ? assetBands[0] : asset];
+	}
+	return bands.map((band) => {
+		if (typeof band === "number") band = asset.getBand(band - 1);
+		else if (typeof band === "string") band = asset.findBand(band);
+		return isObject(band) && typeof band.getMetadata === "function" ? band : asset;
+	});
 }
 /**
 * Parses a nodata value from render extension metadata, which may be a
@@ -70884,6 +70915,63 @@ function createGradientStyle(colors, band, range) {
 	return { color };
 }
 /**
+* Creates a WebGLTileLayer style that stretches the value ranges of the
+* rendered bands to 0-255: three or more bands as RGB, otherwise the first
+* band as grayscale. Bands without a range use the range of the first band.
+* @param {Array<Array<number>|null>} ranges The [min, max] value range per rendered band.
+* @return {Object|null} A WebGLTileLayer style, or `null` without a range.
+*/
+function createStretchStyle(ranges) {
+	if (!ranges[0]) return null;
+	if (ranges.length >= 3) return { color: [
+		"color",
+		stretch(1, ranges[0]),
+		stretch(2, ranges[1] || ranges[0]),
+		stretch(3, ranges[2] || ranges[0])
+	] };
+	const gray = stretch(1, ranges[0]);
+	return { color: [
+		"color",
+		gray,
+		gray,
+		gray
+	] };
+}
+/**
+* Creates a WebGLTileLayer style for a single rendered band from the STAC
+* metadata: the classification extension (`classification:classes`) for
+* categorical data (not applied to floating point data, which is assumed to
+* be continuous), otherwise the given colormap over the value range.
+* @param {Asset} asset The asset.
+* @param {Asset|Band} source The band (or asset) that describes the rendered band.
+* @param {Array<import('ol/color.js').Color|string>|null} defaultColormap The colors
+* of the colormap for continuous data, evenly distributed over the value range.
+* @return {Object|null} A WebGLTileLayer style, or `null`.
+*/
+function createSingleBandStyle(asset, source, defaultColormap) {
+	if (!isFloatingPoint(source)) {
+		const classification = getClassificationStyle(asset, source !== asset ? [source.getIndex() + 1] : [], 1);
+		if (classification) return classification;
+	}
+	if (Array.isArray(defaultColormap) && defaultColormap.length >= 2) {
+		const range = getValueRange(source, asset);
+		if (range) return createGradientStyle(defaultColormap, 1, range);
+	}
+	return null;
+}
+/**
+* Returns the value range from the `rescale` of a render (from the render
+* extension) for a rendered band, falling back to the range of the first band.
+* @param {Object} render The render object.
+* @param {number} index The zero-based rendered band.
+* @return {Array<number>|null} The [min, max] range, or `null`.
+*/
+function getRescaleRange(render, index) {
+	const rescale = Array.isArray(render.rescale) ? render.rescale : [];
+	for (const range of [rescale[index], rescale[0]]) if (Array.isArray(range) && range.length >= 2) return range;
+	return null;
+}
+/**
 * Creates a WebGLTileLayer color expression from a render extension
 * `colormap`, following the rio-tiler semantics that the render extension
 * references (`colormap_name` is not supported, as the available names are
@@ -70983,12 +71071,12 @@ function createColormapStyle(colormap, range) {
 *
 * Without a usable render, a default visualization is derived from the
 * general STAC metadata: the value range to stretch comes from the
-* `statistics` of the rendered bands (or the asset), the classification
-* extension (`classification:classes`) provides the coloring for
-* single-band categorical data (not applied to floating point data, which
-* is assumed to be continuous), and continuous data is colored with the
-* given default colormap or stretched to grayscale (consistent with
-* single-band COGs).
+* `statistics` (or, if missing, the `data_type`) of the rendered bands
+* (or the asset), the classification extension (`classification:classes`)
+* provides the coloring for single-band categorical data (not applied to
+* floating point data, which is assumed to be continuous), and continuous
+* data is colored with the given default colormap or stretched to grayscale
+* (consistent with single-band COGs).
 *
 * @param {Asset} asset The asset to read the metadata from.
 * @param {Object} sourceOptions The GeoZarr source options (to determine the rendered bands).
@@ -70998,87 +71086,61 @@ function createColormapStyle(colormap, range) {
 * @api
 */
 function getGeoZarrStyleFromAsset(asset, sourceOptions, defaultColormap = null) {
-	let bandCount = 1;
-	/** @type {Array<string>} */
-	let bandNames = [];
-	if (sourceOptions.variable) {
-		if (isObject(sourceOptions.dimensions)) {
-			for (const key in sourceOptions.dimensions) if (Array.isArray(sourceOptions.dimensions[key])) bandCount = sourceOptions.dimensions[key].length;
-		}
-	} else if (Array.isArray(sourceOptions.bands)) {
-		bandCount = sourceOptions.bands.length || 1;
-		bandNames = sourceOptions.bands.filter((band) => typeof band === "string");
-	}
-	const bandSource = (index) => {
-		if (bandNames.length > index) {
-			const band = asset.findBand(bandNames[index]);
-			if (band) return band;
-		}
-		return asset;
-	};
+	const sources = getRenderedBandSources(asset, getGeoZarrRenderedBands(asset, sourceOptions));
 	const render = getRenderForAsset(asset);
-	const rescale = isUsableRender(render) && Array.isArray(render.rescale) ? render.rescale : [];
-	const renderStyles = rescale.length > 0 || isUsableRender(render) && render["colormap"];
-	const rangeFor = (index) => {
-		if (renderStyles) {
-			if (Array.isArray(rescale[index]) && rescale[index].length >= 2) return rescale[index];
-			if (Array.isArray(rescale[0]) && rescale[0].length >= 2) return rescale[0];
-			return null;
+	if (isUsableRender(render)) {
+		if (Array.isArray(render.rescale) && render.rescale.length > 0 || render["colormap"]) {
+			if (sources.length < 3 && render["colormap"]) {
+				const style = createColormapStyle(render["colormap"], getRescaleRange(render, 0));
+				if (style) return style;
+			}
+			return createStretchStyle(sources.map((_, index) => getRescaleRange(render, index)));
 		}
-		return getStatisticsRange(bandSource(index)) || getStatisticsRange(asset);
+	}
+	if (sources.length < 3) {
+		const style = createSingleBandStyle(asset, sources[0], defaultColormap);
+		if (style) return style;
+	}
+	return createStretchStyle(sources.map((source) => getValueRange(source, asset)));
+}
+/**
+* Returns the bands that a GeoZarr source renders.
+*
+* For a variable, the selection of its bands dimension (indices or labels)
+* is matched to the STAC bands by name (e.g. `red`), by the name pattern from
+* the Zarr best practices (e.g. `rgba[band=red]`) or, if the number of bands
+* matches the number of values, by position. Several slices of another
+* dimension are rendered as separate bands that show the selected band.
+*
+* @param {Asset} asset The asset.
+* @param {Object} sourceOptions The GeoZarr source options.
+* @return {Array<string|Band|null>} The band names (or bands, `null` if unknown).
+*/
+function getGeoZarrRenderedBands(asset, sourceOptions) {
+	if (!sourceOptions.variable) {
+		if (!Array.isArray(sourceOptions.bands)) return [];
+		return sourceOptions.bands.map((band) => isObject(band) && typeof band.name === "string" ? band.name : band);
+	}
+	const selections = isObject(sourceOptions.dimensions) ? sourceOptions.dimensions : {};
+	const cubeDimensions = asset.getMetadata("cube:dimensions");
+	const cubeVariable = (asset.getMetadata("cube:variables") || {})[sourceOptions.variable];
+	let bandDimension;
+	if (isObject(cubeDimensions) && isObject(cubeVariable) && Array.isArray(cubeVariable.dimensions)) bandDimension = cubeVariable.dimensions.find((name) => isObject(cubeDimensions[name]) && cubeDimensions[name].type === "bands");
+	const multiple = Object.keys(selections).find((name) => Array.isArray(selections[name]));
+	if (!bandDimension) return multiple ? selections[multiple].map(() => null) : [];
+	const values = Array.isArray(cubeDimensions[bandDimension].values) ? cubeDimensions[bandDimension].values : [];
+	const bands = asset.getBands();
+	const resolve = (entry) => {
+		const index = typeof entry === "string" ? values.indexOf(entry) : entry;
+		const value = typeof entry === "string" ? entry : values[index];
+		const band = value !== void 0 ? asset.findBand([value, `${sourceOptions.variable}[${bandDimension}=${value}]`]) : null;
+		if (band) return band;
+		return bands.length === values.length ? bands[index] || null : null;
 	};
-	if (bandCount >= 3) {
-		const ranges = [
-			rangeFor(0),
-			rangeFor(1),
-			rangeFor(2)
-		];
-		if (!ranges[0]) return null;
-		return { color: [
-			"color",
-			stretch(1, ranges[0]),
-			stretch(2, ranges[1] || ranges[0]),
-			stretch(3, ranges[2] || ranges[0])
-		] };
-	}
-	if (renderStyles) {
-		if (render["colormap"]) {
-			const style = createColormapStyle(render["colormap"], rangeFor(0));
-			if (style) return style;
-		}
-		const range = rangeFor(0);
-		if (range) {
-			const gray = stretch(1, range);
-			return { color: [
-				"color",
-				gray,
-				gray,
-				gray
-			] };
-		}
-		return null;
-	}
-	if (!isFloatingPoint(bandSource(0))) {
-		let lookupBands;
-		if (bandNames.length === 1) {
-			const band = asset.findBand(bandNames[0]);
-			if (band) lookupBands = [band.getIndex() + 1];
-		}
-		const classification = getClassificationStyle(asset, lookupBands, 1);
-		if (classification) return classification;
-	}
-	const range = rangeFor(0);
-	if (range) {
-		if (Array.isArray(defaultColormap) && defaultColormap.length >= 2) return createGradientStyle(defaultColormap, 1, range);
-		const gray = stretch(1, range);
-		return { color: [
-			"color",
-			gray,
-			gray,
-			gray
-		] };
-	}
-	return null;
+	const selection = selections[bandDimension] ?? 0;
+	if (Array.isArray(selection)) return selection.map(resolve);
+	const band = resolve(selection);
+	return multiple ? selections[multiple].map(() => band) : [band];
 }
 /**
 * Normalizes a color from render extension metadata (alpha in 0-255, as in
@@ -71392,27 +71454,11 @@ function getGeoTiffStyleFromAsset(asset, sourceInfo, defaultColormap = null) {
 	const bandCount = selected.length > 0 ? selected.length : Math.max(asset.getBands().length, 1);
 	const render = getRenderForAsset(asset);
 	if (isUsableRender(render)) {
-		if (bandCount === 1 && render["colormap"]) {
-			const rescale = Array.isArray(render.rescale) ? render.rescale : [];
-			const range = Array.isArray(rescale[0]) && rescale[0].length >= 2 ? rescale[0] : null;
-			return createColormapStyle(render["colormap"], range);
-		}
+		if (bandCount === 1 && render["colormap"]) return createColormapStyle(render["colormap"], getRescaleRange(render, 0));
 		return null;
 	}
 	if (bandCount !== 1) return null;
-	const bands = asset.getBands();
-	let bandSource = asset;
-	if (selected.length === 1 && bands.length > 0) bandSource = bands[selected[0] - 1] || asset;
-	else if (selected.length === 0 && bands.length === 1) bandSource = bands[0];
-	if (!isFloatingPoint(bandSource)) {
-		const classification = getClassificationStyle(asset, selected, selected.length === 1 ? 1 : null);
-		if (classification) return classification;
-	}
-	if (Array.isArray(defaultColormap) && defaultColormap.length >= 2) {
-		const range = getStatisticsRange(bandSource) || (bandSource !== asset ? getStatisticsRange(asset) : null);
-		if (range) return createGradientStyle(defaultColormap, 1, range);
-	}
-	return null;
+	return createSingleBandStyle(asset, getRenderedBandSources(asset, selected)[0], defaultColormap);
 }
 //#endregion
 //#region src/ol/layer/type.js

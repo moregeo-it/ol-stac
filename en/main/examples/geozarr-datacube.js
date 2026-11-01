@@ -65,6 +65,10 @@ var presets = {
 		sourceOptions: { dimensions: { time: 0 } },
 		colormap: false
 	},
+	"italy-aerial": {
+		url: "https://raw.githubusercontent.com/cholmes/italy-aerial-catalog/refs/heads/main/catalog/agea-orthophoto/collection.json",
+		colormap: false
+	},
 	"usgs-dem": { data: zarrCollection("usgs-conus-dem", "USGS 10m DEM for the conterminous US, as a multiscale Zarr v3 store.", [
 		-125.6,
 		24.8,
