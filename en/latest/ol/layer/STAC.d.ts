@@ -392,7 +392,8 @@ export type Options = {
  */
 /**
  * @classdesc
- * Renders STAC entities such as STAC Items, Collectons or lists of them as returned by APIs.
+ * Renders STAC entities such as STAC Items, Collections, Catalogs or lists of them as returned by APIs.
+ * Catalogs have no spatial extent, so only their web map links and children can be shown.
  * The layers created by this LayerGroup all have a 'stac' value that can be retrieved using `layer.get('stac')`.
  *
  * @extends LayerGroup
@@ -517,6 +518,12 @@ declare class STACLayer extends LayerGroup {
      */
     private boundsLayer_;
     /**
+     * The bounding boxes (WGS84) that web map link layers declare.
+     * @type {WeakMap<import("ol/layer/Base.js").default, Array<number>>}
+     * @private
+     */
+    private layerBounds_;
+    /**
      * @type {boolean}
      * @private
      */
@@ -532,6 +539,12 @@ declare class STACLayer extends LayerGroup {
      */
     private eventQueue_;
     /**
+     * Resolves once the initial layers are added.
+     * @type {Promise}
+     * @private
+     */
+    private initialLayers_;
+    /**
      * @type {function(string,string):(*)|null}
      * @private
      */
@@ -545,6 +558,15 @@ declare class STACLayer extends LayerGroup {
      * @return {Promise<*>} The (parsed) response body.
      */
     fetch_(url: string, responseType?: string, ref?: Asset | Link | STACObject | null): Promise<any>;
+    /**
+     * Gets the attribution for the given reference, see the attribution extension.
+     * Assets inherit the attribution from their STAC entity, Links fall back to the STAC entity.
+     *
+     * @param {Asset|Link|STACObject} ref The STAC Asset, Link or entity that is shown.
+     * @return {string|undefined} The attribution, if available.
+     * @private
+     */
+    private getAttributionFor_;
     /**
      * Rewrites the given URL based on the `getRequestUrl` option.
      *
@@ -616,6 +638,7 @@ declare class STACLayer extends LayerGroup {
     private dispatch_;
     /**
      * Flush all events.
+     * @param {boolean} [force] Flush even if the map is not set.
      * @private
      */
     private flush_;
@@ -741,6 +764,13 @@ declare class STACLayer extends LayerGroup {
      */
     updateLayers(emit?: boolean): Promise<any>;
     /**
+     * Flushes the events if the group has no layer.
+     * Without any layer, the map can't be detected, but nothing depends on it either.
+     * Child groups may still add layers, so wait for them first.
+     * @private
+     */
+    private flushIfEmpty_;
+    /**
      * Indicates whether the LayerGroup shows only the bounds layer (i.e. no imagery/tile layers).
      * @return {boolean} `true` if only the bounds layer is shown, `false` otherwise.
      * @api
@@ -810,6 +840,12 @@ declare class STACLayer extends LayerGroup {
      * @api
      */
     getAssets(): Array<Asset>;
+    /**
+     * @return {Array<Array<number>>} The bounding boxes (WGS84) that the shown web map link layers declare,
+     * including the layers of the children.
+     * @private
+     */
+    private getLayerBounds_;
     getLayerState(): import("ol/layer/Layer.js").State;
     /**
      * Get the attributions of the STAC entity assigned to this layer.
