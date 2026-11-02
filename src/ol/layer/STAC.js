@@ -373,6 +373,13 @@ class STACLayer extends LayerGroup {
     this.boundsLayer_ = null;
 
     /**
+     * The bounding boxes (WGS84) that web map link layers declare.
+     * @type {WeakMap<import("ol/layer/Base.js").default, Array<number>>}
+     * @private
+     */
+    this.layerBounds_ = new WeakMap();
+
+    /**
      * @type {boolean}
      * @private
      */
@@ -808,6 +815,8 @@ class STACLayer extends LayerGroup {
     };
 
     const sources = [];
+    // The bounding boxes (WGS84) that the sources declare
+    const sourceBounds = new Map();
     switch (link.rel) {
       case 'pmtiles': {
         const snapshot = JSON.stringify(options);
@@ -857,6 +866,12 @@ class STACLayer extends LayerGroup {
             ? new PMTilesVectorSource(pmOptions)
             : new PMTilesRasterSource(pmOptions);
         sources.push(source);
+        sourceBounds.set(source, [
+          pmtilesHeader.minLon,
+          pmtilesHeader.minLat,
+          pmtilesHeader.maxLon,
+          pmtilesHeader.maxLat,
+        ]);
         break;
       }
       case 'tilejson': {
@@ -864,7 +879,16 @@ class STACLayer extends LayerGroup {
         const tjOptions = await updateOptions(SourceType.TileJSON, options);
         if (tjOptions.jsonp || tjOptions.tileJSON) {
           // Let the source load the manifest itself (e.g. via JSONP)
-          sources.push(new TileJSON(tjOptions));
+          if (tjOptions.tileJSON) {
+            // OpenLayers prefers the URL over an inline manifest
+            delete tjOptions.url;
+          }
+          const source = new TileJSON(tjOptions);
+          sources.push(source);
+          const bounds = tjOptions.tileJSON?.bounds;
+          if (Array.isArray(bounds) && bounds.length === 4) {
+            sourceBounds.set(source, bounds);
+          }
           break;
         }
         // Load the manifest through the request function so that
@@ -884,7 +908,11 @@ class STACLayer extends LayerGroup {
         }
         delete tjOptions.url;
         tjOptions.tileJSON = tileJSON;
-        sources.push(new TileJSON(tjOptions));
+        const source = new TileJSON(tjOptions);
+        sources.push(source);
+        if (Array.isArray(tileJSON?.bounds) && tileJSON.bounds.length === 4) {
+          sourceBounds.set(source, tileJSON.bounds);
+        }
         break;
       }
       case 'wms':
@@ -981,7 +1009,14 @@ class STACLayer extends LayerGroup {
             );
           }
 
-          sources.push(new WMTS(opts));
+          const source = new WMTS(opts);
+          sources.push(source);
+          const capabilitiesLayer = wmtsCapabilities.Contents?.Layer?.find(
+            (l) => l.Identifier === opts.layer,
+          );
+          if (Array.isArray(capabilitiesLayer?.WGS84BoundingBox)) {
+            sourceBounds.set(source, capabilitiesLayer.WGS84BoundingBox);
+          }
         }
         break;
       case 'xyz':
@@ -1015,6 +1050,9 @@ class STACLayer extends LayerGroup {
             link,
           );
           layer = new TileLayer(layerOptions);
+        }
+        if (sourceBounds.has(source)) {
+          this.layerBounds_.set(layer, sourceBounds.get(source));
         }
         this.addLayer_(layer, link);
         return layer;
@@ -1792,6 +1830,10 @@ class STACLayer extends LayerGroup {
    * EPSG:4326 instead of the map projection. Make sure to transform it with the
    * ol.proj.transformExtent function if needed.
    *
+   * For STAC entities without spatial extent (e.g. Catalogs), the extent is derived from
+   * the bounds that the shown web map links declare (PMTiles, TileJSON, WMTS), if available.
+   * Returns `undefined` if no extent is known or the layer is not added to a map.
+   *
    * @return {Extent|undefined} The layer extent.
    * @api
    */
@@ -1824,9 +1866,30 @@ class STACLayer extends LayerGroup {
       bbox = unionBoundingBox(bboxes);
     }
 
+    if (!data?.getBoundingBox()) {
+      bbox = unionBoundingBox([bbox, ...this.getLayerBounds_()]);
+    }
+
     if (bbox) {
       return toOlExtent(bbox, view.getProjection());
     }
+  }
+
+  /**
+   * @return {Array<Array<number>>} The bounding boxes (WGS84) that the shown web map link layers declare,
+   * including the layers of the children.
+   * @private
+   */
+  getLayerBounds_() {
+    const bounds = [];
+    for (const layer of this.getLayers().getArray()) {
+      if (layer instanceof STACLayer) {
+        bounds.push(...layer.getLayerBounds_());
+      } else if (this.layerBounds_.has(layer)) {
+        bounds.push(this.layerBounds_.get(layer));
+      }
+    }
+    return bounds;
   }
 
   getLayerState() {

@@ -7,12 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `getExtent` returns the bounds of the shown PMTiles, TileJSON and WMTS web map links for STAC entities without spatial extent, e.g. catalogs
+
 ### Fixed
 
 - Events such as `layersready`, `sourceready` and `error` are emitted for STAC entities without spatial extent,
   also if nothing can be shown (e.g. a web map link fails to load)
 - `isEmpty` returns `false` for STAC entities without spatial extent that show a layer, e.g. catalogs with web map links
 - `isEmpty` returns `true` for STAC entities whose children show nothing (e.g. hidden footprints)
+- TileJSON manifests provided through `getSourceOptions` are used instead of the manifest that the web map link points to
 
 ## [1.8.0] - 2026-11-01
 

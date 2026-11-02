@@ -1,6 +1,7 @@
 import Map from 'ol/Map.js';
 import View from 'ol/View.js';
 import TileLayer from 'ol/layer/Tile.js';
+import {transformExtent} from 'ol/proj.js';
 import XYZ from 'ol/source/XYZ.js';
 import STAC from '../../../../../src/ol/layer/STAC.js';
 import LayerType from '../../../../../src/ol/layer/type.js';
@@ -1177,6 +1178,203 @@ describe('ol/layer/STAC', function () {
       map = new Map({layers: [group]});
       await Promise.all([sourceReady, layersReady]);
       expect(group.isEmpty()).to.equal(true);
+    });
+
+    it('returns the extent from the TileJSON bounds', async function () {
+      fetchStub = vi.spyOn(window, 'fetch').mockImplementation(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({
+              tilejson: '2.2.0',
+              tiles: ['https://example.com/tiles/{z}/{x}/{y}.png'],
+              bounds: [10, 20, 30, 40],
+            }),
+            {status: 200, headers: {'Content-Type': 'application/json'}},
+          ),
+        ),
+      );
+      const group = new STAC({
+        data: createCatalog([TILEJSON_LINK]),
+        displayWebMapLink: true,
+      });
+      const layersReady = once(group, 'layersready');
+      map = new Map({layers: [group]});
+      await layersReady;
+      const extent = group.getExtent();
+      const expected = transformExtent(
+        [10, 20, 30, 40],
+        'EPSG:4326',
+        'EPSG:3857',
+      );
+      expect(extent.map(Math.round)).to.deep.equal(expected.map(Math.round));
+    });
+
+    it('returns the extent from the bounds of an inline TileJSON manifest', async function () {
+      const group = new STAC({
+        data: createCatalog([TILEJSON_LINK]),
+        displayWebMapLink: true,
+        getSourceOptions: (type, options) =>
+          type === SourceType.TileJSON
+            ? Object.assign({}, options, {
+                tileJSON: {
+                  tilejson: '2.2.0',
+                  tiles: ['https://example.com/tiles/{z}/{x}/{y}.png'],
+                  bounds: [10, 20, 30, 40],
+                },
+              })
+            : options,
+      });
+      const layersReady = once(group, 'layersready');
+      map = new Map({layers: [group]});
+      await layersReady;
+      const source = group.getLayersArray()[0].getSource();
+      expect(source.getTileJSON().bounds).to.deep.equal([10, 20, 30, 40]);
+      const expected = transformExtent(
+        [10, 20, 30, 40],
+        'EPSG:4326',
+        'EPSG:3857',
+      );
+      expect(group.getExtent().map(Math.round)).to.deep.equal(
+        expected.map(Math.round),
+      );
+    });
+
+    it('returns the extent from the web map links of the children', async function () {
+      fetchStub = vi.spyOn(window, 'fetch').mockImplementation(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({
+              tilejson: '2.2.0',
+              tiles: ['https://example.com/tiles/{z}/{x}/{y}.png'],
+              bounds: [10, 20, 30, 40],
+            }),
+            {status: 200, headers: {'Content-Type': 'application/json'}},
+          ),
+        ),
+      );
+      const group = new STAC({
+        data: createCatalog(),
+        children: [createCatalog([TILEJSON_LINK])],
+        childrenOptions: {displayWebMapLink: true},
+      });
+      map = new Map({layers: [group]});
+      await waitFor(() => group.getExtent());
+      const expected = transformExtent(
+        [10, 20, 30, 40],
+        'EPSG:4326',
+        'EPSG:3857',
+      );
+      expect(group.getExtent().map(Math.round)).to.deep.equal(
+        expected.map(Math.round),
+      );
+    });
+
+    it('returns the extent from the children and their web map links', async function () {
+      fetchStub = vi.spyOn(window, 'fetch').mockImplementation(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({
+              tilejson: '2.2.0',
+              tiles: ['https://example.com/tiles/{z}/{x}/{y}.png'],
+              bounds: [10, 20, 30, 40],
+            }),
+            {status: 200, headers: {'Content-Type': 'application/json'}},
+          ),
+        ),
+      );
+      const group = new STAC({
+        data: createCatalog(),
+        children: [createItem(), createCatalog([TILEJSON_LINK])],
+        childrenOptions: {displayWebMapLink: true},
+      });
+      map = new Map({layers: [group]});
+      const expected = transformExtent(
+        [0, 0, 30, 40],
+        'EPSG:4326',
+        'EPSG:3857',
+      ).map(Math.round);
+      await waitFor(
+        () =>
+          JSON.stringify(group.getExtent()?.map(Math.round)) ===
+          JSON.stringify(expected),
+      );
+    });
+
+    it('returns the extent of the WMTS layer that is shown', async function () {
+      const layer = (id, bbox) => `
+    <Layer>
+      <ows:Title>${id}</ows:Title>
+      <ows:Identifier>${id}</ows:Identifier>
+      <ows:WGS84BoundingBox>
+        <ows:LowerCorner>${bbox[0]} ${bbox[1]}</ows:LowerCorner>
+        <ows:UpperCorner>${bbox[2]} ${bbox[3]}</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <Style isDefault="true"><ows:Identifier>default</ows:Identifier></Style>
+      <Format>image/png</Format>
+      <TileMatrixSetLink><TileMatrixSet>matrix</TileMatrixSet></TileMatrixSetLink>
+      <ResourceURL format="image/png" resourceType="tile" template="https://example.com/wmts/${id}/{TileMatrix}/{TileRow}/{TileCol}.png"/>
+    </Layer>`;
+      const capabilities = `<?xml version="1.0" encoding="UTF-8"?>
+<Capabilities xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1" version="1.0.0">
+  <Contents>${layer('a', [1, 2, 3, 4])}${layer('b', [10, 20, 30, 40])}
+    <TileMatrixSet>
+      <ows:Identifier>matrix</ows:Identifier>
+      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::3857</ows:SupportedCRS>
+      <TileMatrix>
+        <ows:Identifier>0</ows:Identifier>
+        <ScaleDenominator>559082264.0287178</ScaleDenominator>
+        <TopLeftCorner>-20037508.342789244 20037508.342789244</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>1</MatrixWidth>
+        <MatrixHeight>1</MatrixHeight>
+      </TileMatrix>
+    </TileMatrixSet>
+  </Contents>
+</Capabilities>`;
+      fetchStub = vi
+        .spyOn(window, 'fetch')
+        .mockImplementation(() =>
+          Promise.resolve(new Response(capabilities, {status: 200})),
+        );
+      const group = new STAC({
+        data: createCatalog([
+          {
+            rel: 'wmts',
+            href: 'https://example.com/wmts',
+            type: 'image/png',
+            'wmts:layer': 'a',
+          },
+        ]),
+        displayWebMapLink: true,
+        // The callback may choose another layer than the STAC link
+        getSourceOptions: (type, options) =>
+          type === SourceType.WMTS
+            ? Object.assign({}, options, {layer: 'b'})
+            : options,
+      });
+      const layersReady = once(group, 'layersready');
+      map = new Map({layers: [group]});
+      await layersReady;
+      const expected = transformExtent(
+        [10, 20, 30, 40],
+        'EPSG:4326',
+        'EPSG:3857',
+      );
+      expect(group.getExtent().map(Math.round)).to.deep.equal(
+        expected.map(Math.round),
+      );
+    });
+
+    it('returns no extent for links without bounds', async function () {
+      const group = new STAC({
+        data: createCatalog([XYZ_LINK]),
+        displayWebMapLink: true,
+      });
+      const layersReady = once(group, 'layersready');
+      map = new Map({layers: [group]});
+      await layersReady;
+      expect(group.getExtent()).to.equal(undefined);
     });
 
     it('is not empty if a web map link is shown', async function () {
