@@ -212,7 +212,8 @@ import LayerType from './type.js';
 
 /**
  * @classdesc
- * Renders STAC entities such as STAC Items, Collectons or lists of them as returned by APIs.
+ * Renders STAC entities such as STAC Items, Collections, Catalogs or lists of them as returned by APIs.
+ * Catalogs have no spatial extent, so only their web map links and children can be shown.
  * The layers created by this LayerGroup all have a 'stac' value that can be retrieved using `layer.get('stac')`.
  *
  * @extends LayerGroup
