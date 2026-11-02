@@ -391,6 +391,13 @@ class STACLayer extends LayerGroup {
     this.eventQueue_ = [];
 
     /**
+     * Resolves once the initial layers are added.
+     * @type {Promise}
+     * @private
+     */
+    this.initialLayers_ = Promise.resolve();
+
+    /**
      * @type {function(string,string):(*)|null}
      * @private
      */
@@ -611,7 +618,12 @@ class STACLayer extends LayerGroup {
     if (assets) {
       promises.push(this.setAssets(assets, false).catch(errorHandler));
     }
-    Promise.all(promises).then(() => this.updateLayers().catch(errorHandler));
+    this.initialLayers_ = Promise.all(promises).then(() =>
+      this.updateLayers().catch((error) => {
+        errorHandler(error);
+        this.flushIfEmpty_();
+      }),
+    );
 
     /**
      * Invoked once the STAC entity is loaded and available.
@@ -637,10 +649,11 @@ class STACLayer extends LayerGroup {
 
   /**
    * Flush all events.
+   * @param {boolean} [force] Flush even if the map is not set.
    * @private
    */
-  flush_() {
-    if (this.map_) {
+  flush_(force = false) {
+    if (this.map_ || force) {
       for (const event of this.eventQueue_) {
         this.dispatchEvent(event);
       }
@@ -1182,6 +1195,18 @@ class STACLayer extends LayerGroup {
       layer.set('stac', data);
     }
     layer.setZIndex(zIndex);
+    // The footprint sets the map once rendered, which defers the events until listeners are registered.
+    // Without a footprint, the other layers are the only way to learn about the map.
+    if (!(layer instanceof LayerGroup) && !layer.get('bounds')) {
+      layer.addEventListener('change:map', () => {
+        const map = layer.getMapInternal();
+        if (map) {
+          this.setMap_(map);
+        } else if (!this.getLayersArray().some((l) => l.getMapInternal())) {
+          this.setMap_(null);
+        }
+      });
+    }
     this.getLayers().push(layer);
   }
 
@@ -1580,6 +1605,27 @@ class STACLayer extends LayerGroup {
     if (emit) {
       this.dispatch_('layersready');
     }
+    this.flushIfEmpty_();
+  }
+
+  /**
+   * Flushes the events if the group has no layer.
+   * Without any layer, the map can't be detected, but nothing depends on it either.
+   * Child groups may still add layers, so wait for them first.
+   * @private
+   */
+  flushIfEmpty_() {
+    if (this.map_) {
+      return;
+    }
+    const groups = this.getLayers()
+      .getArray()
+      .filter((layer) => layer instanceof STACLayer);
+    Promise.all(groups.map((group) => group.initialLayers_)).then(() => {
+      if (!this.map_ && this.getLayersArray().length === 0) {
+        this.flush_(true);
+      }
+    });
   }
 
   /**

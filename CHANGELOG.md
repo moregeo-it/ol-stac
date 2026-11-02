@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Events such as `layersready`, `sourceready` and `error` are emitted for STAC entities without spatial extent,
+  also if nothing can be shown (e.g. a web map link fails to load)
 - `isEmpty` returns `false` for STAC entities without spatial extent that show a layer, e.g. catalogs with web map links
 - `isEmpty` returns `true` for STAC entities whose children show nothing (e.g. hidden footprints)
 

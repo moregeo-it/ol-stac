@@ -1,3 +1,5 @@
+import Map from 'ol/Map.js';
+import View from 'ol/View.js';
 import TileLayer from 'ol/layer/Tile.js';
 import XYZ from 'ol/source/XYZ.js';
 import STAC from '../../../../../src/ol/layer/STAC.js';
@@ -1080,11 +1082,102 @@ describe('ol/layer/STAC', function () {
       };
     }
 
+    /**
+     * @param {STAC} group The layer group.
+     * @param {string} type The event type.
+     * @return {Promise} Resolves with the event.
+     */
+    function once(group, type) {
+      return new Promise((resolve) => group.once(type, resolve));
+    }
+
     const XYZ_LINK = {
       rel: 'xyz',
       href: 'https://example.com/tiles/{z}/{x}/{y}.png',
       type: 'image/png',
     };
+    const TILEJSON_LINK = {
+      rel: 'tilejson',
+      href: 'https://example.com/manifest.json',
+      type: 'application/json',
+    };
+
+    let fetchStub;
+    let map;
+
+    afterEach(function () {
+      if (fetchStub) {
+        fetchStub.mockRestore();
+        fetchStub = null;
+      }
+      if (map) {
+        map.dispose();
+        map = null;
+      }
+    });
+
+    it('emits layersready once the layer group is added to a map', async function () {
+      const group = new STAC({
+        data: createCatalog([XYZ_LINK]),
+        displayWebMapLink: true,
+      });
+      const layersReady = once(group, 'layersready');
+      map = new Map({layers: [group]});
+      await layersReady;
+      expect(group.getLayersArray().length).to.equal(1);
+      expect(group.isEmpty()).to.equal(false);
+    });
+
+    it('emits the events if nothing can be shown', async function () {
+      const group = new STAC({data: createCatalog()});
+      const sourceReady = once(group, 'sourceready');
+      const layersReady = once(group, 'layersready');
+      map = new Map({layers: [group]});
+      await Promise.all([sourceReady, layersReady]);
+      expect(group.isEmpty()).to.equal(true);
+    });
+
+    it('emits the error if a web map link fails to load', async function () {
+      fetchStub = vi
+        .spyOn(window, 'fetch')
+        .mockImplementation(() =>
+          Promise.resolve(new Response('Not found', {status: 404})),
+        );
+      const group = new STAC({
+        data: createCatalog([TILEJSON_LINK]),
+        displayWebMapLink: true,
+      });
+      const error = once(group, 'error');
+      const layersReady = once(group, 'layersready');
+      map = new Map({layers: [group]});
+      await Promise.all([error, layersReady]);
+      expect(group.isEmpty()).to.equal(true);
+    });
+
+    it('emits the error if a callback fails', async function () {
+      const group = new STAC({
+        data: createCatalog([XYZ_LINK]),
+        displayWebMapLink: true,
+        getSourceOptions: () => Promise.reject(new Error('Failed')),
+      });
+      const sourceReady = once(group, 'sourceready');
+      const error = once(group, 'error');
+      map = new Map({layers: [group]});
+      await Promise.all([sourceReady, error]);
+      expect(group.isEmpty()).to.equal(true);
+    });
+
+    it('emits the events if the children show nothing', async function () {
+      const group = new STAC({
+        data: createCatalog(),
+        children: [createCatalog(), createCatalog()],
+      });
+      const sourceReady = once(group, 'sourceready');
+      const layersReady = once(group, 'layersready');
+      map = new Map({layers: [group]});
+      await Promise.all([sourceReady, layersReady]);
+      expect(group.isEmpty()).to.equal(true);
+    });
 
     it('is not empty if a web map link is shown', async function () {
       const group = new STAC({
@@ -1134,6 +1227,55 @@ describe('ol/layer/STAC', function () {
       const group = new STAC({data: createItem(), displayFootprint: false});
       await group.updateLayers(false);
       expect(group.isEmpty()).to.equal(true);
+    });
+  });
+
+  describe('events', function () {
+    let map;
+    let target;
+
+    afterEach(function () {
+      map?.dispose();
+      target?.remove();
+      map = null;
+      target = null;
+    });
+
+    it('defers sourceready for synchronous data until listeners are registered', async function () {
+      target = document.createElement('div');
+      target.style.width = '200px';
+      target.style.height = '200px';
+      document.body.appendChild(target);
+      const group = new STAC({data: createItem()});
+      map = new Map({
+        target,
+        layers: [group],
+        view: new View({center: [0, 0], zoom: 2}),
+      });
+      let sourceReady = false;
+      group.on('sourceready', () => (sourceReady = true));
+      await waitFor(() => sourceReady);
+    });
+
+    it('forgets the map once the layer group is removed from it', async function () {
+      const group = new STAC({
+        data: createItem({}, [
+          {
+            rel: 'xyz',
+            href: 'https://example.com/tiles/{z}/{x}/{y}.png',
+            type: 'image/png',
+          },
+        ]),
+        displayWebMapLink: true,
+      });
+      const layersReady = new Promise((resolve) =>
+        group.once('layersready', resolve),
+      );
+      map = new Map({layers: [group]});
+      await layersReady;
+      expect(group.getExtent()).to.be.an('array');
+      map.removeLayer(group);
+      expect(group.getExtent()).to.equal(undefined);
     });
   });
 });
