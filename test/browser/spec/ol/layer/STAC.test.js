@@ -1064,4 +1064,76 @@ describe('ol/layer/STAC', function () {
       });
     });
   });
+
+  describe('without spatial extent', function () {
+    /**
+     * @param {Array<Object>} links The links.
+     * @return {Object} A STAC Catalog without spatial extent.
+     */
+    function createCatalog(links = []) {
+      return {
+        type: 'Catalog',
+        stac_version: '1.0.0',
+        id: 'test-catalog',
+        description: 'Test',
+        links,
+      };
+    }
+
+    const XYZ_LINK = {
+      rel: 'xyz',
+      href: 'https://example.com/tiles/{z}/{x}/{y}.png',
+      type: 'image/png',
+    };
+
+    it('is not empty if a web map link is shown', async function () {
+      const group = new STAC({
+        data: createCatalog([XYZ_LINK]),
+        displayWebMapLink: true,
+      });
+      await waitFor(() => group.getLayersArray().length > 0);
+      expect(group.getLayersArray().length).to.equal(1);
+      expect(group.getBoundsLayer()).to.equal(null);
+      expect(group.isEmpty()).to.equal(false);
+    });
+
+    it('is empty if nothing is shown', async function () {
+      const group = new STAC({data: createCatalog()});
+      await group.updateLayers(false);
+      expect(group.isEmpty()).to.equal(true);
+    });
+
+    it('is empty if the children only have hidden footprints', async function () {
+      const group = new STAC({
+        data: createCatalog(),
+        children: [createItem()],
+        displayFootprint: false,
+      });
+      await waitFor(() => group.getLayers().getLength() > 0);
+      expect(group.isEmpty()).to.equal(true);
+    });
+
+    it('is not empty if the children show their footprints', async function () {
+      const group = new STAC({
+        data: createCatalog(),
+        children: [createItem()],
+      });
+      await waitFor(() => group.getLayers().getLength() > 0);
+      expect(group.isEmpty()).to.equal(false);
+    });
+  });
+
+  describe('isEmpty', function () {
+    it('is not empty if the footprint is shown', async function () {
+      const group = new STAC({data: createItem()});
+      await group.updateLayers(false);
+      expect(group.isEmpty()).to.equal(false);
+    });
+
+    it('is empty if only the hidden footprint is available', async function () {
+      const group = new STAC({data: createItem(), displayFootprint: false});
+      await group.updateLayers(false);
+      expect(group.isEmpty()).to.equal(true);
+    });
+  });
 });

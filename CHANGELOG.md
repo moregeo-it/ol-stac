@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `isEmpty` returns `false` for STAC entities without spatial extent that show a layer, e.g. catalogs with web map links
+- `isEmpty` returns `true` for STAC entities whose children show nothing (e.g. hidden footprints)
+
 ## [1.8.0] - 2026-11-01
 
 ### Added

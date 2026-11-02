@@ -528,11 +528,17 @@ class STACLayer extends LayerGroup {
    * @api
    */
   isEmpty() {
-    const count = this.getLayers().getLength();
-    if (count > 1) {
+    const hasContent = this.getLayers()
+      .getArray()
+      .some(
+        (layer) =>
+          layer !== this.boundsLayer_ &&
+          (!(layer instanceof STACLayer) || !layer.isEmpty()),
+      );
+    if (hasContent) {
       return false;
     }
-    const bbox = this.getData().getBoundingBox();
+    const bbox = this.getData()?.getBoundingBox();
     if (!bbox || isEmpty(toContinuousBBox(bbox))) {
       return true;
     }
