@@ -72266,7 +72266,8 @@ var LayerType = class LayerType {
 */
 /**
 * @classdesc
-* Renders STAC entities such as STAC Items, Collectons or lists of them as returned by APIs.
+* Renders STAC entities such as STAC Items, Collections, Catalogs or lists of them as returned by APIs.
+* Catalogs have no spatial extent, so only their web map links and children can be shown.
 * The layers created by this LayerGroup all have a 'stac' value that can be retrieved using `layer.get('stac')`.
 *
 * @extends LayerGroup
@@ -72403,6 +72404,12 @@ var STACLayer = class STACLayer extends LayerGroup {
 		*/
 		this.boundsLayer_ = null;
 		/**
+		* The bounding boxes (WGS84) that web map link layers declare.
+		* @type {WeakMap<import("ol/layer/Base.js").default, Array<number>>}
+		* @private
+		*/
+		this.layerBounds_ = /* @__PURE__ */ new WeakMap();
+		/**
 		* @type {boolean}
 		* @private
 		*/
@@ -72417,6 +72424,12 @@ var STACLayer = class STACLayer extends LayerGroup {
 		* @private
 		*/
 		this.eventQueue_ = [];
+		/**
+		* Resolves once the initial layers are added.
+		* @type {Promise}
+		* @private
+		*/
+		this.initialLayers_ = Promise.resolve();
 		/**
 		* @type {function(string,string):(*)|null}
 		* @private
@@ -72433,6 +72446,21 @@ var STACLayer = class STACLayer extends LayerGroup {
 		}
 		if (!options.url) throw new Error("Either url or data must be provided");
 		this.fetch_(this.getRequestUrlFor_(options.url)).then((data) => this.configure_(data, options.url, options.children, options.assets, options.bands)).catch((error) => this.handleError_(error));
+	}
+	/**
+	* Gets the attribution for the given reference, see the attribution extension.
+	* Assets inherit the attribution from their STAC entity, Links fall back to the STAC entity.
+	*
+	* @param {Asset|Link|STACObject} ref The STAC Asset, Link or entity that is shown.
+	* @return {string|undefined} The attribution, if available.
+	* @private
+	*/
+	getAttributionFor_(ref) {
+		const candidates = [ref, ref?.getContext?.() || this.getData()];
+		for (const candidate of candidates) {
+			const attribution = candidate?.getMetadata?.("attribution");
+			if (typeof attribution === "string" && attribution.length > 0) return attribution;
+		}
 	}
 	/**
 	* Rewrites the given URL based on the `getRequestUrl` option.
@@ -72509,8 +72537,8 @@ var STACLayer = class STACLayer extends LayerGroup {
 	* @api
 	*/
 	isEmpty() {
-		if (this.getLayers().getLength() > 1) return false;
-		const bbox = this.getData().getBoundingBox();
+		if (this.getLayers().getArray().some((layer) => layer !== this.boundsLayer_ && (!(layer instanceof STACLayer) || !layer.isEmpty()))) return false;
+		const bbox = this.getData()?.getBoundingBox();
 		if (!bbox || isEmpty(toContinuousBBox(bbox))) return true;
 		return !this.boundsLayer_ || !this.displayFootprint_;
 	}
@@ -72561,7 +72589,10 @@ var STACLayer = class STACLayer extends LayerGroup {
 		const promises = [];
 		if (children) promises.push(this.setChildren(children, null, false).catch(errorHandler));
 		if (assets) promises.push(this.setAssets(assets, false).catch(errorHandler));
-		Promise.all(promises).then(() => this.updateLayers().catch(errorHandler));
+		this.initialLayers_ = Promise.all(promises).then(() => this.updateLayers().catch((error) => {
+			errorHandler(error);
+			this.flushIfEmpty_();
+		}));
 		/**
 		* Invoked once the STAC entity is loaded and available.
 		*
@@ -72584,10 +72615,11 @@ var STACLayer = class STACLayer extends LayerGroup {
 	}
 	/**
 	* Flush all events.
+	* @param {boolean} [force] Flush even if the map is not set.
 	* @private
 	*/
-	flush_() {
-		if (this.map_) {
+	flush_(force = false) {
+		if (this.map_ || force) {
 			for (const event of this.eventQueue_) this.dispatchEvent(event);
 			this.eventQueue_ = [];
 		}
@@ -72657,7 +72689,8 @@ var STACLayer = class STACLayer extends LayerGroup {
 			url: this.getRequestUrlFor_(image.getAbsoluteUrl(), image),
 			projection,
 			imageExtent: toOlExtent(bbox, projection),
-			crossOrigin: this.crossOrigin_
+			crossOrigin: this.crossOrigin_,
+			attributions: this.getAttributionFor_(image)
 		};
 		const imageLoadFunction = this.createLoadFunction_(createImageLoadFunction, image);
 		if (imageLoadFunction) options.imageLoadFunction = imageLoadFunction;
@@ -72679,7 +72712,7 @@ var STACLayer = class STACLayer extends LayerGroup {
 		if (!url) return;
 		url = this.getRequestUrlFor_(url, link, link.rel === "xyz");
 		const options = {
-			attributions: link.getMetadata("attribution") || this.getData().getMetadata("attribution"),
+			attributions: this.getAttributionFor_(link),
 			crossOrigin: this.crossOrigin_,
 			url
 		};
@@ -72690,6 +72723,7 @@ var STACLayer = class STACLayer extends LayerGroup {
 			return options;
 		};
 		const sources = [];
+		const sourceBounds = /* @__PURE__ */ new Map();
 		switch (link.rel) {
 			case "pmtiles": {
 				const snapshot = JSON.stringify(options);
@@ -72722,13 +72756,23 @@ var STACLayer = class STACLayer extends LayerGroup {
 				pmOptions.url = withHeaders(pmOptions.url);
 				const source = type === SourceType.PMTilesVector ? new PMTilesVectorSource(pmOptions) : new PMTilesRasterSource(pmOptions);
 				sources.push(source);
+				sourceBounds.set(source, [
+					pmtilesHeader.minLon,
+					pmtilesHeader.minLat,
+					pmtilesHeader.maxLon,
+					pmtilesHeader.maxLat
+				]);
 				break;
 			}
 			case "tilejson": {
 				/** @type {*} */
 				const tjOptions = await updateOptions(SourceType.TileJSON, options);
 				if (tjOptions.jsonp || tjOptions.tileJSON) {
-					sources.push(new TileJSON(tjOptions));
+					if (tjOptions.tileJSON) delete tjOptions.url;
+					const source = new TileJSON(tjOptions);
+					sources.push(source);
+					const bounds = tjOptions.tileJSON?.bounds;
+					if (Array.isArray(bounds) && bounds.length === 4) sourceBounds.set(source, bounds);
 					break;
 				}
 				let tileJSON;
@@ -72741,7 +72785,9 @@ var STACLayer = class STACLayer extends LayerGroup {
 				if (isObject(tileJSON) && Array.isArray(tileJSON.tiles)) tileJSON.tiles = tileJSON.tiles.map((template) => this.getRequestUrlFor_(template, link, true));
 				delete tjOptions.url;
 				tjOptions.tileJSON = tileJSON;
-				sources.push(new TileJSON(tjOptions));
+				const source = new TileJSON(tjOptions);
+				sources.push(source);
+				if (Array.isArray(tileJSON?.bounds) && tileJSON.bounds.length === 4) sourceBounds.set(source, tileJSON.bounds);
 				break;
 			}
 			case "wms":
@@ -72791,7 +72837,10 @@ var STACLayer = class STACLayer extends LayerGroup {
 						delete opts.urls;
 						opts.url = this.getRequestUrlFor_(uriTemplate, link, true);
 					} else if (Array.isArray(opts.urls)) opts.urls = opts.urls.map((u) => this.getRequestUrlFor_(u, link, opts.requestEncoding === "REST"));
-					sources.push(new WMTS(opts));
+					const source = new WMTS(opts);
+					sources.push(source);
+					const capabilitiesLayer = wmtsCapabilities.Contents?.Layer?.find((l) => l.Identifier === opts.layer);
+					if (Array.isArray(capabilitiesLayer?.WGS84BoundingBox)) sourceBounds.set(source, capabilitiesLayer.WGS84BoundingBox);
 				}
 				break;
 			case "xyz":
@@ -72807,6 +72856,7 @@ var STACLayer = class STACLayer extends LayerGroup {
 			}, link));
 			else if (source instanceof PMTilesRasterSource) layer = new WebGLTileLayer(await this.updateLayerOptions_(LayerType.WebGLTile, { source }, link));
 			else layer = new TileLayer(await this.updateLayerOptions_(LayerType.Tile, { source }, link));
+			if (sourceBounds.has(source)) this.layerBounds_.set(layer, sourceBounds.get(source));
 			this.addLayer_(layer, link);
 			return layer;
 		}));
@@ -72832,7 +72882,8 @@ var STACLayer = class STACLayer extends LayerGroup {
 		let options = {
 			sources: [sourceInfo],
 			convertToRGB: "auto",
-			loadMissingProjection: true
+			loadMissingProjection: true,
+			attributions: this.getAttributionFor_(asset)
 		};
 		const projection = await getProjection(asset);
 		if (projection) options.projection = projection;
@@ -72842,6 +72893,7 @@ var STACLayer = class STACLayer extends LayerGroup {
 		if (headers) options.sourceOptions = { headers };
 		if (this.getSourceOptions_) options = await this.getSourceOptions_(SourceType.GeoTIFF, options, asset);
 		const source = new GeoTIFFSource(options);
+		source.setAttributions(options.attributions);
 		const status = new Promise((resolve, reject) => {
 			source.on("error", reject);
 			source.on("change", () => {
@@ -72885,6 +72937,7 @@ var STACLayer = class STACLayer extends LayerGroup {
 		* @type {import("ol/source/XYZ.js").Options}
 		*/
 		let options = {
+			attributions: this.getAttributionFor_(data),
 			crossOrigin: this.crossOrigin_,
 			url
 		};
@@ -72917,6 +72970,11 @@ var STACLayer = class STACLayer extends LayerGroup {
 	addLayer_(layer, data = null, zIndex = 0) {
 		if (data) layer.set("stac", data);
 		layer.setZIndex(zIndex);
+		if (!(layer instanceof LayerGroup) && !layer.get("bounds")) layer.addEventListener("change:map", () => {
+			const map = layer.getMapInternal();
+			if (map) this.setMap_(map);
+			else if (!this.getLayersArray().some((l) => l.getMapInternal())) this.setMap_(null);
+		});
 		this.getLayers().push(layer);
 	}
 	/**
@@ -72946,7 +73004,9 @@ var STACLayer = class STACLayer extends LayerGroup {
 	async addGeoJson_(asset) {
 		try {
 			const geojson = await this.fetch_(this.getRequestUrlFor_(asset.getAbsoluteUrl(), asset), "json", asset);
-			const layer = new VectorLayer(await this.updateLayerOptions_(LayerType.Vector, this.getGeoJsonLayerOptions_(geojson), asset));
+			const vectorOptions = this.getGeoJsonLayerOptions_(geojson);
+			vectorOptions.source.setAttributions(this.getAttributionFor_(asset));
+			const layer = new VectorLayer(await this.updateLayerOptions_(LayerType.Vector, vectorOptions, asset));
 			this.addLayer_(layer, asset);
 			return layer;
 		} catch (error) {
@@ -73052,6 +73112,7 @@ var STACLayer = class STACLayer extends LayerGroup {
 			if (layer) return layer;
 		}
 		let options = getGeoZarrSourceOptionsFromAsset(asset, this.bands_);
+		options.attributions = this.getAttributionFor_(asset);
 		const declaresRendering = () => asset.isType(wozMediaTypes) || Boolean(options.variable) || Boolean(options.bands && options.bands.length > 0);
 		if (autoDisplay && !declaresRendering()) return;
 		options.url = this.getRequestUrlFor_(options.url, asset);
@@ -73067,6 +73128,7 @@ var STACLayer = class STACLayer extends LayerGroup {
 				return { default: __vite_default__ };
 			}, void 0, import.meta.url)).default;
 			const source = new GeoZarr(options);
+			source.setAttributions(options.attributions);
 			await new Promise((resolve, reject) => {
 				source.on("change", () => {
 					if (source.getState() === "error") reject(source.error_);
@@ -73151,6 +73213,20 @@ var STACLayer = class STACLayer extends LayerGroup {
 			}
 		}
 		if (emit) this.dispatch_("layersready");
+		this.flushIfEmpty_();
+	}
+	/**
+	* Flushes the events if the group has no layer.
+	* Without any layer, the map can't be detected, but nothing depends on it either.
+	* Child groups may still add layers, so wait for them first.
+	* @private
+	*/
+	flushIfEmpty_() {
+		if (this.map_) return;
+		const groups = this.getLayers().getArray().filter((layer) => layer instanceof STACLayer);
+		Promise.all(groups.map((group) => group.initialLayers_)).then(() => {
+			if (!this.map_ && this.getLayersArray().length === 0) this.flush_(true);
+		});
 	}
 	/**
 	* Indicates whether the LayerGroup shows only the bounds layer (i.e. no imagery/tile layers).
@@ -73271,6 +73347,10 @@ var STACLayer = class STACLayer extends LayerGroup {
 	* EPSG:4326 instead of the map projection. Make sure to transform it with the
 	* ol.proj.transformExtent function if needed.
 	*
+	* For STAC entities without spatial extent (e.g. Catalogs), the extent is derived from
+	* the bounds that the shown web map links declare (PMTiles, TileJSON, WMTS), if available.
+	* Returns `undefined` if no extent is known or the layer is not added to a map.
+	*
 	* @return {Extent|undefined} The layer extent.
 	* @api
 	*/
@@ -73283,7 +73363,19 @@ var STACLayer = class STACLayer extends LayerGroup {
 		if (data) bbox = data.getBoundingBox();
 		const items = this.getChildren();
 		if (items) bbox = unionBoundingBox(items.map((item) => item.getBoundingBox()));
+		if (!data?.getBoundingBox()) bbox = unionBoundingBox([bbox, ...this.getLayerBounds_()]);
 		if (bbox) return toOlExtent(bbox, view.getProjection());
+	}
+	/**
+	* @return {Array<Array<number>>} The bounding boxes (WGS84) that the shown web map link layers declare,
+	* including the layers of the children.
+	* @private
+	*/
+	getLayerBounds_() {
+		const bounds = [];
+		for (const layer of this.getLayers().getArray()) if (layer instanceof STACLayer) bounds.push(...layer.getLayerBounds_());
+		else if (this.layerBounds_.has(layer)) bounds.push(this.layerBounds_.get(layer));
+		return bounds;
 	}
 	getLayerState() {
 		const state = super.getLayerState();
@@ -73297,13 +73389,8 @@ var STACLayer = class STACLayer extends LayerGroup {
 	* @api
 	*/
 	getAttributions() {
-		const attribution = [];
-		const stac = this.getData();
-		if (stac) {
-			const attribution = stac.getMetadata("attribution");
-			if (attribution) attribution.push(attribution);
-		}
-		return attribution;
+		const attribution = this.getAttributionFor_(this.getData());
+		return attribution ? [attribution] : [];
 	}
 	/**
 	* Get the layer source.
