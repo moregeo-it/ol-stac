@@ -1,4 +1,8 @@
+import Map from 'ol/Map.js';
+import View from 'ol/View.js';
 import TileLayer from 'ol/layer/Tile.js';
+import {transformExtent} from 'ol/proj.js';
+import GeoTIFF from 'ol/source/GeoTIFF.js';
 import XYZ from 'ol/source/XYZ.js';
 import STAC from '../../../../../src/ol/layer/STAC.js';
 import LayerType from '../../../../../src/ol/layer/type.js';
@@ -1062,6 +1066,591 @@ describe('ol/layer/STAC', function () {
         expect(getCaptured(SourceType.PMTilesVector)).to.equal(undefined);
         expect(getCaptured(SourceType.PMTilesRaster)).to.equal(undefined);
       });
+    });
+  });
+
+  describe('without spatial extent', function () {
+    /**
+     * @param {Array<Object>} links The links.
+     * @return {Object} A STAC Catalog without spatial extent.
+     */
+    function createCatalog(links = []) {
+      return {
+        type: 'Catalog',
+        stac_version: '1.0.0',
+        id: 'test-catalog',
+        description: 'Test',
+        links,
+      };
+    }
+
+    /**
+     * @param {STAC} group The layer group.
+     * @param {string} type The event type.
+     * @return {Promise} Resolves with the event.
+     */
+    function once(group, type) {
+      return new Promise((resolve) => group.once(type, resolve));
+    }
+
+    const XYZ_LINK = {
+      rel: 'xyz',
+      href: 'https://example.com/tiles/{z}/{x}/{y}.png',
+      type: 'image/png',
+    };
+    const TILEJSON_LINK = {
+      rel: 'tilejson',
+      href: 'https://example.com/manifest.json',
+      type: 'application/json',
+    };
+
+    let fetchStub;
+    let map;
+
+    afterEach(function () {
+      if (fetchStub) {
+        fetchStub.mockRestore();
+        fetchStub = null;
+      }
+      if (map) {
+        map.dispose();
+        map = null;
+      }
+    });
+
+    it('emits layersready once the layer group is added to a map', async function () {
+      const group = new STAC({
+        data: createCatalog([XYZ_LINK]),
+        displayWebMapLink: true,
+      });
+      const layersReady = once(group, 'layersready');
+      map = new Map({layers: [group]});
+      await layersReady;
+      expect(group.getLayersArray().length).to.equal(1);
+      expect(group.isEmpty()).to.equal(false);
+    });
+
+    it('emits the events if nothing can be shown', async function () {
+      const group = new STAC({data: createCatalog()});
+      const sourceReady = once(group, 'sourceready');
+      const layersReady = once(group, 'layersready');
+      map = new Map({layers: [group]});
+      await Promise.all([sourceReady, layersReady]);
+      expect(group.isEmpty()).to.equal(true);
+    });
+
+    it('emits the error if a web map link fails to load', async function () {
+      fetchStub = vi
+        .spyOn(window, 'fetch')
+        .mockImplementation(() =>
+          Promise.resolve(new Response('Not found', {status: 404})),
+        );
+      const group = new STAC({
+        data: createCatalog([TILEJSON_LINK]),
+        displayWebMapLink: true,
+      });
+      const error = once(group, 'error');
+      const layersReady = once(group, 'layersready');
+      map = new Map({layers: [group]});
+      await Promise.all([error, layersReady]);
+      expect(group.isEmpty()).to.equal(true);
+    });
+
+    it('emits the error if a callback fails', async function () {
+      const group = new STAC({
+        data: createCatalog([XYZ_LINK]),
+        displayWebMapLink: true,
+        getSourceOptions: () => Promise.reject(new Error('Failed')),
+      });
+      const sourceReady = once(group, 'sourceready');
+      const error = once(group, 'error');
+      map = new Map({layers: [group]});
+      await Promise.all([sourceReady, error]);
+      expect(group.isEmpty()).to.equal(true);
+    });
+
+    it('emits the events if the children show nothing', async function () {
+      const group = new STAC({
+        data: createCatalog(),
+        children: [createCatalog(), createCatalog()],
+      });
+      const sourceReady = once(group, 'sourceready');
+      const layersReady = once(group, 'layersready');
+      map = new Map({layers: [group]});
+      await Promise.all([sourceReady, layersReady]);
+      expect(group.isEmpty()).to.equal(true);
+    });
+
+    it('returns the extent from the TileJSON bounds', async function () {
+      fetchStub = vi.spyOn(window, 'fetch').mockImplementation(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({
+              tilejson: '2.2.0',
+              tiles: ['https://example.com/tiles/{z}/{x}/{y}.png'],
+              bounds: [10, 20, 30, 40],
+            }),
+            {status: 200, headers: {'Content-Type': 'application/json'}},
+          ),
+        ),
+      );
+      const group = new STAC({
+        data: createCatalog([TILEJSON_LINK]),
+        displayWebMapLink: true,
+      });
+      const layersReady = once(group, 'layersready');
+      map = new Map({layers: [group]});
+      await layersReady;
+      const extent = group.getExtent();
+      const expected = transformExtent(
+        [10, 20, 30, 40],
+        'EPSG:4326',
+        'EPSG:3857',
+      );
+      expect(extent.map(Math.round)).to.deep.equal(expected.map(Math.round));
+    });
+
+    it('returns the extent from the bounds of an inline TileJSON manifest', async function () {
+      const group = new STAC({
+        data: createCatalog([TILEJSON_LINK]),
+        displayWebMapLink: true,
+        getSourceOptions: (type, options) =>
+          type === SourceType.TileJSON
+            ? Object.assign({}, options, {
+                tileJSON: {
+                  tilejson: '2.2.0',
+                  tiles: ['https://example.com/tiles/{z}/{x}/{y}.png'],
+                  bounds: [10, 20, 30, 40],
+                },
+              })
+            : options,
+      });
+      const layersReady = once(group, 'layersready');
+      map = new Map({layers: [group]});
+      await layersReady;
+      const source = group.getLayersArray()[0].getSource();
+      expect(source.getTileJSON().bounds).to.deep.equal([10, 20, 30, 40]);
+      const expected = transformExtent(
+        [10, 20, 30, 40],
+        'EPSG:4326',
+        'EPSG:3857',
+      );
+      expect(group.getExtent().map(Math.round)).to.deep.equal(
+        expected.map(Math.round),
+      );
+    });
+
+    it('returns the extent from the web map links of the children', async function () {
+      fetchStub = vi.spyOn(window, 'fetch').mockImplementation(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({
+              tilejson: '2.2.0',
+              tiles: ['https://example.com/tiles/{z}/{x}/{y}.png'],
+              bounds: [10, 20, 30, 40],
+            }),
+            {status: 200, headers: {'Content-Type': 'application/json'}},
+          ),
+        ),
+      );
+      const group = new STAC({
+        data: createCatalog(),
+        children: [createCatalog([TILEJSON_LINK])],
+        childrenOptions: {displayWebMapLink: true},
+      });
+      map = new Map({layers: [group]});
+      await waitFor(() => group.getExtent());
+      const expected = transformExtent(
+        [10, 20, 30, 40],
+        'EPSG:4326',
+        'EPSG:3857',
+      );
+      expect(group.getExtent().map(Math.round)).to.deep.equal(
+        expected.map(Math.round),
+      );
+    });
+
+    it('returns the extent from the children and their web map links', async function () {
+      fetchStub = vi.spyOn(window, 'fetch').mockImplementation(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({
+              tilejson: '2.2.0',
+              tiles: ['https://example.com/tiles/{z}/{x}/{y}.png'],
+              bounds: [10, 20, 30, 40],
+            }),
+            {status: 200, headers: {'Content-Type': 'application/json'}},
+          ),
+        ),
+      );
+      const group = new STAC({
+        data: createCatalog(),
+        children: [createItem(), createCatalog([TILEJSON_LINK])],
+        childrenOptions: {displayWebMapLink: true},
+      });
+      map = new Map({layers: [group]});
+      const expected = transformExtent(
+        [0, 0, 30, 40],
+        'EPSG:4326',
+        'EPSG:3857',
+      ).map(Math.round);
+      await waitFor(
+        () =>
+          JSON.stringify(group.getExtent()?.map(Math.round)) ===
+          JSON.stringify(expected),
+      );
+    });
+
+    it('returns the extent of the WMTS layer that is shown', async function () {
+      const layer = (id, bbox) => `
+    <Layer>
+      <ows:Title>${id}</ows:Title>
+      <ows:Identifier>${id}</ows:Identifier>
+      <ows:WGS84BoundingBox>
+        <ows:LowerCorner>${bbox[0]} ${bbox[1]}</ows:LowerCorner>
+        <ows:UpperCorner>${bbox[2]} ${bbox[3]}</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <Style isDefault="true"><ows:Identifier>default</ows:Identifier></Style>
+      <Format>image/png</Format>
+      <TileMatrixSetLink><TileMatrixSet>matrix</TileMatrixSet></TileMatrixSetLink>
+      <ResourceURL format="image/png" resourceType="tile" template="https://example.com/wmts/${id}/{TileMatrix}/{TileRow}/{TileCol}.png"/>
+    </Layer>`;
+      const capabilities = `<?xml version="1.0" encoding="UTF-8"?>
+<Capabilities xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1" version="1.0.0">
+  <Contents>${layer('a', [1, 2, 3, 4])}${layer('b', [10, 20, 30, 40])}
+    <TileMatrixSet>
+      <ows:Identifier>matrix</ows:Identifier>
+      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::3857</ows:SupportedCRS>
+      <TileMatrix>
+        <ows:Identifier>0</ows:Identifier>
+        <ScaleDenominator>559082264.0287178</ScaleDenominator>
+        <TopLeftCorner>-20037508.342789244 20037508.342789244</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>1</MatrixWidth>
+        <MatrixHeight>1</MatrixHeight>
+      </TileMatrix>
+    </TileMatrixSet>
+  </Contents>
+</Capabilities>`;
+      fetchStub = vi
+        .spyOn(window, 'fetch')
+        .mockImplementation(() =>
+          Promise.resolve(new Response(capabilities, {status: 200})),
+        );
+      const group = new STAC({
+        data: createCatalog([
+          {
+            rel: 'wmts',
+            href: 'https://example.com/wmts',
+            type: 'image/png',
+            'wmts:layer': 'a',
+          },
+        ]),
+        displayWebMapLink: true,
+        // The callback may choose another layer than the STAC link
+        getSourceOptions: (type, options) =>
+          type === SourceType.WMTS
+            ? Object.assign({}, options, {layer: 'b'})
+            : options,
+      });
+      const layersReady = once(group, 'layersready');
+      map = new Map({layers: [group]});
+      await layersReady;
+      const expected = transformExtent(
+        [10, 20, 30, 40],
+        'EPSG:4326',
+        'EPSG:3857',
+      );
+      expect(group.getExtent().map(Math.round)).to.deep.equal(
+        expected.map(Math.round),
+      );
+    });
+
+    it('returns no extent for links without bounds', async function () {
+      const group = new STAC({
+        data: createCatalog([XYZ_LINK]),
+        displayWebMapLink: true,
+      });
+      const layersReady = once(group, 'layersready');
+      map = new Map({layers: [group]});
+      await layersReady;
+      expect(group.getExtent()).to.equal(undefined);
+    });
+
+    it('is not empty if a web map link is shown', async function () {
+      const group = new STAC({
+        data: createCatalog([XYZ_LINK]),
+        displayWebMapLink: true,
+      });
+      await waitFor(() => group.getLayersArray().length > 0);
+      expect(group.getLayersArray().length).to.equal(1);
+      expect(group.getBoundsLayer()).to.equal(null);
+      expect(group.isEmpty()).to.equal(false);
+    });
+
+    it('is empty if nothing is shown', async function () {
+      const group = new STAC({data: createCatalog()});
+      await group.updateLayers(false);
+      expect(group.isEmpty()).to.equal(true);
+    });
+
+    it('is empty if the children only have hidden footprints', async function () {
+      const group = new STAC({
+        data: createCatalog(),
+        children: [createItem()],
+        displayFootprint: false,
+      });
+      await waitFor(() => group.getLayers().getLength() > 0);
+      expect(group.isEmpty()).to.equal(true);
+    });
+
+    it('is not empty if the children show their footprints', async function () {
+      const group = new STAC({
+        data: createCatalog(),
+        children: [createItem()],
+      });
+      await waitFor(() => group.getLayers().getLength() > 0);
+      expect(group.isEmpty()).to.equal(false);
+    });
+  });
+
+  describe('isEmpty', function () {
+    it('is not empty if the footprint is shown', async function () {
+      const group = new STAC({data: createItem()});
+      await group.updateLayers(false);
+      expect(group.isEmpty()).to.equal(false);
+    });
+
+    it('is empty if only the hidden footprint is available', async function () {
+      const group = new STAC({data: createItem(), displayFootprint: false});
+      await group.updateLayers(false);
+      expect(group.isEmpty()).to.equal(true);
+    });
+  });
+
+  describe('events', function () {
+    let map;
+    let target;
+
+    afterEach(function () {
+      map?.dispose();
+      target?.remove();
+      map = null;
+      target = null;
+    });
+
+    it('defers sourceready for synchronous data until listeners are registered', async function () {
+      target = document.createElement('div');
+      target.style.width = '200px';
+      target.style.height = '200px';
+      document.body.appendChild(target);
+      const group = new STAC({data: createItem()});
+      map = new Map({
+        target,
+        layers: [group],
+        view: new View({center: [0, 0], zoom: 2}),
+      });
+      let sourceReady = false;
+      group.on('sourceready', () => (sourceReady = true));
+      await waitFor(() => sourceReady);
+    });
+
+    it('forgets the map once the layer group is removed from it', async function () {
+      const group = new STAC({
+        data: createItem({}, [
+          {
+            rel: 'xyz',
+            href: 'https://example.com/tiles/{z}/{x}/{y}.png',
+            type: 'image/png',
+          },
+        ]),
+        displayWebMapLink: true,
+      });
+      const layersReady = new Promise((resolve) =>
+        group.once('layersready', resolve),
+      );
+      map = new Map({layers: [group]});
+      await layersReady;
+      expect(group.getExtent()).to.be.an('array');
+      map.removeLayer(group);
+      expect(group.getExtent()).to.equal(undefined);
+    });
+  });
+
+  describe('attributions', function () {
+    const ITEM_ATTRIBUTION = '<a href="https://example.com">Item</a>';
+    const ASSET_ATTRIBUTION = 'Asset';
+    const LINK_ATTRIBUTION = 'Link';
+
+    let fetchStub;
+    let captured;
+
+    beforeEach(function () {
+      captured = [];
+      fetchStub = vi
+        .spyOn(window, 'fetch')
+        .mockImplementation(() =>
+          Promise.resolve(new Response('', {status: 404})),
+        );
+    });
+
+    afterEach(function () {
+      fetchStub.mockRestore();
+      fetchStub = null;
+    });
+
+    /**
+     * A getSourceOptions function that captures all calls.
+     * @param {SourceType} type The source type.
+     * @param {Object} options The source options.
+     * @return {Object} The unchanged source options.
+     */
+    function captureSourceOptions(type, options) {
+      captured.push({type, options});
+      return options;
+    }
+
+    /**
+     * Get the captured source options for the given source type.
+     * @param {SourceType} type The source type.
+     * @return {Object|undefined} The source options.
+     */
+    function getCaptured(type) {
+      const entry = captured.find((c) => c.type === type);
+      return entry && entry.options;
+    }
+
+    /**
+     * @param {Object} assets The assets.
+     * @param {Array<Object>} links The links.
+     * @return {Object} A STAC Item with attribution.
+     */
+    function createAttributedItem(assets = {}, links = []) {
+      const item = createItem(assets, links);
+      item.properties.attribution = ITEM_ATTRIBUTION;
+      return item;
+    }
+
+    it('getAttributions returns the attribution of the STAC entity', function () {
+      const group = new STAC({data: createAttributedItem()});
+      expect(group.getAttributions()).to.deep.equal([ITEM_ATTRIBUTION]);
+    });
+
+    it('getAttributions returns an empty list without attribution', function () {
+      const group = new STAC({data: createItem()});
+      expect(group.getAttributions()).to.deep.equal([]);
+    });
+
+    it('uses the attribution of a GeoTIFF asset', async function () {
+      const group = new STAC({
+        data: createAttributedItem({
+          cog: Object.assign({attribution: ASSET_ATTRIBUTION}, COG_ASSET),
+        }),
+        getSourceOptions: captureSourceOptions,
+      });
+      group.on('error', () => {});
+      await waitFor(() => getCaptured(SourceType.GeoTIFF));
+      expect(getCaptured(SourceType.GeoTIFF).attributions).to.equal(
+        ASSET_ATTRIBUTION,
+      );
+    });
+
+    it('inherits the attribution of the STAC entity for assets', async function () {
+      const group = new STAC({
+        data: createAttributedItem({cog: COG_ASSET}),
+        getSourceOptions: captureSourceOptions,
+      });
+      group.on('error', () => {});
+      await waitFor(() => getCaptured(SourceType.GeoTIFF));
+      expect(getCaptured(SourceType.GeoTIFF).attributions).to.equal(
+        ITEM_ATTRIBUTION,
+      );
+    });
+
+    it('sets the attribution on the GeoTIFF source', async function () {
+      // OpenLayers < 10.8 ignores the attributions option of GeoTIFF sources
+      const spy = vi.spyOn(GeoTIFF.prototype, 'setAttributions');
+      try {
+        const group = new STAC({
+          data: createAttributedItem({
+            cog: Object.assign({attribution: ASSET_ATTRIBUTION}, COG_ASSET),
+          }),
+        });
+        group.on('error', () => {});
+        await waitFor(() => spy.mock.calls.length > 0);
+        const source = spy.mock.contexts[0];
+        expect(source.getAttributions()({})).to.deep.equal([ASSET_ATTRIBUTION]);
+      } finally {
+        spy.mockRestore();
+      }
+    });
+
+    it('uses the attribution of a web map link', async function () {
+      const group = new STAC({
+        data: createAttributedItem({}, [
+          {
+            rel: 'xyz',
+            href: 'https://example.com/tiles/{z}/{x}/{y}.png',
+            type: 'image/png',
+            attribution: LINK_ATTRIBUTION,
+          },
+        ]),
+        displayWebMapLink: true,
+        getSourceOptions: captureSourceOptions,
+      });
+      group.on('error', () => {});
+      await waitFor(() => getCaptured(SourceType.XYZ));
+      expect(getCaptured(SourceType.XYZ).attributions).to.equal(
+        LINK_ATTRIBUTION,
+      );
+    });
+
+    it('falls back to the attribution of the STAC entity for web map links', async function () {
+      const group = new STAC({
+        data: createAttributedItem({}, [
+          {
+            rel: 'xyz',
+            href: 'https://example.com/tiles/{z}/{x}/{y}.png',
+            type: 'image/png',
+          },
+        ]),
+        displayWebMapLink: true,
+        getSourceOptions: captureSourceOptions,
+      });
+      group.on('error', () => {});
+      await waitFor(() => getCaptured(SourceType.XYZ));
+      expect(getCaptured(SourceType.XYZ).attributions).to.equal(
+        ITEM_ATTRIBUTION,
+      );
+    });
+
+    it('sets the attribution on GeoJSON asset layers', async function () {
+      fetchStub.mockImplementation(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({type: 'FeatureCollection', features: []}),
+            {status: 200, headers: {'Content-Type': 'application/geo+json'}},
+          ),
+        ),
+      );
+      const group = new STAC({
+        data: createAttributedItem({
+          labels: {
+            href: 'https://example.com/labels.geojson',
+            type: 'application/geo+json',
+            roles: ['data'],
+            attribution: ASSET_ATTRIBUTION,
+          },
+        }),
+        assets: ['labels'],
+      });
+      await waitFor(() => group.getLayersArray().length > 1);
+      const layer = group
+        .getLayersArray()
+        .find((l) => l !== group.getBoundsLayer());
+      const attributions = layer.getSource().getAttributions();
+      expect(attributions({})).to.deep.equal([ASSET_ATTRIBUTION]);
     });
   });
 });
