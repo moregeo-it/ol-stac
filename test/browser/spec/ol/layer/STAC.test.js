@@ -2,6 +2,7 @@ import Map from 'ol/Map.js';
 import View from 'ol/View.js';
 import TileLayer from 'ol/layer/Tile.js';
 import {transformExtent} from 'ol/proj.js';
+import GeoTIFF from 'ol/source/GeoTIFF.js';
 import XYZ from 'ol/source/XYZ.js';
 import STAC from '../../../../../src/ol/layer/STAC.js';
 import LayerType from '../../../../../src/ol/layer/type.js';
@@ -1474,6 +1475,182 @@ describe('ol/layer/STAC', function () {
       expect(group.getExtent()).to.be.an('array');
       map.removeLayer(group);
       expect(group.getExtent()).to.equal(undefined);
+    });
+  });
+
+  describe('attributions', function () {
+    const ITEM_ATTRIBUTION = '<a href="https://example.com">Item</a>';
+    const ASSET_ATTRIBUTION = 'Asset';
+    const LINK_ATTRIBUTION = 'Link';
+
+    let fetchStub;
+    let captured;
+
+    beforeEach(function () {
+      captured = [];
+      fetchStub = vi
+        .spyOn(window, 'fetch')
+        .mockImplementation(() =>
+          Promise.resolve(new Response('', {status: 404})),
+        );
+    });
+
+    afterEach(function () {
+      fetchStub.mockRestore();
+      fetchStub = null;
+    });
+
+    /**
+     * A getSourceOptions function that captures all calls.
+     * @param {SourceType} type The source type.
+     * @param {Object} options The source options.
+     * @return {Object} The unchanged source options.
+     */
+    function captureSourceOptions(type, options) {
+      captured.push({type, options});
+      return options;
+    }
+
+    /**
+     * Get the captured source options for the given source type.
+     * @param {SourceType} type The source type.
+     * @return {Object|undefined} The source options.
+     */
+    function getCaptured(type) {
+      const entry = captured.find((c) => c.type === type);
+      return entry && entry.options;
+    }
+
+    /**
+     * @param {Object} assets The assets.
+     * @param {Array<Object>} links The links.
+     * @return {Object} A STAC Item with attribution.
+     */
+    function createAttributedItem(assets = {}, links = []) {
+      const item = createItem(assets, links);
+      item.properties.attribution = ITEM_ATTRIBUTION;
+      return item;
+    }
+
+    it('getAttributions returns the attribution of the STAC entity', function () {
+      const group = new STAC({data: createAttributedItem()});
+      expect(group.getAttributions()).to.deep.equal([ITEM_ATTRIBUTION]);
+    });
+
+    it('getAttributions returns an empty list without attribution', function () {
+      const group = new STAC({data: createItem()});
+      expect(group.getAttributions()).to.deep.equal([]);
+    });
+
+    it('uses the attribution of a GeoTIFF asset', async function () {
+      const group = new STAC({
+        data: createAttributedItem({
+          cog: Object.assign({attribution: ASSET_ATTRIBUTION}, COG_ASSET),
+        }),
+        getSourceOptions: captureSourceOptions,
+      });
+      group.on('error', () => {});
+      await waitFor(() => getCaptured(SourceType.GeoTIFF));
+      expect(getCaptured(SourceType.GeoTIFF).attributions).to.equal(
+        ASSET_ATTRIBUTION,
+      );
+    });
+
+    it('inherits the attribution of the STAC entity for assets', async function () {
+      const group = new STAC({
+        data: createAttributedItem({cog: COG_ASSET}),
+        getSourceOptions: captureSourceOptions,
+      });
+      group.on('error', () => {});
+      await waitFor(() => getCaptured(SourceType.GeoTIFF));
+      expect(getCaptured(SourceType.GeoTIFF).attributions).to.equal(
+        ITEM_ATTRIBUTION,
+      );
+    });
+
+    it('sets the attribution on the GeoTIFF source', async function () {
+      // OpenLayers < 10.8 ignores the attributions option of GeoTIFF sources
+      const spy = vi.spyOn(GeoTIFF.prototype, 'setAttributions');
+      try {
+        const group = new STAC({
+          data: createAttributedItem({
+            cog: Object.assign({attribution: ASSET_ATTRIBUTION}, COG_ASSET),
+          }),
+        });
+        group.on('error', () => {});
+        await waitFor(() => spy.mock.calls.length > 0);
+        const source = spy.mock.contexts[0];
+        expect(source.getAttributions()({})).to.deep.equal([ASSET_ATTRIBUTION]);
+      } finally {
+        spy.mockRestore();
+      }
+    });
+
+    it('uses the attribution of a web map link', async function () {
+      const group = new STAC({
+        data: createAttributedItem({}, [
+          {
+            rel: 'xyz',
+            href: 'https://example.com/tiles/{z}/{x}/{y}.png',
+            type: 'image/png',
+            attribution: LINK_ATTRIBUTION,
+          },
+        ]),
+        displayWebMapLink: true,
+        getSourceOptions: captureSourceOptions,
+      });
+      group.on('error', () => {});
+      await waitFor(() => getCaptured(SourceType.XYZ));
+      expect(getCaptured(SourceType.XYZ).attributions).to.equal(
+        LINK_ATTRIBUTION,
+      );
+    });
+
+    it('falls back to the attribution of the STAC entity for web map links', async function () {
+      const group = new STAC({
+        data: createAttributedItem({}, [
+          {
+            rel: 'xyz',
+            href: 'https://example.com/tiles/{z}/{x}/{y}.png',
+            type: 'image/png',
+          },
+        ]),
+        displayWebMapLink: true,
+        getSourceOptions: captureSourceOptions,
+      });
+      group.on('error', () => {});
+      await waitFor(() => getCaptured(SourceType.XYZ));
+      expect(getCaptured(SourceType.XYZ).attributions).to.equal(
+        ITEM_ATTRIBUTION,
+      );
+    });
+
+    it('sets the attribution on GeoJSON asset layers', async function () {
+      fetchStub.mockImplementation(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({type: 'FeatureCollection', features: []}),
+            {status: 200, headers: {'Content-Type': 'application/geo+json'}},
+          ),
+        ),
+      );
+      const group = new STAC({
+        data: createAttributedItem({
+          labels: {
+            href: 'https://example.com/labels.geojson',
+            type: 'application/geo+json',
+            roles: ['data'],
+            attribution: ASSET_ATTRIBUTION,
+          },
+        }),
+        assets: ['labels'],
+      });
+      await waitFor(() => group.getLayersArray().length > 1);
+      const layer = group
+        .getLayersArray()
+        .find((l) => l !== group.getBoundsLayer());
+      const attributions = layer.getSource().getAttributions();
+      expect(attributions({})).to.deep.equal([ASSET_ATTRIBUTION]);
     });
   });
 });

@@ -446,6 +446,25 @@ class STACLayer extends LayerGroup {
   }
 
   /**
+   * Gets the attribution for the given reference, see the attribution extension.
+   * Assets inherit the attribution from their STAC entity, Links fall back to the STAC entity.
+   *
+   * @param {Asset|Link|STACObject} ref The STAC Asset, Link or entity that is shown.
+   * @return {string|undefined} The attribution, if available.
+   * @private
+   */
+  getAttributionFor_(ref) {
+    const candidates = [ref, ref?.getContext?.() || this.getData()];
+    for (const candidate of candidates) {
+      const attribution = candidate?.getMetadata?.('attribution');
+      if (typeof attribution === 'string' && attribution.length > 0) {
+        return attribution;
+      }
+    }
+    return undefined;
+  }
+
+  /**
    * Rewrites the given URL based on the `getRequestUrl` option.
    *
    * @param {string} url The URL that is requested.
@@ -750,6 +769,7 @@ class STACLayer extends LayerGroup {
       projection,
       imageExtent: toOlExtent(bbox, projection),
       crossOrigin: this.crossOrigin_,
+      attributions: this.getAttributionFor_(image),
     };
     const imageLoadFunction = this.createLoadFunction_(
       createImageLoadFunction,
@@ -793,9 +813,7 @@ class STACLayer extends LayerGroup {
     url = this.getRequestUrlFor_(url, link, link.rel === 'xyz');
 
     const options = {
-      attributions:
-        link.getMetadata('attribution') ||
-        this.getData().getMetadata('attribution'),
+      attributions: this.getAttributionFor_(link),
       crossOrigin: this.crossOrigin_,
       url,
     };
@@ -1087,6 +1105,7 @@ class STACLayer extends LayerGroup {
       sources: [sourceInfo],
       convertToRGB: 'auto',
       loadMissingProjection: true,
+      attributions: this.getAttributionFor_(asset),
     };
 
     const projection = await getProjection(asset);
@@ -1118,6 +1137,8 @@ class STACLayer extends LayerGroup {
     }
 
     const source = new GeoTIFF(options);
+    // OpenLayers < 10.8 doesn't pass the attributions option through
+    source.setAttributions(options.attributions);
     const status = new Promise((resolve, reject) => {
       source.on('error', reject);
       source.on('change', () => {
@@ -1183,6 +1204,7 @@ class STACLayer extends LayerGroup {
      * @type {import("ol/source/XYZ.js").Options}
      */
     let options = {
+      attributions: this.getAttributionFor_(data),
       crossOrigin: this.crossOrigin_,
       url,
     };
@@ -1295,9 +1317,11 @@ class STACLayer extends LayerGroup {
         'json',
         asset,
       );
+      const vectorOptions = this.getGeoJsonLayerOptions_(geojson);
+      vectorOptions.source.setAttributions(this.getAttributionFor_(asset));
       const layerOptions = await this.updateLayerOptions_(
         LayerType.Vector,
-        this.getGeoJsonLayerOptions_(geojson),
+        vectorOptions,
         asset,
       );
       const layer = new VectorLayer(layerOptions);
@@ -1446,6 +1470,7 @@ class STACLayer extends LayerGroup {
     }
 
     let options = getGeoZarrSourceOptionsFromAsset(asset, this.bands_);
+    options.attributions = this.getAttributionFor_(asset);
     // Web-Optimized Zarr describes its bands in the store metadata,
     // everything else must declare what to render in the STAC metadata
     // (or provide it through getSourceOptions for explicitly selected assets)
@@ -1485,6 +1510,8 @@ class STACLayer extends LayerGroup {
       }
       const GeoZarr = (await import('../source/GeoZarr.js')).default;
       const source = new GeoZarr(options);
+      // The source doesn't pass the attributions option through
+      source.setAttributions(options.attributions);
       await new Promise((resolve, reject) => {
         source.on('change', () => {
           if (source.getState() === 'error') {
@@ -1908,15 +1935,8 @@ class STACLayer extends LayerGroup {
    * @api
    */
   getAttributions() {
-    const attribution = [];
-    const stac = this.getData();
-    if (stac) {
-      const attribution = stac.getMetadata('attribution');
-      if (attribution) {
-        attribution.push(attribution);
-      }
-    }
-    return attribution;
+    const attribution = this.getAttributionFor_(this.getData());
+    return attribution ? [attribution] : [];
   }
 
   /**
