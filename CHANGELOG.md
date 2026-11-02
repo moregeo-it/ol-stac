@@ -7,19 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.1] - 2026-11-02
+
 ### Added
 
-- `getExtent` returns the bounds of the shown PMTiles, TileJSON and WMTS web map links for STAC entities without spatial extent, e.g. catalogs
+- `getExtent` returns the bounds of the shown PMTiles, TileJSON and WMTS web map links
+  for STAC entities without spatial extent (e.g. catalogs)
+- Layers for assets (GeoTIFF, GeoZarr, GeoJSON, preview images, tile server) show the attribution
+  of the asset or its STAC entity
 
 ### Fixed
 
-- Events such as `layersready`, `sourceready` and `error` are emitted for STAC entities without spatial extent,
-  also if nothing can be shown (e.g. a web map link fails to load)
-- `isEmpty` returns `false` for STAC entities without spatial extent that show a layer, e.g. catalogs with web map links
-- `isEmpty` returns `true` for STAC entities whose children show nothing (e.g. hidden footprints)
-- TileJSON manifests provided through `getSourceOptions` are used instead of the manifest that the web map link points to
+- STAC entities without spatial extent (e.g. catalogs with web map links):
+  - The events `layersready`, `sourceready` and `error` are emitted, also if nothing can be shown
+    (e.g. a web map link fails to load)
+  - `isEmpty` returns `false` if a layer is shown
+- `isEmpty` takes into account whether the children show something (e.g. only hidden footprints)
 - `getAttributions` returns the attribution of the STAC entity instead of throwing an error or returning an empty list
-- Layers for assets (GeoTIFF, GeoZarr, GeoJSON, preview images, tile server) show the attribution of the asset or its STAC entity
+- TileJSON manifests provided through `getSourceOptions` are used instead of the manifest that the web map link points to
 
 ## [1.8.0] - 2026-11-01
 
@@ -327,7 +332,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release
 
-[Unreleased]: <https://github.com/moregeo-it/ol-stac/compare/v1.8.0...HEAD>
+[Unreleased]: <https://github.com/moregeo-it/ol-stac/compare/v1.8.1...HEAD>
+[1.8.1]: <https://github.com/moregeo-it/ol-stac/compare/v1.8.0...v1.8.1>
 [1.8.0]: <https://github.com/moregeo-it/ol-stac/compare/v1.7.1...v1.8.0>
 [1.7.1]: <https://github.com/moregeo-it/ol-stac/compare/v1.7.0...v1.7.1>
 [1.7.0]: <https://github.com/moregeo-it/ol-stac/compare/v1.6.0...v1.7.0>
