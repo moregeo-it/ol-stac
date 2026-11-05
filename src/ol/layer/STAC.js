@@ -213,68 +213,6 @@ import LayerType from './type.js';
  */
 
 /**
- * @param {*} value The value.
- * @return {*} The value with the keys of all objects sorted.
- */
-function sortKeys(value) {
-  if (Array.isArray(value)) {
-    return value.map(sortKeys);
-  }
-  if (isObject(value)) {
-    return Object.fromEntries(
-      Object.keys(value)
-        .sort()
-        .map((key) => [key, sortKeys(value[key])]),
-    );
-  }
-  return value;
-}
-
-/**
- * @param {Asset|Link} a A data source.
- * @param {Asset|Link} b Another data source.
- * @return {boolean} `true` if both render the same data.
- */
-function isSameDataSource(a, b) {
-  if (a === b) {
-    return true;
-  }
-  if (
-    Boolean(a.isLink) !== Boolean(b.isLink) ||
-    a.getAbsoluteUrl() !== b.getAbsoluteUrl()
-  ) {
-    return false;
-  }
-  if (!a.isLink) {
-    return true;
-  }
-  // Web map links can share the URL, but differ in other properties (e.g. `wms:layers`)
-  return (
-    JSON.stringify(getRenderingConfig(a)) ===
-    JSON.stringify(getRenderingConfig(b))
-  );
-}
-
-/**
- * @param {Link} link The link.
- * @return {Object} The properties that affect the rendering, i.e. without descriptive
- * properties such as `id` or `title`.
- */
-function getRenderingConfig(link) {
-  const json = link.toJSON();
-  const config = {};
-  for (const key of Object.keys(json)) {
-    if (
-      ['rel', 'type', 'method', 'headers', 'body'].includes(key) ||
-      key.includes(':')
-    ) {
-      config[key] = json[key];
-    }
-  }
-  return sortKeys(config);
-}
-
-/**
  * @classdesc
  * Renders STAC entities such as STAC Items, Collections, Catalogs or lists of them as returned by APIs.
  * Catalogs have no spatial extent, so only their web map links and children can be shown.
@@ -347,6 +285,12 @@ class STACLayer extends LayerGroup {
      * @private
      */
     this.dataSources_ = null;
+
+    /**
+     * @type {WeakMap<Object, Asset|Link>}
+     * @private
+     */
+    this.convertedDataSources_ = new WeakMap();
 
     /**
      * @type {Array<number|string>}
@@ -1375,12 +1319,10 @@ class STACLayer extends LayerGroup {
    * @private
    */
   getDataSourcePosition_(data) {
-    if (!(data?.isAsset || data?.isLink) || !this.dataSources_) {
+    if (!data || !this.dataSources_) {
       return -1;
     }
-    return this.dataSources_.findIndex(
-      (source) => source && isSameDataSource(source, data),
-    );
+    return this.dataSources_.indexOf(data);
   }
 
   /**
@@ -1906,7 +1848,8 @@ class STACLayer extends LayerGroup {
    * The layers of data sources that were shown before are kept and not reloaded.
    *
    * Strings refer to asset keys, plain objects are converted to Links (if they have a `rel`)
-   * or Assets.
+   * or Assets. Data sources are identified by object identity, so pass the same objects again
+   * to keep their layers.
    * @param {Array<string|Asset|Link|Object>|null} dataSources The data sources to show.
    * @param {boolean} [updateLayers] Whether to update the layers right away.
    * @return {Promise} Resolves when all data sources are rendered.
@@ -1925,10 +1868,12 @@ class STACLayer extends LayerGroup {
         if (source.isAsset || source.isLink) {
           return source;
         }
-        if (source.rel) {
-          return new Link(source, data);
+        let converted = this.convertedDataSources_.get(source);
+        if (!converted) {
+          converted = source.rel ? new Link(source, data) : new Asset(source);
+          this.convertedDataSources_.set(source, converted);
         }
-        return new Asset(source);
+        return converted;
       });
     } else {
       this.dataSources_ = null;

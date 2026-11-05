@@ -1772,9 +1772,9 @@ describe('ol/layer/STAC', function () {
       const group = new STAC({
         data: createItem(ASSETS, [{...XYZ_LINK, id: 'tiles'}]),
         displayWebMapLink: ['tiles'],
-        dataSources: [XYZ_LINK],
       });
       await waitFor(() => getDataSourceNames(group).length > 0);
+      await group.setDataSources(group.getWebMapLinks());
       await new Promise((resolve) => setTimeout(resolve, 50));
       expect(getDataSourceNames(group)).to.deep.equal(['xyz']);
     });
@@ -1804,6 +1804,74 @@ describe('ol/layer/STAC', function () {
 
       await group.setDataSources([wms('b'), wms('c')]);
       expect(getWmsLayers(group)).to.deep.equal(['b', 'c']);
+    });
+
+    it('distinguishes web map links that only differ in properties without prefix', async function () {
+      const link = (version) => ({
+        ...XYZ_LINK,
+        variables: {version: {const: version}},
+      });
+      const getLayer = (group) =>
+        group.getLayersArray().find((layer) => layer.get('stac')?.isLink);
+
+      const group = new STAC({
+        data: createItem(ASSETS),
+        dataSources: [link('1')],
+      });
+      await waitFor(() => getLayer(group));
+      const layer = getLayer(group);
+
+      await group.setDataSources([link('2')]);
+      expect(getLayer(group)).not.to.equal(layer);
+      expect(getLayer(group).get('stac').variables.version.const).to.equal('2');
+    });
+
+    it('distinguishes assets that share a URL', async function () {
+      const asset = (band) => ({
+        href: 'https://example.com/shared.png',
+        type: 'image/png',
+        bands: [{name: band}],
+      });
+      const getLayer = (group) =>
+        group.getLayersArray().find((layer) => layer.get('stac')?.isAsset);
+
+      const group = new STAC({
+        data: createItem({
+          one: asset('b1'),
+          other: asset('b2'),
+        }),
+        dataSources: ['one'],
+      });
+      await waitFor(() => getLayer(group));
+      const layer = getLayer(group);
+
+      // The same asset again keeps the layer
+      await group.setDataSources(['one']);
+      expect(getLayer(group)).to.equal(layer);
+
+      await group.setDataSources(['other']);
+      expect(getLayer(group)).not.to.equal(layer);
+      expect(getLayer(group).get('stac').getKey()).to.equal('other');
+    });
+
+    it('keeps the layers of plain objects that are passed again', async function () {
+      const link = {...XYZ_LINK};
+      const getLayer = (group) =>
+        group.getLayersArray().find((layer) => layer.get('stac')?.isLink);
+
+      const group = new STAC({
+        data: createItem(ASSETS),
+        dataSources: [link],
+      });
+      await waitFor(() => getLayer(group));
+      const layer = getLayer(group);
+
+      await group.setDataSources([link, 'a']);
+      expect(getLayer(group)).to.equal(layer);
+
+      // An equal, but different object is a different data source
+      await group.setDataSources([{...XYZ_LINK}]);
+      expect(getLayer(group)).not.to.equal(layer);
     });
 
     it('keeps other web map links below the data sources', async function () {
