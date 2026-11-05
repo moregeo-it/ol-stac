@@ -10,7 +10,7 @@ register(proj4); // required to support source reprojection
 
 const layer = new STAC({
   url: 'https://transfer.data.aad.gov.au/aadc-aerial-photography/casc8916/collection.json',
-  assets: ['flightline-1', 'flightline-2'],
+  dataSources: ['flightline-1', 'flightline-2'],
 });
 
 const background = new TileLayer({

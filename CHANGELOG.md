@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Option `dataSources` and the methods `setDataSources` and `getDataSources` to show assets and web map links
+  together, in the given order
+
 ### Changed
 
 - Changing the assets to show keeps the layers of assets that are still shown instead of reloading them
@@ -15,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Multiple assets are rendered in the given order instead of the order in which they finish loading
+
+### Deprecated
+
+- Option `assets` and the methods `setAssets` and `getAssets`, use `dataSources`, `setDataSources` and `getDataSources` instead
 
 ## [1.8.1] - 2026-11-02
 

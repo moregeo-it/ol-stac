@@ -60,7 +60,7 @@ function createNdviStyle(asset) {
 
 const layer = new STAC({
   url: 'https://api.explorer.eopf.copernicus.eu/stac/collections/sentinel-2-l2a/items/S2A_MSIL2A_20260913T114401_N0512_R123_T30VVK_20260913T175010',
-  assets: ['reflectance'],
+  dataSources: ['reflectance'],
   bands: selectedBands,
   // The function may also be asynchronous, e.g. to load a style definition
   // that is referenced in the STAC metadata.
