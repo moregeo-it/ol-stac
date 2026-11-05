@@ -1309,6 +1309,25 @@ class STACLayer extends LayerGroup {
   }
 
   /**
+   * Removes (and disposes) the layers that match the filter.
+   * @param {function(import("ol/layer/Base.js").default):boolean} filter The filter.
+   * @private
+   */
+  removeLayers_(filter) {
+    const layers = this.getLayers();
+    for (let i = layers.getLength() - 1; i >= 0; i--) {
+      const layer = layers.item(i);
+      if (filter(layer)) {
+        layers.removeAt(i);
+        // Releases the WebGL context, browsers only allow a few of them
+        if (!(layer instanceof LayerGroup)) {
+          layer.dispose();
+        }
+      }
+    }
+  }
+
+  /**
    * @return {VectorLayer|null} The vector layer showing the geometry/bbox.
    * @private
    */
@@ -1600,18 +1619,26 @@ class STACLayer extends LayerGroup {
   /**
    * Update the layers shown manually based on the current configuration.
    * Usually this doesn't need to be called manually.
+   * The layers of the requested assets that are already shown are kept.
    * @param {boolean} [emit] Whether to emit the `layersready` event once the layers are updated.
    * @return {Promise} Resolves once the layers are updated.
    * @api
    */
   async updateLayers(emit = true) {
-    // Remove old layers
-    const oldLayers = this.getLayers();
-    for (let i = oldLayers.getLength() - 1; i >= 0; i--) {
-      const layer = oldLayers.item(i);
-      if (layer.get('stac') && !layer.get('bounds')) {
-        oldLayers.removeAt(i);
-      }
+    // Remove old layers, but keep the layers of the requested assets to avoid reloading them
+    const isOldLayer = (layer) => layer.get('stac') && !layer.get('bounds');
+    this.removeLayers_(
+      (layer) =>
+        isOldLayer(layer) && this.getAssetPosition_(layer.get('stac')) < 0,
+    );
+    const keptLayers = this.getLayers().getArray().filter(isOldLayer);
+    const keptPositions = keptLayers.map((layer) =>
+      this.getAssetPosition_(layer.get('stac')),
+    );
+    if (keptPositions.some((pos, i) => i > 0 && pos < keptPositions[i - 1])) {
+      // The order of the assets changed
+      keptLayers.forEach((layer) => this.getLayers().remove(layer));
+      keptLayers.forEach((layer) => this.insertLayer_(layer));
     }
 
     // Add layers by priority
@@ -1634,7 +1661,7 @@ class STACLayer extends LayerGroup {
     const assets = this.getAssets();
     if (assets) {
       const promises = assets.map(async (ref) => {
-        if (!ref) {
+        if (!ref || keptPositions.includes(this.getAssetPosition_(ref))) {
           return;
         }
         if (ref.isType(geojsonMediaType)) {
@@ -1785,12 +1812,14 @@ class STACLayer extends LayerGroup {
     // The layers are recreated, as switching between a styled and an
     // unstyled visualization also changes how the sources are configured
     // (e.g. the normalization of GeoTIFF sources)
+    this.removeLayers_((layer) => layer.get('stac') && !layer.get('bounds'));
     await this.updateLayers();
   }
 
   /**
    * Update the assets to be rendered.
    * The assets are rendered in the given order, i.e. the last asset is rendered on top.
+   * The layers of assets that were shown before are kept and not reloaded.
    * @param {Array<string|Asset>|null} assets The assets to show.
    * @param {boolean} [updateLayers] Whether to update the layers right away.
    * @return {Promise} Resolves when all assets are rendered.

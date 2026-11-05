@@ -1689,6 +1689,28 @@ describe('ol/layer/STAC', function () {
       expect(getAssetKeys(group)).to.deep.equal(['a', 'b', 'c']);
     });
 
+    it('keeps the layers of assets that are still shown', async function () {
+      const group = new STAC({
+        data: createItem(ASSETS),
+        assets: ['a', 'b'],
+        getSourceOptions,
+      });
+      await waitFor(() => getAssetLayers(group).length === 2);
+      const [layerA, layerB] = getAssetLayers(group);
+      layerA.setVisible(false);
+
+      await group.setAssets(['a', 'b', 'c']);
+      expect(getAssetKeys(group)).to.deep.equal(['a', 'b', 'c']);
+      expect(getAssetLayers(group)[0]).to.equal(layerA);
+      expect(getAssetLayers(group)[1]).to.equal(layerB);
+      expect(layerA.getVisible()).to.equal(false);
+
+      await group.setAssets(['c', 'a']);
+      expect(getAssetKeys(group)).to.deep.equal(['c', 'a']);
+      expect(getAssetLayers(group)[1]).to.equal(layerA);
+      expect(layerB.getSource()).to.equal(null);
+    });
+
     it('inserts new assets below the shown ones if requested', async function () {
       const group = new STAC({
         data: createItem(ASSETS),
@@ -1698,6 +1720,18 @@ describe('ol/layer/STAC', function () {
       await waitFor(() => getAssetLayers(group).length === 1);
       await group.setAssets(['a', 'b']);
       expect(getAssetKeys(group)).to.deep.equal(['a', 'b']);
+    });
+
+    it('recreates the layers if the default colormap changes', async function () {
+      const group = new STAC({
+        data: createItem(ASSETS),
+        assets: ['a'],
+      });
+      await waitFor(() => getAssetLayers(group).length === 1);
+      const [layer] = getAssetLayers(group);
+      await group.setDefaultColormap(['#000', '#fff']);
+      expect(getAssetLayers(group).length).to.equal(1);
+      expect(getAssetLayers(group)[0]).not.to.equal(layer);
     });
   });
 });

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Changing the assets to show keeps the layers of assets that are still shown instead of reloading them
+- Layers that are no longer shown are disposed to release their resources (e.g. WebGL contexts)
+
 ### Fixed
 
 - Multiple assets are rendered in the given order instead of the order in which they finish loading
