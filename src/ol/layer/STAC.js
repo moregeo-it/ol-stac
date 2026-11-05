@@ -110,6 +110,7 @@ import LayerType from './type.js';
  * only for STAC Items and Collections.
  * This can be an array of strings corresponding to asset keys or Asset objects.
  * null shows the default asset, an empty array shows no asset.
+ * The assets are rendered in the given order, i.e. the last asset is rendered on top.
  * @property {Array<number|string>} [bands] The bands to show. One-based index of the band, or the name of the band.
  * @property {function(SourceType, SourceOptions, (Asset|Link)):(SourceOptions|Promise<SourceOptions>)} [getSourceOptions]
  * Optional function that can be used to configure the underlying sources. The function can do any additional work
@@ -1268,7 +1269,43 @@ class STACLayer extends LayerGroup {
         }
       });
     }
-    this.getLayers().push(layer);
+    this.insertLayer_(layer);
+  }
+
+  /**
+   * Inserts the layer so that the layers of the requested assets follow the
+   * order of the assets, regardless of the order in which they finish loading.
+   * @param {import("ol/layer/Base.js").default} layer The layer to insert.
+   * @private
+   */
+  insertLayer_(layer) {
+    const layers = this.getLayers();
+    const position = this.getAssetPosition_(layer.get('stac'));
+    if (position >= 0) {
+      const next = layers
+        .getArray()
+        .findIndex((l) => this.getAssetPosition_(l.get('stac')) > position);
+      if (next >= 0) {
+        layers.insertAt(next, layer);
+        return;
+      }
+    }
+    layers.push(layer);
+  }
+
+  /**
+   * @param {*} data The STAC object of a layer.
+   * @return {number} The position of the asset in the requested assets, or -1.
+   * @private
+   */
+  getAssetPosition_(data) {
+    if (!data?.isAsset || !this.assets_) {
+      return -1;
+    }
+    const url = data.getAbsoluteUrl();
+    return this.assets_.findIndex(
+      (asset) => asset && (asset === data || asset.getAbsoluteUrl() === url),
+    );
   }
 
   /**
@@ -1753,6 +1790,7 @@ class STACLayer extends LayerGroup {
 
   /**
    * Update the assets to be rendered.
+   * The assets are rendered in the given order, i.e. the last asset is rendered on top.
    * @param {Array<string|Asset>|null} assets The assets to show.
    * @param {boolean} [updateLayers] Whether to update the layers right away.
    * @return {Promise} Resolves when all assets are rendered.

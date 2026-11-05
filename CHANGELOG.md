@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Multiple assets are rendered in the given order instead of the order in which they finish loading
+
 ## [1.8.1] - 2026-11-02
 
 ### Added

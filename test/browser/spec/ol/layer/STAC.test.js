@@ -1653,4 +1653,51 @@ describe('ol/layer/STAC', function () {
       expect(attributions({})).to.deep.equal([ASSET_ATTRIBUTION]);
     });
   });
+
+  describe('multiple assets', function () {
+    const ASSETS = {
+      a: {href: 'https://example.com/a.png', type: 'image/png'},
+      b: {href: 'https://example.com/b.png', type: 'image/png'},
+      c: {href: 'https://example.com/c.png', type: 'image/png'},
+    };
+
+    // The first asset finishes loading last
+    const getSourceOptions = async (type, options, asset) => {
+      await new Promise((resolve) =>
+        setTimeout(resolve, asset.getKey() === 'a' ? 50 : 0),
+      );
+      return options;
+    };
+
+    function getAssetLayers(group) {
+      return group
+        .getLayersArray()
+        .filter((layer) => layer.get('stac')?.isAsset);
+    }
+
+    function getAssetKeys(group) {
+      return getAssetLayers(group).map((layer) => layer.get('stac').getKey());
+    }
+
+    it('renders the assets in the given order', async function () {
+      const group = new STAC({
+        data: createItem(ASSETS),
+        assets: ['a', 'b', 'c'],
+        getSourceOptions,
+      });
+      await waitFor(() => getAssetLayers(group).length === 3);
+      expect(getAssetKeys(group)).to.deep.equal(['a', 'b', 'c']);
+    });
+
+    it('inserts new assets below the shown ones if requested', async function () {
+      const group = new STAC({
+        data: createItem(ASSETS),
+        assets: ['b'],
+        getSourceOptions,
+      });
+      await waitFor(() => getAssetLayers(group).length === 1);
+      await group.setAssets(['a', 'b']);
+      expect(getAssetKeys(group)).to.deep.equal(['a', 'b']);
+    });
+  });
 });
