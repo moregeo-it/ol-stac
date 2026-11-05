@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Multiple assets are rendered in the given order instead of the order in which they finish loading
+- An empty list of assets shows no asset instead of the default visualization, as documented
 
 ### Deprecated
 

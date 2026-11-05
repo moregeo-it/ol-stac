@@ -1806,6 +1806,20 @@ describe('ol/layer/STAC', function () {
       expect(getWmsLayers(group)).to.deep.equal(['b', 'c']);
     });
 
+    it('shows no default visualization for an empty list', async function () {
+      const group = new STAC({
+        data: createItem({thumbnail: THUMBNAIL_ASSET}),
+        displayPreview: true,
+      });
+      await waitFor(() => getAssetLayers(group).length === 1);
+
+      await group.setDataSources([]);
+      expect(getAssetLayers(group).length).to.equal(0);
+
+      await group.setDataSources(null);
+      expect(getAssetLayers(group).length).to.equal(1);
+    });
+
     it('supports the deprecated assets option and methods', async function () {
       const group = new STAC({
         data: createItem(ASSETS),

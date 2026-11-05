@@ -1765,8 +1765,9 @@ class STACLayer extends LayerGroup {
     }
 
     // If the user didn't provide any specific asset/map link/children to show,
-    // choose a sensible default visualization
-    if (this.hasOnlyBounds()) {
+    // choose a sensible default visualization.
+    // An empty list of data sources explicitly shows none.
+    if (this.dataSources_ === null && this.hasOnlyBounds()) {
       // Show the ItemCollection/CollectionCollection entries
       if (data.isApiCollection) {
         await this.addChildren_(data.getAll(), this.childrenOptions_);
