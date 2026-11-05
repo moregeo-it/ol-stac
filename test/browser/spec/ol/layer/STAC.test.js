@@ -1779,6 +1779,33 @@ describe('ol/layer/STAC', function () {
       expect(getDataSourceNames(group)).to.deep.equal(['xyz']);
     });
 
+    it('distinguishes web map links that only differ in their layers', async function () {
+      const wms = (layer) => ({
+        rel: 'wms',
+        href: 'https://example.com/wms',
+        type: 'image/png',
+        'wms:layers': [layer],
+      });
+      const getWmsLayers = (group) =>
+        group
+          .getLayersArray()
+          .filter((layer) => layer.get('stac')?.isLink)
+          .map((layer) => layer.getSource().getParams().LAYERS);
+
+      const group = new STAC({
+        data: createItem(ASSETS),
+        dataSources: [wms('a'), wms('b')],
+      });
+      await waitFor(() => getWmsLayers(group).length === 2);
+      expect(getWmsLayers(group)).to.deep.equal(['a', 'b']);
+
+      await group.setDataSources([wms('b'), wms('a')]);
+      expect(getWmsLayers(group)).to.deep.equal(['b', 'a']);
+
+      await group.setDataSources([wms('b'), wms('c')]);
+      expect(getWmsLayers(group)).to.deep.equal(['b', 'c']);
+    });
+
     it('supports the deprecated assets option and methods', async function () {
       const group = new STAC({
         data: createItem(ASSETS),

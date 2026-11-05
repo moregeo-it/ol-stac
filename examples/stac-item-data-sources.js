@@ -68,17 +68,12 @@ const map = new Map({
   }),
 });
 
-layer.on('sourceready', () => {
-  const view = map.getView();
-  view.fit(layer.getExtent());
-});
-
 const list = document.getElementById('data-sources');
 
-function move(index, offset) {
+function move(index, offset, control) {
   const [entry] = entries.splice(index, 1);
   entries.splice(index + offset, 0, entry);
-  update();
+  update(entry, control);
 }
 
 function createButton(text, title, disabled, onClick) {
@@ -92,42 +87,66 @@ function createButton(text, title, disabled, onClick) {
   return button;
 }
 
-function render() {
+/**
+ * @param {Object} [focusEntry] The entry whose control should keep the focus.
+ * @param {string} [focusControl] The control to focus: `checkbox`, `up` or `down`.
+ */
+function render(focusEntry, focusControl) {
+  const controls = entries.map((entry, index) => {
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'form-check-input me-2';
+    checkbox.checked = entry.shown;
+    checkbox.addEventListener('change', () => {
+      entry.shown = checkbox.checked;
+      update(entry, 'checkbox');
+    });
+    const up = createButton('▲', 'Move up', index === 0, () =>
+      move(index, -1, 'up'),
+    );
+    const down = createButton(
+      '▼',
+      'Move down',
+      index === entries.length - 1,
+      () => move(index, 1, 'down'),
+    );
+    return {entry, checkbox, up, down};
+  });
+
   list.replaceChildren(
-    ...entries.map((entry, index) => {
+    ...controls.map(({entry, checkbox, up, down}) => {
       const item = document.createElement('li');
       item.className =
         'list-group-item d-flex align-items-center justify-content-between';
-
       const label = document.createElement('label');
       label.className = 'form-check-label';
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.className = 'form-check-input me-2';
-      checkbox.checked = entry.shown;
-      checkbox.addEventListener('change', () => {
-        entry.shown = checkbox.checked;
-        update();
-      });
       label.append(checkbox, entry.title);
-
       const buttons = document.createElement('span');
-      buttons.append(
-        createButton('▲', 'Move up', index === 0, () => move(index, -1)),
-        createButton('▼', 'Move down', index === entries.length - 1, () =>
-          move(index, 1),
-        ),
-      );
-
+      buttons.append(up, down);
       item.append(label, buttons);
       return item;
     }),
   );
+
+  // Keep the focus for keyboard users, the list is recreated on every change
+  const focused = controls.find(({entry}) => entry === focusEntry);
+  if (focused) {
+    let control = focused[focusControl];
+    if (control.disabled) {
+      control = focusControl === 'up' ? focused.down : focused.up;
+    }
+    control.focus();
+  }
 }
 
-function update() {
-  render();
+function update(focusEntry, focusControl) {
+  render(focusEntry, focusControl);
   layer.setDataSources(getDataSources());
 }
 
-render();
+layer.on('sourceready', () => {
+  const view = map.getView();
+  view.fit(layer.getExtent());
+  // The asset keys can only be resolved once the Item is loaded
+  render();
+});

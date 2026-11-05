@@ -106,8 +106,9 @@ import LayerType from './type.js';
  * `displayGeoTiffByDefault`, `displayOverview`, `displayPreview`, `displayFootprint`, `useTileLayerAsFallback`,
  * `buildTileUrlTemplate`, `maxDisplayPixels`, `getSourceOptions`, `getLayerOptions`, `getRequestHeaders`,
  * `getRequestUrl` and `httpRequestFn`.
- * @property {Array<string|Asset|Link>|null} [dataSources=null] The assets and web map links to be rendered.
+ * @property {Array<string|Asset|Link|Object>|null} [dataSources=null] The assets and web map links to be rendered.
  * This can be an array of Asset objects, Link objects, or strings corresponding to asset keys.
+ * Plain objects are converted to Links (if they have a `rel`) or Assets.
  * The data sources are rendered in the given order, i.e. the last one is rendered on top.
  * null shows the default visualization, an empty array shows no data source.
  * @property {Array<string|Asset>|null} [assets=null] Deprecated, use `dataSources` instead.
@@ -210,6 +211,68 @@ import LayerType from './type.js';
  * the template placeholders such as `{z}` unchanged, i.e. they must not be percent-encoded
  * (e.g. through URL normalization).
  */
+
+/**
+ * @param {*} value The value.
+ * @return {*} The value with the keys of all objects sorted.
+ */
+function sortKeys(value) {
+  if (Array.isArray(value)) {
+    return value.map(sortKeys);
+  }
+  if (isObject(value)) {
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort()
+        .map((key) => [key, sortKeys(value[key])]),
+    );
+  }
+  return value;
+}
+
+/**
+ * @param {Asset|Link} a A data source.
+ * @param {Asset|Link} b Another data source.
+ * @return {boolean} `true` if both render the same data.
+ */
+function isSameDataSource(a, b) {
+  if (a === b) {
+    return true;
+  }
+  if (
+    Boolean(a.isLink) !== Boolean(b.isLink) ||
+    a.getAbsoluteUrl() !== b.getAbsoluteUrl()
+  ) {
+    return false;
+  }
+  if (!a.isLink) {
+    return true;
+  }
+  // Web map links can share the URL, but differ in other properties (e.g. `wms:layers`)
+  return (
+    JSON.stringify(getRenderingConfig(a)) ===
+    JSON.stringify(getRenderingConfig(b))
+  );
+}
+
+/**
+ * @param {Link} link The link.
+ * @return {Object} The properties that affect the rendering, i.e. without descriptive
+ * properties such as `id` or `title`.
+ */
+function getRenderingConfig(link) {
+  const json = link.toJSON();
+  const config = {};
+  for (const key of Object.keys(json)) {
+    if (
+      ['rel', 'type', 'method', 'headers', 'body'].includes(key) ||
+      key.includes(':')
+    ) {
+      config[key] = json[key];
+    }
+  }
+  return sortKeys(config);
+}
 
 /**
  * @classdesc
@@ -1316,12 +1379,8 @@ class STACLayer extends LayerGroup {
     if (!(data?.isAsset || data?.isLink) || !this.dataSources_) {
       return -1;
     }
-    const url = data.getAbsoluteUrl();
     return this.dataSources_.findIndex(
-      (source) =>
-        source &&
-        Boolean(source.isLink) === Boolean(data.isLink) &&
-        (source === data || source.getAbsoluteUrl() === url),
+      (source) => source && isSameDataSource(source, data),
     );
   }
 
