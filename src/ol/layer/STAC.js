@@ -1349,25 +1349,24 @@ class STACLayer extends LayerGroup {
 
   /**
    * Inserts the layer so that the layers of the requested data sources follow the
-   * order of the data sources, regardless of the order in which they finish loading.
+   * order of the data sources, regardless of the order in which they finish loading,
+   * and are rendered above all other layers.
    * @param {import("ol/layer/Base.js").default} layer The layer to insert.
    * @private
    */
   insertLayer_(layer) {
     const layers = this.getLayers();
     const position = this.getDataSourcePosition_(layer.get('stac'));
-    if (position >= 0) {
-      const next = layers
-        .getArray()
-        .findIndex(
-          (l) => this.getDataSourcePosition_(l.get('stac')) > position,
-        );
-      if (next >= 0) {
-        layers.insertAt(next, layer);
-        return;
-      }
+    // Other layers (e.g. web map links from `displayWebMapLink`) are kept below the data sources
+    const next = layers.getArray().findIndex((l) => {
+      const pos = this.getDataSourcePosition_(l.get('stac'));
+      return position >= 0 ? pos > position : pos >= 0;
+    });
+    if (next >= 0) {
+      layers.insertAt(next, layer);
+    } else {
+      layers.push(layer);
     }
-    layers.push(layer);
   }
 
   /**

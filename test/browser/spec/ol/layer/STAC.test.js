@@ -1806,6 +1806,19 @@ describe('ol/layer/STAC', function () {
       expect(getWmsLayers(group)).to.deep.equal(['b', 'c']);
     });
 
+    it('keeps other web map links below the data sources', async function () {
+      const group = new STAC({
+        data: createItem(ASSETS, [{...XYZ_LINK, id: 'tiles'}]),
+        displayWebMapLink: ['tiles'],
+        dataSources: ['a'],
+      });
+      await waitFor(() => getDataSourceNames(group).length === 2);
+      expect(getDataSourceNames(group)).to.deep.equal(['xyz', 'a']);
+
+      await group.updateLayers();
+      expect(getDataSourceNames(group)).to.deep.equal(['xyz', 'a']);
+    });
+
     it('shows no default visualization for an empty list', async function () {
       const group = new STAC({
         data: createItem({thumbnail: THUMBNAIL_ASSET}),
