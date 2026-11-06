@@ -72161,10 +72161,12 @@ var LayerType = class LayerType {
 * `displayGeoTiffByDefault`, `displayOverview`, `displayPreview`, `displayFootprint`, `useTileLayerAsFallback`,
 * `buildTileUrlTemplate`, `maxDisplayPixels`, `getSourceOptions`, `getLayerOptions`, `getRequestHeaders`,
 * `getRequestUrl` and `httpRequestFn`.
-* @property {Array<string|Asset>|null} [assets=null] The selector for the assets to be rendered,
-* only for STAC Items and Collections.
-* This can be an array of strings corresponding to asset keys or Asset objects.
-* null shows the default asset, an empty array shows no asset.
+* @property {Array<string|Asset|Link|Object>|null} [dataSources=null] The assets and web map links to be rendered.
+* This can be an array of Asset objects, Link objects, or strings corresponding to asset keys.
+* Plain objects are converted to Links (if they have a `rel`) or Assets.
+* The data sources are rendered in the given order, i.e. the last one is rendered on top.
+* null shows the default visualization, an empty array shows no data source.
+* @property {Array<string|Asset>|null} [assets=null] Deprecated, use `dataSources` instead.
 * @property {Array<number|string>} [bands] The bands to show. One-based index of the band, or the name of the band.
 * @property {function(SourceType, SourceOptions, (Asset|Link)):(SourceOptions|Promise<SourceOptions>)} [getSourceOptions]
 * Optional function that can be used to configure the underlying sources. The function can do any additional work
@@ -72194,7 +72196,7 @@ var LayerType = class LayerType {
 * @property {number} [maxDisplayPixels=16777216] The maximum number of pixels the coarsest resolution level
 * of a GeoTIFF or Zarr asset may have to be displayed client-side, as displaying the full extent of an asset
 * loads every tile of that level. Files without (sufficient) overviews can easily exceed this limit.
-* Larger assets are not chosen for the default visualization, and selecting one explicitly through `assets`
+* Larger assets are not chosen for the default visualization, and selecting one explicitly through `dataSources`
 * reports an error through the `error` event (or renders through the tile server if `buildTileUrlTemplate`
 * and `useTileLayerAsFallback` are set). Set to `Infinity` to display assets of any size.
 * @property {string|boolean|Array<Link|string>} [displayWebMapLink=false] Allow to display a layer
@@ -72325,10 +72327,20 @@ var STACLayer = class STACLayer extends LayerGroup {
 		*/
 		this.childrenOptions_ = options.childrenOptions || {};
 		/**
-		* @type {Array<Asset>|null}
+		* @type {Array<Asset|Link>|null}
 		* @private
 		*/
-		this.assets_ = null;
+		this.dataSources_ = null;
+		/**
+		* @type {WeakMap<Object, Asset|Link>}
+		* @private
+		*/
+		this.convertedDataSources_ = /* @__PURE__ */ new WeakMap();
+		/**
+		* @type {Promise}
+		* @private
+		*/
+		this.pendingUpdate_ = Promise.resolve();
 		/**
 		* @type {Array<number|string>}
 		* @private
@@ -72438,14 +72450,14 @@ var STACLayer = class STACLayer extends LayerGroup {
 		if (this.httpRequestFn_) this.fetch_ = this.httpRequestFn_;
 		if (options.data) {
 			try {
-				this.configure_(options.data, options.url, options.children, options.assets, options.bands);
+				this.configure_(options.data, options.url, options.children, options.dataSources !== void 0 ? options.dataSources : options.assets, options.bands);
 			} catch (error) {
 				this.handleError_(error);
 			}
 			return;
 		}
 		if (!options.url) throw new Error("Either url or data must be provided");
-		this.fetch_(this.getRequestUrlFor_(options.url)).then((data) => this.configure_(data, options.url, options.children, options.assets, options.bands)).catch((error) => this.handleError_(error));
+		this.fetch_(this.getRequestUrlFor_(options.url)).then((data) => this.configure_(data, options.url, options.children, options.dataSources !== void 0 ? options.dataSources : options.assets, options.bands)).catch((error) => this.handleError_(error));
 	}
 	/**
 	* Gets the attribution for the given reference, see the attribution extension.
@@ -72562,11 +72574,11 @@ var STACLayer = class STACLayer extends LayerGroup {
 	* @param {STAC|Asset|Object} data The STAC data.
 	* @param {string} url The url to the data.
 	* @param {APICollection|Object|Array<STAC>|string|null} children The child STAC entities to show.
-	* @param {Array<Asset|string>|null} assets The assets to show.
+	* @param {Array<Asset|Link|string>|null} dataSources The assets and web map links to show.
 	* @param {Array<number|string>} bands The bands to show.
 	* @private
 	*/
-	configure_(data, url = null, children = null, assets = null, bands = []) {
+	configure_(data, url = null, children = null, dataSources = null, bands = []) {
 		let stac;
 		if (data.isAsset || data.isSTAC) stac = data;
 		else {
@@ -72588,7 +72600,7 @@ var STACLayer = class STACLayer extends LayerGroup {
 		const errorHandler = (error) => this.handleError_(error);
 		const promises = [];
 		if (children) promises.push(this.setChildren(children, null, false).catch(errorHandler));
-		if (assets) promises.push(this.setAssets(assets, false).catch(errorHandler));
+		if (dataSources) promises.push(this.setDataSources(dataSources, false).catch(errorHandler));
 		this.initialLayers_ = Promise.all(promises).then(() => this.updateLayers().catch((error) => {
 			errorHandler(error);
 			this.flushIfEmpty_();
@@ -72968,6 +72980,10 @@ var STACLayer = class STACLayer extends LayerGroup {
 	* @private
 	*/
 	addLayer_(layer, data = null, zIndex = 0) {
+		if (this.disposed) {
+			layer.dispose();
+			return;
+		}
 		if (data) layer.set("stac", data);
 		layer.setZIndex(zIndex);
 		if (!(layer instanceof LayerGroup) && !layer.get("bounds")) layer.addEventListener("change:map", () => {
@@ -72975,7 +72991,49 @@ var STACLayer = class STACLayer extends LayerGroup {
 			if (map) this.setMap_(map);
 			else if (!this.getLayersArray().some((l) => l.getMapInternal())) this.setMap_(null);
 		});
-		this.getLayers().push(layer);
+		this.insertLayer_(layer);
+	}
+	/**
+	* Inserts the layer so that the layers of the requested data sources follow the
+	* order of the data sources, regardless of the order in which they finish loading,
+	* and are rendered above all other layers.
+	* @param {import("ol/layer/Base.js").default} layer The layer to insert.
+	* @private
+	*/
+	insertLayer_(layer) {
+		const layers = this.getLayers();
+		const position = this.getDataSourcePosition_(layer.get("stac"));
+		const next = layers.getArray().findIndex((l) => {
+			const pos = this.getDataSourcePosition_(l.get("stac"));
+			return position >= 0 ? pos > position : pos >= 0;
+		});
+		if (next >= 0) layers.insertAt(next, layer);
+		else layers.push(layer);
+	}
+	/**
+	* @param {*} data The STAC object of a layer.
+	* @return {number} The position in the requested data sources, or -1.
+	* @private
+	*/
+	getDataSourcePosition_(data) {
+		if (!data || !this.dataSources_) return -1;
+		return this.dataSources_.indexOf(this.convertedDataSources_.get(data) || data);
+	}
+	/**
+	* Removes (and disposes) the layers that match the filter.
+	* @param {function(import("ol/layer/Base.js").default):boolean} filter The filter.
+	* @private
+	*/
+	removeLayers_(filter) {
+		const layers = this.getLayers();
+		for (let i = layers.getLength() - 1; i >= 0; i--) {
+			const layer = layers.item(i);
+			if (filter(layer)) {
+				layers.removeAt(i);
+				if (layer instanceof LayerGroup) layer.getLayersArray().forEach((l) => l.dispose());
+				layer.dispose();
+			}
+		}
 	}
 	/**
 	* @return {VectorLayer|null} The vector layer showing the geometry/bbox.
@@ -73091,8 +73149,10 @@ var STACLayer = class STACLayer extends LayerGroup {
 		if (!autoDisplay) {
 			const megapixels = Math.ceil(getDisplayPixels(source) / 1048576);
 			const error = /* @__PURE__ */ new Error(`Asset ${asset.getKey()} is too large to display safely (~${megapixels} megapixels at the coarsest resolution); set the maxDisplayPixels option to display it anyway`);
-			error.name = "DisplayLimitError";
-			throw error;
+			throw Object.assign(error, {
+				name: "DisplayLimitError",
+				asset
+			});
 		}
 		return true;
 	}
@@ -73160,26 +73220,48 @@ var STACLayer = class STACLayer extends LayerGroup {
 	/**
 	* Update the layers shown manually based on the current configuration.
 	* Usually this doesn't need to be called manually.
+	* The layers of the requested data sources that are already shown are kept.
+	* Updates run one after another.
 	* @param {boolean} [emit] Whether to emit the `layersready` event once the layers are updated.
 	* @return {Promise} Resolves once the layers are updated.
 	* @api
 	*/
 	async updateLayers(emit = true) {
-		const oldLayers = this.getLayers();
-		for (let i = oldLayers.getLength() - 1; i >= 0; i--) {
-			const layer = oldLayers.item(i);
-			if (layer.get("stac") && !layer.get("bounds")) oldLayers.removeAt(i);
+		const update = this.pendingUpdate_.then(() => this.updateLayers_(emit));
+		this.pendingUpdate_ = update.catch(() => {});
+		return update;
+	}
+	/**
+	* @param {boolean} emit Whether to emit the `layersready` event once the layers are updated.
+	* @return {Promise} Resolves once the layers are updated.
+	* @private
+	*/
+	async updateLayers_(emit) {
+		if (this.disposed) return;
+		const isOldLayer = (layer) => layer.get("stac") && !layer.get("bounds");
+		this.removeLayers_((layer) => isOldLayer(layer) && this.getDataSourcePosition_(layer.get("stac")) < 0);
+		const keptLayers = this.getLayers().getArray().filter(isOldLayer);
+		const keptPositions = keptLayers.map((layer) => this.getDataSourcePosition_(layer.get("stac")));
+		if (keptPositions.some((pos, i) => i > 0 && pos < keptPositions[i - 1])) {
+			keptLayers.forEach((layer) => this.getLayers().remove(layer));
+			keptLayers.forEach((layer) => this.insertLayer_(layer));
 		}
 		const data = this.getData();
 		if (Array.isArray(this.displayWebMapLink_)) {
-			const promises = this.getWebMapLinks().map(async (link) => await this.addLayerForLink(link));
+			const promises = this.getWebMapLinks().filter((link) => this.getDataSourcePosition_(link) < 0).map(async (link) => await this.addLayerForLink(link));
 			await Promise.all(promises);
 		}
 		if (this.children_) await this.addChildren_(this.children_, this.childrenOptions_);
-		const assets = this.getAssets();
-		if (assets) {
-			const promises = assets.map(async (ref) => {
-				if (!ref) return;
+		const dataSources = this.getDataSources();
+		if (dataSources) {
+			const promises = dataSources.map(async (ref) => {
+				if (!ref || keptPositions.includes(this.getDataSourcePosition_(ref))) return;
+				if (ref.isLink) try {
+					return await this.addLayerForLink(ref);
+				} catch (error) {
+					this.handleError_(error);
+					return;
+				}
 				if (ref.isType("application/geo+json")) return await this.addGeoJson_(ref);
 				if (ref.isType(geotiffMediaTypes)) return await this.addGeoTiff_(ref);
 				if (ref.isType(zarrMediaTypes)) return await this.addGeoZarr_(ref);
@@ -73187,7 +73269,7 @@ var STACLayer = class STACLayer extends LayerGroup {
 			});
 			await Promise.all(promises);
 		}
-		if (this.hasOnlyBounds()) {
+		if (this.dataSources_ === null && this.hasOnlyBounds()) {
 			if (data.isApiCollection) await this.addChildren_(data.getAll(), this.childrenOptions_);
 			else if (data.isSTAC) {
 				if (data.isItem && data.supportsExtension("https://stac-extensions.github.io/label/v1.*/schema.json") && data.getMetadata("label:type") === "vector") {
@@ -73267,27 +73349,50 @@ var STACLayer = class STACLayer extends LayerGroup {
 	async setDefaultColormap(colormap) {
 		if (colormap === this.defaultColormap_) return;
 		this.defaultColormap_ = colormap || null;
+		await this.pendingUpdate_;
+		this.removeLayers_((layer) => layer.get("stac") && !layer.get("bounds"));
 		await this.updateLayers();
+	}
+	/**
+	* Update the assets and web map links to be rendered.
+	* The data sources are rendered in the given order, i.e. the last one is rendered on top.
+	* The layers of data sources that were shown before are kept and not reloaded.
+	*
+	* Strings refer to asset keys, plain objects are converted to Links (if they have a `rel`)
+	* or Assets. Data sources are identified by object identity, so pass the same objects again
+	* to keep their layers.
+	* @param {Array<string|Asset|Link|Object>|null} dataSources The data sources to show.
+	* @param {boolean} [updateLayers] Whether to update the layers right away.
+	* @return {Promise} Resolves when all data sources are rendered.
+	* @api
+	*/
+	async setDataSources(dataSources, updateLayers = true) {
+		if (dataSources === this.dataSources_) return;
+		if (Array.isArray(dataSources)) {
+			const data = this.getData();
+			this.dataSources_ = dataSources.map((source) => {
+				if (typeof source === "string") return data.isSTAC ? data.getAsset(source) : null;
+				if (source.isAsset || source.isLink) return source;
+				let converted = this.convertedDataSources_.get(source);
+				if (!converted) {
+					converted = source.rel ? new Link(source, data) : new Asset(source);
+					this.convertedDataSources_.set(source, converted);
+				}
+				return converted;
+			});
+		} else this.dataSources_ = null;
+		if (updateLayers) await this.updateLayers();
 	}
 	/**
 	* Update the assets to be rendered.
 	* @param {Array<string|Asset>|null} assets The assets to show.
 	* @param {boolean} [updateLayers] Whether to update the layers right away.
 	* @return {Promise} Resolves when all assets are rendered.
+	* @deprecated Use `setDataSources` instead.
 	* @api
 	*/
 	async setAssets(assets, updateLayers = true) {
-		if (assets === this.assets_) return;
-		if (Array.isArray(assets)) {
-			const data = this.getData();
-			this.assets_ = assets.map((asset) => {
-				const isStr = typeof asset === "string";
-				if (data.isSTAC && isStr) return data.getAsset(asset);
-				if (!isStr && !asset.isAsset) return new Asset(asset);
-				return asset;
-			});
-		} else this.assets_ = null;
-		if (updateLayers) await this.updateLayers();
+		await this.setDataSources(assets, updateLayers);
 	}
 	/**
 	* Updates the children STAC entities to be rendered.
@@ -73333,13 +73438,24 @@ var STACLayer = class STACLayer extends LayerGroup {
 		return this.children_;
 	}
 	/**
-	* Get the STAC assets shown.
+	* Get the assets and web map links requested to be shown.
 	*
-	* @return {Array<Asset>} The STAC assets.
+	* @return {Array<Asset|Link>|null} The data sources.
+	* @api
+	*/
+	getDataSources() {
+		return this.dataSources_;
+	}
+	/**
+	* Get the STAC assets requested to be shown.
+	*
+	* @return {Array<Asset>|null} The STAC assets.
+	* @deprecated Use `getDataSources` instead.
 	* @api
 	*/
 	getAssets() {
-		return this.assets_;
+		if (!this.dataSources_) return null;
+		return this.dataSources_.filter((source) => source?.isAsset);
 	}
 	/**
 	* Get the extent of the layer.

@@ -168,7 +168,7 @@ var presets = {
 		} }
 	}) },
 	"polar": {
-		assets: ["data"],
+		dataSources: ["data"],
 		maxDisplayPixels: Infinity,
 		data: zarrCollection("thwaites-ice-velocity", "Antarctic ice velocity subset for Thwaites Glacier (Zarr v2, EPSG:3031).", [
 			-130.6,
@@ -411,7 +411,7 @@ function updateLayer() {
 	layer = new STACLayer({
 		url: preset.url,
 		data: preset.data,
-		assets: preset.assets,
+		dataSources: preset.dataSources,
 		bands: preset.bands,
 		maxDisplayPixels: preset.maxDisplayPixels,
 		defaultColormap: colormaps[colormapSelect.value],

@@ -39,10 +39,15 @@ export type Options = {
      */
     childrenOptions?: Options | undefined;
     /**
-     * The selector for the assets to be rendered,
-     * only for STAC Items and Collections.
-     * This can be an array of strings corresponding to asset keys or Asset objects.
-     * null shows the default asset, an empty array shows no asset.
+     * The assets and web map links to be rendered.
+     * This can be an array of Asset objects, Link objects, or strings corresponding to asset keys.
+     * Plain objects are converted to Links (if they have a `rel`) or Assets.
+     * The data sources are rendered in the given order, i.e. the last one is rendered on top.
+     * null shows the default visualization, an empty array shows no data source.
+     */
+    dataSources?: any[] | null | undefined;
+    /**
+     * Deprecated, use `dataSources` instead.
      */
     assets?: any[] | null | undefined;
     /**
@@ -94,7 +99,7 @@ export type Options = {
      * The maximum number of pixels the coarsest resolution level
      * of a GeoTIFF or Zarr asset may have to be displayed client-side, as displaying the full extent of an asset
      * loads every tile of that level. Files without (sufficient) overviews can easily exceed this limit.
-     * Larger assets are not chosen for the default visualization, and selecting one explicitly through `assets`
+     * Larger assets are not chosen for the default visualization, and selecting one explicitly through `dataSources`
      * reports an error through the `error` event (or renders through the tile server if `buildTileUrlTemplate`
      * and `useTileLayerAsFallback` are set). Set to `Infinity` to display assets of any size.
      */
@@ -287,10 +292,12 @@ export type Options = {
  * `displayGeoTiffByDefault`, `displayOverview`, `displayPreview`, `displayFootprint`, `useTileLayerAsFallback`,
  * `buildTileUrlTemplate`, `maxDisplayPixels`, `getSourceOptions`, `getLayerOptions`, `getRequestHeaders`,
  * `getRequestUrl` and `httpRequestFn`.
- * @property {Array<string|Asset>|null} [assets=null] The selector for the assets to be rendered,
- * only for STAC Items and Collections.
- * This can be an array of strings corresponding to asset keys or Asset objects.
- * null shows the default asset, an empty array shows no asset.
+ * @property {Array<string|Asset|Link|Object>|null} [dataSources=null] The assets and web map links to be rendered.
+ * This can be an array of Asset objects, Link objects, or strings corresponding to asset keys.
+ * Plain objects are converted to Links (if they have a `rel`) or Assets.
+ * The data sources are rendered in the given order, i.e. the last one is rendered on top.
+ * null shows the default visualization, an empty array shows no data source.
+ * @property {Array<string|Asset>|null} [assets=null] Deprecated, use `dataSources` instead.
  * @property {Array<number|string>} [bands] The bands to show. One-based index of the band, or the name of the band.
  * @property {function(SourceType, SourceOptions, (Asset|Link)):(SourceOptions|Promise<SourceOptions>)} [getSourceOptions]
  * Optional function that can be used to configure the underlying sources. The function can do any additional work
@@ -320,7 +327,7 @@ export type Options = {
  * @property {number} [maxDisplayPixels=16777216] The maximum number of pixels the coarsest resolution level
  * of a GeoTIFF or Zarr asset may have to be displayed client-side, as displaying the full extent of an asset
  * loads every tile of that level. Files without (sufficient) overviews can easily exceed this limit.
- * Larger assets are not chosen for the default visualization, and selecting one explicitly through `assets`
+ * Larger assets are not chosen for the default visualization, and selecting one explicitly through `dataSources`
  * reports an error through the `error` event (or renders through the tile server if `buildTileUrlTemplate`
  * and `useTileLayerAsFallback` are set). Set to `Infinity` to display assets of any size.
  * @property {string|boolean|Array<Link|string>} [displayWebMapLink=false] Allow to display a layer
@@ -439,10 +446,20 @@ declare class STACLayer extends LayerGroup {
      */
     private childrenOptions_;
     /**
-     * @type {Array<Asset>|null}
+     * @type {Array<Asset|Link>|null}
      * @private
      */
-    private assets_;
+    private dataSources_;
+    /**
+     * @type {WeakMap<Object, Asset|Link>}
+     * @private
+     */
+    private convertedDataSources_;
+    /**
+     * @type {Promise}
+     * @private
+     */
+    private pendingUpdate_;
     /**
      * @type {Array<number|string>}
      * @private
@@ -621,7 +638,7 @@ declare class STACLayer extends LayerGroup {
      * @param {STAC|Asset|Object} data The STAC data.
      * @param {string} url The url to the data.
      * @param {APICollection|Object|Array<STAC>|string|null} children The child STAC entities to show.
-     * @param {Array<Asset|string>|null} assets The assets to show.
+     * @param {Array<Asset|Link|string>|null} dataSources The assets and web map links to show.
      * @param {Array<number|string>} bands The bands to show.
      * @private
      */
@@ -705,6 +722,26 @@ declare class STACLayer extends LayerGroup {
      */
     private addLayer_;
     /**
+     * Inserts the layer so that the layers of the requested data sources follow the
+     * order of the data sources, regardless of the order in which they finish loading,
+     * and are rendered above all other layers.
+     * @param {import("ol/layer/Base.js").default} layer The layer to insert.
+     * @private
+     */
+    private insertLayer_;
+    /**
+     * @param {*} data The STAC object of a layer.
+     * @return {number} The position in the requested data sources, or -1.
+     * @private
+     */
+    private getDataSourcePosition_;
+    /**
+     * Removes (and disposes) the layers that match the filter.
+     * @param {function(import("ol/layer/Base.js").default):boolean} filter The filter.
+     * @private
+     */
+    private removeLayers_;
+    /**
      * @return {VectorLayer|null} The vector layer showing the geometry/bbox.
      * @private
      */
@@ -758,11 +795,19 @@ declare class STACLayer extends LayerGroup {
     /**
      * Update the layers shown manually based on the current configuration.
      * Usually this doesn't need to be called manually.
+     * The layers of the requested data sources that are already shown are kept.
+     * Updates run one after another.
      * @param {boolean} [emit] Whether to emit the `layersready` event once the layers are updated.
      * @return {Promise} Resolves once the layers are updated.
      * @api
      */
     updateLayers(emit?: boolean): Promise<any>;
+    /**
+     * @param {boolean} emit Whether to emit the `layersready` event once the layers are updated.
+     * @return {Promise} Resolves once the layers are updated.
+     * @private
+     */
+    private updateLayers_;
     /**
      * Flushes the events if the group has no layer.
      * Without any layer, the map can't be detected, but nothing depends on it either.
@@ -800,10 +845,25 @@ declare class STACLayer extends LayerGroup {
      */
     setDefaultColormap(colormap: Array<import("ol/color.js").Color | string> | null): Promise<any>;
     /**
+     * Update the assets and web map links to be rendered.
+     * The data sources are rendered in the given order, i.e. the last one is rendered on top.
+     * The layers of data sources that were shown before are kept and not reloaded.
+     *
+     * Strings refer to asset keys, plain objects are converted to Links (if they have a `rel`)
+     * or Assets. Data sources are identified by object identity, so pass the same objects again
+     * to keep their layers.
+     * @param {Array<string|Asset|Link|Object>|null} dataSources The data sources to show.
+     * @param {boolean} [updateLayers] Whether to update the layers right away.
+     * @return {Promise} Resolves when all data sources are rendered.
+     * @api
+     */
+    setDataSources(dataSources: Array<string | Asset | Link | any> | null, updateLayers?: boolean): Promise<any>;
+    /**
      * Update the assets to be rendered.
      * @param {Array<string|Asset>|null} assets The assets to show.
      * @param {boolean} [updateLayers] Whether to update the layers right away.
      * @return {Promise} Resolves when all assets are rendered.
+     * @deprecated Use `setDataSources` instead.
      * @api
      */
     setAssets(assets: Array<string | Asset> | null, updateLayers?: boolean): Promise<any>;
@@ -834,12 +894,20 @@ declare class STACLayer extends LayerGroup {
      */
     getChildren(): Array<STAC>;
     /**
-     * Get the STAC assets shown.
+     * Get the assets and web map links requested to be shown.
      *
-     * @return {Array<Asset>} The STAC assets.
+     * @return {Array<Asset|Link>|null} The data sources.
      * @api
      */
-    getAssets(): Array<Asset>;
+    getDataSources(): Array<Asset | Link> | null;
+    /**
+     * Get the STAC assets requested to be shown.
+     *
+     * @return {Array<Asset>|null} The STAC assets.
+     * @deprecated Use `getDataSources` instead.
+     * @api
+     */
+    getAssets(): Array<Asset> | null;
     /**
      * @return {Array<Array<number>>} The bounding boxes (WGS84) that the shown web map link layers declare,
      * including the layers of the children.
