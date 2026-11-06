@@ -15,17 +15,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Changing the assets to show keeps the layers of assets that are still shown instead of reloading them
+- Changing the data sources keeps the layers of the data sources that are still shown instead of reloading them.
+  Data sources are identified by object, so pass the same objects (or asset keys) again to keep their layers.
+- `updateLayers` runs one update after another instead of running them in parallel
 - Layers that are no longer shown are disposed to release their resources (e.g. WebGL contexts)
+
+### Deprecated
+
+- Option `assets` and the methods `setAssets` and `getAssets`, use `dataSources`, `setDataSources` and `getDataSources` instead
 
 ### Fixed
 
 - Multiple assets are rendered in the given order instead of the order in which they finish loading
 - An empty list of assets shows no asset instead of the default visualization, as documented
-
-### Deprecated
-
-- Option `assets` and the methods `setAssets` and `getAssets`, use `dataSources`, `setDataSources` and `getDataSources` instead
 
 ## [1.8.1] - 2026-11-02
 
