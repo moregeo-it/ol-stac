@@ -39,6 +39,7 @@ import {
   defaultCollectionStyle,
   exceedsDisplayLimit,
   getBoundsStyle,
+  getCOPCStyleFromAsset,
   getDisplayPixels,
   getGeoTiffSourceInfoFromAsset,
   getGeoTiffStyleFromAsset,
@@ -51,6 +52,12 @@ import {
   toOlExtent,
 } from '../util.js';
 import LayerType from './type.js';
+
+/**
+ * The media types of Cloud Optimized Point Clouds (COPC).
+ * @type {Array<string>}
+ */
+const copcMediaTypes = ['application/vnd.laszip+copc'];
 /**
  * @typedef {import("ol/extent.js").Extent} Extent
  */
@@ -134,7 +141,7 @@ import LayerType from './type.js';
  * i.e. assets with any of the roles `thumbnail`, `overview`, or a link with relation type `preview`.
  * The previews are usually not covering the full extents and as such may be placed incorrectly on the map.
  * For performance reasons, it is recommended to enable this option if you pass in STAC API Items instead of `displayOverview`.
- * @property {boolean} [displayOverview=true] Allow to display COGs, Zarr and, if `displayGeoTiffByDefault` is enabled, GeoTiffs,
+ * @property {boolean} [displayOverview=true] Allow to display COGs, Zarr, COPC and, if `displayGeoTiffByDefault` is enabled, GeoTiffs,
  * usually an asset with role `overview` or `visual`.
  * Zarr assets other than Web-Optimized Zarr are only displayed if the STAC metadata declares what to render
  * (see the datacube extension) and the store is within the `maxDisplayPixels` limit.
@@ -1649,6 +1656,76 @@ class STACLayer extends LayerGroup {
   }
 
   /**
+   * Adds a layer for a COPC asset.
+   * @param {Asset} asset The COPC asset to show.
+   * @return {Promise<Layer|undefined>} The layer, if one was added.
+   * @private
+   */
+  async addCOPC_(asset) {
+    /**
+     * @type {import("../source/COPC.js").Options}
+     */
+    let options = {
+      url: this.getRequestUrlFor_(asset.getAbsoluteUrl(), asset),
+      attributions: this.getAttributionFor_(asset),
+    };
+
+    const projection = await getProjection(asset);
+    if (projection) {
+      options.projection = projection;
+    }
+
+    const headers = this.getRequestHeadersFor_(options.url, asset);
+    if (headers) {
+      options.headers = headers;
+    }
+
+    if (this.getSourceOptions_) {
+      // @ts-ignore
+      options = await this.getSourceOptions_(SourceType.COPC, options, asset);
+    }
+
+    try {
+      const COPC = (await import('../source/COPC.js')).default;
+      const source = new COPC(options);
+      await new Promise((resolve, reject) => {
+        source.on('change', () => {
+          if (source.getState() === 'error') {
+            reject(source.getError());
+          } else {
+            resolve();
+          }
+        });
+      });
+      /**
+       * @type {import("ol/layer/WebGLTile.js").Options}
+       */
+      let layerOptions = {
+        source,
+        style:
+          this.style_ ||
+          getCOPCStyleFromAsset(asset, source, this.defaultColormap_),
+      };
+      layerOptions = await this.updateLayerOptions_(
+        LayerType.WebGLTile,
+        layerOptions,
+        asset,
+      );
+      const layer = new WebGLTileLayer(layerOptions);
+      // Disposing the layer unsets the source, terminate its workers then
+      if (layer.getSource() === source) {
+        layer.once('change:source', () => source.dispose());
+      } else {
+        source.dispose();
+      }
+      this.addLayer_(layer, asset);
+      return layer;
+    } catch (error) {
+      this.handleError_(error);
+    }
+  }
+
+  /**
    * Update the layers shown manually based on the current configuration.
    * Usually this doesn't need to be called manually.
    * The layers of the requested data sources that are already shown are kept.
@@ -1729,6 +1806,9 @@ class STACLayer extends LayerGroup {
         if (ref.isType(zarrMediaTypes)) {
           return await this.addGeoZarr_(ref);
         }
+        if (ref.isType(copcMediaTypes)) {
+          return await this.addCOPC_(ref);
+        }
         if (ref.canBrowserDisplayImage()) {
           return await this.addPreviewImage_(ref);
         }
@@ -1772,6 +1852,12 @@ class STACLayer extends LayerGroup {
           const geozarr = data.getDefaultGeoFile('geozarr', true, false);
           if (geozarr) {
             layer = await this.addGeoZarr_(geozarr, true);
+          }
+        }
+        if (this.displayOverview_ && !layer) {
+          const copc = data.getAssetsByTypes(copcMediaTypes)[0];
+          if (copc) {
+            layer = await this.addCOPC_(copc);
           }
         }
         // Show web map links if available

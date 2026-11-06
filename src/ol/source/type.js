@@ -7,6 +7,9 @@
  * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_source_GeoTIFF-GeoTIFFSource.html}
  */
 /**
+ * @typedef {import("./COPC.js").Options} COPCOptions
+ */
+/**
  * @typedef {import("./GeoZarr.js").Options} GeoZarrOptions
  */
 /**
@@ -30,7 +33,7 @@
  * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_source_XYZ-XYZ.html}
  */
 /**
- * @typedef {GeoTIFFOptions|GeoZarrOptions|ImageStaticOptions|TileJSONOptions|TileWMSOptions|WMTSOptions|XYZOptions|Object<string, *>} SourceOptions
+ * @typedef {COPCOptions|GeoTIFFOptions|GeoZarrOptions|ImageStaticOptions|TileJSONOptions|TileWMSOptions|WMTSOptions|XYZOptions|Object<string, *>} SourceOptions
  */
 
 /**
@@ -39,6 +42,11 @@
  * @api
  */
 class SourceType {
+  /**
+   * Cloud Optimized Point Cloud (COPC)
+   * @api
+   */
+  static COPC = new SourceType('COPC');
   /**
    * GeoTiff
    * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_source_GeoTIFF.html}
