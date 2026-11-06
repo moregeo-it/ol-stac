@@ -39,7 +39,7 @@ import {
   defaultCollectionStyle,
   exceedsDisplayLimit,
   getBoundsStyle,
-  getCOPCStyleFromAsset,
+  getCOPCLayerOptionsFromAsset,
   getDisplayPixels,
   getGeoTiffSourceInfoFromAsset,
   getGeoTiffStyleFromAsset,
@@ -111,7 +111,7 @@ const copcMediaTypes = ['application/vnd.laszip+copc'];
  * @property {Options} [childrenOptions={}] The the given children, apply the given options.
  * By default, the children inherit the following options from this layer: `crossOrigin`, `collectionStyle` (as `boundsStyle`),
  * `displayGeoTiffByDefault`, `displayOverview`, `displayPreview`, `displayFootprint`, `useTileLayerAsFallback`,
- * `buildTileUrlTemplate`, `maxDisplayPixels`, `getSourceOptions`, `getLayerOptions`, `getRequestHeaders`,
+ * `buildTileUrlTemplate`, `maxDisplayPixels`, `tilt`, `getSourceOptions`, `getLayerOptions`, `getRequestHeaders`,
  * `getRequestUrl` and `httpRequestFn`.
  * @property {Array<string|Asset|Link|Object>|null} [dataSources=null] The assets and web map links to be rendered.
  * This can be an array of Asset objects, Link objects, or strings corresponding to asset keys.
@@ -151,6 +151,9 @@ const copcMediaTypes = ['application/vnd.laszip+copc'];
  * Larger assets are not chosen for the default visualization, and selecting one explicitly through `dataSources`
  * reports an error through the `error` event (or renders through the tile server if `buildTileUrlTemplate`
  * and `useTileLayerAsFallback` are set). Set to `Infinity` to display assets of any size.
+ * @property {number} [tilt=0] The tilt of the view for point clouds (COPC) in degrees, up to 75.
+ * With a tilt, points are shifted towards the top of the screen by their height above the ground
+ * (oblique view), so that buildings and trees stand up. 45 gives a good impression of the terrain.
  * @property {string|boolean|Array<Link|string>} [displayWebMapLink=false] Allow to display a layer
  * based on the information provided through the web map links extension.
  * If an array of links or link ids (property `id` in a Link Object) is provided, all corresponding layers will be shown.
@@ -351,6 +354,12 @@ class STACLayer extends LayerGroup {
      * @private
      */
     this.maxDisplayPixels_ = options.maxDisplayPixels;
+
+    /**
+     * @type {number}
+     * @private
+     */
+    this.tilt_ = options.tilt || 0;
 
     /**
      * @type {function((Asset|Link)):Promise<string|null>|string|null}
@@ -755,6 +764,7 @@ class STACLayer extends LayerGroup {
         useTileLayerAsFallback: this.useTileLayerAsFallback_,
         buildTileUrlTemplate: this.buildTileUrlTemplate_,
         maxDisplayPixels: this.maxDisplayPixels_,
+        tilt: this.tilt_,
         getSourceOptions: this.getSourceOptions_,
         getLayerOptions: this.getLayerOptions_,
         getRequestHeaders: this.getRequestHeaders_,
@@ -1686,8 +1696,11 @@ class STACLayer extends LayerGroup {
     }
 
     try {
-      const COPC = (await import('../source/COPC.js')).default;
-      const source = new COPC(options);
+      const [{default: COPCSource}, {default: COPCLayer}] = await Promise.all([
+        import('../source/COPC.js'),
+        import('./COPC.js'),
+      ]);
+      const source = new COPCSource(options);
       await new Promise((resolve, reject) => {
         source.on('change', () => {
           if (source.getState() === 'error') {
@@ -1698,20 +1711,19 @@ class STACLayer extends LayerGroup {
         });
       });
       /**
-       * @type {import("ol/layer/WebGLTile.js").Options}
+       * @type {import("./COPC.js").Options}
        */
       let layerOptions = {
         source,
-        style:
-          this.style_ ||
-          getCOPCStyleFromAsset(asset, source, this.defaultColormap_),
+        tilt: this.tilt_,
+        ...getCOPCLayerOptionsFromAsset(asset, this.defaultColormap_),
       };
       layerOptions = await this.updateLayerOptions_(
-        LayerType.WebGLTile,
+        LayerType.COPC,
         layerOptions,
         asset,
       );
-      const layer = new WebGLTileLayer(layerOptions);
+      const layer = new COPCLayer(layerOptions);
       // Disposing the layer unsets the source, terminate its workers then
       if (layer.getSource() === source) {
         layer.once('change:source', () => source.dispose());
@@ -1933,6 +1945,29 @@ class STACLayer extends LayerGroup {
     for (const layer of this.getLayersArray()) {
       if (layer instanceof WebGLTileLayer) {
         layer.setStyle(this.style_);
+      }
+    }
+  }
+
+  /**
+   * @return {number} The tilt of the view for point clouds in degrees.
+   * @api
+   */
+  getTilt() {
+    return this.tilt_;
+  }
+
+  /**
+   * Set the tilt of the view for point clouds (COPC), see the `tilt` option.
+   * @param {number} tilt The tilt in degrees, up to 75.
+   * @api
+   */
+  setTilt(tilt) {
+    this.tilt_ = tilt;
+    for (const layer of this.getLayers().getArray()) {
+      // Point cloud layers and child groups
+      if ('setTilt' in layer && typeof layer.setTilt === 'function') {
+        layer.setTilt(tilt);
       }
     }
   }

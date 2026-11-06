@@ -10,7 +10,6 @@ import Stroke from 'ol/style/Stroke.js';
 import Style from 'ol/style/Style.js';
 import {VERSION} from 'ol/util.js';
 import {isObject} from 'stac-js/src/utils.js';
-import COPCBand from './source/COPCBand.js';
 
 /**
  * @typedef {import('ol/colorlike.js').ColorLike} ColorLike
@@ -1693,95 +1692,35 @@ export function getGeoTiffStyleFromAsset(
 }
 
 /**
- * The default colors for elevations of point clouds.
- * @type {Array<string>}
- */
-const defaultElevationColors = [
-  '#440154',
-  '#3b528b',
-  '#21918c',
-  '#5ec962',
-  '#fde725',
-];
-
-/**
- * Returns the [min, max] range of a dimension from the pointcloud extension
- * (`pc:statistics`).
- * @param {Asset} asset The asset.
- * @param {string} name The name of the dimension.
- * @return {Array<number>|null} The range, or `null` if not available.
- */
-function getPointCloudRange(asset, name) {
-  const statistics = asset.getMetadata('pc:statistics');
-  if (!Array.isArray(statistics)) {
-    return null;
-  }
-  const stats = statistics.find(
-    (s) => isObject(s) && String(s.name).toLowerCase() === name.toLowerCase(),
-  );
-  if (
-    !stats ||
-    typeof stats.minimum !== 'number' ||
-    typeof stats.maximum !== 'number'
-  ) {
-    return null;
-  }
-  return [stats.minimum, stats.maximum];
-}
-
-/**
- * Creates a WebGLTileLayer style for a COPC layer from the STAC metadata.
+ * Creates the options for a COPC layer from the STAC metadata: the classes are
+ * colored by the classification extension (`classification:classes`) if it
+ * provides colors.
  *
- * The points are colored by the classification extension
- * (`classification:classes`) if it provides colors, otherwise by their colors
- * if available, otherwise by their elevation (using the range from the
- * pointcloud extension's `pc:statistics` or the file). The colors are shaded
- * by the hillshade of the elevations.
- *
- * @param {Asset} asset The STAC asset.
- * @param {import("./source/COPC.js").default} source The COPC source.
+ * @param {import('stac-js').Asset} asset The STAC asset.
  * @param {Array<import('ol/color.js').Color|string>|null} [defaultColormap] The colors
- * for the elevations.
- * @return {Object} A WebGLTileLayer style.
+ * for elevations and intensities.
+ * @return {Object} The layer options.
  * @api
  */
-export function getCOPCStyleFromAsset(asset, source, defaultColormap = null) {
-  let color;
-  const classification = getClassificationStyle(
-    asset,
-    null,
-    COPCBand.Classification,
-  );
-  if (classification) {
-    color = classification.color;
-  } else if (source.hasColors()) {
-    const channel = (band, name) => {
-      const range = getPointCloudRange(asset, name);
-      const max = range && range[1] <= 255 ? 255 : 65535;
-      return ['*', ['band', band], 255 / max];
-    };
-    color = [
-      'color',
-      channel(COPCBand.Red, 'Red'),
-      channel(COPCBand.Green, 'Green'),
-      channel(COPCBand.Blue, 'Blue'),
-      1,
-    ];
-  } else {
-    const range = getPointCloudRange(asset, 'Z') || source.getElevationRange();
-    const colors =
-      Array.isArray(defaultColormap) && defaultColormap.length >= 2
-        ? defaultColormap
-        : defaultElevationColors;
-    color = createGradientStyle(colors, COPCBand.Z, range).color;
+export function getCOPCLayerOptionsFromAsset(asset, defaultColormap = null) {
+  const options = {};
+  if (Array.isArray(defaultColormap) && defaultColormap.length >= 2) {
+    options.colormap = defaultColormap;
   }
-  const shade = ['clamp', ['*', ['band', COPCBand.Shade], 300], 0, 255];
-  return {
-    color: [
-      'case',
-      ['>', ['band', COPCBand.Alpha], 0],
-      ['*', color, ['color', shade, shade, shade, 1]],
-      ['color', 0, 0, 0, 0],
-    ],
-  };
+  const classes = getClassificationClasses(asset);
+  const classColors = {};
+  for (const cls of classes || []) {
+    if (
+      typeof cls.value === 'number' &&
+      typeof cls.color_hint === 'string' &&
+      cls.color_hint.length === 6
+    ) {
+      classColors[cls.value] = hexToRgb(cls.color_hint);
+    }
+  }
+  if (Object.keys(classColors).length > 0) {
+    options.classColors = classColors;
+    options.colorMode = 'classification';
+  }
+  return options;
 }

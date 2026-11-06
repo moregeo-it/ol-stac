@@ -1,7 +1,11 @@
 import {transform} from 'ol/proj.js';
 import {register} from 'ol/proj/proj4.js';
 import proj4 from 'proj4';
-import {getProjection} from '../../../../src/ol/proj.js';
+import {
+  getHorizontalProjjson,
+  getHorizontalWkt,
+  getProjection,
+} from '../../../../src/ol/proj.js';
 
 // OGC WKT for ETRS89 / UTM zone 32N, as served by spatialreference.org
 const WKT_25832 =
@@ -51,9 +55,64 @@ describe('ol/proj', function () {
       expect(lat).to.be.within(53.5, 53.52);
     });
 
+    it('uses the horizontal part of a compound WKT2', async function () {
+      const wkt = `COMPD_CS["ETRS89 / UTM zone 32N + DHHN2016 height",${WKT_25832},VERT_CS["DHHN2016 height",VERT_DATUM["Deutsches Haupthoehennetz 2016",2005],UNIT["metre",1]]]`;
+      const projection = await getProjection(fakeReference({'proj:wkt2': wkt}));
+      expect(projection).to.be.ok;
+      const [lon, lat] = transform([533000, 5929000], projection, 'EPSG:4326');
+      expect(lon).to.be.within(9.49, 9.51);
+      expect(lat).to.be.within(53.5, 53.52);
+    });
+
     it('falls back to the default projection without projection metadata', async function () {
       const projection = await getProjection(fakeReference({}), 'EPSG:4326');
       expect(projection).to.equal('EPSG:4326');
+    });
+  });
+
+  describe('getHorizontalWkt', function () {
+    it('returns the horizontal part of a compound WKT1', function () {
+      const wkt = `COMPD_CS["ETRS89 / UTM zone 32N + DHHN2016 height",${WKT_25832},VERT_CS["DHHN2016 height",VERT_DATUM["Deutsches Haupthoehennetz 2016",2005],UNIT["metre",1]]]`;
+      expect(getHorizontalWkt(wkt)).to.equal(WKT_25832);
+    });
+
+    it('returns the horizontal part of a compound WKT2', function () {
+      const horizontal =
+        'PROJCRS["WGS 84 / UTM zone 32N",BASEGEOGCRS["WGS 84",DATUM["World Geodetic System 1984"]]]';
+      const wkt = `COMPOUNDCRS["WGS 84 / UTM zone 32N + EGM96 height",${horizontal},VERTCRS["EGM96 height",VDATUM["EGM96 geoid"]]]`;
+      expect(getHorizontalWkt(wkt)).to.equal(horizontal);
+    });
+
+    it('keeps other reference systems', function () {
+      expect(getHorizontalWkt(` ${WKT_25832} `)).to.equal(WKT_25832);
+    });
+  });
+
+  describe('getHorizontalProjjson', function () {
+    const horizontal = {
+      type: 'ProjectedCRS',
+      name: 'NAD83 / UTM zone 18N',
+      id: {authority: 'EPSG', code: 26918},
+    };
+
+    it('returns the horizontal part of a compound PROJJSON', function () {
+      const compound = {
+        type: 'CompoundCRS',
+        name: 'NAD83 / UTM zone 18N + NAVD88 height',
+        components: [
+          horizontal,
+          {
+            type: 'VerticalCRS',
+            name: 'NAVD88 height',
+            id: {authority: 'EPSG', code: 5703},
+          },
+        ],
+      };
+      expect(getHorizontalProjjson(compound)).to.equal(horizontal);
+    });
+
+    it('keeps other reference systems', function () {
+      expect(getHorizontalProjjson(horizontal)).to.equal(horizontal);
     });
   });
 });

@@ -43,7 +43,7 @@
  */
 class SourceType {
   /**
-   * Cloud Optimized Point Cloud (COPC)
+   * Cloud Optimized Point Cloud (COPC), for the `COPCSource` of ol-stac
    * @api
    */
   static COPC = new SourceType('COPC');

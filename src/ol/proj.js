@@ -18,7 +18,53 @@ import {isObject} from 'stac-js/src/utils.js';
  */
 
 /**
+ * Returns the horizontal part of a compound coordinate reference system,
+ * as proj4 can't parse compound reference systems.
+ * @param {string} wkt WKT1 or WKT2
+ * @return {string} The horizontal reference system.
+ */
+export function getHorizontalWkt(wkt) {
+  wkt = wkt.trim();
+  if (!/^(COMPD_CS|COMPOUNDCRS)\s*\[/i.test(wkt)) {
+    return wkt;
+  }
+  const match = /(PROJCS|PROJCRS|GEOGCS|GEOGCRS|GEODCRS)\s*\[/i.exec(
+    wkt.substring(1),
+  );
+  if (!match) {
+    return wkt;
+  }
+  const start = match.index + 1;
+  let depth = 0;
+  for (let i = start; i < wkt.length; i++) {
+    if (wkt[i] === '[') {
+      depth++;
+    } else if (wkt[i] === ']' && --depth === 0) {
+      return wkt.substring(start, i + 1);
+    }
+  }
+  return wkt;
+}
+
+/**
+ * Returns the horizontal part of a compound coordinate reference system,
+ * as proj4 can't parse compound reference systems.
+ * @param {Object} projjson PROJJSON
+ * @return {Object} The horizontal reference system.
+ */
+export function getHorizontalProjjson(projjson) {
+  if (projjson.type !== 'CompoundCRS' || !Array.isArray(projjson.components)) {
+    return projjson;
+  }
+  const horizontal = projjson.components.find(
+    (component) => isObject(component) && component.type !== 'VerticalCRS',
+  );
+  return horizontal || projjson;
+}
+
+/**
  * Returns a projection usable in OpenLayers for a given projection (Code, PROJJSON or WKT2).
+ * For compound reference systems, the horizontal reference system is used.
  *
  * @param {string|Object} proj The projection
  * @param {string} type The type of the projection definition (`code`, `projjson` or `wkt2`).
@@ -29,6 +75,12 @@ import {isObject} from 'stac-js/src/utils.js';
 export async function registerProjection(proj, type, lookup = null) {
   if (!proj4) {
     throw new Error('Proj4 must be registered first with register(proj4)');
+  }
+
+  if (type === 'projjson' && isObject(proj)) {
+    proj = getHorizontalProjjson(proj);
+  } else if (type === 'wkt2' && typeof proj === 'string') {
+    proj = getHorizontalWkt(proj);
   }
 
   const code = type === 'code' ? proj : getCustomProjectionName(proj);

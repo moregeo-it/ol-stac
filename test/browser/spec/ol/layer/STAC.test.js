@@ -132,6 +132,12 @@ const GEOZARR_ASSET = {
   roles: ['data'],
 };
 
+const COPC_ASSET = {
+  href: 'https://example.com/points.copc.laz',
+  type: 'application/vnd.laszip+copc',
+  roles: ['data'],
+};
+
 const AUTH_HEADERS = {Authorization: 'Bearer 123'};
 
 describe('ol/layer/STAC', function () {
@@ -147,6 +153,42 @@ describe('ol/layer/STAC', function () {
 
     it('creates an instance', function () {
       expect(group).to.be.a.instanceOf(STAC);
+    });
+  });
+
+  describe('tilt', function () {
+    it('defaults to a top-down view', function () {
+      const group = new STAC({data: createItem()});
+      expect(group.getTilt()).to.equal(0);
+    });
+
+    it('can be configured', function () {
+      const group = new STAC({data: createItem(), tilt: 45});
+      expect(group.getTilt()).to.equal(45);
+      group.setTilt(30);
+      expect(group.getTilt()).to.equal(30);
+    });
+
+    it('is inherited by and updated for the children', async function () {
+      const group = new STAC({
+        data: createCollection(),
+        children: [createItem()],
+        tilt: 45,
+      });
+      group.on('error', () => {});
+      await waitFor(() =>
+        group
+          .getLayers()
+          .getArray()
+          .find((layer) => layer instanceof STAC),
+      );
+      const child = group
+        .getLayers()
+        .getArray()
+        .find((layer) => layer instanceof STAC);
+      expect(child.getTilt()).to.equal(45);
+      group.setTilt(10);
+      expect(child.getTilt()).to.equal(10);
     });
   });
 
@@ -833,6 +875,19 @@ describe('ol/layer/STAC', function () {
       await waitFor(() => getCaptured(SourceType.GeoTIFF));
       const options = getCaptured(SourceType.GeoTIFF);
       expect(options.sourceOptions.headers).to.eql(AUTH_HEADERS);
+    });
+
+    it('passes headers to the COPC source options', async function () {
+      const group = new STAC({
+        data: createItem({points: COPC_ASSET}),
+        getRequestHeaders: () => AUTH_HEADERS,
+        getSourceOptions: captureSourceOptions,
+      });
+      group.on('error', () => {});
+      await waitFor(() => getCaptured(SourceType.COPC));
+      const options = getCaptured(SourceType.COPC);
+      expect(options.url).to.equal(COPC_ASSET.href);
+      expect(options.headers).to.eql(AUTH_HEADERS);
     });
 
     it('passes headers to the GeoZarr store options', async function () {

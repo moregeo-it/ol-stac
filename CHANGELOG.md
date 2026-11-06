@@ -9,8 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Cloud Optimized Point Cloud (COPC) support: point clouds are rendered top-down with shading, cast shadows and
-  ambient occlusion, colored by classification (from `classification:classes`), RGB or elevation
+- Cloud Optimized Point Cloud (COPC) support through the new `COPCSource` and `COPCLayer`: point clouds are
+  rendered with WebGL 2, top-down or in a tilted (oblique) view that follows the rotation of the map,
+  colored by classification (from `classification:classes`), RGB, elevation or intensity
+- Option `tilt` and the methods `getTilt` and `setTilt` to show point clouds in a tilted view
+
+### Fixed
+
+- Compound reference systems in `proj:projjson` and `proj:wkt2` (e.g. with a vertical datum) are supported
+  by using their horizontal reference system
 
 ## [1.9.0] - 2026-11-06
 
