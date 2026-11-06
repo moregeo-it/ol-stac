@@ -26,7 +26,7 @@ async function sign(href) {
 
 const layer = new STAC({
   url: 'https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a/items/S2B_MSIL2A_20220909T185929_R013_T10TES_20220910T222807',
-  assets: ['visual'],
+  dataSources: ['visual'],
   async getSourceOptions(type, options) {
     if (type === SourceType.GeoTIFF) {
       for (const source of options.sources) {

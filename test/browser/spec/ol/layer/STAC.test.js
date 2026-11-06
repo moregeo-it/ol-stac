@@ -1653,4 +1653,397 @@ describe('ol/layer/STAC', function () {
       expect(attributions({})).to.deep.equal([ASSET_ATTRIBUTION]);
     });
   });
+
+  describe('data sources', function () {
+    const ASSETS = {
+      a: {href: 'https://example.com/a.png', type: 'image/png'},
+      b: {href: 'https://example.com/b.png', type: 'image/png'},
+      c: {href: 'https://example.com/c.png', type: 'image/png'},
+    };
+
+    // The first asset finishes loading last
+    const getSourceOptions = async (type, options, asset) => {
+      await new Promise((resolve) =>
+        setTimeout(resolve, asset.isAsset && asset.getKey() === 'a' ? 50 : 0),
+      );
+      return options;
+    };
+
+    function getAssetLayers(group) {
+      return group
+        .getLayersArray()
+        .filter((layer) => layer.get('stac')?.isAsset);
+    }
+
+    function getAssetKeys(group) {
+      return getAssetLayers(group).map((layer) => layer.get('stac').getKey());
+    }
+
+    function getDataSourceNames(group) {
+      return group
+        .getLayersArray()
+        .map((layer) => layer.get('stac'))
+        .filter((stac) => stac?.isAsset || stac?.isLink)
+        .map((stac) => (stac.isLink ? stac.rel : stac.getKey()));
+    }
+
+    const XYZ_LINK = {
+      rel: 'xyz',
+      href: 'https://example.com/tiles/{z}/{x}/{y}.png',
+      type: 'image/png',
+    };
+
+    it('renders the assets in the given order', async function () {
+      const group = new STAC({
+        data: createItem(ASSETS),
+        dataSources: ['a', 'b', 'c'],
+        getSourceOptions,
+      });
+      await waitFor(() => getAssetLayers(group).length === 3);
+      expect(getAssetKeys(group)).to.deep.equal(['a', 'b', 'c']);
+    });
+
+    it('keeps the layers of assets that are still shown', async function () {
+      const group = new STAC({
+        data: createItem(ASSETS),
+        dataSources: ['a', 'b'],
+        getSourceOptions,
+      });
+      await waitFor(() => getAssetLayers(group).length === 2);
+      const [layerA, layerB] = getAssetLayers(group);
+      layerA.setVisible(false);
+
+      await group.setDataSources(['a', 'b', 'c']);
+      expect(getAssetKeys(group)).to.deep.equal(['a', 'b', 'c']);
+      expect(getAssetLayers(group)[0]).to.equal(layerA);
+      expect(getAssetLayers(group)[1]).to.equal(layerB);
+      expect(layerA.getVisible()).to.equal(false);
+
+      await group.setDataSources(['c', 'a']);
+      expect(getAssetKeys(group)).to.deep.equal(['c', 'a']);
+      expect(getAssetLayers(group)[1]).to.equal(layerA);
+      expect(layerB.getSource()).to.equal(null);
+    });
+
+    it('inserts new assets below the shown ones if requested', async function () {
+      const group = new STAC({
+        data: createItem(ASSETS),
+        dataSources: ['b'],
+        getSourceOptions,
+      });
+      await waitFor(() => getAssetLayers(group).length === 1);
+      await group.setDataSources(['a', 'b']);
+      expect(getAssetKeys(group)).to.deep.equal(['a', 'b']);
+    });
+
+    it('recreates the layers if the default colormap changes', async function () {
+      const group = new STAC({
+        data: createItem(ASSETS),
+        dataSources: ['a'],
+      });
+      await waitFor(() => getAssetLayers(group).length === 1);
+      const [layer] = getAssetLayers(group);
+      await group.setDefaultColormap(['#000', '#fff']);
+      expect(getAssetLayers(group).length).to.equal(1);
+      expect(getAssetLayers(group)[0]).not.to.equal(layer);
+    });
+
+    it('renders web map links and assets in the given order', async function () {
+      const group = new STAC({
+        data: createItem(ASSETS),
+        dataSources: ['a', XYZ_LINK, 'b'],
+        getSourceOptions,
+      });
+      await waitFor(() => getDataSourceNames(group).length === 3);
+      expect(getDataSourceNames(group)).to.deep.equal(['a', 'xyz', 'b']);
+      expect(group.getDataSources()[1].isLink).to.equal(true);
+
+      const [linkLayer] = group
+        .getLayersArray()
+        .filter((layer) => layer.get('stac')?.isLink);
+      await group.setDataSources(['b', group.getDataSources()[1]]);
+      expect(getDataSourceNames(group)).to.deep.equal(['b', 'xyz']);
+      expect(
+        group.getLayersArray().find((layer) => layer.get('stac')?.isLink),
+      ).to.equal(linkLayer);
+    });
+
+    it('shows web map links that are also data sources only once', async function () {
+      const group = new STAC({
+        data: createItem(ASSETS, [{...XYZ_LINK, id: 'tiles'}]),
+        displayWebMapLink: ['tiles'],
+      });
+      await waitFor(() => getDataSourceNames(group).length > 0);
+      await group.setDataSources(group.getWebMapLinks());
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(getDataSourceNames(group)).to.deep.equal(['xyz']);
+    });
+
+    it('distinguishes web map links that only differ in their layers', async function () {
+      const wms = (layer) => ({
+        rel: 'wms',
+        href: 'https://example.com/wms',
+        type: 'image/png',
+        'wms:layers': [layer],
+      });
+      const getWmsLayers = (group) =>
+        group
+          .getLayersArray()
+          .filter((layer) => layer.get('stac')?.isLink)
+          .map((layer) => layer.getSource().getParams().LAYERS);
+
+      const group = new STAC({
+        data: createItem(ASSETS),
+        dataSources: [wms('a'), wms('b')],
+      });
+      await waitFor(() => getWmsLayers(group).length === 2);
+      expect(getWmsLayers(group)).to.deep.equal(['a', 'b']);
+
+      await group.setDataSources([wms('b'), wms('a')]);
+      expect(getWmsLayers(group)).to.deep.equal(['b', 'a']);
+
+      await group.setDataSources([wms('b'), wms('c')]);
+      expect(getWmsLayers(group)).to.deep.equal(['b', 'c']);
+    });
+
+    it('distinguishes web map links that only differ in properties without prefix', async function () {
+      const link = (version) => ({
+        ...XYZ_LINK,
+        variables: {version: {const: version}},
+      });
+      const getLayer = (group) =>
+        group.getLayersArray().find((layer) => layer.get('stac')?.isLink);
+
+      const group = new STAC({
+        data: createItem(ASSETS),
+        dataSources: [link('1')],
+      });
+      await waitFor(() => getLayer(group));
+      const layer = getLayer(group);
+
+      await group.setDataSources([link('2')]);
+      expect(getLayer(group)).not.to.equal(layer);
+      expect(getLayer(group).get('stac').variables.version.const).to.equal('2');
+    });
+
+    it('distinguishes assets that share a URL', async function () {
+      const asset = (band) => ({
+        href: 'https://example.com/shared.png',
+        type: 'image/png',
+        bands: [{name: band}],
+      });
+      const getLayer = (group) =>
+        group.getLayersArray().find((layer) => layer.get('stac')?.isAsset);
+
+      const group = new STAC({
+        data: createItem({
+          one: asset('b1'),
+          other: asset('b2'),
+        }),
+        dataSources: ['one'],
+      });
+      await waitFor(() => getLayer(group));
+      const layer = getLayer(group);
+
+      // The same asset again keeps the layer
+      await group.setDataSources(['one']);
+      expect(getLayer(group)).to.equal(layer);
+
+      await group.setDataSources(['other']);
+      expect(getLayer(group)).not.to.equal(layer);
+      expect(getLayer(group).get('stac').getKey()).to.equal('other');
+    });
+
+    it('keeps the layers of plain objects that are passed again', async function () {
+      const link = {...XYZ_LINK};
+      const getLayer = (group) =>
+        group.getLayersArray().find((layer) => layer.get('stac')?.isLink);
+
+      const group = new STAC({
+        data: createItem(ASSETS),
+        dataSources: [link],
+      });
+      await waitFor(() => getLayer(group));
+      const layer = getLayer(group);
+
+      await group.setDataSources([link, 'a']);
+      expect(getLayer(group)).to.equal(layer);
+
+      // An equal, but different object is a different data source
+      await group.setDataSources([{...XYZ_LINK}]);
+      expect(getLayer(group)).not.to.equal(layer);
+    });
+
+    it('creates sources that are still loading only once', async function () {
+      const group = new STAC({
+        data: createItem(ASSETS),
+        dataSources: ['a'],
+        getSourceOptions,
+      });
+      // The first asset is still loading
+      await group.setDataSources(['a', 'b']);
+      expect(getAssetKeys(group)).to.deep.equal(['a', 'b']);
+    });
+
+    it('shows a plain web map link that is also a data source only once', async function () {
+      const link = {...XYZ_LINK};
+      const group = new STAC({
+        data: createItem(ASSETS),
+        displayWebMapLink: [link],
+        dataSources: [link],
+      });
+      const getLayers = () =>
+        group.getLayersArray().filter((l) => l !== group.getBoundsLayer());
+      await waitFor(() => getLayers().length > 0);
+      await group.updateLayers();
+      expect(getLayers().length).to.equal(1);
+    });
+
+    it('disposes the layers of removed children', async function () {
+      const group = new STAC({
+        data: createItem(ASSETS),
+        children: [createItem()],
+      });
+      await waitFor(() => group.getLayersArray().length > 1);
+      const childLayers = group
+        .getLayersArray()
+        .filter((layer) => layer !== group.getBoundsLayer());
+      expect(childLayers.length).to.be.greaterThan(0);
+
+      await group.setChildren(null);
+      expect(childLayers.every((layer) => layer.disposed)).to.equal(true);
+    });
+
+    it('adds no layers once it is disposed', async function () {
+      const group = new STAC({
+        data: createItem(ASSETS),
+        dataSources: ['a'],
+        getSourceOptions,
+      });
+      // The first asset is still loading
+      group.dispose();
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      expect(getAssetLayers(group).length).to.equal(0);
+    });
+
+    it('keeps other web map links below the data sources', async function () {
+      const group = new STAC({
+        data: createItem(ASSETS, [{...XYZ_LINK, id: 'tiles'}]),
+        displayWebMapLink: ['tiles'],
+        dataSources: ['a'],
+      });
+      await waitFor(() => getDataSourceNames(group).length === 2);
+      expect(getDataSourceNames(group)).to.deep.equal(['xyz', 'a']);
+
+      await group.updateLayers();
+      expect(getDataSourceNames(group)).to.deep.equal(['xyz', 'a']);
+    });
+
+    it('shows no default visualization for an empty list', async function () {
+      const group = new STAC({
+        data: createItem({thumbnail: THUMBNAIL_ASSET}),
+        displayPreview: true,
+      });
+      await waitFor(() => getAssetLayers(group).length === 1);
+
+      await group.setDataSources([]);
+      expect(getAssetLayers(group).length).to.equal(0);
+
+      await group.setDataSources(null);
+      expect(getAssetLayers(group).length).to.equal(1);
+    });
+
+    it('supports the deprecated assets option and methods', async function () {
+      const group = new STAC({
+        data: createItem(ASSETS),
+        assets: ['a'],
+      });
+      await waitFor(() => getAssetLayers(group).length === 1);
+      await group.setAssets(['a', 'b']);
+      expect(getAssetKeys(group)).to.deep.equal(['a', 'b']);
+      await group.setDataSources([XYZ_LINK, 'b']);
+      expect(group.getAssets().map((asset) => asset.getKey())).to.deep.equal([
+        'b',
+      ]);
+    });
+  });
+
+  describe('display limit', function () {
+    let fetchStub;
+    let map;
+    let target;
+
+    afterEach(function () {
+      fetchStub?.mockRestore();
+      fetchStub = null;
+      map?.dispose();
+      target?.remove();
+      map = null;
+      target = null;
+    });
+
+    it('reports the rejected asset in the error', async function () {
+      const metadata = {
+        zarr_consolidated_format: 1,
+        metadata: {
+          '.zgroup': {zarr_format: 2},
+          '.zattrs': {},
+          'velocity/.zarray': {
+            zarr_format: 2,
+            shape: [8000, 8000],
+            chunks: [2048, 2048],
+            dtype: '<f4',
+            compressor: null,
+            fill_value: 'NaN',
+            order: 'C',
+            filters: null,
+          },
+          'velocity/.zattrs': {_ARRAY_DIMENSIONS: ['y', 'x']},
+        },
+      };
+      fetchStub = vi
+        .spyOn(window, 'fetch')
+        .mockImplementation((url) =>
+          Promise.resolve(
+            String(url?.url ?? url).endsWith('/.zmetadata')
+              ? new Response(JSON.stringify(metadata), {status: 200})
+              : new Response(null, {status: 404}),
+          ),
+        );
+      const item = createItem({
+        big: {
+          href: 'https://example.com/big.zarr',
+          type: 'application/vnd.zarr; version=2',
+          roles: ['data'],
+        },
+      });
+      item.stac_extensions = [
+        'https://stac-extensions.github.io/datacube/v2.2.0/schema.json',
+      ];
+      item.properties['cube:dimensions'] = {
+        y: {type: 'spatial', axis: 'y', extent: [0, 1]},
+        x: {type: 'spatial', axis: 'x', extent: [0, 1]},
+      };
+      item.properties['cube:variables'] = {
+        velocity: {type: 'data', dimensions: ['y', 'x']},
+      };
+
+      const errors = [];
+      const group = new STAC({data: item, dataSources: ['big']});
+      group.on('error', (event) => errors.push(event.error));
+      // Events are only dispatched once the layer is on a map
+      target = document.createElement('div');
+      target.style.width = '200px';
+      target.style.height = '200px';
+      document.body.appendChild(target);
+      map = new Map({
+        target,
+        layers: [group],
+        view: new View({center: [0, 0], zoom: 2}),
+      });
+      await waitFor(() => errors.length > 0);
+      expect(errors[0].name).to.equal('DisplayLimitError');
+      expect(errors[0].asset).to.equal(group.getDataSources()[0]);
+    });
+  });
 });

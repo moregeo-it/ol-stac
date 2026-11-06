@@ -160,7 +160,7 @@ const presets = {
     // This store is a single ~5700x4900 pixel resolution level, which is more
     // data than the layer loads by default. Select the asset explicitly and
     // raise the pixel limit to display it anyway.
-    assets: ['data'],
+    dataSources: ['data'],
     maxDisplayPixels: Infinity,
     data: zarrCollection(
       'thwaites-ice-velocity',
@@ -307,7 +307,7 @@ function updateLayer() {
   layer = new STAC({
     url: preset.url,
     data: preset.data,
-    assets: preset.assets,
+    dataSources: preset.dataSources,
     bands: preset.bands,
     maxDisplayPixels: preset.maxDisplayPixels,
     defaultColormap: colormaps[colormapSelect.value],
