@@ -1522,6 +1522,7 @@ class STACLayer extends LayerGroup {
     }
     if (!autoDisplay) {
       const megapixels = Math.ceil(getDisplayPixels(source) / 1048576);
+      /** @type {Error & {asset?: Asset}} */
       const error = new Error(
         `Asset ${asset.getKey()} is too large to display safely` +
           ` (~${megapixels} megapixels at the coarsest resolution);` +
@@ -1529,6 +1530,8 @@ class STACLayer extends LayerGroup {
       );
       // Allows applications to detect the error without matching the message
       error.name = 'DisplayLimitError';
+      // Allows applications to find out which data source was rejected
+      error.asset = asset;
       throw error;
     }
     return true;

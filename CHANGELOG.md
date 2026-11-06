@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Option `dataSources` and the methods `setDataSources` and `getDataSources` to show assets and web map links
   together, in the given order
+- The error for assets that exceed `maxDisplayPixels` (`DisplayLimitError`) provides the rejected asset in `asset`
 
 ### Changed
 

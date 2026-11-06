@@ -1955,4 +1955,83 @@ describe('ol/layer/STAC', function () {
       ]);
     });
   });
+
+  describe('display limit', function () {
+    let fetchStub;
+    let map;
+    let target;
+
+    afterEach(function () {
+      fetchStub?.mockRestore();
+      fetchStub = null;
+      map?.dispose();
+      target?.remove();
+      map = null;
+      target = null;
+    });
+
+    it('reports the rejected asset in the error', async function () {
+      const metadata = {
+        zarr_consolidated_format: 1,
+        metadata: {
+          '.zgroup': {zarr_format: 2},
+          '.zattrs': {},
+          'velocity/.zarray': {
+            zarr_format: 2,
+            shape: [8000, 8000],
+            chunks: [2048, 2048],
+            dtype: '<f4',
+            compressor: null,
+            fill_value: 'NaN',
+            order: 'C',
+            filters: null,
+          },
+          'velocity/.zattrs': {_ARRAY_DIMENSIONS: ['y', 'x']},
+        },
+      };
+      fetchStub = vi
+        .spyOn(window, 'fetch')
+        .mockImplementation((url) =>
+          Promise.resolve(
+            String(url?.url ?? url).endsWith('/.zmetadata')
+              ? new Response(JSON.stringify(metadata), {status: 200})
+              : new Response(null, {status: 404}),
+          ),
+        );
+      const item = createItem({
+        big: {
+          href: 'https://example.com/big.zarr',
+          type: 'application/vnd.zarr; version=2',
+          roles: ['data'],
+        },
+      });
+      item.stac_extensions = [
+        'https://stac-extensions.github.io/datacube/v2.2.0/schema.json',
+      ];
+      item.properties['cube:dimensions'] = {
+        y: {type: 'spatial', axis: 'y', extent: [0, 1]},
+        x: {type: 'spatial', axis: 'x', extent: [0, 1]},
+      };
+      item.properties['cube:variables'] = {
+        velocity: {type: 'data', dimensions: ['y', 'x']},
+      };
+
+      const errors = [];
+      const group = new STAC({data: item, dataSources: ['big']});
+      group.on('error', (event) => errors.push(event.error));
+      // Events are only dispatched once the layer is on a map
+      target = document.createElement('div');
+      target.style.width = '200px';
+      target.style.height = '200px';
+      document.body.appendChild(target);
+      map = new Map({
+        target,
+        layers: [group],
+        view: new View({center: [0, 0], zoom: 2}),
+      });
+      await waitFor(() => errors.length > 0);
+      expect(errors[0].name).to.equal('DisplayLimitError');
+      expect(errors[0].asset).to.equal(group.getDataSources()[0]);
+    });
+  });
 });
