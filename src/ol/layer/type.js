@@ -3,7 +3,7 @@
  */
 
 /**
- * @typedef {import("./COPC.js").Options} COPCOptions
+ * @typedef {import("ol-copc/layer/COPC.js").Options} COPCOptions
  */
 /**
  * @typedef {import("ol/layer/BaseImage.js").Options<import("ol/source/Image.js").default>} ImageOptions
@@ -36,7 +36,7 @@
  */
 class LayerType {
   /**
-   * Point cloud layer (`COPCLayer`), used for Cloud Optimized Point Clouds (COPC).
+   * Point cloud layer (`COPCLayer` of ol-copc), used for Cloud Optimized Point Clouds (COPC).
    * @api
    */
   static COPC = new LayerType('COPC');

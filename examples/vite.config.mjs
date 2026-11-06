@@ -2,7 +2,6 @@ import fs from 'fs';
 import path, {dirname} from 'path';
 import {fileURLToPath} from 'url';
 import {defineConfig} from 'vite';
-import serializeWorkers from '../tasks/vite-plugin-worker.js';
 import exampleBuilder from './vite-plugin-example-builder.mjs';
 
 const dir = dirname(fileURLToPath(import.meta.url));
@@ -37,7 +36,6 @@ export default defineConfig({
   root: dir,
   base: './',
   plugins: [
-    serializeWorkers(),
     exampleBuilder({
       templates: path.join(dir, 'templates'),
     }),

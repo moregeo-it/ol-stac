@@ -1,10 +1,10 @@
+import {COPCLayer} from 'ol-copc';
 import Map from 'ol/Map.js';
 import Control from 'ol/control/Control.js';
 import TileLayer from 'ol/layer/Tile.js';
 import {register} from 'ol/proj/proj4.js';
 import OSM from 'ol/source/OSM.js';
 import proj4 from 'proj4';
-import COPCLayer from '../src/ol/layer/COPC.js';
 import STAC from '../src/ol/layer/STAC.js';
 
 register(proj4); // required to support source reprojection
@@ -106,17 +106,6 @@ const items = {
       [-118.3446169, 33.9593407],
     ],
     364384576,
-  ),
-  millsite: createItem(
-    'millsite',
-    'Millsite, Utah',
-    [
-      [-111.2251964, 39.0588645],
-      [-111.1513526, 39.0589837],
-      [-111.1514826, 39.1197911],
-      [-111.2253898, 39.1196716],
-    ],
-    374609447,
   ),
 };
 

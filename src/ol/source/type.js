@@ -7,7 +7,7 @@
  * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_source_GeoTIFF-GeoTIFFSource.html}
  */
 /**
- * @typedef {import("./COPC.js").Options} COPCOptions
+ * @typedef {import("ol-copc/source/COPC.js").Options} COPCOptions
  */
 /**
  * @typedef {import("./GeoZarr.js").Options} GeoZarrOptions
@@ -43,7 +43,7 @@
  */
 class SourceType {
   /**
-   * Cloud Optimized Point Cloud (COPC), for the `COPCSource` of ol-stac
+   * Cloud Optimized Point Cloud (COPC), for the `COPCSource` of ol-copc
    * @api
    */
   static COPC = new SourceType('COPC');

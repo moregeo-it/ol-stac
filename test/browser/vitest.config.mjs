@@ -2,13 +2,11 @@ import {playwright} from '@vitest/browser-playwright';
 import path from 'path';
 import {fileURLToPath} from 'url';
 import {defineConfig} from 'vitest/config';
-import serializeWorkers from '../../tasks/vite-plugin-worker.js';
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 
 // Browser unit tests, run with Vitest (formerly Karma).
 export default defineConfig({
-  plugins: [serializeWorkers()],
   test: {
     include: ['test/browser/spec/**/*.test.js'],
     globals: true,

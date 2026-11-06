@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Cloud Optimized Point Cloud (COPC) support through the new `COPCSource` and `COPCLayer`: point clouds are
-  rendered with WebGL 2, top-down or in a tilted (oblique) view that follows the rotation of the map,
-  colored by classification (from `classification:classes`), RGB, elevation or intensity
+- Cloud Optimized Point Cloud (COPC) support through [ol-copc](https://github.com/moregeo-it/ol-copc):
+  point clouds are rendered with WebGL 2, top-down or in a tilted (oblique) view that follows the rotation
+  of the map, colored by classification (from `classification:classes`), RGB, elevation or intensity
 - Option `tilt` and the methods `getTilt` and `setTilt` to show point clouds in a tilted view
 
 ### Fixed

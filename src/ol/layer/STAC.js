@@ -1673,7 +1673,7 @@ class STACLayer extends LayerGroup {
    */
   async addCOPC_(asset) {
     /**
-     * @type {import("../source/COPC.js").Options}
+     * @type {import("ol-copc/source/COPC.js").Options}
      */
     let options = {
       url: this.getRequestUrlFor_(asset.getAbsoluteUrl(), asset),
@@ -1696,10 +1696,7 @@ class STACLayer extends LayerGroup {
     }
 
     try {
-      const [{default: COPCSource}, {default: COPCLayer}] = await Promise.all([
-        import('../source/COPC.js'),
-        import('./COPC.js'),
-      ]);
+      const {COPCLayer, COPCSource} = await import('ol-copc');
       const source = new COPCSource(options);
       await new Promise((resolve, reject) => {
         source.on('change', () => {
@@ -1711,7 +1708,7 @@ class STACLayer extends LayerGroup {
         });
       });
       /**
-       * @type {import("./COPC.js").Options}
+       * @type {import("ol-copc/layer/COPC.js").Options}
        */
       let layerOptions = {
         source,
