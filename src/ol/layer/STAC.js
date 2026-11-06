@@ -1527,17 +1527,14 @@ class STACLayer extends LayerGroup {
     }
     if (!autoDisplay) {
       const megapixels = Math.ceil(getDisplayPixels(source) / 1048576);
-      /** @type {Error & {asset?: Asset}} */
       const error = new Error(
         `Asset ${asset.getKey()} is too large to display safely` +
           ` (~${megapixels} megapixels at the coarsest resolution);` +
           ` set the maxDisplayPixels option to display it anyway`,
       );
-      // Allows applications to detect the error without matching the message
-      error.name = 'DisplayLimitError';
-      // Allows applications to find out which data source was rejected
-      error.asset = asset;
-      throw error;
+      // The name allows applications to detect the error without matching the message,
+      // the asset to find out which data source was rejected
+      throw Object.assign(error, {name: 'DisplayLimitError', asset});
     }
     return true;
   }

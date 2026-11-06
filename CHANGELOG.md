@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-11-06
+
 ### Added
 
 - Option `dataSources` and the methods `setDataSources` and `getDataSources` to show assets and web map links
@@ -354,7 +356,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release
 
-[Unreleased]: <https://github.com/moregeo-it/ol-stac/compare/v1.8.1...HEAD>
+[Unreleased]: <https://github.com/moregeo-it/ol-stac/compare/v1.9.0...HEAD>
+[1.9.0]: <https://github.com/moregeo-it/ol-stac/compare/v1.8.1...v1.9.0>
 [1.8.1]: <https://github.com/moregeo-it/ol-stac/compare/v1.8.0...v1.8.1>
 [1.8.0]: <https://github.com/moregeo-it/ol-stac/compare/v1.7.1...v1.8.0>
 [1.7.1]: <https://github.com/moregeo-it/ol-stac/compare/v1.7.0...v1.7.1>
