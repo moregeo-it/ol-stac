@@ -1278,6 +1278,11 @@ class STACLayer extends LayerGroup {
    * @private
    */
   addLayer_(layer, data = null, zIndex = 0) {
+    if (this.disposed) {
+      // A removed group may still finish loading, don't keep its layers
+      layer.dispose();
+      return;
+    }
     if (data) {
       layer.set('stac', data);
     }
@@ -1668,6 +1673,9 @@ class STACLayer extends LayerGroup {
    * @private
    */
   async updateLayers_(emit) {
+    if (this.disposed) {
+      return;
+    }
     // Remove old layers, but keep the layers of the requested data sources to avoid reloading them
     const isOldLayer = (layer) => layer.get('stac') && !layer.get('bounds');
     this.removeLayers_(

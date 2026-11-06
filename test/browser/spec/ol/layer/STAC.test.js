@@ -1914,6 +1914,18 @@ describe('ol/layer/STAC', function () {
       expect(childLayers.every((layer) => layer.disposed)).to.equal(true);
     });
 
+    it('adds no layers once it is disposed', async function () {
+      const group = new STAC({
+        data: createItem(ASSETS),
+        dataSources: ['a'],
+        getSourceOptions,
+      });
+      // The first asset is still loading
+      group.dispose();
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      expect(getAssetLayers(group).length).to.equal(0);
+    });
+
     it('keeps other web map links below the data sources', async function () {
       const group = new STAC({
         data: createItem(ASSETS, [{...XYZ_LINK, id: 'tiles'}]),
