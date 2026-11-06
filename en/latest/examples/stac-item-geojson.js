@@ -3,7 +3,7 @@ import { c as register, l as WebGLTileLayer, m as View, o as proj4, s as OSM, t 
 register(proj4);
 var layer = new STACLayer({
 	url: "https://transfer.data.aad.gov.au/aadc-aerial-photography/casc8916/collection.json",
-	assets: ["flightline-1", "flightline-2"]
+	dataSources: ["flightline-1", "flightline-2"]
 });
 var background = new WebGLTileLayer({ source: new OSM() });
 var map = new Map({

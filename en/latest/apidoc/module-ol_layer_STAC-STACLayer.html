@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>OL STAC v1.8.1 API - Class: STACLayer</title>
+    <title>OL STAC v1.9.0 API - Class: STACLayer</title>
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
@@ -74,12 +74,14 @@
             <li data-name="getboundslayer"><a href="module-ol_layer_STAC-STACLayer.html#getBoundsLayer">getBoundsLayer</a>
             <li data-name="getchildren"><a href="module-ol_layer_STAC-STACLayer.html#getChildren">getChildren</a>
             <li data-name="getdata"><a href="module-ol_layer_STAC-STACLayer.html#getData">getData</a>
+            <li data-name="getdatasources"><a href="module-ol_layer_STAC-STACLayer.html#getDataSources">getDataSources</a>
             <li data-name="getextent"><a href="module-ol_layer_STAC-STACLayer.html#getExtent">getExtent</a>
             <li data-name="getwebmaplinks"><a href="module-ol_layer_STAC-STACLayer.html#getWebMapLinks">getWebMapLinks</a>
             <li data-name="hasonlybounds"><a href="module-ol_layer_STAC-STACLayer.html#hasOnlyBounds">hasOnlyBounds</a>
             <li data-name="isempty"><a href="module-ol_layer_STAC-STACLayer.html#isEmpty">isEmpty</a>
             <li data-name="setassets"><a href="module-ol_layer_STAC-STACLayer.html#setAssets">setAssets</a>
             <li data-name="setchildren"><a href="module-ol_layer_STAC-STACLayer.html#setChildren">setChildren</a>
+            <li data-name="setdatasources"><a href="module-ol_layer_STAC-STACLayer.html#setDataSources">setDataSources</a>
             <li data-name="setdefaultcolormap"><a href="module-ol_layer_STAC-STACLayer.html#setDefaultColormap">setDefaultColormap</a>
             <li data-name="setstyle"><a href="module-ol_layer_STAC-STACLayer.html#setStyle">setStyle</a>
             <li data-name="updatelayers"><a href="module-ol_layer_STAC-STACLayer.html#updateLayers">updateLayers</a>
@@ -102,7 +104,7 @@
           <h1 class="page-title" data-filename="module-ol_layer_STAC-STACLayer.html">Class: STACLayer</h1>
           <div id="latest-check" class="alert alert-warning alert-dismissible" role="alert" style="display:none">
             <button id="latest-dismiss" type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            This documentation is for OL STAC v<span id="package-version">1.8.1</span>. The <a id="latest-link" href="#" class="alert-link">latest</a> is v<span id="latest-version"></span>.
+            This documentation is for OL STAC v<span id="package-version">1.9.0</span>. The <a id="latest-link" href="#" class="alert-link">latest</a> is v<span id="latest-version"></span>.
           </div>
           
 
@@ -150,8 +152,8 @@ The layers created by this LayerGroup all have a 'stac' value that can be retrie
         </h4>
         
         <div class="tag-source">
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js#L225">line 225</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js#L227">line 227</a>
         </div>
         
     </div>
@@ -318,6 +320,40 @@ By default, the children inherit the following options from this layer: <code>cr
 
         <tr class="">
             
+                <td class="name"><code>dataSources</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;(string|Asset|<a href="module-ol_layer_STAC.html#~Link">module:ol/layer/STAC~Link</a>|Object)></span>
+|
+
+<span class="param-type">null</span>
+
+
+                
+                    (defaults to null)
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>The assets and web map links to be rendered.
+This can be an array of Asset objects, Link objects, or strings corresponding to asset keys.
+Plain objects are converted to Links (if they have a <code>rel</code>) or Assets.
+The data sources are rendered in the given order, i.e. the last one is rendered on top.
+null shows the default visualization, an empty array shows no data source.</p></td>
+        </tr>
+
+	
+
+        <tr class="">
+            
                 <td class="name"><code>assets</code></td>
             
 
@@ -341,10 +377,7 @@ By default, the children inherit the following options from this layer: <code>cr
 
             <td  class="description last">
                 
-                <p>The selector for the assets to be rendered,
-only for STAC Items and Collections.
-This can be an array of strings corresponding to asset keys or Asset objects.
-null shows the default asset, an empty array shows no asset.</p></td>
+                <p>Deprecated, use <code>dataSources</code> instead.</p></td>
         </tr>
 
 	
@@ -574,7 +607,7 @@ Zarr assets other than Web-Optimized Zarr are only displayed if the STAC metadat
                 <p>The maximum number of pixels the coarsest resolution level
 of a GeoTIFF or Zarr asset may have to be displayed client-side, as displaying the full extent of an asset
 loads every tile of that level. Files without (sufficient) overviews can easily exceed this limit.
-Larger assets are not chosen for the default visualization, and selecting one explicitly through <code>assets</code>
+Larger assets are not chosen for the default visualization, and selecting one explicitly through <code>dataSources</code>
 reports an error through the <code>error</code> event (or renders through the tile server if <code>buildTileUrlTemplate</code>
 and <code>useTileLayerAsFallback</code> are set). Set to <code>Infinity</code> to display assets of any size.</p></td>
         </tr>
@@ -1296,8 +1329,8 @@ the template placeholders such as <code>{z}</code> unchanged, i.e. they must not
         </h4>
         
         <div class="tag-source">
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js#L808">line 808</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js#L834">line 834</a>
         </div>
         
     </div>
@@ -1432,15 +1465,15 @@ Resolves with a list of layers or undefined when complete.
         <div class="anchor" id="getAssets">
         </div>
         <h4 class="name">
-            getAssets<span class="signature">()</span><span class="fa fa-arrow-circle-right"></span><span class="type-signature returnType">{Array.&lt;Asset>}</span>
+            getAssets<span class="signature">()</span><span class="fa fa-arrow-circle-right"></span><span class="type-signature returnType">{Array.&lt;Asset> | null}</span>
             
             
 
         </h4>
         
         <div class="tag-source">
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js#L1851">line 1851</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js#L2007">line 2007</a>
         </div>
         
     </div>
@@ -1453,7 +1486,7 @@ Resolves with a list of layers or undefined when complete.
 
     
     <div class="description">
-        <p>Get the STAC assets shown.</p>
+        <p>Get the STAC assets requested to be shown.</p>
     </div>
     
 
@@ -1473,6 +1506,8 @@ Resolves with a list of layers or undefined when complete.
     
     
 
+    
+        <dt class="important tag-deprecated">Deprecated</dt><dd><ul class="dummy"><li>Use `getDataSources` instead.</li><ul></dd>
     
     
     
@@ -1529,8 +1564,8 @@ The STAC assets.
         </h4>
         
         <div class="tag-source">
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js#L1938">line 1938</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js#L2097">line 2097</a>
         </div>
         
     </div>
@@ -1619,8 +1654,8 @@ Attributions for this layer.
         </h4>
         
         <div class="tag-source">
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js#L552">line 552</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js#L570">line 570</a>
         </div>
         
     </div>
@@ -1709,8 +1744,8 @@ The vector layer for the bounds
         </h4>
         
         <div class="tag-source">
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js#L1841">line 1841</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js#L1986">line 1986</a>
         </div>
         
     </div>
@@ -1799,8 +1834,8 @@ The STAC child entities.
         </h4>
         
         <div class="tag-source">
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js#L1831">line 1831</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js#L1976">line 1976</a>
         </div>
         
     </div>
@@ -1879,6 +1914,96 @@ The STAC object.
 <dt class="">
     
     <div class="nameContainer">
+        <div class="anchor" id="getDataSources">
+        </div>
+        <h4 class="name">
+            getDataSources<span class="signature">()</span><span class="fa fa-arrow-circle-right"></span><span class="type-signature returnType">{Array.&lt;(Asset|<a href="module-ol_layer_STAC.html#~Link">module:ol/layer/STAC~Link</a>)> | null}</span>
+            
+            
+
+        </h4>
+        
+        <div class="tag-source">
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js#L1996">line 1996</a>
+        </div>
+        
+    </div>
+    
+    
+</dt>
+<dd class="">
+
+
+
+    
+    <div class="description">
+        <p>Get the assets and web map links requested to be shown.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+    
+
+
+<h5>Returns:</h5>
+The data sources.
+<br />
+
+    
+
+    
+</dd>
+
+        
+            
+            
+<dt class="">
+    
+    <div class="nameContainer">
         <div class="anchor" id="getExtent">
         </div>
         <h4 class="name">
@@ -1889,8 +2014,8 @@ The STAC object.
         </h4>
         
         <div class="tag-source">
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js#L1868">line 1868</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js#L2027">line 2027</a>
         </div>
         
     </div>
@@ -1985,8 +2110,8 @@ The layer extent.
         </h4>
         
         <div class="tag-source">
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js#L1715">line 1715</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js#L1836">line 1836</a>
         </div>
         
     </div>
@@ -2075,8 +2200,8 @@ An array of links.
         </h4>
         
         <div class="tag-source">
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js#L1702">line 1702</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js#L1823">line 1823</a>
         </div>
         
     </div>
@@ -2165,8 +2290,8 @@ An array of links.
         </h4>
         
         <div class="tag-source">
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js#L564">line 564</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js#L582">line 582</a>
         </div>
         
     </div>
@@ -2256,8 +2381,8 @@ Is the layer empty?
         </h4>
         
         <div class="tag-source">
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js#L1761">line 1761</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js#L1926">line 1926</a>
         </div>
         
     </div>
@@ -2366,6 +2491,8 @@ Is the layer empty?
     
 
     
+        <dt class="important tag-deprecated">Deprecated</dt><dd><ul class="dummy"><li>Use `setDataSources` instead.</li><ul></dd>
+    
     
     
     
@@ -2421,8 +2548,8 @@ Resolves when all assets are rendered.
         </h4>
         
         <div class="tag-source">
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js#L1796">line 1796</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js#L1941">line 1941</a>
         </div>
         
     </div>
@@ -2685,6 +2812,40 @@ By default, the children inherit the following options from this layer: <code>cr
 
         <tr class="">
             
+                <td class="name"><code>options.dataSources</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;(string|Asset|<a href="module-ol_layer_STAC.html#~Link">module:ol/layer/STAC~Link</a>|Object)></span>
+|
+
+<span class="param-type">null</span>
+
+
+                
+                    (defaults to null)
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>The assets and web map links to be rendered.
+This can be an array of Asset objects, Link objects, or strings corresponding to asset keys.
+Plain objects are converted to Links (if they have a <code>rel</code>) or Assets.
+The data sources are rendered in the given order, i.e. the last one is rendered on top.
+null shows the default visualization, an empty array shows no data source.</p></td>
+        </tr>
+
+	
+
+        <tr class="">
+            
                 <td class="name"><code>options.assets</code></td>
             
 
@@ -2708,10 +2869,7 @@ By default, the children inherit the following options from this layer: <code>cr
 
             <td  class="description last">
                 
-                <p>The selector for the assets to be rendered,
-only for STAC Items and Collections.
-This can be an array of strings corresponding to asset keys or Asset objects.
-null shows the default asset, an empty array shows no asset.</p></td>
+                <p>Deprecated, use <code>dataSources</code> instead.</p></td>
         </tr>
 
 	
@@ -2941,7 +3099,7 @@ Zarr assets other than Web-Optimized Zarr are only displayed if the STAC metadat
                 <p>The maximum number of pixels the coarsest resolution level
 of a GeoTIFF or Zarr asset may have to be displayed client-side, as displaying the full extent of an asset
 loads every tile of that level. Files without (sufficient) overviews can easily exceed this limit.
-Larger assets are not chosen for the default visualization, and selecting one explicitly through <code>assets</code>
+Larger assets are not chosen for the default visualization, and selecting one explicitly through <code>dataSources</code>
 reports an error through the <code>error</code> event (or renders through the tile server if <code>buildTileUrlTemplate</code>
 and <code>useTileLayerAsFallback</code> are set). Set to <code>Infinity</code> to display assets of any size.</p></td>
         </tr>
@@ -3614,6 +3772,176 @@ Resolves when all items are rendered.
 <dt class="">
     
     <div class="nameContainer">
+        <div class="anchor" id="setDataSources">
+        </div>
+        <h4 class="name">
+            setDataSources<span class="signature">(dataSources, <span class="optional">updateLayers</span>)</span><span class="fa fa-arrow-circle-right"></span><span class="type-signature returnType">{Promise}</span>
+            
+            
+
+        </h4>
+        
+        <div class="tag-source">
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js#L1890">line 1890</a>
+        </div>
+        
+    </div>
+    
+    
+</dt>
+<dd class="">
+
+
+
+    
+    <div class="description">
+        <p>Update the assets and web map links to be rendered.
+The data sources are rendered in the given order, i.e. the last one is rendered on top.
+The layers of data sources that were shown before are kept and not reloaded.</p>
+<p>Strings refer to asset keys, plain objects are converted to Links (if they have a <code>rel</code>)
+or Assets. Data sources are identified by object identity, so pass the same objects again
+to keep their layers.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr class="">
+            
+                <td class="name"><code>dataSources</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;(string|Asset|<a href="module-ol_layer_STAC.html#~Link">module:ol/layer/STAC~Link</a>|Object)></span>
+|
+
+<span class="param-type">null</span>
+
+
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>The data sources to show.</p></td>
+        </tr>
+
+	
+
+        <tr class="">
+            
+                <td class="name"><code>updateLayers</code></td>
+            
+
+            
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+                
+                    (defaults to true)
+                
+            
+            </td>
+
+            
+
+            <td  class="description last">
+                
+                <p>Whether to update the layers right away.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+    
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+    
+
+
+<h5>Returns:</h5>
+Resolves when all data sources are rendered.
+<br />
+
+    
+
+    
+</dd>
+
+        
+            
+            
+<dt class="">
+    
+    <div class="nameContainer">
         <div class="anchor" id="setDefaultColormap">
         </div>
         <h4 class="name">
@@ -3624,8 +3952,8 @@ Resolves when all items are rendered.
         </h4>
         
         <div class="tag-source">
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js#L1743">line 1743</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js#L1864">line 1864</a>
         </div>
         
     </div>
@@ -3766,8 +4094,8 @@ Resolves once the layers are updated.
         </h4>
         
         <div class="tag-source">
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js#L1724">line 1724</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js#L1845">line 1845</a>
         </div>
         
     </div>
@@ -3895,8 +4223,8 @@ Resolves once the layers are updated.
         </h4>
         
         <div class="tag-source">
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js">layer/STAC.js</a>,
-            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.8.1/src/ol/layer/STAC.js#L1570">line 1570</a>
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js">layer/STAC.js</a>,
+            <a href="https://github.com/moregeo-it/ol-stac/blob/v1.9.0/src/ol/layer/STAC.js#L1660">line 1660</a>
         </div>
         
     </div>
@@ -3910,7 +4238,9 @@ Resolves once the layers are updated.
     
     <div class="description">
         <p>Update the layers shown manually based on the current configuration.
-Usually this doesn't need to be called manually.</p>
+Usually this doesn't need to be called manually.
+The layers of the requested data sources that are already shown are kept.
+Updates run one after another.</p>
     </div>
     
 
