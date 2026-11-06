@@ -1874,6 +1874,46 @@ describe('ol/layer/STAC', function () {
       expect(getLayer(group)).not.to.equal(layer);
     });
 
+    it('creates sources that are still loading only once', async function () {
+      const group = new STAC({
+        data: createItem(ASSETS),
+        dataSources: ['a'],
+        getSourceOptions,
+      });
+      // The first asset is still loading
+      await group.setDataSources(['a', 'b']);
+      expect(getAssetKeys(group)).to.deep.equal(['a', 'b']);
+    });
+
+    it('shows a plain web map link that is also a data source only once', async function () {
+      const link = {...XYZ_LINK};
+      const group = new STAC({
+        data: createItem(ASSETS),
+        displayWebMapLink: [link],
+        dataSources: [link],
+      });
+      const getLayers = () =>
+        group.getLayersArray().filter((l) => l !== group.getBoundsLayer());
+      await waitFor(() => getLayers().length > 0);
+      await group.updateLayers();
+      expect(getLayers().length).to.equal(1);
+    });
+
+    it('disposes the layers of removed children', async function () {
+      const group = new STAC({
+        data: createItem(ASSETS),
+        children: [createItem()],
+      });
+      await waitFor(() => group.getLayersArray().length > 1);
+      const childLayers = group
+        .getLayersArray()
+        .filter((layer) => layer !== group.getBoundsLayer());
+      expect(childLayers.length).to.be.greaterThan(0);
+
+      await group.setChildren(null);
+      expect(childLayers.every((layer) => layer.disposed)).to.equal(true);
+    });
+
     it('keeps other web map links below the data sources', async function () {
       const group = new STAC({
         data: createItem(ASSETS, [{...XYZ_LINK, id: 'tiles'}]),

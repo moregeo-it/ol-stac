@@ -293,6 +293,12 @@ class STACLayer extends LayerGroup {
     this.convertedDataSources_ = new WeakMap();
 
     /**
+     * @type {Promise}
+     * @private
+     */
+    this.pendingUpdate_ = Promise.resolve();
+
+    /**
      * @type {Array<number|string>}
      * @private
      */
@@ -1322,7 +1328,10 @@ class STACLayer extends LayerGroup {
     if (!data || !this.dataSources_) {
       return -1;
     }
-    return this.dataSources_.indexOf(data);
+    // Plain objects (e.g. from `displayWebMapLink`) are converted for the data sources
+    return this.dataSources_.indexOf(
+      this.convertedDataSources_.get(data) || data,
+    );
   }
 
   /**
@@ -1336,10 +1345,11 @@ class STACLayer extends LayerGroup {
       const layer = layers.item(i);
       if (filter(layer)) {
         layers.removeAt(i);
-        // Releases the WebGL context, browsers only allow a few of them
-        if (!(layer instanceof LayerGroup)) {
-          layer.dispose();
+        // Releases the WebGL contexts, browsers only allow a few of them
+        if (layer instanceof LayerGroup) {
+          layer.getLayersArray().forEach((l) => l.dispose());
         }
+        layer.dispose();
       }
     }
   }
@@ -1637,11 +1647,24 @@ class STACLayer extends LayerGroup {
    * Update the layers shown manually based on the current configuration.
    * Usually this doesn't need to be called manually.
    * The layers of the requested data sources that are already shown are kept.
+   * Updates run one after another.
    * @param {boolean} [emit] Whether to emit the `layersready` event once the layers are updated.
    * @return {Promise} Resolves once the layers are updated.
    * @api
    */
   async updateLayers(emit = true) {
+    // Overlapping updates would create the layers of sources that are still loading twice
+    const update = this.pendingUpdate_.then(() => this.updateLayers_(emit));
+    this.pendingUpdate_ = update.catch(() => {});
+    return update;
+  }
+
+  /**
+   * @param {boolean} emit Whether to emit the `layersready` event once the layers are updated.
+   * @return {Promise} Resolves once the layers are updated.
+   * @private
+   */
+  async updateLayers_(emit) {
     // Remove old layers, but keep the layers of the requested data sources to avoid reloading them
     const isOldLayer = (layer) => layer.get('stac') && !layer.get('bounds');
     this.removeLayers_(
@@ -1838,6 +1861,7 @@ class STACLayer extends LayerGroup {
     // The layers are recreated, as switching between a styled and an
     // unstyled visualization also changes how the sources are configured
     // (e.g. the normalization of GeoTIFF sources)
+    await this.pendingUpdate_;
     this.removeLayers_((layer) => layer.get('stac') && !layer.get('bounds'));
     await this.updateLayers();
   }
