@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Cloud Optimized Point Cloud (COPC) support: point clouds are rendered top-down with a hillshade and colored by
-  classification (from `classification:classes`), RGB or elevation
+- Cloud Optimized Point Cloud (COPC) support: point clouds are rendered top-down with shading, cast shadows and
+  ambient occlusion, colored by classification (from `classification:classes`), RGB or elevation
 
 ## [1.9.0] - 2026-11-06
 

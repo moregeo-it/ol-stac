@@ -1775,7 +1775,7 @@ export function getCOPCStyleFromAsset(asset, source, defaultColormap = null) {
         : defaultElevationColors;
     color = createGradientStyle(colors, COPCBand.Z, range).color;
   }
-  const shade = ['*', ['+', 0.3, ['*', 0.7, ['band', COPCBand.Shade]]], 255];
+  const shade = ['clamp', ['*', ['band', COPCBand.Shade], 300], 0, 255];
   return {
     color: [
       'case',

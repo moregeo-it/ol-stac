@@ -9,7 +9,7 @@
  * - `Intensity`: Intensity
  * - `Classification`: ASPRS classification
  * - `Red`, `Green`, `Blue`: Color (0 if the point cloud has no colors)
- * - `Shade`: Hillshade of the elevations (0-1)
+ * - `Shade`: Lighting (0-1) from a hillshade, cast shadows and ambient occlusion
  * - `Alpha`: 1 if the pixel contains a point, 0 otherwise
  *
  * @enum {number}

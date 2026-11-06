@@ -27,7 +27,11 @@ export {COPCBand};
  * @property {number} [tileSize=256] The tile size in pixels.
  * @property {number} [pointSize=1] The minimum size of a point in pixels.
  * Points get larger when zooming in beyond the density of the point cloud.
- * @property {number} [shadeExaggeration=1] The vertical exaggeration for the hillshade.
+ * @property {number} [shadeExaggeration=1] The vertical exaggeration for the lighting.
+ * @property {number} [sunAzimuth=315] The azimuth of the sun in degrees (clockwise from north).
+ * @property {number} [sunAltitude=45] The altitude of the sun in degrees.
+ * @property {boolean} [shadows=true] Whether points cast shadows.
+ * @property {boolean} [ambientOcclusion=true] Whether points are darkened by higher points around them.
  * @property {number} [maxCachedPoints=10000000] The maximum number of decoded points kept in memory.
  * @property {number} [workers] The number of web workers that decode and render the points.
  * Defaults to the number of logical processors minus one (1 to 4). Set to 0 to work on the main thread.
@@ -115,6 +119,39 @@ class COPCSource extends DataTileSource {
      */
     this.shadeExaggeration_ =
       options.shadeExaggeration === undefined ? 1 : options.shadeExaggeration;
+
+    /**
+     * @type {number}
+     * @private
+     */
+    this.sunAzimuth_ =
+      options.sunAzimuth === undefined ? 315 : options.sunAzimuth;
+
+    /**
+     * @type {number}
+     * @private
+     */
+    this.sunAltitude_ =
+      options.sunAltitude === undefined ? 45 : options.sunAltitude;
+
+    /**
+     * @type {boolean}
+     * @private
+     */
+    this.shadows_ = options.shadows !== false;
+
+    /**
+     * @type {boolean}
+     * @private
+     */
+    this.ambientOcclusion_ = options.ambientOcclusion !== false;
+
+    /**
+     * The size of a horizontal unit in elevation units.
+     * @type {number}
+     * @private
+     */
+    this.unitScale_ = 1;
 
     /**
      * @type {function(number, number): Promise<Uint8Array>}
@@ -221,6 +258,12 @@ class COPCSource extends DataTileSource {
         getHorizontalWkt(copc.wkt),
         'wkt2',
       );
+    }
+
+    const projection = this.getProjection();
+    // Assumes metric elevations for geographic coordinates
+    if (projection.getUnits() === 'degrees') {
+      this.unitScale_ = projection.getMetersPerUnit();
     }
 
     const cube = copc.info.cube;
@@ -496,12 +539,25 @@ class COPCSource extends DataTileSource {
     const spacing = this.copc_.info.spacing;
     const depth = Math.max(0, Math.ceil(Math.log2(spacing / resolution)));
 
-    // The margin prevents seams in the splats and the hillshade
+    const {min, max} = this.copc_.header;
+    const pixel = (resolution * this.unitScale_) / this.shadeExaggeration_;
+    const shadowLength = this.shadows_
+      ? Math.min(
+          32,
+          Math.ceil(
+            (max[2] - min[2]) /
+              (pixel * Math.tan((this.sunAltitude_ * Math.PI) / 180)),
+          ),
+        )
+      : 0;
+    const occlusionRadius = this.ambientOcclusion_ ? 8 : 0;
+
+    // The margin prevents seams in the splats and the lighting
     const maxSplat = Math.max(
       this.pointSize_,
       Math.ceil(spacing / Math.pow(2, this.maxDepth_) / resolution),
     );
-    const margin = maxSplat + 1;
+    const margin = Math.max(maxSplat, shadowLength, occlusionRadius) + 1;
     const buffered = [
       extent[0] - margin * resolution,
       extent[1] - margin * resolution,
@@ -527,6 +583,11 @@ class COPCSource extends DataTileSource {
         margin,
         pointSize: this.pointSize_,
         shadeExaggeration: this.shadeExaggeration_,
+        unitScale: this.unitScale_,
+        sunAzimuth: this.sunAzimuth_,
+        sunAltitude: this.sunAltitude_,
+        shadowLength,
+        occlusionRadius,
       },
       affinity,
       options && options.signal,

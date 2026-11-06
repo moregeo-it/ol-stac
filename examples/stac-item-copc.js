@@ -85,7 +85,7 @@ layer.on('sourceready', () => {
   map.getView().fit(layer.getExtent());
 });
 
-const shade = ['*', ['+', 0.3, ['*', 0.7, ['band', COPCBand.Shade]]], 255];
+const shade = ['clamp', ['*', ['band', COPCBand.Shade], 300], 0, 255];
 const shaded = (color) => ({
   color: [
     'case',

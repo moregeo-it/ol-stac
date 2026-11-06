@@ -23,7 +23,12 @@ export const BAND_COUNT = 8;
  * @property {number} size The tile size in pixels.
  * @property {number} margin The margin in pixels.
  * @property {number} pointSize The minimum point size in pixels.
- * @property {number} shadeExaggeration The vertical exaggeration for the hillshade.
+ * @property {number} shadeExaggeration The vertical exaggeration for the lighting.
+ * @property {number} unitScale The size of a horizontal unit in elevation units.
+ * @property {number} sunAzimuth The azimuth of the sun in degrees (clockwise from north).
+ * @property {number} sunAltitude The altitude of the sun in degrees.
+ * @property {number} shadowLength The maximum length of shadows in pixels (0 disables shadows).
+ * @property {number} occlusionRadius The radius of the ambient occlusion in pixels (0 disables it).
  */
 
 /**
@@ -256,6 +261,12 @@ class COPCTileRenderer {
     const nodeIndex = new Int32Array(full * full).fill(-1);
     const pointIndex = new Int32Array(full * full);
     const offset = Math.floor((splat - 1) / 2);
+    // Larger points are drawn as domes to give them a 3D appearance,
+    // the dome covers the corners so that no gaps remain between points
+    const radius = (splat / 2) * Math.SQRT2;
+    const dome = splat >= 3;
+    const domeHeight = (0.5 * splat * resolution) / request.unitScale;
+    const center = (splat - 1) / 2;
     for (let n = 0; n < nodes.length; n++) {
       const points = nodes[n];
       for (let i = 0; i < points.count; i++) {
@@ -274,9 +285,16 @@ class COPCTileRenderer {
         const pz = points.z[i];
         for (let r = Math.max(0, row); r < Math.min(full, row + splat); r++) {
           for (let c = Math.max(0, col); c < Math.min(full, col + splat); c++) {
+            let z = pz;
+            if (dome) {
+              const dr = r - row - center;
+              const dc = c - col - center;
+              const d = (dr * dr + dc * dc) / (radius * radius);
+              z += Math.sqrt(1 - d) * domeHeight;
+            }
             const index = r * full + c;
-            if (pz > zBuffer[index]) {
-              zBuffer[index] = pz;
+            if (z > zBuffer[index]) {
+              zBuffer[index] = z;
               nodeIndex[index] = n;
               pointIndex[index] = i;
             }
@@ -286,15 +304,9 @@ class COPCTileRenderer {
     }
 
     fillHoles(zBuffer, nodeIndex, pointIndex, full);
+    const light = computeLighting(zBuffer, nodeIndex, full, margin, request);
 
     const data = new Float32Array(size * size * BAND_COUNT);
-    // 315° azimuth, 45° altitude
-    const sunX = -Math.SQRT1_2 * Math.SQRT1_2;
-    const sunY = Math.SQRT1_2 * Math.SQRT1_2;
-    const sunZ = Math.SQRT1_2;
-    const scale = request.shadeExaggeration / (2 * resolution);
-    const zAt = (index, fallback) =>
-      nodeIndex[index] < 0 ? fallback : zBuffer[index];
     for (let row = 0; row < size; row++) {
       for (let col = 0; col < size; col++) {
         const index = (row + margin) * full + col + margin;
@@ -304,15 +316,8 @@ class COPCTileRenderer {
         }
         const points = nodes[n];
         const i = pointIndex[index];
-        const pz = zBuffer[index];
-        const dzdx = (zAt(index + 1, pz) - zAt(index - 1, pz)) * scale;
-        const dzdy = (zAt(index - full, pz) - zAt(index + full, pz)) * scale;
-        const shade =
-          (sunZ - dzdx * sunX - dzdy * sunY) /
-          Math.sqrt(1 + dzdx * dzdx + dzdy * dzdy);
-
         const o = (row * size + col) * BAND_COUNT;
-        data[o] = pz;
+        data[o] = points.z[i];
         data[o + 1] = points.intensity[i];
         data[o + 2] = points.classification[i];
         if (points.rgb) {
@@ -320,12 +325,114 @@ class COPCTileRenderer {
           data[o + 4] = points.rgb[i * 3 + 1];
           data[o + 5] = points.rgb[i * 3 + 2];
         }
-        data[o + 6] = Math.max(0, shade);
+        data[o + 6] = light[row * size + col];
         data[o + 7] = 1;
       }
     }
     return data;
   }
+}
+
+/**
+ * Computes the lighting (hillshade, cast shadows and ambient occlusion) of the
+ * tile without the margin from the elevations.
+ * @param {Float32Array} zBuffer The elevations.
+ * @param {Int32Array} nodeIndex The node index per pixel (-1 if empty).
+ * @param {number} full The width and height including the margin.
+ * @param {number} margin The margin in pixels.
+ * @param {TileRequest} request The tile request.
+ * @return {Float32Array} The lighting (0-1) per pixel.
+ */
+function computeLighting(zBuffer, nodeIndex, full, margin, request) {
+  const size = request.size;
+  // Elevation units per pixel, exaggerated
+  const pixel =
+    (request.resolution * request.unitScale) / request.shadeExaggeration;
+  const azimuth = (request.sunAzimuth * Math.PI) / 180;
+  const altitude = (request.sunAltitude * Math.PI) / 180;
+  const sunX = Math.sin(azimuth) * Math.cos(altitude);
+  const sunY = Math.cos(azimuth) * Math.cos(altitude);
+  const sunZ = Math.sin(altitude);
+  const tanAltitude = Math.tan(altitude);
+  // Towards the sun in pixels, rows grow southwards
+  const stepCol = Math.sin(azimuth);
+  const stepRow = -Math.cos(azimuth);
+  const occlusionSteps = [1, 2, 3, 5, 8, 12, 16, 24, 32].filter(
+    (step) => step <= request.occlusionRadius,
+  );
+  const directions = [
+    [1, 0],
+    [1, 1],
+    [0, 1],
+    [-1, 1],
+    [-1, 0],
+    [-1, -1],
+    [0, -1],
+    [1, -1],
+  ].map(([dc, dr]) => [dc, dr, Math.hypot(dc, dr)]);
+
+  const zAt = (row, col, fallback) => {
+    const index = row * full + col;
+    return nodeIndex[index] < 0 ? fallback : zBuffer[index];
+  };
+
+  const light = new Float32Array(size * size);
+  for (let row = margin; row < margin + size; row++) {
+    for (let col = margin; col < margin + size; col++) {
+      const index = row * full + col;
+      if (nodeIndex[index] < 0) {
+        continue;
+      }
+      const z = zBuffer[index];
+
+      const dzdx = (zAt(row, col + 1, z) - zAt(row, col - 1, z)) / (2 * pixel);
+      const dzdy = (zAt(row - 1, col, z) - zAt(row + 1, col, z)) / (2 * pixel);
+      let direct = Math.max(
+        0,
+        (sunZ - dzdx * sunX - dzdy * sunY) /
+          Math.sqrt(1 + dzdx * dzdx + dzdy * dzdy),
+      );
+
+      if (direct > 0) {
+        for (let t = 1; t <= request.shadowLength; t += t < 8 ? 1 : t >> 3) {
+          const r = Math.round(row + stepRow * t);
+          const c = Math.round(col + stepCol * t);
+          if (r < 0 || c < 0 || r >= full || c >= full) {
+            break;
+          }
+          if (zAt(r, c, -Infinity) - z > t * pixel * tanAltitude) {
+            direct *= 0.35;
+            break;
+          }
+        }
+      }
+
+      let occlusion = 0;
+      if (occlusionSteps.length > 0) {
+        for (const [dc, dr, length] of directions) {
+          let horizon = 0;
+          for (const step of occlusionSteps) {
+            const r = row + dr * step;
+            const c = col + dc * step;
+            if (r < 0 || c < 0 || r >= full || c >= full) {
+              break;
+            }
+            const slope = (zAt(r, c, z) - z) / (step * length * pixel);
+            if (slope > horizon) {
+              horizon = slope;
+            }
+          }
+          // Sine of the horizon angle
+          occlusion += horizon / Math.sqrt(1 + horizon * horizon);
+        }
+        occlusion /= directions.length;
+      }
+
+      light[(row - margin) * size + col - margin] =
+        (0.35 + 0.65 * direct) * (1 - 0.8 * occlusion);
+    }
+  }
+  return light;
 }
 
 /**
