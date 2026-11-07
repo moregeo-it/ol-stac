@@ -23,6 +23,7 @@ import * as pmtiles from 'pmtiles';
 import create, {Asset, Link} from 'stac-js';
 import {fixGeoJson, toGeoJSON, unionBoundingBox} from 'stac-js/src/geo.js';
 import {
+  copcMediaTypes,
   geojsonMediaType,
   geotiffMediaTypes,
   wozMediaTypes,
@@ -53,11 +54,6 @@ import {
 } from '../util.js';
 import LayerType from './type.js';
 
-/**
- * The media types of Cloud Optimized Point Clouds (COPC).
- * @type {Array<string>}
- */
-const copcMediaTypes = ['application/vnd.laszip+copc'];
 /**
  * @typedef {import("ol/extent.js").Extent} Extent
  */
@@ -1882,7 +1878,7 @@ class STACLayer extends LayerGroup {
           }
         }
         if (this.displayOverview_ && !layer) {
-          const copc = data.getAssetsByTypes(copcMediaTypes)[0];
+          const copc = data.getDefaultGeoFile('copc', true, false);
           if (copc) {
             layer = await this.addCOPC_(copc);
           }

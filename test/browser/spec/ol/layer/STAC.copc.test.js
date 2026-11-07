@@ -154,6 +154,29 @@ describe('ol/layer/STAC (COPC)', function () {
     expect(errors[0].message).to.equal('Workers failed');
   });
 
+  it('shows the COPC asset with the highest ranked role', async function () {
+    const data = createItem();
+    data.assets = {
+      full: {...data.assets.points, roles: ['data']},
+      preview: {
+        ...data.assets.points,
+        href: 'https://example.com/preview.copc.laz',
+        roles: ['overview'],
+      },
+    };
+    const group = new STAC({data});
+    map = new Map({
+      target,
+      layers: [group],
+      view: new View({center: [0, 0], zoom: 2}),
+    });
+    await waitFor(() =>
+      group.getLayersArray().some((layer) => layer.get('stac')?.isAsset),
+    );
+    const layer = group.getLayersArray().find((l) => l.get('stac')?.isAsset);
+    expect(layer.get('stac').getKey()).to.equal('preview');
+  });
+
   it('applies tilt changes made while the layer options are pending', async function () {
     let resolveOptions;
     const group = new STAC({
