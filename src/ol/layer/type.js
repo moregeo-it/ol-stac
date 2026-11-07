@@ -3,6 +3,9 @@
  */
 
 /**
+ * @typedef {import("ol-copc/layer/COPC.js").Options} COPCOptions
+ */
+/**
  * @typedef {import("ol/layer/BaseImage.js").Options<import("ol/source/Image.js").default>} ImageOptions
  * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_layer_Image-ImageLayer.html}
  */
@@ -23,7 +26,7 @@
  * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_layer_WebGLTile-WebGLTileLayer.html}
  */
 /**
- * @typedef {ImageOptions|TileOptions|VectorOptions|VectorTileOptions|WebGLTileOptions|Object<string, *>} LayerOptions
+ * @typedef {COPCOptions|ImageOptions|TileOptions|VectorOptions|VectorTileOptions|WebGLTileOptions|Object<string, *>} LayerOptions
  */
 
 /**
@@ -32,6 +35,12 @@
  * @api
  */
 class LayerType {
+  /**
+   * Point cloud layer (`COPCLayer` of ol-copc), used for Cloud Optimized Point Clouds (COPC).
+   * @api
+   */
+  static COPC = new LayerType('COPC');
+
   /**
    * Image layer (`ImageLayer`), used for preview images.
    * @see {@link https://openlayers.org/en/latest/apidoc/module-ol_layer_Image-ImageLayer.html}

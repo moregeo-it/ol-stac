@@ -32,6 +32,14 @@ If you use an older version, please ensure it works well for your usecases.
 
 Older versions of ol-stac (< 1.3.0) support OpenLayers >= 7.5.2.
 
+### Point clouds
+
+Point clouds in the Cloud Optimized Point Cloud (COPC) format are rendered with
+[ol-copc](https://github.com/moregeo-it/ol-copc), which ol-stac uses for COPC assets automatically.
+The points can be shown top-down or in a tilted view (see the `tilt` option).
+See the [requirements of ol-copc](https://github.com/moregeo-it/ol-copc#requirements),
+e.g. WebGL 2 and `worker-src blob:` if you use a Content Security Policy.
+
 ## Sponsors
 
 ol-stac appreciates contributions of all kinds.

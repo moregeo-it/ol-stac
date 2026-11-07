@@ -23,6 +23,7 @@ import * as pmtiles from 'pmtiles';
 import create, {Asset, Link} from 'stac-js';
 import {fixGeoJson, toGeoJSON, unionBoundingBox} from 'stac-js/src/geo.js';
 import {
+  copcMediaTypes,
   geojsonMediaType,
   geotiffMediaTypes,
   wozMediaTypes,
@@ -39,6 +40,7 @@ import {
   defaultCollectionStyle,
   exceedsDisplayLimit,
   getBoundsStyle,
+  getCOPCLayerOptionsFromAsset,
   getDisplayPixels,
   getGeoTiffSourceInfoFromAsset,
   getGeoTiffStyleFromAsset,
@@ -51,6 +53,7 @@ import {
   toOlExtent,
 } from '../util.js';
 import LayerType from './type.js';
+
 /**
  * @typedef {import("ol/extent.js").Extent} Extent
  */
@@ -104,7 +107,7 @@ import LayerType from './type.js';
  * @property {Options} [childrenOptions={}] The the given children, apply the given options.
  * By default, the children inherit the following options from this layer: `crossOrigin`, `collectionStyle` (as `boundsStyle`),
  * `displayGeoTiffByDefault`, `displayOverview`, `displayPreview`, `displayFootprint`, `useTileLayerAsFallback`,
- * `buildTileUrlTemplate`, `maxDisplayPixels`, `getSourceOptions`, `getLayerOptions`, `getRequestHeaders`,
+ * `buildTileUrlTemplate`, `maxDisplayPixels`, `tilt`, `getSourceOptions`, `getLayerOptions`, `getRequestHeaders`,
  * `getRequestUrl` and `httpRequestFn`.
  * @property {Array<string|Asset|Link|Object>|null} [dataSources=null] The assets and web map links to be rendered.
  * This can be an array of Asset objects, Link objects, or strings corresponding to asset keys.
@@ -134,7 +137,7 @@ import LayerType from './type.js';
  * i.e. assets with any of the roles `thumbnail`, `overview`, or a link with relation type `preview`.
  * The previews are usually not covering the full extents and as such may be placed incorrectly on the map.
  * For performance reasons, it is recommended to enable this option if you pass in STAC API Items instead of `displayOverview`.
- * @property {boolean} [displayOverview=true] Allow to display COGs, Zarr and, if `displayGeoTiffByDefault` is enabled, GeoTiffs,
+ * @property {boolean} [displayOverview=true] Allow to display COGs, Zarr, COPC and, if `displayGeoTiffByDefault` is enabled, GeoTiffs,
  * usually an asset with role `overview` or `visual`.
  * Zarr assets other than Web-Optimized Zarr are only displayed if the STAC metadata declares what to render
  * (see the datacube extension) and the store is within the `maxDisplayPixels` limit.
@@ -144,6 +147,9 @@ import LayerType from './type.js';
  * Larger assets are not chosen for the default visualization, and selecting one explicitly through `dataSources`
  * reports an error through the `error` event (or renders through the tile server if `buildTileUrlTemplate`
  * and `useTileLayerAsFallback` are set). Set to `Infinity` to display assets of any size.
+ * @property {number} [tilt=0] The tilt of the view for point clouds (COPC) in degrees, up to 75.
+ * With a tilt, points are shifted towards the top of the screen by their height above the ground
+ * (oblique view), so that buildings and trees stand up. 45 gives a good impression of the terrain.
  * @property {string|boolean|Array<Link|string>} [displayWebMapLink=false] Allow to display a layer
  * based on the information provided through the web map links extension.
  * If an array of links or link ids (property `id` in a Link Object) is provided, all corresponding layers will be shown.
@@ -344,6 +350,12 @@ class STACLayer extends LayerGroup {
      * @private
      */
     this.maxDisplayPixels_ = options.maxDisplayPixels;
+
+    /**
+     * @type {number}
+     * @private
+     */
+    this.tilt_ = options.tilt || 0;
 
     /**
      * @type {function((Asset|Link)):Promise<string|null>|string|null}
@@ -748,6 +760,7 @@ class STACLayer extends LayerGroup {
         useTileLayerAsFallback: this.useTileLayerAsFallback_,
         buildTileUrlTemplate: this.buildTileUrlTemplate_,
         maxDisplayPixels: this.maxDisplayPixels_,
+        tilt: this.tilt_,
         getSourceOptions: this.getSourceOptions_,
         getLayerOptions: this.getLayerOptions_,
         getRequestHeaders: this.getRequestHeaders_,
@@ -1649,6 +1662,93 @@ class STACLayer extends LayerGroup {
   }
 
   /**
+   * Adds a layer for a COPC asset.
+   * @param {Asset} asset The COPC asset to show.
+   * @return {Promise<Layer|undefined>} The layer, if one was added.
+   * @private
+   */
+  async addCOPC_(asset) {
+    /**
+     * @type {import("ol-copc/source/COPC.js").Options}
+     */
+    let options = {
+      url: this.getRequestUrlFor_(asset.getAbsoluteUrl(), asset),
+      attributions: this.getAttributionFor_(asset),
+    };
+
+    const projection = await getProjection(asset);
+    if (projection) {
+      options.projection = projection;
+    }
+
+    const headers = this.getRequestHeadersFor_(options.url, asset);
+    if (headers) {
+      options.headers = headers;
+    }
+
+    if (this.getSourceOptions_) {
+      // @ts-ignore
+      options = await this.getSourceOptions_(SourceType.COPC, options, asset);
+    }
+
+    let source = null;
+    try {
+      const {COPCLayer, COPCSource} = await import('ol-copc');
+      source = new COPCSource(options);
+      await new Promise((resolve, reject) => {
+        source.on('change', () => {
+          if (source.getState() === 'error') {
+            reject(source.getError());
+          } else {
+            resolve();
+          }
+        });
+      });
+      // Failures once the source is ready, e.g. if the workers can't be started
+      const onError = () => {
+        if (source.getState() === 'error') {
+          source.un('change', onError);
+          this.handleError_(source.getError());
+        }
+      };
+      source.on('change', onError);
+      const tilt = this.tilt_;
+      /**
+       * @type {import("ol-copc/layer/COPC.js").Options}
+       */
+      let layerOptions = {
+        source,
+        tilt,
+        ...getCOPCLayerOptionsFromAsset(asset, this.defaultColormap_),
+      };
+      layerOptions = await this.updateLayerOptions_(
+        LayerType.COPC,
+        layerOptions,
+        asset,
+      );
+      // setTilt() can't reach the layer while the callback is pending
+      if (layerOptions.tilt === tilt) {
+        layerOptions.tilt = this.tilt_;
+      }
+      const layer = new COPCLayer(layerOptions);
+      // Disposing the layer unsets the source, terminate its workers then
+      if (layer.getSource() === source) {
+        layer.once('change:source', () => source.dispose());
+      } else {
+        source.dispose();
+      }
+      this.addLayer_(layer, asset);
+      return layer;
+    } catch (error) {
+      // Terminates the workers, as no layer owns the source
+      if (source) {
+        source.dispose();
+      }
+      this.handleError_(error);
+    }
+  }
+
+  /**
    * Update the layers shown manually based on the current configuration.
    * Usually this doesn't need to be called manually.
    * The layers of the requested data sources that are already shown are kept.
@@ -1729,6 +1829,9 @@ class STACLayer extends LayerGroup {
         if (ref.isType(zarrMediaTypes)) {
           return await this.addGeoZarr_(ref);
         }
+        if (ref.isType(copcMediaTypes)) {
+          return await this.addCOPC_(ref);
+        }
         if (ref.canBrowserDisplayImage()) {
           return await this.addPreviewImage_(ref);
         }
@@ -1772,6 +1875,12 @@ class STACLayer extends LayerGroup {
           const geozarr = data.getDefaultGeoFile('geozarr', true, false);
           if (geozarr) {
             layer = await this.addGeoZarr_(geozarr, true);
+          }
+        }
+        if (this.displayOverview_ && !layer) {
+          const copc = data.getDefaultGeoFile('copc', true, false);
+          if (copc) {
+            layer = await this.addCOPC_(copc);
           }
         }
         // Show web map links if available
@@ -1847,6 +1956,29 @@ class STACLayer extends LayerGroup {
     for (const layer of this.getLayersArray()) {
       if (layer instanceof WebGLTileLayer) {
         layer.setStyle(this.style_);
+      }
+    }
+  }
+
+  /**
+   * @return {number} The tilt of the view for point clouds in degrees.
+   * @api
+   */
+  getTilt() {
+    return this.tilt_;
+  }
+
+  /**
+   * Set the tilt of the view for point clouds (COPC), see the `tilt` option.
+   * @param {number} tilt The tilt in degrees, up to 75.
+   * @api
+   */
+  setTilt(tilt) {
+    this.tilt_ = tilt;
+    for (const layer of this.getLayers().getArray()) {
+      // Point cloud layers and child groups
+      if ('setTilt' in layer && typeof layer.setTilt === 'function') {
+        layer.setTilt(tilt);
       }
     }
   }

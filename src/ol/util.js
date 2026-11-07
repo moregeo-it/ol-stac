@@ -1690,3 +1690,37 @@ export function getGeoTiffStyleFromAsset(
     defaultColormap,
   );
 }
+
+/**
+ * Creates the options for a COPC layer from the STAC metadata: the classes are
+ * colored by the classification extension (`classification:classes`) if it
+ * provides colors.
+ *
+ * @param {import('stac-js').Asset} asset The STAC asset.
+ * @param {Array<import('ol/color.js').Color|string>|null} [defaultColormap] The colors
+ * for elevations and intensities.
+ * @return {Object} The layer options.
+ * @api
+ */
+export function getCOPCLayerOptionsFromAsset(asset, defaultColormap = null) {
+  const options = {};
+  if (Array.isArray(defaultColormap) && defaultColormap.length >= 2) {
+    options.colormap = defaultColormap;
+  }
+  const classes = getClassificationClasses(asset);
+  const classColors = {};
+  for (const cls of classes || []) {
+    if (
+      typeof cls.value === 'number' &&
+      typeof cls.color_hint === 'string' &&
+      cls.color_hint.length === 6
+    ) {
+      classColors[cls.value] = hexToRgb(cls.color_hint);
+    }
+  }
+  if (Object.keys(classColors).length > 0) {
+    options.classColors = classColors;
+    options.colorMode = 'classification';
+  }
+  return options;
+}
