@@ -33,7 +33,7 @@
     "apidoc": "shx rm -rf build/apidoc && jsdoc --readme config/jsdoc/api/index.md --configure config/jsdoc/api/conf.json --package package.json --destination build/apidoc"
   },
   "dependencies": {
-    "ol-copc": "^0.1.1",
+    "ol-copc": "^0.2.0",
     "ol-pmtiles": "^2.0.0",
     "proj4": "^2.16.1",
     "stac-js": "^0.5.6",

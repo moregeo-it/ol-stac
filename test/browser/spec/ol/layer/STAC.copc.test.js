@@ -28,6 +28,14 @@ vi.mock('ol-copc', async () => {
   class COPCLayer extends Layer {
     constructor(options) {
       super({source: options.source});
+      this.tilt = options.tilt;
+    }
+    setTilt(tilt) {
+      this.tilt = tilt;
+    }
+    // Nothing to render without a renderer
+    render() {
+      return null;
     }
   }
 
@@ -144,5 +152,49 @@ describe('ol/layer/STAC (COPC)', function () {
     mocked.sources[0].fail(new Error('Workers failed'));
     expect(errors.length).to.equal(1);
     expect(errors[0].message).to.equal('Workers failed');
+  });
+
+  it('applies tilt changes made while the layer options are pending', async function () {
+    let resolveOptions;
+    const group = new STAC({
+      data: createItem(),
+      tilt: 45,
+      getLayerOptions: (type, options) =>
+        type === LayerType.COPC
+          ? new Promise((resolve) => (resolveOptions = () => resolve(options)))
+          : options,
+    });
+    map = new Map({
+      target,
+      layers: [group],
+      view: new View({center: [0, 0], zoom: 2}),
+    });
+    await waitFor(() => resolveOptions);
+    group.setTilt(30);
+    resolveOptions();
+    await waitFor(() =>
+      group.getLayersArray().some((layer) => layer.get('stac')?.isAsset),
+    );
+    const layer = group.getLayersArray().find((l) => l.get('stac')?.isAsset);
+    expect(layer.tilt).to.equal(30);
+  });
+
+  it('keeps the tilt set by the layer options callback', async function () {
+    const group = new STAC({
+      data: createItem(),
+      tilt: 45,
+      getLayerOptions: (type, options) =>
+        type === LayerType.COPC ? {...options, tilt: 10} : options,
+    });
+    map = new Map({
+      target,
+      layers: [group],
+      view: new View({center: [0, 0], zoom: 2}),
+    });
+    await waitFor(() =>
+      group.getLayersArray().some((layer) => layer.get('stac')?.isAsset),
+    );
+    const layer = group.getLayersArray().find((l) => l.get('stac')?.isAsset);
+    expect(layer.tilt).to.equal(10);
   });
 });

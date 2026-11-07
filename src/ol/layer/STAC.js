@@ -1716,12 +1716,13 @@ class STACLayer extends LayerGroup {
         }
       };
       source.on('change', onError);
+      const tilt = this.tilt_;
       /**
        * @type {import("ol-copc/layer/COPC.js").Options}
        */
       let layerOptions = {
         source,
-        tilt: this.tilt_,
+        tilt,
         ...getCOPCLayerOptionsFromAsset(asset, this.defaultColormap_),
       };
       layerOptions = await this.updateLayerOptions_(
@@ -1729,6 +1730,10 @@ class STACLayer extends LayerGroup {
         layerOptions,
         asset,
       );
+      // setTilt() can't reach the layer while the callback is pending
+      if (layerOptions.tilt === tilt) {
+        layerOptions.tilt = this.tilt_;
+      }
       const layer = new COPCLayer(layerOptions);
       // Disposing the layer unsets the source, terminate its workers then
       if (layer.getSource() === source) {
