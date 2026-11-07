@@ -1695,9 +1695,10 @@ class STACLayer extends LayerGroup {
       options = await this.getSourceOptions_(SourceType.COPC, options, asset);
     }
 
+    let source = null;
     try {
       const {COPCLayer, COPCSource} = await import('ol-copc');
-      const source = new COPCSource(options);
+      source = new COPCSource(options);
       await new Promise((resolve, reject) => {
         source.on('change', () => {
           if (source.getState() === 'error') {
@@ -1707,6 +1708,14 @@ class STACLayer extends LayerGroup {
           }
         });
       });
+      // Failures once the source is ready, e.g. if the workers can't be started
+      const onError = () => {
+        if (source.getState() === 'error') {
+          source.un('change', onError);
+          this.handleError_(source.getError());
+        }
+      };
+      source.on('change', onError);
       /**
        * @type {import("ol-copc/layer/COPC.js").Options}
        */
@@ -1730,6 +1739,10 @@ class STACLayer extends LayerGroup {
       this.addLayer_(layer, asset);
       return layer;
     } catch (error) {
+      // Terminates the workers, as no layer owns the source
+      if (source) {
+        source.dispose();
+      }
       this.handleError_(error);
     }
   }

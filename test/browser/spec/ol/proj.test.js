@@ -83,6 +83,28 @@ describe('ol/proj', function () {
       expect(getHorizontalWkt(wkt)).to.equal(horizontal);
     });
 
+    it('returns the projected part of a compound WKT2 with long keywords', function () {
+      // BASEGEOGCRS must not be mistaken for the horizontal reference system
+      const horizontal =
+        'PROJECTEDCRS["WGS 84 / UTM zone 32N",BASEGEOGCRS["WGS 84",DATUM["World Geodetic System 1984"]],CONVERSION["UTM zone 32N"]]';
+      const wkt = `COMPOUNDCRS["WGS 84 / UTM zone 32N + EGM96 height",${horizontal},VERTCRS["EGM96 height",VDATUM["EGM96 geoid"]]]`;
+      expect(getHorizontalWkt(wkt)).to.equal(horizontal);
+    });
+
+    it('returns the geographic part of a compound WKT2', function () {
+      const horizontal =
+        'GEOGRAPHICCRS["WGS 84",DATUM["World Geodetic System 1984"]]';
+      const wkt = `COMPOUNDCRS["WGS 84 + EGM96 height",${horizontal},VERTICALCRS["EGM96 height",VDATUM["EGM96 geoid"]]]`;
+      expect(getHorizontalWkt(wkt)).to.equal(horizontal);
+    });
+
+    it('ignores the case of the WKT2 keywords', function () {
+      const horizontal =
+        'projcrs["WGS 84 / UTM zone 32N",basegeogcrs["WGS 84",datum["World Geodetic System 1984"]]]';
+      const wkt = `compoundcrs["WGS 84 / UTM zone 32N + EGM96 height",${horizontal},vertcrs["EGM96 height"]]`;
+      expect(getHorizontalWkt(wkt)).to.equal(horizontal);
+    });
+
     it('keeps other reference systems', function () {
       expect(getHorizontalWkt(` ${WKT_25832} `)).to.equal(WKT_25832);
     });
