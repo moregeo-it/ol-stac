@@ -18,99 +18,6 @@ import {isObject} from 'stac-js/src/utils.js';
  */
 
 /**
- * Returns the horizontal part of a compound coordinate reference system,
- * as proj4 can't parse compound reference systems.
- * @param {string} wkt WKT1 or WKT2
- * @return {string} The horizontal reference system.
- */
-export function getHorizontalWkt(wkt) {
-  wkt = wkt.trim();
-  // WKT allows parentheses instead of brackets as delimiters
-  if (!/^(COMPD_CS|COMPOUNDCRS)\s*[[(]/i.test(wkt)) {
-    return wkt;
-  }
-  const keyword =
-    /(?<![A-Z_])(PROJCS|PROJCRS|PROJECTEDCRS|GEOGCS|GEOGCRS|GEOGRAPHICCRS|GEODCRS|GEODETICCRS)\s*[[(]/iy;
-  let quoted = false;
-  let depth = 0;
-  let start = -1;
-  for (let i = 0; i < wkt.length; i++) {
-    const char = wkt[i];
-    // Quotes within strings are doubled, which toggles twice
-    if (char === '"') {
-      quoted = !quoted;
-    } else if (quoted) {
-      continue;
-    } else if (char === '[' || char === '(') {
-      depth++;
-    } else if (char === ']' || char === ')') {
-      depth--;
-      if (start !== -1 && depth === 1) {
-        return wkt.substring(start, i + 1);
-      }
-    } else if (start === -1 && depth === 1) {
-      // Only the components of the compound reference system
-      keyword.lastIndex = i;
-      if (keyword.test(wkt)) {
-        start = i;
-      }
-    }
-  }
-  return wkt;
-}
-
-/**
- * The long WKT2 keywords for the reference systems, which proj4 doesn't support.
- * @type {Object<string, string>}
- */
-const SHORT_KEYWORDS = {
-  PROJECTEDCRS: 'PROJCRS',
-  GEOGRAPHICCRS: 'GEOGCRS',
-  GEODETICCRS: 'GEODCRS',
-};
-
-/**
- * Converts a WKT to the form proj4 can parse: keywords in upper case and in their
- * short form, with brackets as delimiters. Quoted strings are kept as they are.
- * @param {string} wkt WKT1 or WKT2
- * @return {string} The normalized WKT.
- */
-export function normalizeWkt(wkt) {
-  return wkt.replace(
-    /"(?:[^"]|"")*"|([A-Z_]\w*)(\s*[[(])|\(|\)/gi,
-    (match, keyword, delimiter) => {
-      if (keyword) {
-        const upper = keyword.toUpperCase();
-        return (SHORT_KEYWORDS[upper] || upper) + delimiter.replace('(', '[');
-      }
-      if (match === '(') {
-        return '[';
-      }
-      if (match === ')') {
-        return ']';
-      }
-      return match;
-    },
-  );
-}
-
-/**
- * Returns the horizontal part of a compound coordinate reference system,
- * as proj4 can't parse compound reference systems.
- * @param {Object} projjson PROJJSON
- * @return {Object} The horizontal reference system.
- */
-export function getHorizontalProjjson(projjson) {
-  if (projjson.type !== 'CompoundCRS' || !Array.isArray(projjson.components)) {
-    return projjson;
-  }
-  const horizontal = projjson.components.find(
-    (component) => isObject(component) && component.type !== 'VerticalCRS',
-  );
-  return horizontal || projjson;
-}
-
-/**
  * Returns a projection usable in OpenLayers for a given projection (Code, PROJJSON or WKT2).
  * For compound reference systems, the horizontal reference system is used.
  *
@@ -125,12 +32,6 @@ export async function registerProjection(proj, type, lookup = null) {
     throw new Error('Proj4 must be registered first with register(proj4)');
   }
 
-  if (type === 'projjson' && isObject(proj)) {
-    proj = getHorizontalProjjson(proj);
-  } else if (type === 'wkt2' && typeof proj === 'string') {
-    proj = normalizeWkt(getHorizontalWkt(proj));
-  }
-
   const code = type === 'code' ? proj : getCustomProjectionName(proj);
   if (proj4.defs(code)) {
     return getCachedProjection(code);
@@ -143,6 +44,14 @@ export async function registerProjection(proj, type, lookup = null) {
   }
 
   const definition = type === 'code' ? await lookup(proj) : proj;
+  // proj4 keeps definitions it can't parse, which breaks registering other projections
+  try {
+    proj4(definition);
+  } catch (error) {
+    throw new Error(
+      `Unsupported coordinate reference system: ${error?.message ?? error}`,
+    );
+  }
   proj4.defs(code, definition);
   registerProj4(proj4);
 

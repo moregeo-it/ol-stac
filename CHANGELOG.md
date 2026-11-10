@@ -16,9 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Compound reference systems in `proj:projjson` and `proj:wkt2` (e.g. with a vertical datum) are supported
-  by using their horizontal reference system
-- `proj:wkt2` with long keywords (e.g. `PROJECTEDCRS`), lower-case keywords or parentheses as delimiters is supported
+- Compound reference systems in `proj:projjson` and `proj:wkt2` (e.g. with a vertical datum) and `proj:wkt2`
+  with alternative or lower-case keywords are supported, through wkt-parser 1.7.0 or later
+- A reference system that proj4 can't parse no longer breaks the projections of other assets
 - `proj:wkt2` and `proj:projjson` with characters outside of Latin-1 (e.g. in names) are supported
 
 ## [1.9.0] - 2026-11-06
