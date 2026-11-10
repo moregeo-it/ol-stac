@@ -107,6 +107,9 @@ const items = {
     ],
     364384576,
   ),
+  // Loaded from the API to use its reference system as it is
+  kentucky:
+    'https://spved5ihrl.execute-api.us-west-2.amazonaws.com/collections/laz-phase3/items/N094E260_LAS_Phase3.copc',
 };
 
 const map = new Map({
@@ -135,8 +138,9 @@ function showItem() {
     layer.getLayersArray().forEach((l) => l.dispose());
     layer.dispose();
   }
+  const data = items[item.value];
   layer = new STAC({
-    data: items[item.value],
+    ...(typeof data === 'string' ? {url: data} : {data}),
     tilt: Number(tilt.value),
   });
   layer.on('sourceready', () => {
