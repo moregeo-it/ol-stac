@@ -19,6 +19,7 @@ import {isObject} from 'stac-js/src/utils.js';
 
 /**
  * Returns a projection usable in OpenLayers for a given projection (Code, PROJJSON or WKT2).
+ * For compound reference systems, the horizontal reference system is used.
  *
  * @param {string|Object} proj The projection
  * @param {string} type The type of the projection definition (`code`, `projjson` or `wkt2`).
@@ -43,6 +44,14 @@ export async function registerProjection(proj, type, lookup = null) {
   }
 
   const definition = type === 'code' ? await lookup(proj) : proj;
+  // proj4 keeps definitions it can't parse, which breaks registering other projections
+  try {
+    proj4(definition);
+  } catch (error) {
+    throw new Error(
+      `Unsupported coordinate reference system: ${error?.message ?? error}`,
+    );
+  }
   proj4.defs(code, definition);
   registerProj4(proj4);
 
@@ -139,8 +148,10 @@ function getCustomProjectionName(projDef) {
 
     projDef = JSON.stringify(projDef);
   }
-  // Get a base64 hash of the string to create a unique projection name
-  return `CUSTOM:${btoa(projDef)}`;
+  // Get a base64 hash of the string to create a unique projection name,
+  // btoa only supports Latin-1
+  const bytes = new TextEncoder().encode(projDef);
+  return `CUSTOM:${btoa(String.fromCharCode(...bytes))}`;
 }
 
 async function getLookupFn() {

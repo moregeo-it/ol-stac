@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Cloud Optimized Point Cloud (COPC) support through [ol-copc](https://github.com/moregeo-it/ol-copc):
+  point clouds are rendered with WebGL 2, top-down or in a tilted (oblique) view that follows the rotation
+  of the map, colored by classification (from `classification:classes`), RGB, elevation or intensity
+- Option `tilt` and the methods `getTilt` and `setTilt` to show point clouds in a tilted view
+
+### Fixed
+
+- Compound reference systems in `proj:projjson` and `proj:wkt2` (e.g. with a vertical datum) and `proj:wkt2`
+  with alternative or lower-case keywords or parentheses as delimiters are supported, through proj4 2.23.0 or later
+- A reference system that proj4 can't parse no longer breaks the projections of other assets
+- `proj:wkt2` and `proj:projjson` with characters outside of Latin-1 (e.g. in names) are supported
+
 ## [1.9.0] - 2026-11-06
 
 ### Added

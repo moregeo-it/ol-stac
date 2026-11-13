@@ -1,0 +1,58 @@
+---
+layout: example.html
+title: Cloud Optimized Point Clouds (COPC)
+shortdesc: Rendering COPC point clouds from STAC Items in a tilted view.
+docs: >
+  Point clouds in the Cloud Optimized Point Cloud (COPC) format are rendered with WebGL,
+  shaded with eye-dome lighting. With a tilt, the points are shifted towards the top of the screen
+  by their height above the ground (oblique view), so that buildings and trees stand up.
+  Use the controls in the lower left corner to tilt and rotate the view (or Alt+Shift+drag to rotate).
+  By default, the points are colored by their classes if the STAC metadata (classification extension) provides colors for them.
+  The point clouds are from the <a href="https://viewer.copc.io">COPC viewer</a> by Hobu, Inc., from 10 to 364 million points,
+  and from the <a href="https://kyfromabove.ky.gov">KyFromAbove</a> STAC API, whose Item describes its reference system
+  as a compound WKT2 with a bound CRS in US survey feet.
+  Only the points needed for the current view are loaded.
+tags: "stac, stac item, copc, point cloud, lidar, webgl, 3d"
+---
+<div id="map" class="map"></div>
+<div id="view-controls" class="ol-unselectable ol-control">
+  <label for="tilt">Tilt</label>
+  <input id="tilt" type="range" min="0" max="75" step="1" value="45">
+  <span id="tilt-value">45°</span>
+  <button id="rotate-left" type="button" title="Rotate left">⟲</button>
+  <button id="rotate-right" type="button" title="Rotate right">⟳</button>
+</div>
+<label for="item">STAC Item</label>
+<select id="item">
+  <option value="autzen">Autzen Stadium, Oregon (10.6 million points)</option>
+  <option value="sofi">SoFi Stadium, California (364 million points)</option>
+  <option value="kentucky">Salt River, Kentucky (20 million points)</option>
+</select>
+<label for="color">Color by</label>
+<select id="color">
+  <option value="classification">Classification</option>
+  <option value="rgb">RGB</option>
+  <option value="elevation">Elevation</option>
+  <option value="intensity">Intensity</option>
+</select>
+<label for="edl">Eye-dome lighting</label>
+<input id="edl" type="range" min="0" max="3" step="0.1" value="1">
+<label><input id="walls" type="checkbox" checked> Walls in the tilted view</label>
+<style>
+  #view-controls {
+    bottom: 0.5em;
+    left: 0.5em;
+    display: flex;
+    align-items: center;
+    gap: 0.25em;
+    padding: 0.25em 0.5em;
+    font-size: 0.9em;
+    background: rgba(255, 255, 255, 0.85);
+  }
+  #view-controls input {
+    width: 8em;
+  }
+  #tilt-value {
+    min-width: 2.5em;
+  }
+</style>

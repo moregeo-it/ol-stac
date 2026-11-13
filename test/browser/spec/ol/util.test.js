@@ -1,5 +1,6 @@
 import create from 'stac-js';
 import {
+  getCOPCLayerOptionsFromAsset,
   getGeoTiffSourceInfoFromAsset,
   getGeoTiffStyleFromAsset,
   getGeoZarrSourceOptionsFromAsset,
@@ -1189,6 +1190,35 @@ describe('ol/util', function () {
           [0, 100],
         ]),
       );
+    });
+  });
+
+  describe('getCOPCLayerOptionsFromAsset', function () {
+    it('returns no options without metadata', function () {
+      const asset = getAsset({type: 'application/vnd.laszip+copc'});
+      expect(getCOPCLayerOptionsFromAsset(asset)).to.eql({});
+    });
+
+    it('colors the classes with the classification extension', function () {
+      const asset = getAsset({
+        type: 'application/vnd.laszip+copc',
+        'classification:classes': [...classes, {value: 3, name: 'unknown'}],
+      });
+      expect(getCOPCLayerOptionsFromAsset(asset)).to.eql({
+        colorMode: 'classification',
+        classColors: {
+          1: [0, 0, 255],
+          2: [0, 255, 0],
+        },
+      });
+    });
+
+    it('uses the default colormap', function () {
+      const colormap = ['#000000', '#ffffff'];
+      const asset = getAsset({type: 'application/vnd.laszip+copc'});
+      expect(getCOPCLayerOptionsFromAsset(asset, colormap)).to.eql({
+        colormap,
+      });
     });
   });
 });
