@@ -35,9 +35,8 @@
   "dependencies": {
     "ol-copc": "^0.2.0",
     "ol-pmtiles": "^2.0.0",
-    "proj4": "^2.16.1",
+    "proj4": "^2.23.0",
     "stac-js": "^0.5.9",
-    "wkt-parser": "^1.7.0",
     "zarrita": "^0.7.3"
   },
   "peerDependencies": {

@@ -252,6 +252,14 @@ describe('ol/proj', function () {
       expect(lat).to.be.within(53.5, 53.52);
     });
 
+    it('supports WKT2 with parentheses as delimiters', async function () {
+      const wkt = COMPOUND_BOUND.replaceAll('[', '(').replaceAll(']', ')');
+      const projection = await getProjection(fakeReference({'proj:wkt2': wkt}));
+      const [lon, lat] = transform([533000, 5929000], projection, 'EPSG:4326');
+      expect(lon).to.be.within(9.49, 9.51);
+      expect(lat).to.be.within(53.5, 53.52);
+    });
+
     it('uses the horizontal part of a compound PROJJSON', async function () {
       const projection = await getProjection(
         fakeReference({'proj:projjson': COMPOUND_PROJJSON}),
